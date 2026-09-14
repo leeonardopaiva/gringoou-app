@@ -197,7 +197,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
-    ? 'mx-auto w-full max-w-4xl'
+    ? 'mx-auto w-full max-w-[600px]'
     : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);

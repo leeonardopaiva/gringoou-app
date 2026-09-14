@@ -1,10 +1,5 @@
 import {
-  AdBillingMode,
-  AdCampaignStatus,
-  AdObjective,
-  AdPaymentStatus,
   BusinessStatus,
-  BannerPlacement,
   BannerType,
   EventStatus,
   SuggestionCategory,
@@ -75,25 +70,6 @@ const optionalDate = z
   .refine((value) => !value || !Number.isNaN(new Date(value).getTime()), {
     message: 'Use uma data valida.',
   });
-
-const optionalCurrencyCents = z
-  .union([z.coerce.number().int().min(0), z.null()])
-  .optional()
-  .transform((value) => (value === null ? undefined : value));
-
-const targetListSchema = z
-  .array(z.string().trim().min(2).max(60))
-  .max(20)
-  .default([])
-  .transform((values) =>
-    Array.from(
-      new Set(
-        values
-          .map((value) => value.toLowerCase())
-          .filter(Boolean),
-      ),
-    ),
-  );
 
 export const usernameSchema = z
   .string()
@@ -237,24 +213,11 @@ export const adminBannerSchema = z.object({
   name: z.string().trim().min(2).max(80),
   imageUrl: requiredUrl,
   type: z.nativeEnum(BannerType).default(BannerType.LINK),
-  placement: z.nativeEnum(BannerPlacement).default(BannerPlacement.HOME),
   targetUrl: optionalUrl,
   regionKey: z.string().trim().transform(emptyToUndefined).optional(),
   isActive: z.boolean().default(true),
-  campaignStatus: z.nativeEnum(AdCampaignStatus).default(AdCampaignStatus.ACTIVE),
-  objective: z.nativeEnum(AdObjective).default(AdObjective.TRAFFIC),
-  billingMode: z.nativeEnum(AdBillingMode).default(AdBillingMode.FLAT),
-  paymentStatus: z.nativeEnum(AdPaymentStatus).default(AdPaymentStatus.PENDING),
-  targetInterests: targetListSchema,
-  targetKeywords: targetListSchema,
-  targetCategories: targetListSchema,
   startsAt: optionalDate,
   endsAt: optionalDate,
-  dailyBudgetCents: optionalCurrencyCents,
-  totalBudgetCents: optionalCurrencyCents,
-  bidCents: z.coerce.number().int().min(0).default(0),
-  checkoutUrl: optionalUrl,
-  paymentProvider: z.string().trim().max(40).transform(emptyToUndefined).optional(),
 }).superRefine((data, context) => {
   if (data.type === BannerType.LINK && !data.targetUrl) {
     context.addIssue({

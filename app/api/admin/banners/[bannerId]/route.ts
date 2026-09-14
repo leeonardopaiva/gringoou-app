@@ -56,36 +56,27 @@ export async function PUT(request: Request, context: RouteContext) {
         name: parsed.data.name,
         imageUrl: parsed.data.imageUrl,
         type: parsed.data.type,
-        placement: parsed.data.placement,
+        placement: 'HOME',
         targetUrl: parsed.data.type === 'LINK' ? parsed.data.targetUrl : null,
         regionKey: parsed.data.regionKey ?? null,
         isActive: parsed.data.isActive,
-        campaignStatus: parsed.data.campaignStatus,
-        objective: parsed.data.objective,
-        billingMode: parsed.data.billingMode,
-        paymentStatus: parsed.data.paymentStatus,
-        targetInterests: parsed.data.targetInterests,
-        targetKeywords: parsed.data.targetKeywords,
-        targetCategories: parsed.data.targetCategories,
+        campaignStatus: parsed.data.isActive ? 'ACTIVE' : 'PAUSED',
+        objective: parsed.data.type === 'REGISTRATION' ? 'LEAD' : 'TRAFFIC',
+        billingMode: 'FLAT',
+        paymentStatus: 'PAID',
+        targetInterests: [],
+        targetKeywords: [],
+        targetCategories: [],
         startsAt: parsed.data.startsAt ? new Date(parsed.data.startsAt) : null,
         endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null,
-        dailyBudgetCents: parsed.data.dailyBudgetCents ?? null,
-        totalBudgetCents: parsed.data.totalBudgetCents ?? null,
-        bidCents: parsed.data.bidCents,
-        checkoutUrl: parsed.data.checkoutUrl ?? null,
-        paymentProvider: parsed.data.paymentProvider ?? null,
-        moderationStatus:
-          parsed.data.paymentStatus === 'PAID' && parsed.data.campaignStatus === 'ACTIVE'
-            ? 'APPROVED'
-            : 'DRAFT',
-        approvedById:
-          parsed.data.paymentStatus === 'PAID' && parsed.data.campaignStatus === 'ACTIVE'
-            ? session.user.id
-            : null,
-        approvedAt:
-          parsed.data.paymentStatus === 'PAID' && parsed.data.campaignStatus === 'ACTIVE'
-            ? new Date()
-            : null,
+        dailyBudgetCents: null,
+        totalBudgetCents: null,
+        bidCents: 0,
+        checkoutUrl: null,
+        paymentProvider: null,
+        moderationStatus: 'APPROVED',
+        approvedById: session.user.id,
+        approvedAt: new Date(),
       },
       select: {
         id: true,

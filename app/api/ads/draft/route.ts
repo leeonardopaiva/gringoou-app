@@ -41,7 +41,7 @@ async function saveDraft(request: Request, requireExisting: boolean) {
     plan: parsed.data.plan ?? null,
     durationMonths: parsed.data.durationMonths ?? null,
     type: BannerType.LINK,
-    placement: BannerPlacement.BOTH,
+    placement: BannerPlacement.FEED,
     campaignStatus: AdCampaignStatus.DRAFT,
     moderationStatus: AdModerationStatus.DRAFT,
     paymentStatus: AdPaymentStatus.PENDING,

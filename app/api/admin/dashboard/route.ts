@@ -92,6 +92,7 @@ export async function GET() {
       },
     }),
     prisma.banner.findMany({
+      where: { adAccountId: null },
       orderBy: [{ updatedAt: 'desc' }],
       take: 18,
       select: {

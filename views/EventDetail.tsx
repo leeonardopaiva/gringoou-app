@@ -17,6 +17,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { User } from '../types';
+import { ContentColumn } from '../components/ui/ContentColumn';
 
 interface EventDetailProps {
   eventId?: string;
@@ -296,19 +297,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
 
   if (loading) {
     return (
-      <div className="animate-in space-y-5 px-5 py-6 fade-in duration-500">
+      <ContentColumn className="animate-in space-y-5 px-5 py-6 fade-in duration-500">
         <div className="h-64 animate-pulse rounded-[28px] bg-slate-100" />
         <div className="space-y-3">
           <div className="h-8 w-2/3 animate-pulse rounded-full bg-slate-100" />
           <div className="h-4 w-1/2 animate-pulse rounded-full bg-slate-100" />
           <div className="h-24 animate-pulse rounded-3xl bg-slate-100" />
         </div>
-      </div>
+      </ContentColumn>
     );
   }
 
   return (
-    <div className="animate-in bg-white pb-24 fade-in duration-500">
+    <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500">
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -613,7 +614,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
           </div>
         </div>
       ) : null}
-    </div>
+    </ContentColumn>
   );
 };
 

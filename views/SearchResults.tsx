@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CalendarDays, Clock3, MapPin, Search, Store, Users } from 'lucide-react';
 import type { Business, EventItem } from '@/types';
+import { ContentColumn } from '@/components/ui';
 
 type SearchPostResult = {
   id: string;
@@ -137,7 +138,7 @@ const SearchResults: React.FC = () => {
   const visiblePosts = activeTab === 'all' || activeTab === 'posts';
 
   return (
-    <div className="animate-in space-y-6 px-5 py-4 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-6 px-5 py-4 fade-in duration-500">
       <div className="space-y-4">
         <div>
           <h1 className="text-h2 font-bold text-foreground">Busca</h1>
@@ -335,7 +336,7 @@ const SearchResults: React.FC = () => {
           ) : null}
         </div>
       ) : null}
-    </div>
+    </ContentColumn>
   );
 };
 

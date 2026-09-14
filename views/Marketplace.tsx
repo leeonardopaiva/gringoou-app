@@ -20,6 +20,7 @@ import {
 import { parseDateTimeInputPtBr } from '../lib/forms/datetime';
 import { EventItem, PersonaMode, ProfessionalProfileIdentity } from '../types';
 import type { EventsInitialData } from '../lib/content-contracts';
+import { ContentColumn } from '../components/ui/ContentColumn';
 
 const SAMPLE_EVENTS: EventItem[] = [
   {
@@ -352,7 +353,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         ? 'Eventos desta semana'
         : 'Eventos proximos';
   return (
-    <div className="px-5 space-y-6 animate-in fade-in duration-500 pb-20">
+    <ContentColumn className="space-y-6 px-5 pb-20 animate-in fade-in duration-500">
       <div className="mt-4 space-y-4">
         <div>
           <div>
@@ -562,7 +563,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
           />
         ))}
       </div>
-    </div>
+    </ContentColumn>
   );
 };
 

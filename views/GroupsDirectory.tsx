@@ -7,6 +7,7 @@ import { useIntersectionTrigger } from '../hooks/useIntersectionTrigger';
 import { loadRegionGroups } from '../lib/content-api';
 import type { RegionalGroupCard } from '../lib/content-contracts';
 import type { User } from '../types';
+import { ContentColumn } from '../components/ui/ContentColumn';
 
 const getInitials = (name: string) =>
   name
@@ -108,7 +109,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
   }, [reloadGroups, user.regionKey]);
 
   return (
-    <div className="animate-in space-y-5 px-5 fade-in slide-in-from-bottom-4 duration-500 lg:px-0">
+    <ContentColumn className="animate-in space-y-5 px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
@@ -239,7 +240,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
           </>
         )}
       </section>
-    </div>
+    </ContentColumn>
   );
 };
 

@@ -29,12 +29,13 @@ export async function POST(request: Request) {
         where: { id: parsed.data.targetKey },
         select: {
           id: true,
+          adAccountId: true,
           billingMode: true,
           bidCents: true,
         },
       });
 
-      if (banner?.billingMode === 'CPC' && banner.bidCents > 0) {
+      if (banner?.adAccountId && banner.billingMode === 'CPC' && banner.bidCents > 0) {
         const amountCents = banner.bidCents;
 
         await tx.banner.update({

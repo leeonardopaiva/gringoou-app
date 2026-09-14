@@ -24,26 +24,48 @@ export async function POST(request: Request, context: RouteContext) {
     where: {
       id: bannerId,
       isActive: true,
-      campaignStatus: 'ACTIVE',
-      moderationStatus: 'APPROVED',
-      paymentStatus: 'PAID',
-      OR: [{ placement: parsed.data.placement }, { placement: 'BOTH' }],
       AND: [
         { OR: [{ regionKey: null }, { regionKey: session.user.regionKey ?? '__no_region__' }] },
         { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
         { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
       ],
     },
-    select: { id: true, billingMode: true, bidCents: true, totalBudgetCents: true, spentCents: true },
+    select: {
+      id: true,
+      adAccountId: true,
+      placement: true,
+      campaignStatus: true,
+      moderationStatus: true,
+      paymentStatus: true,
+      billingMode: true,
+      bidCents: true,
+      totalBudgetCents: true,
+      spentCents: true,
+    },
   });
   if (!banner) return NextResponse.json({ error: 'Campanha indisponivel.' }, { status: 404 });
+
+  const isHomeBanner = banner.adAccountId === null;
+  const validPlacement = isHomeBanner
+    ? parsed.data.placement === 'HOME' && (banner.placement === 'HOME' || banner.placement === 'BOTH')
+    : parsed.data.placement === 'FEED' && (banner.placement === 'FEED' || banner.placement === 'BOTH');
+  const campaignIsEligible =
+    banner.campaignStatus === 'ACTIVE' &&
+    banner.moderationStatus === 'APPROVED' &&
+    (isHomeBanner || banner.paymentStatus === 'PAID');
+
+  if (!validPlacement || !campaignIsEligible) {
+    return NextResponse.json({ error: 'Campanha indisponivel.' }, { status: 404 });
+  }
 
   const [recentCount, duplicate] = await Promise.all([
     prisma.adImpression.count({ where: { bannerId, userId: session.user.id, createdAt: { gte: oneDayAgo } } }),
     prisma.adImpression.findFirst({ where: { bannerId, userId: session.user.id, placement: parsed.data.placement, createdAt: { gte: dedupeThreshold } }, select: { id: true } }),
   ]);
-  if (duplicate || recentCount >= 3) return NextResponse.json({ ok: true, deduplicated: true });
-  if (banner.totalBudgetCents !== null && banner.spentCents >= banner.totalBudgetCents) {
+  if (duplicate || (!isHomeBanner && recentCount >= 3)) {
+    return NextResponse.json({ ok: true, deduplicated: true });
+  }
+  if (!isHomeBanner && banner.totalBudgetCents !== null && banner.spentCents >= banner.totalBudgetCents) {
     return NextResponse.json({ error: 'Orcamento encerrado.' }, { status: 409 });
   }
 
@@ -57,7 +79,7 @@ export async function POST(request: Request, context: RouteContext) {
     matchedBy: parsed.data.matchedBy,
   } as const;
 
-  if (banner.billingMode === 'CPM' && banner.bidCents > 0) {
+  if (!isHomeBanner && banner.billingMode === 'CPM' && banner.bidCents > 0) {
     const amountCents = Math.max(1, Math.ceil(banner.bidCents / 1_000));
     await prisma.$transaction([
       prisma.adImpression.create({ data: impressionData, select: { id: true } }),

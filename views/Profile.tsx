@@ -15,6 +15,7 @@ import ProfessionalModePanel from '../components/profile/ProfessionalModePanel';
 import { PersonaMode, ProfessionalProfileSummary, ReferralSummary, User } from '../types';
 import type { ProfileInitialData } from '../lib/content-contracts';
 import { Modal } from '../components/ui/Modal';
+import { ContentColumn } from '../components/ui/ContentColumn';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-foreground';
@@ -433,16 +434,16 @@ const Profile: React.FC<{
 
   if (loading) {
     return (
-      <div className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
+      <ContentColumn className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
         <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
         <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
         <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
-      </div>
+      </ContentColumn>
     );
   }
 
   return (
-    <div className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
         <div className={`relative h-56 ${
           !isProfessionalView && profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass
@@ -642,7 +643,7 @@ const Profile: React.FC<{
       </Section>
         </>
       )}
-    </div>
+    </ContentColumn>
   );
 };
 

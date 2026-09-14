@@ -28,9 +28,7 @@ import { STATIC_HOUSING, STATIC_JOBS } from '../lib/static-catalog';
 import { BannerAd, Business, EventItem, User } from '../types';
 import type { HomeInitialData } from '../lib/content-contracts';
 import { ViewableAdSlot } from '../components/ads/ViewableAdSlot';
-import { FeedCard } from '../components/ui/FeedCard';
 import { ContentColumn } from '../components/ui/ContentColumn';
-import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 
 const animatedSearchTerms = ['restaurantes', 'bares', 'eventos', 'pessoas'];
 
@@ -314,35 +312,30 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                   placement="HOME"
                   className="w-full flex-none"
                 >
-                  <FeedCard.Root variant="sponsored">
-                    <FeedCard.Header
-                      avatarUrl={banner.advertiserLogoUrl || DEFAULT_AVATAR_URL}
-                      avatarAlt={banner.advertiserName || banner.name}
-                      title={banner.advertiserName || banner.name}
-                      subtitle={banner.regionLabel || 'Toda a comunidade'}
-                      badge={<FeedCard.SponsoredBadge />}
-                      onAvatarError={handleAvatarError}
-                    />
-                    {banner.description ? <FeedCard.Content text={banner.description} /> : null}
-                    <FeedCard.Media src={banner.imageUrl} alt={banner.headline || banner.name} />
-                    <FeedCard.Headline>{banner.headline || banner.name}</FeedCard.Headline>
-                    <div className="px-5 pb-4 pt-3">
-                      {banner.type === 'REGISTRATION' ? (
-                        <FeedCard.CTA
-                          onClick={() => void handleBannerRegistration(banner)}
-                          disabled={submittingBannerId === banner.id}
-                        >
-                          <UserPlus size={17} className="mr-2" />
-                          {submittingBannerId === banner.id ? 'Registrando...' : banner.ctaLabel || 'Tenho interesse'}
-                        </FeedCard.CTA>
-                      ) : (
-                        <FeedCard.CTA onClick={() => handleBannerLinkClick(banner)}>
-                          <ExternalLink size={17} className="mr-2" />
-                          {banner.ctaLabel || (banner.goal === 'WHATSAPP' ? 'Falar no WhatsApp' : 'Saiba mais')}
-                        </FeedCard.CTA>
-                      )}
-                    </div>
-                  </FeedCard.Root>
+                  <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
+                    {banner.type === 'REGISTRATION' ? (
+                      <>
+                        <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover" />
+                        <div className="flex items-center justify-between gap-3 px-4 py-3">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Publicidade</span>
+                          <Button
+                            size="sm"
+                            iconLeft={<UserPlus size={16} />}
+                            onClick={() => void handleBannerRegistration(banner)}
+                            loading={submittingBannerId === banner.id}
+                          >
+                            {banner.ctaLabel || 'Tenho interesse'}
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <button type="button" onClick={() => handleBannerLinkClick(banner)} className="group relative block w-full text-left">
+                        <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover transition duration-300 group-hover:scale-[1.01]" />
+                        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur">Publicidade</span>
+                        <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm"><ExternalLink size={15} /></span>
+                      </button>
+                    )}
+                  </div>
                 </ViewableAdSlot>
               ))}
             </div>

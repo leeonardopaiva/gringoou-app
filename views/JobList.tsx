@@ -7,6 +7,7 @@ import UnifiedSearchInput from "@/components/search/UnifiedSearchInput";
 import {
   Button,
   Card,
+  ContentColumn,
   Input,
   Modal,
   Pagination,
@@ -117,7 +118,7 @@ export default function JobList({ user }: { user: User }) {
   };
 
   return (
-    <div className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
       <header className="mt-4 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-h2 font-bold text-foreground">Vagas</h1>
@@ -283,6 +284,6 @@ export default function JobList({ user }: { user: User }) {
           </Button>
         </div>
       </Modal>
-    </div>
+    </ContentColumn>
   );
 }

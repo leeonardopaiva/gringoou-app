@@ -3,12 +3,9 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { scoreDeliveryCandidate, selectWeightedWithDiversity } from '@/lib/ads/delivery';
 
-const MAX_BANNERS_BY_PLACEMENT = 4;
+const MAX_PAID_ADS_BY_PLACEMENT = 4;
+const MAX_HOME_BANNERS = 8;
 const FREQUENCY_CAP_PER_DAY = 3;
-
-const getPlacementFilter = (placement: string | null) => placement === 'feed'
-  ? [{ placement: 'FEED' as const }, { placement: 'BOTH' as const }]
-  : [{ placement: 'HOME' as const }, { placement: 'BOTH' as const }];
 
 const normalizeTarget = (value: string) => value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
 const hasIntersection = (left: string[], right: string[]) => {
@@ -21,8 +18,59 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const regionKey = session?.user?.regionKey ?? searchParams.get('region');
   const placementParam = searchParams.get('placement');
-  const placementFilter = getPlacementFilter(placementParam);
   const now = new Date();
+
+  if (placementParam === 'home') {
+    const homeBanners = await prisma.banner.findMany({
+      where: {
+        adAccountId: null,
+        isActive: true,
+        campaignStatus: 'ACTIVE',
+        moderationStatus: 'APPROVED',
+        OR: [{ placement: 'HOME' }, { placement: 'BOTH' }],
+        AND: [
+          { OR: [{ regionKey: null }, { regionKey: regionKey ?? '__no_region__' }] },
+          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+          { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+        ],
+      },
+      orderBy: [{ updatedAt: 'desc' }],
+      take: MAX_HOME_BANNERS,
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        type: true,
+        placement: true,
+        targetUrl: true,
+        regionKey: true,
+        objective: true,
+        headline: true,
+        description: true,
+        ctaLabel: true,
+        goal: true,
+        region: { select: { label: true } },
+      },
+    });
+
+    return NextResponse.json({
+      banners: homeBanners.map((banner) => ({
+        ...banner,
+        regionLabel: banner.region?.label ?? null,
+        region: undefined,
+        scope: banner.regionKey ? 'regional' : 'global',
+        matchedBy: banner.regionKey ? ['region'] : [],
+        sponsored: true,
+        advertiserName: banner.name,
+        advertiserLogoUrl: null,
+      })),
+    });
+  }
+
+  if (placementParam !== 'feed') {
+    return NextResponse.json({ error: 'Local de exibicao invalido.' }, { status: 400 });
+  }
+
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1_000);
 
   const [viewer, recentSearches] = await Promise.all([
@@ -46,7 +94,8 @@ export async function GET(request: Request) {
     campaignStatus: 'ACTIVE' as const,
     moderationStatus: 'APPROVED' as const,
     paymentStatus: 'PAID' as const,
-    OR: placementFilter,
+    adAccountId: { not: null },
+    OR: [{ placement: 'FEED' as const }, { placement: 'BOTH' as const }],
     AND: [
       { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
       { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
@@ -118,7 +167,7 @@ export async function GET(request: Request) {
 
   const selected = selectWeightedWithDiversity(
     candidates.map((candidate) => ({ item: candidate, weight: candidate.delivery.score, advertiserId: candidate.banner.adAccountId })),
-    MAX_BANNERS_BY_PLACEMENT,
+    MAX_PAID_ADS_BY_PLACEMENT,
   );
 
   return NextResponse.json({
