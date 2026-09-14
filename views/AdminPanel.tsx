@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   BadgeCheck,
   Building2,
@@ -23,6 +24,7 @@ import {
 import BannerManagementSection, { type ManagedBanner } from '../components/admin/BannerManagementSection';
 import AdsModerationSection from '../components/admin/AdsModerationSection';
 import AdminOverview from '../components/admin/AdminOverview';
+import AdminAnalyticsSection from '../components/admin/AdminAnalyticsSection';
 import { Button, Modal } from '../components/ui';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -275,6 +277,16 @@ type AdminAnalyticsData = {
   topBanners: AnalyticsTopBanner[];
   topSources: AnalyticsTopSource[];
   topSearchesByRegion: AnalyticsTopSearch[];
+  dailyActivity: Array<{
+    date: string;
+    totalEvents: number;
+    bannerClicks: number;
+    searchQueries: number;
+  }>;
+  activeRegions: Array<{
+    regionKey: string;
+    count: number;
+  }>;
   recentEvents: ManagedAnalyticsEvent[];
 };
 
@@ -491,6 +503,8 @@ type AdminSection = 'overview' | 'moderation' | 'ads' | 'imports' | 'banners' | 
 
 const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ user, initialSection }) => {
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
+  const headerSearch = searchParams?.get('q')?.trim() ?? '';
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -533,7 +547,6 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [selectedAnalyticsUserId, setSelectedAnalyticsUserId] = useState<string | null>(null);
   const [analyticsDays, setAnalyticsDays] = useState('30');
-  const [analyticsTypeFilter, setAnalyticsTypeFilter] = useState('');
   const [analyticsRegionFilter, setAnalyticsRegionFilter] = useState('');
   const [expandedSections, setExpandedSections] = useState<Record<ExpandableSectionKey, boolean>>({
     regions: false,
@@ -585,7 +598,6 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const query = new URLSearchParams();
       if (userId) query.set('userId', userId);
       if (analyticsDays) query.set('days', analyticsDays);
-      if (analyticsTypeFilter) query.set('type', analyticsTypeFilter);
       if (analyticsRegionFilter) query.set('regionKey', analyticsRegionFilter);
       const queryString = query.toString();
       const response = await fetch(`/api/admin/analytics${queryString ? `?${queryString}` : ''}`, { cache: 'no-store' });
@@ -626,7 +638,15 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     if (activeSection === 'analytics') {
       void loadAnalytics(selectedAnalyticsUserId);
     }
-  }, [activeSection, selectedAnalyticsUserId, analyticsDays, analyticsTypeFilter, analyticsRegionFilter]);
+  }, [activeSection, selectedAnalyticsUserId, analyticsDays, analyticsRegionFilter]);
+
+  useEffect(() => {
+    if (!headerSearch) return;
+    if (activeSection === 'businesses') setBusinessSearch(headerSearch);
+    if (activeSection === 'events') setEventSearch(headerSearch);
+    if (activeSection === 'users') setUserSearch(headerSearch);
+    if (activeSection === 'suggestions') setSuggestionSearch(headerSearch);
+  }, [activeSection, headerSearch]);
 
   const totalPending = dashboard
     ? dashboard.stats.pendingBusinesses + dashboard.stats.pendingEvents + dashboard.stats.pendingPosts
@@ -1231,14 +1251,14 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   return (
     <div className="mx-auto max-w-[1500px] animate-in space-y-6 px-4 py-7 fade-in duration-500 sm:px-7 lg:px-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {activeSection !== 'analytics' ? <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Admin · {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</p>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</h1>
           <p className="mt-1 text-sm text-slate-400">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description}</p>
         </div>
-        <Button iconLeft={<RefreshCcw size={16} className={refreshing || analyticsLoading ? 'animate-spin' : ''} />} disabled={refreshing || loading || analyticsLoading} onClick={() => void (activeSection === 'analytics' ? loadAnalytics(selectedAnalyticsUserId) : loadDashboard(true))}>Atualizar</Button>
-      </div>
+        <Button iconLeft={<RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />} disabled={refreshing || loading} onClick={() => void loadDashboard(true)}>Atualizar</Button>
+      </div> : null}
       <div className="hidden">
         <div className="rounded-[32px] bg-gradient-to-br from-[#345CFF] via-[#5B4BFF] to-[#7A54F5] p-5 text-white shadow-xl">
           <div className="flex items-start justify-between gap-4">
@@ -2316,231 +2336,17 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         ) : null}
 
         {activeSection === 'analytics' ? (
-          <section className="space-y-4">
-            <SectionHeader title="Analytics" count={analytics?.summary.totalEvents ?? 0} />
-            <SupportText text="Mapeie cliques nos recursos desativados e banners dos ultimos 30 dias para entender demanda real antes de abrir novas frentes." />
-
-            <div className="grid gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:grid-cols-3">
-              <label className="space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Periodo</span>
-                <select
-                  value={analyticsDays}
-                  onChange={(event) => setAnalyticsDays(event.target.value)}
-                  className="theme-outline-ring h-11 w-full appearance-none rounded-full border-2 border-border bg-surface px-4 text-body-sm font-semibold text-foreground outline-none"
-                >
-                  <option value="7">7 dias</option>
-                  <option value="30">30 dias</option>
-                  <option value="90">90 dias</option>
-                  <option value="365">12 meses</option>
-                </select>
-              </label>
-              <label className="space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Tipo</span>
-                <select
-                  value={analyticsTypeFilter}
-                  onChange={(event) => setAnalyticsTypeFilter(event.target.value)}
-                  className="theme-outline-ring h-11 w-full appearance-none rounded-full border-2 border-border bg-surface px-4 text-body-sm font-semibold text-foreground outline-none"
-                >
-                  <option value="">Todos</option>
-                  <option value="search_query">Buscas</option>
-                  <option value="banner_click">Cliques em banners</option>
-                  <option value="banner_registration">Cadastros em banners</option>
-                  <option value="disabled_feature_click">Recursos em breve</option>
-                </select>
-              </label>
-              <label className="space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Localidade</span>
-                <select
-                  value={analyticsRegionFilter}
-                  onChange={(event) => setAnalyticsRegionFilter(event.target.value)}
-                  className="theme-outline-ring h-11 w-full appearance-none rounded-full border-2 border-border bg-surface px-4 text-body-sm font-semibold text-foreground outline-none"
-                >
-                  <option value="">Todas</option>
-                  {(dashboard?.regions ?? []).map((region) => (
-                    <option key={region.key} value={region.key}>{region.label}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {analytics?.selectedUser ? (
-              <div className="rounded-3xl border border-slate-200 theme-soft-surface p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] theme-text">Filtro ativo</p>
-                    <p className="mt-1 text-lg font-bold text-slate-900">
-                      {analytics.selectedUser.name || analytics.selectedUser.email || 'Usuario sem nome'}
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      @{analytics.selectedUser.username || 'sem-username'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAnalyticsUserId(null)}
-                    className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100"
-                  >
-                    Ver analytics geral
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            {analyticsLoading && !analytics ? (
-              <LoadingCards />
-            ) : analytics ? (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Eventos rastreados</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{analytics.summary.totalEvents}</p>
-                  </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Cliques em breve</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{analytics.summary.disabledFeatureClicks}</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Cliques em banners</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{analytics.summary.bannerClicks}</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Buscas feitas</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{analytics.summary.searchQueries}</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Usuarios mapeados</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{analytics.summary.trackedUsers}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Palavras mais buscadas por localidade</p>
-                    {analytics.topSearchesByRegion.length > 0 ? (
-                      <div className="mt-4 space-y-3">
-                        {analytics.topSearchesByRegion.map((item) => {
-                          const maxCount = Math.max(...analytics.topSearchesByRegion.map((search) => search.count), 1);
-                          const width = Math.max(10, Math.round((item.count / maxCount) * 100));
-
-                          return (
-                            <div key={`${item.regionKey || 'none'}-${item.term}`} className="space-y-2 rounded-2xl bg-slate-50 px-4 py-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-sm font-bold text-slate-900">{item.term}</p>
-                                  <p className="text-xs text-slate-500">{item.regionLabel}</p>
-                                </div>
-                                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">{item.count}</span>
-                              </div>
-                              <div className="h-2 overflow-hidden rounded-full bg-white">
-                                <div className="h-full rounded-full theme-bg" style={{ width: `${width}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-slate-500">As buscas comecarao a aparecer aqui conforme os usuarios pesquisarem.</p>
-                    )}
-                  </div>
-
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Recursos mais clicados</p>
-                    {analytics.topDisabledFeatures.length > 0 ? (
-                      <div className="mt-4 space-y-3">
-                        {analytics.topDisabledFeatures.map((feature) => (
-                          <div key={`${feature.targetKey}-${feature.sourceSection || 'unknown'}`} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                            <div>
-                              <p className="text-sm font-bold text-slate-900">{feature.label}</p>
-                              <p className="text-xs text-slate-500">{feature.sourceSection || 'origem desconhecida'}</p>
-                            </div>
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">{feature.count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-slate-500">Ainda nao houve cliques suficientes nos recursos desativados.</p>
-                    )}
-                  </div>
-
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Banners com mais cliques</p>
-                    {analytics.topBanners.length > 0 ? (
-                      <div className="mt-4 space-y-3">
-                        {analytics.topBanners.map((banner) => (
-                          <div key={banner.targetKey} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                            <p className="text-sm font-bold text-slate-900">{banner.label}</p>
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">{banner.count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-slate-500">Nenhum banner recebeu clique no periodo analisado.</p>
-                    )}
-                  </div>
-
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Origens com maior interacao</p>
-                    {analytics.topSources.length > 0 ? (
-                      <div className="mt-4 space-y-3">
-                        {analytics.topSources.map((source) => (
-                          <div key={source.sourceSection} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                            <p className="text-sm font-bold text-slate-900">{source.sourceSection}</p>
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">{source.count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-slate-500">Sem distribuicao de origem para exibir ainda.</p>
-                    )}
-                  </div>
-
-                  <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Eventos recentes</p>
-                      <span className="text-xs font-medium text-slate-400">Ultimos {analytics.windowDays} dias</span>
-                    </div>
-                    {analytics.recentEvents.length > 0 ? (
-                      <div className="mt-4 space-y-3">
-                        {analytics.recentEvents.map((event) => (
-                          <div key={event.id} className="rounded-2xl bg-slate-50 px-4 py-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-bold text-slate-900">{event.label}</p>
-                                <p className="text-xs text-slate-500">
-                                  {event.type === 'banner_click'
-                                    ? 'Clique em banner'
-                                    : event.type === 'banner_registration'
-                                      ? 'Cadastro em banner'
-                                      : event.type === 'search_query'
-                                        ? 'Busca'
-                                        : 'Clique em recurso desativado'}
-                                  {' · '}
-                                  {event.sourceSection || 'origem desconhecida'}
-                                </p>
-                              </div>
-                              <span className="text-xs font-medium text-slate-400">{formatDateTime(event.createdAt)}</span>
-                            </div>
-                            <div className="mt-3 space-y-1 text-xs text-slate-500">
-                              <p>Destino: {event.targetKey}</p>
-                              <p>Pagina: {event.sourcePath || 'nao informada'}</p>
-                              <p>
-                                Usuario: {event.user?.name || event.user?.email || 'Anonimo'}
-                                {event.user?.username ? ` (@${event.user.username})` : ''}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState text="Nenhum evento rastreado no periodo selecionado." />
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <EmptyState text="Nenhum dado de analytics disponivel ainda." />
-            )}
-          </section>
+          <AdminAnalyticsSection
+            data={analytics}
+            loading={analyticsLoading}
+            days={analyticsDays}
+            regionFilter={analyticsRegionFilter}
+            regions={dashboard?.regions ?? []}
+            onDaysChange={setAnalyticsDays}
+            onRegionChange={setAnalyticsRegionFilter}
+            onRefresh={() => void loadAnalytics(selectedAnalyticsUserId)}
+            onClearUser={() => setSelectedAnalyticsUserId(null)}
+          />
         ) : null}
 
         {activeSection === 'users' ? (

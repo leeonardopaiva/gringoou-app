@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   BarChart3,
-  Bell,
   BriefcaseBusiness,
   CalendarDays,
   ChevronDown,
@@ -24,6 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import GringoouLogo from '@/components/icons/GringoouLogo';
+import FriendRequestBell from '@/components/feedback/FriendRequestBell';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
@@ -48,9 +48,37 @@ const labels: Record<string, string> = {
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {
   const pathname = usePathname() || '/admin';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') ?? '');
   const segment = pathname.split('/')[2] || '';
   const sectionLabel = labels[segment] || 'Visao Geral';
+
+  useEffect(() => {
+    setSearchQuery(searchParams?.get('q') ?? '');
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const close = (event: MouseEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountMenuOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [accountMenuOpen]);
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    const searchableSections = new Set(['businesses', 'events', 'users', 'suggestions']);
+    const destination = searchableSections.has(segment) ? pathname : '/admin/users';
+    router.push(query ? `${destination}?q=${encodeURIComponent(query)}` : destination);
+  };
+
+  const profileHref = user.username ? `/perfil/${user.username}` : '/profile';
 
   const sidebar = (
     <div className="flex h-full flex-col bg-white">
@@ -89,9 +117,21 @@ export default function AdminShell({ user, children }: { user: User; children: R
         <header className="sticky top-0 z-40 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-7">
           <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{segment === 'ads' ? 'Moderador' : 'Admin'}</span><span className="text-slate-300">›</span><span className="text-sm font-bold">{sectionLabel}</span></div>
           <div className="flex items-center gap-2">
-            <div className="hidden w-56 sm:block"><div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-[#F8FAFC] px-4"><Search size={16} className="text-slate-400" /><input aria-label="Buscar no painel" placeholder="Buscar..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></div>
-            <button type="button" aria-label="Notificacoes" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-400"><Bell size={17} /><span className="absolute -right-0.5 -top-0.5 h-4 min-w-4 rounded-full bg-red-500 px-1 text-[9px] font-bold leading-4 text-white">4</span></button>
-            <button type="button" className="flex h-10 items-center gap-2 rounded-full border border-slate-200 px-2.5"><Avatar src={user.avatar} name={user.name} size="xs" /><span className="hidden max-w-28 truncate text-xs font-bold sm:block">{user.name}</span><ChevronDown size={14} className="text-slate-400" /></button>
+            <form onSubmit={submitSearch} role="search" className="hidden w-56 sm:block"><div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-[#F8FAFC] px-4 focus-within:border-[#2B5DF5]/40 focus-within:ring-2 focus-within:ring-[#2B5DF5]/10"><Search size={16} className="text-slate-400" /><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label="Buscar no painel" placeholder="Buscar..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></form>
+            <div className="[&_button:first-child]:h-10 [&_button:first-child]:w-10 [&_button:first-child]:rounded-full [&_button:first-child]:border [&_button:first-child]:border-slate-200 [&_button:first-child]:p-0 [&_button:first-child]:text-slate-400">
+              <FriendRequestBell adminMode />
+            </div>
+            <div ref={accountMenuRef} className="relative">
+              <button type="button" aria-label="Abrir menu do perfil" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)} className="flex h-10 items-center gap-2 rounded-full border border-slate-200 px-2.5 transition hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="xs" /><span className="hidden max-w-28 truncate text-xs font-bold sm:block">{user.name}</span><ChevronDown size={14} className="text-slate-400" /></button>
+              {accountMenuOpen ? (
+                <div className="absolute right-0 top-[calc(100%+10px)] z-[80] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10">
+                  <Link href={profileHref} onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="sm" /><span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Administrador'}</span></span></Link>
+                  <div className="my-1 border-t border-slate-100" />
+                  <Link href="/inicio" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />Voltar a comunidade</Link>
+                  <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={16} />Sair</button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
         <main className="min-h-[calc(100vh-74px)]">{children}</main>

@@ -19,8 +19,13 @@ export interface ModalProps {
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description, footer, children, className, fullscreen = false }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const titleId = useId();
   const descriptionId = useId();
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -31,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
     const focusFirst = () => dialogRef.current?.querySelector<HTMLElement>(focusableSelector)?.focus();
     const frame = requestAnimationFrame(focusFirst);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
       if (event.key === 'Tab' && dialogRef.current) {
         const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector)];
         if (!focusable.length) return;
@@ -53,7 +58,7 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
       document.body.style.overflow = previousOverflow;
       previouslyFocusedRef.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

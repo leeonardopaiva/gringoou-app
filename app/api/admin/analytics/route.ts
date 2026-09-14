@@ -13,6 +13,7 @@ type MinimalAnalyticsEvent = {
   sourceSection: string | null;
   regionKey: string | null;
   userId: string | null;
+  createdAt: Date;
 };
 
 const aggregateItems = <TKey extends string>(
@@ -78,6 +79,7 @@ export async function GET(request: Request) {
         sourceSection: true,
         regionKey: true,
         userId: true,
+        createdAt: true,
       },
     }),
     prisma.analyticsEvent.findMany({
@@ -171,6 +173,31 @@ export async function GET(request: Request) {
   ).slice(0, 12);
 
   const trackedUsers = new Set(events.map((event) => event.userId).filter(Boolean)).size;
+  const dayCounts = new Map<string, { totalEvents: number; bannerClicks: number; searchQueries: number }>();
+
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() - offset);
+    dayCounts.set(date.toISOString().slice(0, 10), { totalEvents: 0, bannerClicks: 0, searchQueries: 0 });
+  }
+
+  for (const event of events) {
+    const day = event.createdAt.toISOString().slice(0, 10);
+    const bucket = dayCounts.get(day);
+    if (!bucket) continue;
+    bucket.totalEvents += 1;
+    if (event.type === 'banner_click') bucket.bannerClicks += 1;
+    if (event.type === 'search_query') bucket.searchQueries += 1;
+  }
+
+  const dailyActivity = Array.from(dayCounts, ([date, counts]) => ({ date, ...counts }));
+  const activeRegions = aggregateItems(
+    events,
+    (event) => Boolean(event.regionKey),
+    (event) => event.regionKey as string,
+    (event, count) => ({ regionKey: event.regionKey, count }),
+  ).slice(0, 8);
 
   return NextResponse.json({
     windowDays: days,
@@ -190,6 +217,8 @@ export async function GET(request: Request) {
     topBanners,
     topSources,
     topSearchesByRegion,
+    dailyActivity,
+    activeRegions,
     recentEvents,
   });
 }

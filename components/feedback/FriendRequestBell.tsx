@@ -33,7 +33,7 @@ type PendingCommunityPost = {
   };
 };
 
-const FriendRequestBell: React.FC = () => {
+const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = false }) => {
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [requests, setRequests] = useState<PendingFriendRequest[]>([]);
@@ -133,7 +133,7 @@ const FriendRequestBell: React.FC = () => {
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
-        aria-label="Solicitacoes de amizade"
+        aria-label={adminMode ? 'Notificacoes administrativas' : 'Solicitacoes de amizade'}
       >
         <Bell size={18} />
         {notificationCount > 0 ? (
@@ -148,8 +148,8 @@ const FriendRequestBell: React.FC = () => {
       {open ? (
         <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[80] w-[320px] max-w-[calc(100vw-2rem)] rounded-card border border-border bg-surface p-2 text-left shadow-md">
           <div className="px-2 py-2">
-            <p className="text-sm font-bold text-slate-900">Solicitações</p>
-            <p className="text-xs text-slate-400">Conexões pendentes da comunidade.</p>
+            <p className="text-sm font-bold text-slate-900">{adminMode ? 'Notificações' : 'Solicitações'}</p>
+            <p className="text-xs text-slate-400">{adminMode ? 'Pendências da comunidade e da sua conta.' : 'Conexões pendentes da comunidade.'}</p>
           </div>
 
           <div className="max-h-[360px] space-y-1.5 overflow-y-auto">
