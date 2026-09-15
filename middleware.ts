@@ -66,6 +66,19 @@ const buildAccessBlockedResponse = (request: NextRequest) => {
   return NextResponse.redirect(url, 307);
 };
 
+const buildDeletedAccountResponse = (request: NextRequest) => {
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.json({ error: 'Esta conta foi excluida.' }, { status: 401 });
+  }
+  const url = request.nextUrl.clone();
+  url.pathname = '/login';
+  url.search = '';
+  const response = NextResponse.redirect(url, 307);
+  response.cookies.delete('next-auth.session-token');
+  response.cookies.delete('__Secure-next-auth.session-token');
+  return response;
+};
+
 export async function middleware(request: NextRequest) {
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();
 
@@ -75,6 +88,10 @@ export async function middleware(request: NextRequest) {
       const isApiRequest = request.nextUrl.pathname.startsWith('/api/');
       const maintenanceEnabled = isTruthyEnv(process.env.MAINTENANCE_MODE);
       const isAdmin = token?.role === 'ADMIN';
+
+      if (token?.accountDeleted) {
+        return buildDeletedAccountResponse(request);
+      }
 
       if (!token) {
         if (isApiRequest) {

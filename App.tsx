@@ -90,11 +90,16 @@ const App: React.FC<{
   } = parseAppRoute(pathname);
   const autoGoogleSelectTriggeredRef = useRef(false);
   const sessionRole = mapUserRole(session?.user?.role);
+  const accountDeleted = Boolean(session?.user?.accountDeleted);
   const canUseProfessionalMode =
     sessionRole === UserRole.BUSINESS_OWNER ||
     sessionRole === UserRole.COMPANY ||
     sessionRole === UserRole.ADMIN;
   const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
+
+  useEffect(() => {
+    if (accountDeleted) void signOut({ callbackUrl: '/login' });
+  }, [accountDeleted]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -444,6 +449,10 @@ const App: React.FC<{
   };
 
   if (status === 'loading') {
+    return null;
+  }
+
+  if (accountDeleted) {
     return null;
   }
 

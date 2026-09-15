@@ -25,6 +25,7 @@ import BannerManagementSection, { type ManagedBanner } from '../components/admin
 import AdsModerationSection from '../components/admin/AdsModerationSection';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminAnalyticsSection from '../components/admin/AdminAnalyticsSection';
+import UserDeletionModal from '../components/admin/UserDeletionModal';
 import { Button, Modal } from '../components/ui';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -538,6 +539,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   >(initialSection ?? 'moderation');
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<ManagedUser | null>(null);
   const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
   const [userSearch, setUserSearch] = useState('');
   const [suggestionSearch, setSuggestionSearch] = useState('');
@@ -1013,34 +1015,6 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     }
 
     void submitUserUpdate();
-  };
-
-  const deleteUser = async (managedUser: ManagedUser) => {
-    const userLabel =
-      managedUser.name || managedUser.email || managedUser.username || 'este usuario';
-
-    setConfirmationDialog({
-      title: 'Confirmar exclusao de usuario',
-      description: `Excluir ${userLabel}? Essa acao remove a conta e os dados ligados a ela.`,
-      confirmLabel: 'Excluir usuario',
-      tone: 'danger',
-      onConfirm: async () => {
-        await runAction(
-          `user:${managedUser.id}:delete`,
-          () =>
-            fetch(`/api/admin/users/${managedUser.id}`, {
-              method: 'DELETE',
-            }),
-          'Usuario excluido.',
-          'Nao foi possivel excluir o usuario.',
-          () => {
-            if (editingUserId === managedUser.id) {
-              resetUserForm();
-            }
-          },
-        );
-      },
-    });
   };
 
   const updateSuggestionStatus = async (
@@ -2424,8 +2398,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       label="Excluir"
                       tone="danger"
                       disabled={processingKey !== null || managedUser.id === user.id}
-                      loading={processingKey === `user:${managedUser.id}:delete`}
-                      onClick={() => void deleteUser(managedUser)}
+                      onClick={() => setDeletingUser(managedUser)}
                     />
                   </div>
 
@@ -2542,6 +2515,16 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           onConfirm={async () => {
             await confirmationDialog.onConfirm();
             setConfirmationDialog(null);
+          }}
+        />
+      ) : null}
+      {deletingUser ? (
+        <UserDeletionModal
+          target={deletingUser}
+          onClose={() => setDeletingUser(null)}
+          onDeleted={async () => {
+            if (editingUserId === deletingUser.id) resetUserForm();
+            await loadDashboard(true);
           }}
         />
       ) : null}

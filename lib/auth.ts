@@ -148,6 +148,10 @@ export const authOptions: NextAuthOptions = {
       });
 
       if (!dbUser) {
+        token.id = '';
+        token.sub = '';
+        token.role = 'USER';
+        token.accountDeleted = true;
         return token;
       }
 
@@ -164,6 +168,7 @@ export const authOptions: NextAuthOptions = {
       token.onboardingCompleted = dbUser.onboardingCompleted;
       token.recruiterVerified = dbUser.recruiterVerified;
       token.isAdvertiser = dbUser.isAdvertiser;
+      token.accountDeleted = false;
 
       return token;
     },
@@ -173,6 +178,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       session.user.id = String(token.id || token.sub || '');
+      session.user.accountDeleted = Boolean(token.accountDeleted);
       session.user.role = (token.role || 'USER') as typeof session.user.role;
       session.user.username = (token.username as string | null | undefined) ?? null;
       session.user.phone = (token.phone as string | null | undefined) ?? null;

@@ -13,6 +13,7 @@ declare module 'next-auth' {
       onboardingCompleted: boolean;
       recruiterVerified: boolean;
       isAdvertiser: boolean;
+      accountDeleted: boolean;
     };
   }
 
@@ -39,5 +40,6 @@ declare module 'next-auth/jwt' {
     onboardingCompleted?: boolean;
     recruiterVerified?: boolean;
     isAdvertiser?: boolean;
+    accountDeleted?: boolean;
   }
 }
