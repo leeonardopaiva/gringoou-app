@@ -1,4 +1,4 @@
-import { AdAccountRole } from '@prisma/client';
+import { AdAccountRole, BusinessStatus, Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AD_ACCOUNT_COOKIE, getAdAccountMembership, MAX_AD_ACCOUNTS_PER_USER } from '@/lib/ads/account';
@@ -9,6 +9,7 @@ import { normalizeInternationalPhone } from '@/lib/phone';
 import { normalizeHttpUrlInput } from '@/lib/url';
 
 const accountSchema = z.object({
+  businessId: z.string().cuid(),
   name: z.string().trim().min(2).max(120),
   websiteUrl: z.preprocess(
     (value) => typeof value === 'string' && value.trim() ? normalizeHttpUrlInput(value) : undefined,
@@ -37,7 +38,16 @@ export async function GET() {
       select: {
         role: true,
         adAccount: {
-          select: { id: true, name: true, logoUrl: true, country: true, currency: true, timezone: true },
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
+            country: true,
+            currency: true,
+            timezone: true,
+            businessId: true,
+            business: { select: { slug: true, status: true } },
+          },
         },
       },
     }),
@@ -45,7 +55,11 @@ export async function GET() {
   ]);
 
   return NextResponse.json({
-    accounts: memberships.map(({ role, adAccount }) => ({ ...adAccount, role })),
+    accounts: memberships.map(({ role, adAccount }) => ({
+      ...adAccount,
+      role,
+      publicPath: adAccount.business ? `/negocios/${adAccount.business.slug}` : null,
+    })),
     selectedAccountId: selected?.adAccountId ?? null,
     maxAccounts: MAX_AD_ACCOUNTS_PER_USER,
     canCreateAccount: memberships.length < MAX_AD_ACCOUNTS_PER_USER,
@@ -61,17 +75,70 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados da empresa invalidos.' }, { status: 400 });
   }
 
-  const account = await prisma.$transaction(async (transaction) => {
+  const business = await prisma.business.findFirst({
+    where: {
+      id: parsed.data.businessId,
+      status: BusinessStatus.PUBLISHED,
+      OR: [
+        { createdById: session.user.id },
+        { members: { some: { userId: session.user.id } } },
+      ],
+      adAccount: null,
+    },
+    select: { id: true },
+  });
+
+  if (!business) {
+    return NextResponse.json(
+      { error: 'Selecione um negócio aprovado, sob sua gestão e ainda não vinculado ao Ads.' },
+      { status: 409 },
+    );
+  }
+
+  let account;
+  try {
+    account = await prisma.$transaction(async (transaction) => {
     // Serializes account creation for this user so parallel requests cannot bypass the limit.
     await transaction.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${session.user.id}))`;
     const accountCount = await transaction.adAccountUser.count({ where: { userId: session.user.id } });
     if (accountCount >= MAX_AD_ACCOUNTS_PER_USER) return null;
 
-    const created = await transaction.adAccount.create({ data: { ...parsed.data, phone: normalizeInternationalPhone(parsed.data.phone) } });
+    const availableBusiness = await transaction.business.findFirst({
+      where: {
+        id: parsed.data.businessId,
+        status: BusinessStatus.PUBLISHED,
+        OR: [
+          { createdById: session.user.id },
+          { members: { some: { userId: session.user.id } } },
+        ],
+        adAccount: null,
+      },
+      select: { id: true },
+    });
+    if (!availableBusiness) throw new Error('BUSINESS_UNAVAILABLE');
+
+    const created = await transaction.adAccount.create({
+      data: { ...parsed.data, phone: normalizeInternationalPhone(parsed.data.phone) },
+    });
     await transaction.adAccountUser.create({ data: { adAccountId: created.id, userId: session.user.id, role: AdAccountRole.BUSINESS_ADMIN } });
     await transaction.user.update({ where: { id: session.user.id }, data: { isAdvertiser: true } });
     return created;
-  });
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'BUSINESS_UNAVAILABLE') {
+      return NextResponse.json(
+        { error: 'Este negócio não está mais disponível para vinculação ao Ads.' },
+        { status: 409 },
+      );
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Este negócio já está vinculado a uma conta Ads.' },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 
   if (!account) {
     return NextResponse.json(

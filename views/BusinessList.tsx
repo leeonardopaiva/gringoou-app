@@ -6,7 +6,7 @@ import { useToast } from '../components/feedback/ToastProvider';
 import StarRating from '../components/engagement/StarRating';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
-import { Heart, MapPin, Plus } from 'lucide-react';
+import { Heart, MapPin, Megaphone, Plus } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
 import UnifiedSearchInput from '../components/search/UnifiedSearchInput';
 import { formatLoosePhoneInput } from '../lib/forms/phone';
@@ -293,18 +293,18 @@ const BusinessList: React.FC<BusinessListProps> = ({
       <div className="mt-4 space-y-4">
         <div>
           <div>
-            <h1 className="text-2xl font-bold theme-text">Negocios</h1>
+            <h1 className="text-2xl font-bold theme-text">Negócios</h1>
             <p className="mt-1 text-xs font-semibold text-slate-500">
               {isProfessionalMode
-                ? `Editando como ${professionalIdentity?.name}. Os demais negocios ficam apenas para consulta.`
-                : 'Cadastrando como pessoa. Ao criar um negocio, sua vitrine profissional sera ativada.'}
+                ? `Editando como ${professionalIdentity?.name}. Os demais negócios ficam apenas para consulta.`
+                : 'Participe da comunidade com seu perfil pessoal e crie gratuitamente a página do seu negócio.'}
             </p>
           </div>
         </div>
         <UnifiedSearchInput
           value={search}
           onChange={setSearch}
-          staticPlaceholder="Buscar negocios brasileiros..."
+          staticPlaceholder="Buscar negócios brasileiros..."
         />
 
         <button
@@ -318,17 +318,28 @@ const BusinessList: React.FC<BusinessListProps> = ({
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
-                Cadastre seu negocio
+                Página gratuita do negócio
               </p>
               <p className="mt-1 text-sm font-bold text-foreground">
-                Tem uma empresa ou negocio? Crie sua pagina sem custo.
+                Tem uma empresa? Crie sua página sem custo.
               </p>
               <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">
-                {showCreateForm ? 'Toque para fechar o modal.' : 'Toque para abrir o cadastro em modal.'}
+                {showCreateForm ? 'Toque para fechar o cadastro.' : 'Após a aprovação, ela aparecerá para a comunidade.'}
               </p>
             </div>
           </div>
         </button>
+
+        <div className="flex items-start gap-4 rounded-card border border-brand-100 bg-brand-50/60 p-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm">
+            <Megaphone size={20} />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">Gringoou Ads</p>
+            <p className="mt-1 text-sm font-bold text-foreground">Quer alcançar mais pessoas?</p>
+            <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">Você paga apenas para promover um negócio aprovado no feed da comunidade.</p>
+          </div>
+        </div>
 
       </div>
       {showCreateForm ? (
@@ -386,7 +397,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       </div>
 
       <div className="space-y-4 pb-20">
-        <h2 className="font-bold theme-text">Negocios disponiveis</h2>
+        <h2 className="font-bold theme-text">Negócios disponíveis</h2>
         {resultScope === 'global' && businesses.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             Ainda nao ha negocios publicados na sua regiao. Mostrando resultados de outras regioes.

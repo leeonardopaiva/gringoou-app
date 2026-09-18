@@ -218,8 +218,8 @@ const SidebarContent: React.FC<{
       </div>
 
       <div className="space-y-2">
-        <Button variant="secondary" fullWidth onClick={() => onNavigate('/ads/register')}>
-          Anunciar seu negócio
+        <Button variant="secondary" fullWidth onClick={() => onNavigate(professionalIdentity ? `/ads/promover/${professionalIdentity.id}` : '/negocios?create=1')}>
+          {professionalIdentity ? 'Promover com Ads' : 'Divulgar meu negócio'}
         </Button>
         <button
           type="button"
@@ -342,7 +342,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               <FriendRequestBell />
               <CommunityAccountMenu
                 user={{ name: user.name, avatar: user.avatar, email: user.email }}
-                profileHref={publicProfileHref}
+                profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
+                professionalProfileHref={user.username && professionalIdentity ? `/profissional/${encodeURIComponent(user.username)}` : null}
               />
             </div>
           </header>
@@ -366,10 +367,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     size="sm"
                     onClick={() => {
                       setIsQuickMenuOpen(false);
-                      handleNavigate('/ads/register');
+                      handleNavigate(professionalIdentity ? `/ads/promover/${professionalIdentity.id}` : '/negocios?create=1');
                     }}
                   >
-                    Anunciar seu negócio
+                    {professionalIdentity ? 'Promover com Ads' : 'Divulgar meu negócio'}
                   </Button>
                   <Button
                     variant="yellow"

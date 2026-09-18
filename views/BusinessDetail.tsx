@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
+  BadgeCheck,
   Copy,
   Globe2,
   Heart,
   Images,
   Instagram,
   MapPin,
+  Megaphone,
   MessageCircle,
   PencilLine,
   Phone,
@@ -384,7 +387,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
   }
 
   return (
-    <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card sm:border sm:border-slate-200">
+    <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card sm:border sm:border-slate-200">
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -452,15 +455,39 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
           </div>
         ) : null}
 
+        <div className="rounded-[24px] border border-brand-100 bg-brand-50/60 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm">
+              <BadgeCheck size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-slate-900">Página do negócio na comunidade</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">Conheça os serviços, veja avaliações de membros e fale diretamente com o responsável.</p>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {callHref ? <a href={callHref} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Phone size={14} />Ligar</a> : null}
+            {whatsappHref ? <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm"><MessageCircle size={14} />WhatsApp</a> : null}
+            <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Share2 size={14} />Compartilhar</button>
+            <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
+          </div>
+          {business.canEdit && business.status === 'PUBLISHED' ? (
+            <Link href={`/ads/promover/${business.id}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-sm">
+              <Megaphone size={17} />
+              Promover este negócio com Ads
+            </Link>
+          ) : null}
+        </div>
+
         <section className="space-y-4 border-b border-slate-100 pb-7">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-2">
               <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
                 <Globe2 size={16} />
-                URL publica
+                Página pública
               </div>
               <p className="break-all text-sm text-slate-600">{publicUrl}</p>
-              <p className="text-xs text-slate-400">Criado por {business.createdByName}</p>
+              <p className="text-xs text-slate-400">Página administrada por {business.createdByName}</p>
             </div>
 
             <button
@@ -485,16 +512,16 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
 
             {!business.canRate ? (
               <p className="mt-2 text-xs font-medium text-slate-500">
-                Proprietarios e administradores nao podem avaliar este negocio.
+                Proprietários e administradores não podem avaliar este negócio.
               </p>
             ) : business.viewerRating ? (
               <p className="mt-2 text-xs font-medium text-slate-500">
-                Sua avaliacao ja foi registrada com {business.viewerRating} estrela
+                Sua avaliação já foi registrada com {business.viewerRating} estrela
                 {business.viewerRating > 1 ? 's' : ''}.
               </p>
             ) : (
               <p className="mt-2 text-xs font-medium text-slate-500">
-                Cada usuario pode avaliar este negocio uma unica vez.
+                Cada usuário pode avaliar este negócio uma única vez.
               </p>
             )}
           </div>
@@ -552,7 +579,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
               <MapPin size={16} />
-              Endereco
+              Endereço
             </div>
 
             {business.canEdit ? (

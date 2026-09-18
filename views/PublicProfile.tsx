@@ -32,7 +32,7 @@ type PublicTab = 'about' | 'interests' | 'friends' | 'groups' | 'photos' | 'reco
 
 const defaultProfile: PublicUserProfile = {
   id: '',
-  name: 'Perfil publico',
+  name: 'Perfil público',
   username: '',
   image: null,
   coverImageUrl: null,
@@ -182,7 +182,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
     return uniqueStrings([
       ...profile.businesses.map((business) => business.category),
-      profile.stats.businessCount > 0 ? 'Negocios locais' : null,
+      profile.stats.businessCount > 0 ? 'Negócios locais' : null,
       profile.stats.eventCount > 0 ? 'Eventos da comunidade' : null,
       profile.stats.postCount > 0 ? 'Conversas locais' : null,
       profile.locationLabel?.split(',')[0],
@@ -312,7 +312,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     { id: 'groups' as const, label: 'Grupos' },
     { id: 'interests' as const, label: 'Interesses' },
     { id: 'photos' as const, label: 'Fotos' },
-    { id: 'recommendations' as const, label: 'Recomendacao' },
+    { id: 'recommendations' as const, label: 'Recomendações' },
   ];
   const friendStatus = profile.friendFeature.status || (viewer ? 'none' : 'signed_out');
 
@@ -402,7 +402,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 {isOwnProfile ? (
                   <div className="inline-flex min-h-12 items-center gap-2 rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-600 shadow-sm">
-                    Perfil publico ativo
+                    Perfil público ativo
                   </div>
                 ) : friendStatus === 'signed_out' ? (
                   <Link
@@ -430,7 +430,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     className="inline-flex min-h-12 items-center gap-3 rounded-full bg-brand-500 px-8 text-base font-bold text-white opacity-90 shadow-sm"
                   >
                     {friendStatus === 'pending_received' ? <UserCheck size={20} /> : <UserPlus size={20} />}
-                    {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexao' : 'Adicionar'}
+                    {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexão' : 'Adicionar'}
                   </button>
                 )}
                 {profile.stats.businessCount > 0 || profile.stats.eventCount > 0 ? (
@@ -473,14 +473,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 ) : null}
                 <p className="mt-4 text-sm leading-7 text-slate-600">
                   Membro da comunidade desde {formatJoinedDate(profile.joinedAt)}. Hoje este perfil tem{' '}
-                  {profile.stats.businessCount} negocio{profile.stats.businessCount === 1 ? '' : 's'} publico{profile.stats.businessCount === 1 ? '' : 's'},{' '}
+                  {profile.stats.businessCount} negócio{profile.stats.businessCount === 1 ? '' : 's'} público{profile.stats.businessCount === 1 ? '' : 's'},{' '}
                   {profile.stats.eventCount} evento{profile.stats.eventCount === 1 ? '' : 's'} e{' '}
-                  {profile.stats.postCount} publicacao{profile.stats.postCount === 1 ? '' : 'oes'} visive{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
+                  {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
                 </p>
 
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexoes" />
-                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negocios" />
+                  <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexões" />
+                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" />
                   <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" />
                   <ProfileMetric icon={<MessageSquareText size={16} />} value={profile.stats.postCount} label="Posts" />
                 </div>
@@ -712,7 +712,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <section className="mt-6 space-y-4">
                 {profile.businesses.length > 0 ? (
                   <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
-                    <h2 className="text-2xl font-bold text-slate-900">Negocios em destaque</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">Negócios em destaque</h2>
                     <div className="mt-5 space-y-3">
                       {profile.businesses.slice(0, 3).map((business) => (
                         <Link

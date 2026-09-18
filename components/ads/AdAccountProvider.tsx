@@ -11,6 +11,8 @@ export type AdAccountSummary = {
   country: string;
   currency: string;
   timezone: string;
+  businessId: string | null;
+  publicPath: string | null;
   role: 'BUSINESS_ADMIN' | 'ADMIN' | 'EDITOR' | 'VIEWER';
 };
 

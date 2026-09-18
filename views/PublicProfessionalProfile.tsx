@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BadgeCheck, BriefcaseBusiness, CalendarDays, Globe2, MapPin } from 'lucide-react';
+import { BadgeCheck, BriefcaseBusiness, CalendarDays, Globe2, MapPin, Megaphone } from 'lucide-react';
 import StarRating from '../components/engagement/StarRating';
 import { Logo } from '../components/Layout';
 import { handleAvatarError } from '../lib/avatar';
@@ -193,7 +193,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                   ) : null}
                   <span className="inline-flex items-center gap-2">
                     <Globe2 size={16} />
-                    Presenca publica profissional
+                    Presença pública profissional
                   </span>
                 </div>
 
@@ -216,7 +216,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
               </div>
 
               <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <MetricCard icon={<BriefcaseBusiness size={18} />} value={profile.stats.businessCount} label="Negocios" />
+                <MetricCard icon={<BriefcaseBusiness size={18} />} value={profile.stats.businessCount} label="Negócios" />
                 <MetricCard icon={<CalendarDays size={18} />} value={profile.stats.eventCount} label="Eventos" />
                 <MetricCard icon={<BadgeCheck size={18} />} value={profile.businesses.length} label="Em destaque" />
                 <MetricCard icon={<Globe2 size={18} />} value={1} label="Vitrine ativa" />
@@ -227,12 +227,12 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
           <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
               <BriefcaseBusiness size={16} />
-              Negocios em destaque
+              Negócios em destaque
             </div>
             {profile.businesses.length > 0 ? (
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 {profile.businesses.map((business) => (
-                  <Link key={business.id} href={`/negocios/${business.slug}`} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
+                  <div key={business.id} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
                     <img
                       src={business.imageUrl || `https://picsum.photos/seed/${business.id}/320`}
                       alt={business.name}
@@ -245,12 +245,16 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                       <div className="mt-3">
                         <StarRating average={business.ratingAverage} count={business.ratingCount} compact />
                       </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link href={`/negocios/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Ver página</Link>
+                        {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />Promover</Link> : null}
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (
-              <EmptyState text="Nenhum negocio publico disponivel nesta vitrine profissional." />
+              <EmptyState text="Nenhum negócio público disponível nesta vitrine profissional." />
             )}
           </section>
 

@@ -350,6 +350,7 @@ model Business {
   ratings             BusinessRating[]
   communityPosts      CommunityPost[]    @relation("CommunityPostBusinessAuthor")
   events              Event[]            @relation("EventBusiness")
+  adAccount            AdAccount?
 
   @@index([status, regionKey])
   @@index([category, regionKey])
@@ -474,8 +475,10 @@ model AdAccount {
   isAgency         Boolean         @default(false)
   logoUrl          String?
   useWebsitePhotos Boolean         @default(true)
+  businessId       String?         @unique
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  business         Business?       @relation(fields: [businessId], references: [id], onDelete: SetNull)
   users            AdAccountUser[]
   banners          Banner[]
 

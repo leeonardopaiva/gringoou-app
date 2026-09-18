@@ -54,7 +54,7 @@ export default function AdsLoginPage() {
           <Button type="submit" fullWidth loading={loading}>Entrar</Button>
           <Button type="button" variant="secondary" fullWidth loading={loading} onClick={() => void signInWithGoogle()}>Entrar com Google</Button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">Ainda não tem uma conta de negócio? <Link href="/ads/register" className="font-bold text-brand-500">Criar conta</Link></p>
+        <p className="mt-6 text-center text-sm text-slate-500">Ainda não tem uma página de negócio? <Link href="/negocios?create=1" className="font-bold text-brand-500">Cadastrar gratuitamente</Link></p>
       </Card>
     </div>
   );

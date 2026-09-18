@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-end justify-center bg-overlay sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[150] flex items-end justify-center bg-overlay p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div
         ref={dialogRef}
         role="dialog"
@@ -72,12 +72,12 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
         aria-describedby={description ? descriptionId : undefined}
         className={cn(
           fullscreen
-            ? 'h-full w-full overflow-y-auto bg-surface p-5 sm:p-8'
-            : 'w-full max-w-md rounded-t-sheet bg-surface p-6 shadow-xl sm:rounded-card',
+            ? 'flex h-full min-h-0 w-full flex-col bg-surface p-5 sm:p-8'
+            : 'flex max-h-[92dvh] min-h-0 w-full max-w-md flex-col rounded-t-sheet bg-surface p-5 shadow-xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-card sm:p-6',
           className,
         )}
       >
-        <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
           {title && <h2 id={titleId} className="text-h3 font-bold text-text">{title}</h2>}
           <button
             type="button"
@@ -88,9 +88,9 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
             <X size={18} />
           </button>
         </div>
-        {description && <p id={descriptionId} className="mb-4 text-body-sm text-slate-500">{description}</p>}
-        {children}
-        {footer && <div className="mt-5 flex items-center justify-end gap-3">{footer}</div>}
+        {description && <p id={descriptionId} className="mb-4 shrink-0 text-body-sm text-slate-500">{description}</p>}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{children}</div>
+        {footer && <div className="mt-5 flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-4">{footer}</div>}
       </div>
     </div>
   );
