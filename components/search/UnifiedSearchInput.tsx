@@ -49,7 +49,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       <button
         type="button"
         onClick={onFilterClick}
-        aria-label="Abrir busca assistida por IA"
+        aria-label="Abrir busca inteligente"
         className="mr-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105"
       >
         <Sparkles size={16} aria-hidden="true" />

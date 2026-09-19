@@ -26,11 +26,15 @@ export function normalizeCommunityPagination(limit = DEFAULT_LIMIT, offset = 0) 
 export async function getCommunityPostsPage({
   session,
   regionKey,
+  businessId,
+  includeBusinessPending = false,
   limit = DEFAULT_LIMIT,
   offset = 0,
 }: {
   session: Session | null;
   regionKey?: string | null;
+  businessId?: string | null;
+  includeBusinessPending?: boolean;
   limit?: number;
   offset?: number;
 }): Promise<CommunityPostsPage> {
@@ -45,10 +49,14 @@ export async function getCommunityPostsPage({
           ? [
               { status: CommunityPostStatus.PENDING_REVIEW, authorId: session.user.id },
               ...(isAdmin ? [{ status: CommunityPostStatus.PENDING_REVIEW }] : []),
+              ...(includeBusinessPending && businessId
+                ? [{ status: CommunityPostStatus.PENDING_REVIEW, businessAuthorId: businessId }]
+                : []),
             ]
           : []),
       ],
       ...(regionKey ? { regionKey } : {}),
+      ...(businessId ? { businessAuthorId: businessId } : {}),
     },
     orderBy: [{ createdAt: 'desc' }],
     take: pagination.limit + 1,

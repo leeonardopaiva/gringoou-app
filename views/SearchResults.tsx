@@ -3,7 +3,7 @@
 import React, { FormEvent, startTransition, useDeferredValue, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarDays, Clock3, MapPin, Search, Store, Users } from 'lucide-react';
+import { CalendarDays, Clock3, MapPin, Search, Sparkles, Store, Users } from 'lucide-react';
 import type { Business, EventItem } from '@/types';
 import { ContentColumn } from '@/components/ui';
 
@@ -19,6 +19,8 @@ type SearchPostResult = {
     username?: string | null;
     image?: string | null;
   };
+  authorHref?: string;
+  authorType?: 'USER' | 'BUSINESS';
   _count: {
     comments: number;
     reactions: number;
@@ -36,6 +38,12 @@ type SearchResponse = {
     posts: number;
     total: number;
   };
+  intelligence: {
+    enabled: boolean;
+    used: boolean;
+    summary: string | null;
+    terms: string[];
+  };
 };
 
 const emptyResults: SearchResponse = {
@@ -49,6 +57,7 @@ const emptyResults: SearchResponse = {
     posts: 0,
     total: 0,
   },
+  intelligence: { enabled: true, used: false, summary: null, terms: [] },
 };
 
 const formatDateTime = (value: string) =>
@@ -91,7 +100,7 @@ const SearchResults: React.FC = () => {
         const payload = (await response.json().catch(() => null)) as SearchResponse | null;
 
         if (!response.ok || !payload) {
-          throw new Error('Nao foi possivel buscar agora.');
+          throw new Error('Não foi possível buscar agora.');
         }
 
         if (!ignore) {
@@ -143,7 +152,7 @@ const SearchResults: React.FC = () => {
         <div>
           <h1 className="text-h2 font-bold text-foreground">Busca</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Encontre negocios, eventos e conversas da comunidade.
+            Encontre negócios, eventos e conversas da comunidade.
           </p>
         </div>
 
@@ -161,7 +170,7 @@ const SearchResults: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <SearchTab label="Tudo" active={activeTab === 'all'} onClick={() => setActiveTab('all')} />
           <SearchTab
-            label={`Negocios (${results.counts.businesses})`}
+            label={`Negócios (${results.counts.businesses})`}
             active={activeTab === 'businesses'}
             onClick={() => setActiveTab('businesses')}
           />
@@ -194,17 +203,36 @@ const SearchResults: React.FC = () => {
         </div>
       ) : null}
 
+      {!loading && queryFromUrl && results.intelligence.used ? (
+        <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-violet-600 shadow-sm">
+              <Sparkles size={17} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-800">Busca inteligente</p>
+              <p className="mt-1 text-sm leading-5 text-slate-600">{results.intelligence.summary}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {results.intelligence.terms.slice(1).map((term) => (
+                  <span key={term} className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-violet-700">{term}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {!loading && queryFromUrl ? (
         <div className="space-y-6 pb-20">
           {visibleBusinesses ? (
             <section className="space-y-3">
               <SectionHeader
                 icon={<Store size={16} />}
-                title="Negocios"
+                title="Negócios"
                 count={results.counts.businesses}
               />
               {results.businesses.length === 0 ? (
-                <SectionEmpty text="Nenhum negocio encontrado." />
+                <SectionEmpty text="Nenhum negócio encontrado." />
               ) : (
                 results.businesses.map((business) => (
                   <Link
@@ -285,7 +313,7 @@ const SearchResults: React.FC = () => {
                 count={results.counts.posts}
               />
               {results.posts.length === 0 ? (
-                <SectionEmpty text="Nenhuma publicacao encontrada." />
+                <SectionEmpty text="Nenhuma publicação encontrada." />
               ) : (
                 results.posts.map((post) => (
                   <div
@@ -302,7 +330,7 @@ const SearchResults: React.FC = () => {
                     className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-slate-200"
                   >
                     <Link
-                      href={post.author.username ? `/${post.author.username}` : '/community'}
+                      href={post.authorHref || (post.author.username ? `/${post.author.username}` : '/community')}
                       onClick={(event) => event.stopPropagation()}
                       className="shrink-0 transition hover:opacity-80"
                     >
@@ -315,10 +343,13 @@ const SearchResults: React.FC = () => {
                     <Link href={`/community?post=${post.id}`} className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h2 className="truncate text-body-sm font-bold text-foreground">
-                          {post.author.name || 'Usuario da comunidade'}
+                          {post.author.name || 'Usuário da comunidade'}
                         </h2>
                         {post.author.username ? (
                           <span className="truncate text-xs text-slate-400">@{post.author.username}</span>
+                        ) : null}
+                        {post.authorType === 'BUSINESS' ? (
+                          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase text-brand-600">Negócio</span>
                         ) : null}
                       </div>
                       <p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.content}</p>
@@ -326,7 +357,7 @@ const SearchResults: React.FC = () => {
                         <span>{formatDateTime(post.createdAt)}</span>
                         <span>{post.locationLabel}</span>
                         <span>{post._count.reactions} curtidas</span>
-                        <span>{post._count.comments} comentarios</span>
+                        <span>{post._count.comments} comentários</span>
                       </div>
                     </Link>
                   </div>

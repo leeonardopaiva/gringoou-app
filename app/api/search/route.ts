@@ -6,6 +6,34 @@ import { getVisibilityFilter } from '@/lib/visibility';
 
 const SEARCH_RESULTS_LIMIT = 6;
 
+const SEARCH_SYNONYM_GROUPS = [
+  ['advogado', 'advogada', 'lawyer', 'attorney', 'imigração', 'immigration'],
+  ['contador', 'contabilidade', 'accountant', 'tax', 'imposto'],
+  ['restaurante', 'restaurant', 'comida', 'food', 'brasileiro', 'brazilian'],
+  ['emprego', 'trabalho', 'vaga', 'job', 'work'],
+  ['moradia', 'aluguel', 'casa', 'apartamento', 'housing', 'rent'],
+  ['pintor', 'pintura', 'painter', 'painting'],
+  ['limpeza', 'faxina', 'cleaning', 'cleaner'],
+  ['evento', 'festa', 'encontro', 'event', 'party', 'meetup'],
+] as const;
+
+const normalizeSearchTerm = (value: string) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+const buildSearchIntelligence = (query: string) => {
+  const normalizedWords = normalizeSearchTerm(query).split(/\s+/).filter((word) => word.length >= 3);
+  const expanded = SEARCH_SYNONYM_GROUPS
+    .filter((group) => group.some((term) => normalizedWords.includes(normalizeSearchTerm(term))))
+    .flat();
+  const terms = Array.from(new Set([query, ...expanded])).slice(0, 10);
+  return {
+    enabled: true,
+    used: terms.length > 1,
+    summary: terms.length > 1 ? 'Também consideramos termos relacionados em português e inglês para encontrar resultados mais úteis.' : null,
+    terms,
+  };
+};
+
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
@@ -24,10 +52,13 @@ export async function GET(request: Request) {
         posts: 0,
         total: 0,
       },
+      intelligence: { enabled: true, used: false, summary: null, terms: [] },
     });
   }
 
   const normalizedQuery = query.slice(0, 80);
+  const intelligence = buildSearchIntelligence(normalizedQuery);
+  const searchTerms = intelligence.terms;
   const now = new Date();
 
   await prisma.analyticsEvent.create({
@@ -47,12 +78,12 @@ export async function GET(request: Request) {
 
   const businessWhere: Prisma.BusinessWhereInput = {
     status: BusinessStatus.PUBLISHED,
-    OR: [
-      { name: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { category: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { address: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { description: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-    ],
+    OR: searchTerms.flatMap((term) => [
+      { name: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { category: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { address: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
+    ]),
     ...getVisibilityFilter(viewerRegionKey),
   };
 
@@ -61,30 +92,30 @@ export async function GET(request: Request) {
     startsAt: {
       gte: now,
     },
-    OR: [
-      { title: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { description: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { venueName: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { locationLabel: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-    ],
+    OR: searchTerms.flatMap((term) => [
+      { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { venueName: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { locationLabel: { contains: term, mode: Prisma.QueryMode.insensitive } },
+    ]),
     ...getVisibilityFilter(viewerRegionKey),
   };
 
   const postWhere: Prisma.CommunityPostWhereInput = {
     status: CommunityPostStatus.PUBLISHED,
     ...(viewerRegionKey ? { regionKey: viewerRegionKey } : {}),
-    OR: [
-      { content: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      { locationLabel: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-      {
-        author: {
-          OR: [
-            { name: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-            { username: { contains: normalizedQuery, mode: Prisma.QueryMode.insensitive } },
-          ],
-        },
-      },
-    ],
+    OR: searchTerms.flatMap((term) => [
+      { content: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { locationLabel: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { author: { OR: [
+        { name: { contains: term, mode: Prisma.QueryMode.insensitive } },
+        { username: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      ] } },
+      { businessAuthor: { OR: [
+        { name: { contains: term, mode: Prisma.QueryMode.insensitive } },
+        { category: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      ] } },
+    ]),
   };
 
   const [businesses, businessCount, events, eventCount, posts, postCount] = await Promise.all([
@@ -142,6 +173,14 @@ export async function GET(request: Request) {
             image: true,
           },
         },
+        businessAuthor: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+          },
+        },
         _count: {
           select: {
             comments: true,
@@ -157,12 +196,24 @@ export async function GET(request: Request) {
     query: normalizedQuery,
     businesses,
     events,
-    posts,
+    posts: posts.map(({ businessAuthor, author, ...post }) => ({
+      ...post,
+      author: businessAuthor
+        ? { id: businessAuthor.id, name: businessAuthor.name, username: null, image: businessAuthor.imageUrl }
+        : author,
+      authorHref: businessAuthor
+        ? `/negocios/${businessAuthor.slug || businessAuthor.id}`
+        : author.username
+          ? `/${author.username}`
+          : '/community',
+      authorType: businessAuthor ? 'BUSINESS' : 'USER',
+    })),
     counts: {
       businesses: businessCount,
       events: eventCount,
       posts: postCount,
       total: businessCount + eventCount + postCount,
     },
+    intelligence,
   });
 }

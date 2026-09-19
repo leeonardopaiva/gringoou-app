@@ -75,11 +75,16 @@ export function CommunityAccountMenu({ user, profileHref, professionalProfileHre
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Negócios</p>
             {accounts.length ? <>
               {accounts.map((account) => (
-                <button key={account.id} type="button" onClick={() => void openBusiness(account.id)} className="mt-2 flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-brand-50">
+                <div key={account.id} className="mt-2 flex w-full items-center gap-2 rounded-xl p-2 hover:bg-brand-50">
                   <Avatar src={account.logoUrl} name={account.name} size="md" />
-                  <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{account.name}</strong><span className="block truncate text-xs text-slate-500">Conta de negócio</span></span>
-                  <Megaphone size={18} className="text-brand-500" />
-                </button>
+                  <button type="button" onClick={() => { setOpen(false); router.push(account.publicPath ? `${account.publicPath}/gerenciar` : '/negocios'); }} className="min-w-0 flex-1 text-left">
+                    <strong className="block truncate text-sm text-slate-900">{account.name}</strong>
+                    <span className="block truncate text-xs text-slate-500">Gerenciar página</span>
+                  </button>
+                  <button type="button" onClick={() => void openBusiness(account.id)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm" aria-label={`Abrir anúncios de ${account.name}`} title="Abrir anúncios">
+                    <Megaphone size={17} />
+                  </button>
+                </div>
               ))}
               {accounts.length < maxAccounts ? <button type="button" onClick={() => { setOpen(false); router.push('/ads/accounts/new'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />Adicionar outro negócio</button> : null}
             </> : (

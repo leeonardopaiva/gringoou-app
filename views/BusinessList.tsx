@@ -6,6 +6,7 @@ import { useToast } from '../components/feedback/ToastProvider';
 import StarRating from '../components/engagement/StarRating';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
+import AddressAutocomplete from '../components/forms/AddressAutocomplete';
 import { Heart, MapPin, Megaphone, Plus } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
 import UnifiedSearchInput from '../components/search/UnifiedSearchInput';
@@ -359,7 +360,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 <input required value={createForm.phone} onChange={(event) => setCreateForm((current) => ({ ...current, phone: formatLoosePhoneInput(event.target.value) }))} onInput={() => clearFieldError('phone')} aria-invalid={Boolean(fieldErrors.phone)} placeholder="Telefone" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               </div>
               <FieldErrorMessage message={fieldErrors.phone} />
-              <input required value={createForm.address} onChange={(event) => setCreateForm((current) => ({ ...current, address: event.target.value }))} onInput={() => clearFieldError('address')} aria-invalid={Boolean(fieldErrors.address)} placeholder="Endereco" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <AddressAutocomplete value={createForm.address} onChange={(address) => { setCreateForm((current) => ({ ...current, address })); clearFieldError('address'); }} placeholder="Pesquise rua, número, cidade e estado" />
               <FieldErrorMessage message={fieldErrors.address} />
               <RegionSelector value={createForm.regionKey} onChange={(region) => { clearFieldError('regionKey'); setCreateForm((current) => ({ ...current, regionKey: region.key })); }} hint="Escolha uma regiao existente para padronizar a publicacao." />
               <FieldErrorMessage message={fieldErrors.regionKey} />
@@ -450,10 +451,10 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 </p>
               </div>
               <Link
-                href={`/negocios/${business.slug || business.id}`}
+                href={business.canEdit ? `/negocios/${business.slug || business.id}/gerenciar` : `/negocios/${business.slug || business.id}`}
                 className="shrink-0 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
               >
-                {business.canEdit ? 'Editar perfil' : 'Ver negocio'}
+                {business.canEdit ? 'Gerenciar' : 'Ver negócio'}
               </Link>
             </FeedCard.Footer>
           </FeedCard.Root>

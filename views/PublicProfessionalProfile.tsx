@@ -68,7 +68,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.profile) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar esta vitrine profissional.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar esta vitrine profissional.');
         }
 
         if (!ignore) {
@@ -77,7 +77,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
       } catch (loadError) {
         if (!ignore) {
           setError(
-            loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar a vitrine profissional.',
+            loadError instanceof Error ? loadError.message : 'Não foi possível carregar a vitrine profissional.',
           );
         }
       } finally {
@@ -131,7 +131,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
               </div>
             ) : null}
             <div className="rounded-[32px] border border-red-100 bg-red-50 p-6 text-center">
-              <h1 className="text-xl font-bold text-red-700">Vitrine indisponivel</h1>
+              <h1 className="text-xl font-bold text-red-700">Vitrine indisponível</h1>
               <p className="mt-3 text-sm text-red-600">{error}</p>
             </div>
           </div>
@@ -209,7 +209,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                       href="/profile"
                       className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-bold text-white shadow-sm"
                     >
-                      Gerenciar minha vitrine
+                      Abrir central profissional
                     </Link>
                   ) : null}
                 </div>
@@ -247,6 +247,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Link href={`/negocios/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Ver página</Link>
+                        {isOwnProfile ? <Link href={`/negocios/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">Gerenciar</Link> : null}
                         {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />Promover</Link> : null}
                       </div>
                     </div>
@@ -284,7 +285,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 ))}
               </div>
             ) : (
-              <EmptyState text="Nenhum evento publico disponivel nesta vitrine profissional." />
+              <EmptyState text="Nenhum evento público disponível nesta vitrine profissional." />
             )}
           </section>
         </div>

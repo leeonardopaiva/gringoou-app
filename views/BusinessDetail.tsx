@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   BadgeCheck,
   Copy,
+  ExternalLink,
   Globe2,
   Heart,
   Images,
@@ -19,14 +20,18 @@ import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
+import AddressAutocomplete from '../components/forms/AddressAutocomplete';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { User } from '../types';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
+import { PublicLinksBlock } from '../components/profile/PublicLinksBlock';
+import { BusinessPostsPanel } from '../components/business/BusinessPostsPanel';
 
 interface BusinessDetailProps {
   businessId?: string;
   user: User;
+  managementMode?: boolean;
 }
 
 type EditModalTab = 'info' | 'contact' | 'media';
@@ -59,10 +64,10 @@ type BusinessDetailState = {
 const defaultBusiness: BusinessDetailState = {
   id: '',
   slug: '',
-  name: 'Negocio local',
-  description: 'Os detalhes deste negocio ainda nao foram carregados.',
-  address: 'Endereco indisponivel',
-  category: 'Negocio',
+  name: 'Negócio local',
+  description: 'Os detalhes deste negócio ainda não foram carregados.',
+  address: 'Endereço indisponível',
+  category: 'Negócio',
   imageUrl: 'https://picsum.photos/seed/minasgrill/800/600',
   galleryUrls: [],
   phone: '',
@@ -91,7 +96,7 @@ const normalizeWhatsappLink = (value: string) => {
   return digits ? `https://wa.me/${digits}` : '';
 };
 
-const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => {
+const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
   const { showToast } = useToast();
 
   const [business, setBusiness] = useState<BusinessDetailState>(defaultBusiness);
@@ -128,7 +133,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Negocio nao encontrado.');
+          throw new Error(payload?.error ?? 'Negócio não encontrado.');
         }
 
         if (!ignore) {
@@ -163,7 +168,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
       } catch (error) {
         console.error('Failed to load business detail:', error);
         if (!ignore) {
-          showToast(error instanceof Error ? error.message : 'Nao foi possivel carregar o negocio.', 'error');
+          showToast(error instanceof Error ? error.message : 'Não foi possível carregar o negócio.', 'error');
         }
       } finally {
         if (!ignore) {
@@ -213,7 +218,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
 
     try {
       await navigator.clipboard.writeText(publicUrl);
-      showToast('Link do negocio copiado.', 'success');
+      showToast('Link do negócio copiado.', 'success');
     } catch {
       showToast(publicUrl, 'info', 5000);
     }
@@ -267,7 +272,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel salvar as alteracoes.', 'error');
+        showToast(payload?.error ?? 'Não foi possível salvar as alterações.', 'error');
         return;
       }
 
@@ -288,10 +293,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
       setBusiness(updatedBusiness);
       syncDrafts(updatedBusiness);
       setIsEditModalOpen(false);
-      showToast('Negocio atualizado com sucesso.', 'success');
+      showToast('Negócio atualizado com sucesso.', 'success');
     } catch (error) {
       console.error('Failed to save business:', error);
-      showToast('Nao foi possivel salvar as alteracoes.', 'error');
+      showToast('Não foi possível salvar as alterações.', 'error');
     } finally {
       setSavingBusiness(false);
     }
@@ -386,13 +391,49 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
     );
   }
 
+  if (managementMode && !business.canEdit) {
+    return (
+      <ContentColumn className="px-5 py-8">
+        <div className="rounded-[28px] border border-red-100 bg-red-50 p-6 text-center">
+          <h1 className="text-xl font-bold text-red-700">Acesso não autorizado</h1>
+          <p className="mt-2 text-sm text-red-600">Somente proprietários e administradores podem gerenciar esta página.</p>
+          <Link href={business.publicPath} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-bold text-red-700 shadow-sm">
+            Voltar para a página pública
+          </Link>
+        </div>
+      </ContentColumn>
+    );
+  }
+
   return (
     <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card sm:border sm:border-slate-200">
+      {managementMode ? (
+        <div className="space-y-4 border-b border-slate-200 bg-slate-50 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-500">Centro do Negócio</p>
+              <h1 className="mt-1 text-2xl font-bold text-slate-900">Gerenciar {business.name}</h1>
+              <p className="mt-1 text-sm text-slate-500">Edite sua página, acompanhe publicações e promova o negócio.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href={business.publicPath} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700">
+                <ExternalLink size={15} />
+                Ver página pública
+              </Link>
+              <button type="button" onClick={() => handleOpenEditModal('info')} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-4 text-xs font-bold text-white">
+                <PencilLine size={15} />
+                Editar perfil
+              </button>
+            </div>
+          </div>
+          <PublicLinksBlock links={[{ id: business.id, label: business.name, path: business.publicPath }]} />
+        </div>
+      ) : null}
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        {business.canEdit ? (
+        {business.canEdit && managementMode ? (
           <button
             type="button"
             onClick={() => handleOpenEditModal('media')}
@@ -410,7 +451,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
             className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${
               business.isFavorite ? 'bg-red-600 text-white' : 'bg-surface text-foreground hover:bg-brand-100'
             }`}
-            aria-label="Favoritar negocio"
+            aria-label="Favoritar negócio"
           >
             <Heart size={19} fill={business.isFavorite ? 'currentColor' : 'none'} />
           </button>
@@ -431,12 +472,12 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
               {business.category}
             </div>
 
-            {business.canEdit ? (
+            {business.canEdit && managementMode ? (
               <button
                 type="button"
                 onClick={() => handleOpenEditModal('info')}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                aria-label="Editar informacoes"
+                aria-label="Editar informações"
               >
                 <PencilLine size={15} />
               </button>
@@ -451,7 +492,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
       <div className="space-y-8 px-5 pt-8">
         {isPendingReview ? (
           <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-            Este negocio esta aguardando aprovacao e fica visivel apenas para voce e administradores.
+            Este negócio está aguardando aprovação e fica visível apenas para você e administradores.
           </div>
         ) : null}
 
@@ -471,10 +512,15 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
             <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Share2 size={14} />Compartilhar</button>
             <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
           </div>
-          {business.canEdit && business.status === 'PUBLISHED' ? (
+          {business.canEdit && managementMode && business.status === 'PUBLISHED' ? (
             <Link href={`/ads/promover/${business.id}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-sm">
               <Megaphone size={17} />
               Promover este negócio com Ads
+            </Link>
+          ) : business.canEdit && !managementMode ? (
+            <Link href={`/negocios/${business.slug || business.id}/gerenciar`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-sm">
+              <PencilLine size={17} />
+              Gerenciar página do negócio
             </Link>
           ) : null}
         </div>
@@ -533,7 +579,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
               Contato
             </div>
 
-            {business.canEdit ? (
+            {business.canEdit && managementMode ? (
               <button
                 type="button"
                 onClick={() => handleOpenEditModal('contact')}
@@ -582,12 +628,12 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
               Endereço
             </div>
 
-            {business.canEdit ? (
+            {business.canEdit && managementMode ? (
               <button
                 type="button"
                 onClick={() => handleOpenEditModal('info')}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-                aria-label="Editar informacoes"
+                aria-label="Editar informações"
               >
                 <PencilLine size={17} />
               </button>
@@ -633,7 +679,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
               Galeria
             </div>
 
-            {business.canEdit ? (
+            {business.canEdit && managementMode ? (
               <button
                 type="button"
                 onClick={() => handleOpenEditModal('media')}
@@ -663,6 +709,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
             </div>
           )}
         </section>
+      </div>
+
+      <div className="px-5 pb-8">
+        <BusinessPostsPanel businessId={business.id} businessName={business.name} management={managementMode} />
       </div>
 
       {isEditModalOpen ? (
@@ -707,7 +757,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Informacoes
+                Informações
               </button>
 
               <button
@@ -764,14 +814,9 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-                      Endereco
+                      Endereço
                     </label>
-                    <input
-                      value={addressDraft}
-                      onChange={(event) => setAddressDraft(event.target.value)}
-                      className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Endereco"
-                    />
+                    <AddressAutocomplete value={addressDraft} onChange={setAddressDraft} />
                   </div>
 
                   <div className="space-y-2">
@@ -850,14 +895,14 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user }) => 
                     onChange={setCoverDraft}
                     folder="businesses"
                     placeholder="Link da imagem de capa"
-                    hint="Essa imagem aparece no topo da pagina do negocio."
+                    hint="Essa imagem aparece no topo da página do negócio."
                   />
 
                   <ImageGalleryField
                     value={galleryDraft}
                     onChange={setGalleryDraft}
                     folder="businesses"
-                    hint="Use a galeria para mostrar ambiente, produtos e servicos."
+                    hint="Use a galeria para mostrar ambiente, produtos e serviços."
                   />
                 </>
               ) : null}

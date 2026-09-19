@@ -36,6 +36,10 @@ const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
     return <BusinessDetail businessId={decodeURIComponent(segments[1])} user={currentUser} />;
   }
 
+  if (rootSegment === 'negocios' && segments.length === 3 && segments[2] === 'gerenciar') {
+    return <BusinessDetail businessId={decodeURIComponent(segments[1])} user={currentUser} managementMode />;
+  }
+
   if ((rootSegment === 'eventos' || rootSegment === 'marketplace') && segments.length === 2) {
     return <EventDetail eventId={decodeURIComponent(segments[1])} user={currentUser} />;
   }

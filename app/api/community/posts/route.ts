@@ -10,10 +10,26 @@ const DAILY_POST_LIMIT = 3;
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
-  const regionKey = searchParams.get('region') ?? session?.user?.regionKey;
+  const businessId = searchParams.get('businessId');
+  const regionKey = searchParams.get('region') ?? (businessId ? undefined : session?.user?.regionKey);
+  const manageBusiness = searchParams.get('manage') === '1';
+  const canManageBusiness = manageBusiness && businessId && session?.user?.id
+    ? Boolean(await prisma.business.findFirst({
+        where: {
+          id: businessId,
+          OR: [
+            { createdById: session.user.id },
+            { members: { some: { userId: session.user.id } } },
+          ],
+        },
+        select: { id: true },
+      })) || session.user.role === 'ADMIN'
+    : false;
   const page = await getCommunityPostsPage({
     session,
     regionKey,
+    businessId,
+    includeBusinessPending: canManageBusiness,
     limit: Number(searchParams.get('limit') ?? 20),
     offset: Number(searchParams.get('offset') ?? 0),
   });

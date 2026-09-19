@@ -59,6 +59,7 @@ export async function GET(_request: Request, context: RouteContext) {
         where: { userId: session?.user?.id || '__no-user__' },
         select: {
           role: true,
+          userId: true,
         },
       },
     },
@@ -68,6 +69,9 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Business not found' }, { status: 404 });
   }
 
+  const isViewerMember = Boolean(
+    session?.user?.id && business.members.some((member) => member.userId === session.user.id),
+  );
   const canView =
     (business.status === BusinessStatus.PUBLISHED &&
       isVisibleForRegion(
@@ -79,12 +83,13 @@ export async function GET(_request: Request, context: RouteContext) {
         session?.user?.regionKey,
       )) ||
     session?.user?.role === 'ADMIN' ||
-    session?.user?.id === business.createdById;
+    session?.user?.id === business.createdById ||
+    isViewerMember;
 
   const canEdit =
     session?.user?.role === 'ADMIN' ||
     session?.user?.id === business.createdById ||
-    business.members.length > 0;
+    isViewerMember;
 
   const canRate =
     Boolean(session?.user?.id) && session?.user?.role !== 'ADMIN' && business.members.length === 0;

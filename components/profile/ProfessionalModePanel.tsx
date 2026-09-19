@@ -124,6 +124,12 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
                       Ver página pública
                       <ExternalLink size={14} />
                     </Link>
+                    <Link
+                      href={`/negocios/${business.slug || business.id}/gerenciar`}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                    >
+                      Gerenciar
+                    </Link>
                     {business.status === 'PUBLISHED' ? (
                       <Link
                         href={`/ads/promover/${business.id}`}
