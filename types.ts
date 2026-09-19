@@ -33,6 +33,7 @@ export interface ProfessionalProfileBusiness {
   status: string;
   imageUrl?: string | null;
   locationLabel?: string | null;
+  regionKey?: string | null;
   updatedAt: string;
   publicPath: string;
 }
@@ -45,6 +46,7 @@ export interface ProfessionalProfileEvent {
   status: string;
   imageUrl?: string | null;
   locationLabel?: string | null;
+  regionKey?: string | null;
   updatedAt: string;
   publicPath: string;
 }

@@ -5,7 +5,7 @@ import Layout from '@/components/Layout';
 import PublicProfile from '@/views/PublicProfile';
 import PublicProfessionalProfile from '@/views/PublicProfessionalProfile';
 import PublicGroup from '@/views/PublicGroup';
-import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
+import type { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
 
 type PublicEntryProps = {
@@ -14,6 +14,8 @@ type PublicEntryProps = {
   personaMode?: PersonaMode;
   canUseProfessionalMode?: boolean;
   professionalIdentity?: ProfessionalProfileIdentity | null;
+  professionalBusinesses?: ProfessionalProfileBusiness[];
+  onProfessionalBusinessChange?: (businessId: string) => void;
   onPersonaModeChange?: (mode: PersonaMode) => void;
   onSignOut?: () => void;
 };
@@ -24,6 +26,8 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
   personaMode = 'personal',
   canUseProfessionalMode = false,
   professionalIdentity,
+  professionalBusinesses,
+  onProfessionalBusinessChange,
   onPersonaModeChange,
   onSignOut,
 }) => {
@@ -55,6 +59,8 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
         personaMode={effectivePersonaMode}
         canUseProfessionalMode={canUseProfessionalMode}
         professionalIdentity={professionalIdentity}
+        professionalBusinesses={professionalBusinesses}
+        onProfessionalBusinessChange={onProfessionalBusinessChange}
         onPersonaModeChange={onPersonaModeChange}
         onSignOut={onSignOut}
       >
@@ -70,6 +76,8 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
         personaMode={effectivePersonaMode}
         canUseProfessionalMode={canUseProfessionalMode}
         professionalIdentity={professionalIdentity}
+        professionalBusinesses={professionalBusinesses}
+        onProfessionalBusinessChange={onProfessionalBusinessChange}
         onPersonaModeChange={onPersonaModeChange}
         onSignOut={onSignOut}
       >
@@ -85,6 +93,8 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
         personaMode={effectivePersonaMode}
         canUseProfessionalMode={canUseProfessionalMode}
         professionalIdentity={professionalIdentity}
+        professionalBusinesses={professionalBusinesses}
+        onProfessionalBusinessChange={onProfessionalBusinessChange}
         onPersonaModeChange={onPersonaModeChange}
         onSignOut={onSignOut}
       >

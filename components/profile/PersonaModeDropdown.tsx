@@ -12,6 +12,9 @@ type PersonaModeDropdownProps = {
   trigger?: 'label' | 'chevron';
   buttonClassName?: string;
   menuClassName?: string;
+  businesses?: Array<{ id: string; name: string; imageUrl?: string | null; status?: string }>;
+  selectedBusinessId?: string | null;
+  onBusinessChange?: (businessId: string) => void;
 };
 
 const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
@@ -24,6 +27,9 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
   trigger = 'label',
   buttonClassName = '',
   menuClassName = '',
+  businesses = [],
+  selectedBusinessId,
+  onBusinessChange,
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,18 +108,35 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
             icon={<UserRound size={16} />}
             onClick={() => handleChange('personal')}
           />
-          <PersonaMenuOption
-            title="Profissional"
-            subtitle={professionalSubtitle}
-            active={isProfessional}
-            disabled={professionalDisabled}
-            icon={<BriefcaseBusiness size={16} />}
-            onClick={() => {
-              if (!professionalDisabled) {
-                handleChange('professional');
-              }
-            }}
-          />
+          {businesses.length ? (
+            <>
+              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Negócios</p>
+              {businesses.map((business) => (
+                <PersonaMenuOption
+                  key={business.id}
+                  title={business.name}
+                  subtitle={business.status === 'PUBLISHED' ? 'Página publicada' : business.status === 'PENDING_REVIEW' ? 'Em análise' : professionalSubtitle}
+                  active={isProfessional && selectedBusinessId === business.id}
+                  icon={business.imageUrl ? <img src={business.imageUrl} alt="" className="h-5 w-5 rounded-md object-cover" /> : <BriefcaseBusiness size={16} />}
+                  onClick={() => {
+                    onBusinessChange?.(business.id);
+                    handleChange('professional');
+                  }}
+                />
+              ))}
+            </>
+          ) : (
+            <PersonaMenuOption
+              title="Profissional"
+              subtitle={professionalSubtitle}
+              active={isProfessional}
+              disabled={professionalDisabled}
+              icon={<BriefcaseBusiness size={16} />}
+              onClick={() => {
+                if (!professionalDisabled) handleChange('professional');
+              }}
+            />
+          )}
         </div>
       ) : null}
     </div>

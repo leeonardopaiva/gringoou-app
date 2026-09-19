@@ -5,6 +5,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   Share2,
+  Store,
   ThumbsUp,
 } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
@@ -15,9 +16,9 @@ import {
   getExternalHostname,
 } from '@/components/community/utils';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
 import { CharacterCounter } from '@/components/ui/CharacterCounter';
 import { FeedCard } from '@/components/ui/FeedCard';
+import { ImageLightbox } from '@/components/community/ImageLightbox';
 
 const POST_CONTENT_MAX_LENGTH = 600;
 
@@ -32,6 +33,7 @@ type HeaderProps = {
   authorHref?: string;
   createdAt: string;
   locationLabel: string;
+  authorType?: 'USER' | 'BUSINESS';
   menu?: React.ReactNode;
 };
 
@@ -101,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({
   authorHref,
   createdAt,
   locationLabel,
+  authorType = 'USER',
   menu,
 }) => (
   <div className="flex items-center justify-between">
@@ -108,7 +111,10 @@ const Header: React.FC<HeaderProps> = ({
       <Link href={authorHref} className="flex items-center gap-3 transition hover:opacity-90">
         <img src={authorImage} className="h-10 w-10 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
-          <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+          <div className="flex flex-wrap items-center gap-2">
+            <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+            {authorType === 'BUSINESS' ? <BusinessBadge /> : null}
+          </div>
           <p className="text-[10px] text-slate-400">
             {formatRelativeTime(createdAt)} | {locationLabel}
           </p>
@@ -118,7 +124,10 @@ const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-3">
         <img src={authorImage} className="h-10 w-10 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
-          <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+          <div className="flex flex-wrap items-center gap-2">
+            <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+            {authorType === 'BUSINESS' ? <BusinessBadge /> : null}
+          </div>
           <p className="text-[10px] text-slate-400">
             {formatRelativeTime(createdAt)} | {locationLabel}
           </p>
@@ -127,6 +136,13 @@ const Header: React.FC<HeaderProps> = ({
     )}
     {menu}
   </div>
+);
+
+const BusinessBadge = () => (
+  <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-600">
+    <Store size={10} />
+    Negócio
+  </span>
 );
 
 const Menu: React.FC<MenuProps> = ({ open, onToggle, children }) => (
@@ -205,14 +221,10 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
 
       {imageUrl ? (
         <>
-          <button type="button" onClick={() => setImageOpen(true)} className="block w-full overflow-hidden rounded-card bg-bg" aria-label="Ampliar imagem da publicação">
-            <FeedCard.Media src={imageUrl} alt="Imagem da publicação" className="aspect-[4/3]" />
+          <button type="button" onClick={() => setImageOpen(true)} className="-mx-5 block w-[calc(100%+2.5rem)] overflow-hidden bg-bg" aria-label="Ampliar imagem da publicação">
+            <FeedCard.Media src={imageUrl} alt="Imagem da publicação" className="aspect-[4/3] rounded-none" />
           </button>
-          <Modal open={imageOpen} onClose={() => setImageOpen(false)} title="Imagem da publicação" fullscreen>
-            <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
-              <img src={imageUrl} className="max-h-[calc(100vh-9rem)] max-w-full rounded-card object-contain" alt="Imagem ampliada da publicação" />
-            </div>
-          </Modal>
+          <ImageLightbox open={imageOpen} onClose={() => setImageOpen(false)} src={imageUrl} alt="Imagem ampliada da publicação" />
         </>
       ) : null}
     </>

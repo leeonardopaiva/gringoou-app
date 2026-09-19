@@ -30,7 +30,7 @@ import { Avatar } from './ui/Avatar';
 import { trackAnalyticsEvent } from '../lib/analytics';
 import { GringoouLogo } from './icons/GringoouLogo';
 import { SidebarMenu, SidebarMenuItem } from './navigation/SidebarMenu';
-import { PersonaMode, ProfessionalProfileIdentity, User, UserRole } from '../types';
+import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, User, UserRole } from '../types';
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 
 interface LogoProps {
@@ -62,6 +62,8 @@ interface LayoutWithUserProps {
   personaMode?: PersonaMode;
   canUseProfessionalMode?: boolean;
   professionalIdentity?: ProfessionalProfileIdentity | null;
+  professionalBusinesses?: ProfessionalProfileBusiness[];
+  onProfessionalBusinessChange?: (businessId: string) => void;
   onPersonaModeChange?: (mode: PersonaMode) => void;
   onSignOut?: () => void;
 }
@@ -97,10 +99,12 @@ const SidebarContent: React.FC<{
   personaMode: PersonaMode;
   canUseProfessionalMode: boolean;
   professionalIdentity?: ProfessionalProfileIdentity | null;
+  professionalBusinesses?: ProfessionalProfileBusiness[];
   accentColorClass: string;
   isActive: (path: string) => boolean;
   onNavigate: (href: string) => void;
   onPersonaModeChange?: (mode: PersonaMode) => void;
+  onProfessionalBusinessChange?: (businessId: string) => void;
   onItemClick?: () => void;
   onSignOut?: () => void;
 }> = ({
@@ -109,10 +113,12 @@ const SidebarContent: React.FC<{
   personaMode,
   canUseProfessionalMode,
   professionalIdentity,
+  professionalBusinesses = [],
   accentColorClass,
   isActive,
   onNavigate,
   onPersonaModeChange,
+  onProfessionalBusinessChange,
   onItemClick,
   onSignOut,
 }) => {
@@ -167,6 +173,9 @@ const SidebarContent: React.FC<{
                     personalSubtitle={user.username ? `@${user.username}` : 'Membro da comunidade'}
                     professionalSubtitle={professionalIdentity?.name || 'Cadastre um negocio'}
                     professionalDisabled={!professionalIdentity}
+                    businesses={professionalBusinesses}
+                    selectedBusinessId={professionalIdentity?.id}
+                    onBusinessChange={onProfessionalBusinessChange}
                     align="left"
                     trigger="chevron"
                     menuClassName="z-30"
@@ -265,6 +274,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   personaMode = 'personal',
   canUseProfessionalMode = false,
   professionalIdentity,
+  professionalBusinesses = [],
+  onProfessionalBusinessChange,
   onPersonaModeChange,
   onSignOut,
 }) => {
@@ -316,10 +327,12 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             personaMode={personaMode}
             canUseProfessionalMode={canUseProfessionalMode}
             professionalIdentity={professionalIdentity}
+            professionalBusinesses={professionalBusinesses}
             accentColorClass={accentColorClass}
             isActive={isActive}
             onNavigate={handleNavigate}
             onPersonaModeChange={onPersonaModeChange}
+            onProfessionalBusinessChange={onProfessionalBusinessChange}
             onItemClick={() => setIsMenuOpen(false)}
             onSignOut={onSignOut}
           />

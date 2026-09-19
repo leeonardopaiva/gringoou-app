@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BriefcaseBusiness, CalendarDays, Copy, ExternalLink, Megaphone, Share2 } from 'lucide-react';
-import { useToast } from '../feedback/ToastProvider';
+import { BriefcaseBusiness, CalendarDays, ExternalLink, Megaphone } from 'lucide-react';
+import { PublicLinksBlock } from './PublicLinksBlock';
 import type { ProfessionalProfileSummary } from '../../types';
 
 const formatBusinessStatus = (status: string) => {
@@ -52,47 +52,11 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
   professionalProfile,
   username,
 }) => {
-  const { showToast } = useToast();
-
   const publicProfessionalPath = username ? `/profissional/${username}` : null;
-  const publicProfessionalUrl =
-    typeof window === 'undefined' || !publicProfessionalPath
-      ? publicProfessionalPath
-      : `${window.location.origin}${publicProfessionalPath}`;
-
-  const handleCopyProfessionalUrl = async () => {
-    if (!publicProfessionalUrl) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(publicProfessionalUrl);
-      showToast('Link da vitrine profissional copiado.', 'success');
-    } catch {
-      showToast(publicProfessionalUrl, 'info', 5000);
-    }
-  };
-
-  const handleShareProfessionalUrl = async () => {
-    if (!publicProfessionalUrl) {
-      return;
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Vitrine profissional',
-          text: 'Confira minha vitrine profissional na Gringoou.',
-          url: publicProfessionalUrl,
-        });
-        return;
-      } catch {
-        return;
-      }
-    }
-
-    await handleCopyProfessionalUrl();
-  };
+  const publicLinks = [
+    ...(publicProfessionalPath ? [{ id: 'professional', label: 'Vitrine profissional', path: publicProfessionalPath }] : []),
+    ...professionalProfile.businesses.map((business) => ({ id: business.id, label: business.name, path: business.publicPath })),
+  ];
 
   return (
     <div className="space-y-5">
@@ -121,34 +85,10 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
           >
             Abrir eventos
           </Link>
-          {username ? (
-            <>
-              <Link
-                href={`/profissional/${username}`}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-100 bg-surface px-4 text-sm font-bold text-brand-500"
-              >
-                Ver vitrine pública
-              </Link>
-              <button
-                type="button"
-                onClick={() => void handleCopyProfessionalUrl()}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-100 bg-surface px-4 text-sm font-bold text-brand-500"
-              >
-                <Copy size={14} />
-                Copiar link
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleShareProfessionalUrl()}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-100 bg-surface px-4 text-sm font-bold text-brand-500"
-              >
-                <Share2 size={14} />
-                Compartilhar
-              </button>
-            </>
-          ) : null}
         </div>
       </section>
+
+      <PublicLinksBlock links={publicLinks} />
 
       <section className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">

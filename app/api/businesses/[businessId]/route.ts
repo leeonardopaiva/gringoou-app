@@ -148,36 +148,48 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const business = await prisma.business.update({
-    where: { id: existingBusiness.id },
-    data: {
-      name: typeof body.name === 'string' ? body.name.trim() : undefined,
-      category: typeof body.category === 'string' ? body.category.trim() : undefined,
-      description:
-        typeof body.description === 'string' ? body.description.trim() || null : undefined,
-      address: typeof body.address === 'string' ? body.address.trim() : undefined,
-      phone: typeof body.phone === 'string' ? body.phone.trim() || null : undefined,
-      whatsapp: typeof body.whatsapp === 'string' ? body.whatsapp.trim() || null : undefined,
-      website: typeof body.website === 'string' ? body.website.trim() || null : undefined,
-      instagram: typeof body.instagram === 'string' ? body.instagram.trim() || null : undefined,
-      imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl.trim() || null : undefined,
-      galleryUrls: Array.isArray(body.galleryUrls) ? body.galleryUrls : undefined,
-    },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      category: true,
-      description: true,
-      address: true,
-      phone: true,
-      whatsapp: true,
-      website: true,
-      instagram: true,
-      imageUrl: true,
-      galleryUrls: true,
-      updatedAt: true,
-    },
+  const normalizedImageUrl = typeof body.imageUrl === 'string' ? body.imageUrl.trim() || null : undefined;
+  const business = await prisma.$transaction(async (tx) => {
+    const updatedBusiness = await tx.business.update({
+      where: { id: existingBusiness.id },
+      data: {
+        name: typeof body.name === 'string' ? body.name.trim() : undefined,
+        category: typeof body.category === 'string' ? body.category.trim() : undefined,
+        description:
+          typeof body.description === 'string' ? body.description.trim() || null : undefined,
+        address: typeof body.address === 'string' ? body.address.trim() : undefined,
+        phone: typeof body.phone === 'string' ? body.phone.trim() || null : undefined,
+        whatsapp: typeof body.whatsapp === 'string' ? body.whatsapp.trim() || null : undefined,
+        website: typeof body.website === 'string' ? body.website.trim() || null : undefined,
+        instagram: typeof body.instagram === 'string' ? body.instagram.trim() || null : undefined,
+        imageUrl: normalizedImageUrl,
+        galleryUrls: Array.isArray(body.galleryUrls) ? body.galleryUrls : undefined,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        category: true,
+        description: true,
+        address: true,
+        phone: true,
+        whatsapp: true,
+        website: true,
+        instagram: true,
+        imageUrl: true,
+        galleryUrls: true,
+        updatedAt: true,
+      },
+    });
+
+    if (normalizedImageUrl !== undefined) {
+      await tx.adAccount.updateMany({
+        where: { businessId: existingBusiness.id },
+        data: { logoUrl: normalizedImageUrl },
+      });
+    }
+
+    return updatedBusiness;
   });
 
   return NextResponse.json({ business });

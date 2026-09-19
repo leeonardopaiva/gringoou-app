@@ -11,11 +11,13 @@ import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { formatInternationalPhone } from '@/lib/phone';
 import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
+import { PublicLinksBlock } from '@/components/profile/PublicLinksBlock';
 
 type AccountData = {
   id: string; name: string; websiteUrl: string | null; phone: string | null; businessAddress: string | null;
   businessCategory: string | null; subcategories: string[]; country: string; currency: string; timezone: string;
   logoUrl: string | null; useWebsitePhotos: boolean;
+  business: { id: string; slug: string; name: string } | null;
   users: Array<{ id: string; role: 'BUSINESS_ADMIN' | 'ADMIN' | 'EDITOR' | 'VIEWER'; user: { id: string; name: string | null; email: string | null; image: string | null } }>;
 };
 type UserData = { name: string | null; email: string | null; marketingEmailsOptOut: boolean; preferredLanguage: string };
@@ -75,6 +77,12 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
           {[['Categoria', account.businessCategory ?? '-'], ['Pais / Moeda', `${account.country} / ${account.currency}`], ['Fuso horario', account.timezone], ['Website', account.websiteUrl ?? '-']].map(([label, value]) => <div key={label}><p className="text-xs font-bold uppercase text-slate-400">{label}</p><p className="mt-1 truncate text-sm font-semibold text-[#243b53]">{value}</p></div>)}
         </div>
       </Card>
+
+      {account.business ? (
+        <PublicLinksBlock
+          links={[{ id: account.business.id, label: `Página pública de ${account.business.name}`, path: `/negocios/${account.business.slug}` }]}
+        />
+      ) : null}
 
       <Card className="rounded-3xl border border-slate-200 p-6 shadow-sm">
         <div className="flex items-center gap-3"><ShieldCheck className="text-brand-500" /><Card.Title>Dados pessoais</Card.Title></div>

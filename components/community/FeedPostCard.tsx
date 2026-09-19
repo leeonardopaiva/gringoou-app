@@ -212,6 +212,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
         authorImage={post.author.image || DEFAULT_AVATAR_URL}
         authorName={post.author.name}
         authorHref={authorHref}
+        authorType={post.authorType}
         createdAt={post.createdAt}
         locationLabel={post.locationLabel}
         menu={

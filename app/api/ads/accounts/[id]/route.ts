@@ -30,16 +30,27 @@ export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const membership = await prisma.adAccountUser.findUnique({
     where: { adAccountId_userId: { adAccountId: id, userId: session.user.id } },
-    select: { role: true },
+    select: { role: true, adAccount: { select: { businessId: true } } },
   });
   if (!membership || (membership.role !== AdAccountRole.BUSINESS_ADMIN && membership.role !== AdAccountRole.ADMIN)) {
     return NextResponse.json({ error: 'Apenas administradores podem editar a conta.' }, { status: 403 });
   }
   const parsed = updateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
-  const account = await prisma.adAccount.update({
-    where: { id },
-    data: { ...parsed.data, phone: normalizeInternationalPhone(parsed.data.phone), country: parsed.data.country.toUpperCase() },
+  const account = await prisma.$transaction(async (tx) => {
+    const updatedAccount = await tx.adAccount.update({
+      where: { id },
+      data: { ...parsed.data, phone: normalizeInternationalPhone(parsed.data.phone), country: parsed.data.country.toUpperCase() },
+    });
+
+    if (membership.adAccount.businessId) {
+      await tx.business.update({
+        where: { id: membership.adAccount.businessId },
+        data: { imageUrl: parsed.data.logoUrl },
+      });
+    }
+
+    return updatedAccount;
   });
   return NextResponse.json({ account });
 }

@@ -9,7 +9,7 @@ import AuthWorkspace from './components/app/AuthWorkspace';
 import PublicEntry from './components/app/PublicEntry';
 import { DEFAULT_AVATAR_URL } from './lib/avatar';
 import { parseAppRoute } from './lib/app-route';
-import { UserRole, type PersonaMode, type ProfessionalProfileIdentity, type User } from './types';
+import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
 import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, ProfileInitialData } from './lib/content-contracts';
 
 const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== 'false';
@@ -18,6 +18,16 @@ const PASSWORD_AUTH_ENABLED = true;
 const DEV_AUTH_ENABLED =
   process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_AUTH_ENABLED === 'true';
 const PERSONA_MODE_STORAGE_KEY = 'gringoou:persona-mode';
+const BUSINESS_PROFILE_STORAGE_KEY = 'gringoou:business-profile-id';
+const toProfessionalIdentity = (business: ProfessionalProfileBusiness): ProfessionalProfileIdentity => ({
+  id: business.id,
+  name: business.name,
+  slug: business.slug,
+  imageUrl: business.imageUrl,
+  locationLabel: business.locationLabel,
+  regionKey: business.regionKey,
+  publicPath: business.publicPath,
+});
 const mapUserRole = (role?: string | null): UserRole => {
   switch (role) {
     case UserRole.ADMIN:
@@ -81,6 +91,9 @@ const App: React.FC<{
   const [professionalIdentity, setProfessionalIdentity] = useState<ProfessionalProfileIdentity | null>(
     initialProfileData?.professionalProfile.identity ?? null,
   );
+  const [professionalBusinesses, setProfessionalBusinesses] = useState<ProfessionalProfileBusiness[]>(
+    initialProfileData?.professionalProfile.businesses ?? [],
+  );
   const [professionalProfileLoaded, setProfessionalProfileLoaded] = useState(Boolean(initialProfileData));
   const {
     referralUsername,
@@ -142,7 +155,11 @@ const App: React.FC<{
 
     const loadProfessionalIdentity = async () => {
       if (initialProfileData && session?.user?.id) {
-        setProfessionalIdentity(initialProfileData.professionalProfile.identity);
+        const businesses = initialProfileData.professionalProfile.businesses ?? [];
+        const storedBusinessId = window.localStorage.getItem(BUSINESS_PROFILE_STORAGE_KEY);
+        const selectedBusiness = businesses.find((business) => business.id === storedBusinessId) ?? businesses[0];
+        setProfessionalBusinesses(businesses);
+        setProfessionalIdentity(selectedBusiness ? toProfessionalIdentity(selectedBusiness) : null);
         setProfessionalProfileLoaded(true);
         return;
       }
@@ -150,6 +167,7 @@ const App: React.FC<{
       setProfessionalProfileLoaded(false);
 
       if (!session?.user?.id || !canUseProfessionalMode) {
+        setProfessionalBusinesses([]);
         setProfessionalIdentity(null);
         setProfessionalProfileLoaded(true);
         return;
@@ -164,7 +182,11 @@ const App: React.FC<{
         }
 
         if (!ignore) {
-          setProfessionalIdentity(payload?.professionalProfile?.identity ?? null);
+          const businesses = (payload?.professionalProfile?.businesses ?? []) as ProfessionalProfileBusiness[];
+          const storedBusinessId = window.localStorage.getItem(BUSINESS_PROFILE_STORAGE_KEY);
+          const selectedBusiness = businesses.find((business) => business.id === storedBusinessId) ?? businesses[0];
+          setProfessionalBusinesses(businesses);
+          setProfessionalIdentity(selectedBusiness ? toProfessionalIdentity(selectedBusiness) : null);
         }
       } catch (error) {
         console.error('Failed to load professional identity:', error);
@@ -200,6 +222,18 @@ const App: React.FC<{
       setPersonaModeReady(true);
     }
   }, []);
+
+  const handleProfessionalBusinessChange = useCallback((businessId: string) => {
+    const business = professionalBusinesses.find((item) => item.id === businessId);
+    if (!business) return;
+
+    setProfessionalIdentity(toProfessionalIdentity(business));
+    setPersonaMode('professional');
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(BUSINESS_PROFILE_STORAGE_KEY, business.id);
+      window.localStorage.setItem(PERSONA_MODE_STORAGE_KEY, 'professional');
+    }
+  }, [professionalBusinesses]);
 
   const resolveDevMagicLink = async (email: string) => {
     if (!DEV_AUTH_ENABLED) {
@@ -528,6 +562,8 @@ const App: React.FC<{
         personaMode={effectivePersonaMode}
         canUseProfessionalMode={canUseProfessionalMode}
         professionalIdentity={professionalIdentity}
+        professionalBusinesses={professionalBusinesses}
+        onProfessionalBusinessChange={handleProfessionalBusinessChange}
         onPersonaModeChange={handlePersonaModeChange}
         onSignOut={() => signOut({ callbackUrl: '/login?switchAccount=1' })}
       />
@@ -554,6 +590,8 @@ const App: React.FC<{
       personaMode={effectivePersonaMode}
       canUseProfessionalMode={canUseProfessionalMode}
       professionalIdentity={professionalIdentity}
+      professionalBusinesses={professionalBusinesses}
+      onProfessionalBusinessChange={handleProfessionalBusinessChange}
       onPersonaModeChange={handlePersonaModeChange}
       onSignOut={() => signOut({ callbackUrl: '/login?switchAccount=1' })}
     >
