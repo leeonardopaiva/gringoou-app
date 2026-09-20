@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Briefcase, MapPin, Plus } from "lucide-react";
-import UnifiedSearchInput from "@/components/search/UnifiedSearchInput";
 import {
   Button,
   Card,
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User, UserRole } from "@/types";
+import PageHeader from "@/components/navigation/PageHeader";
 
 type Job = {
   id: string;
@@ -40,7 +40,6 @@ const emptyDraft = {
 export default function JobList({ user }: { user: User }) {
   const { showToast } = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [search, setSearch] = useState("");
   const [employmentType, setEmploymentType] = useState("");
   const [location, setLocation] = useState("");
   const [salary, setSalary] = useState("");
@@ -61,7 +60,6 @@ export default function JobList({ user }: { user: User }) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
-      if (search) params.set("q", search);
       if (employmentType) params.set("employmentType", employmentType);
       if (location) params.set("location", location);
       if (salary) params.set("salary", salary);
@@ -89,7 +87,7 @@ export default function JobList({ user }: { user: User }) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [employmentType, location, page, salary, search, showToast]);
+  }, [employmentType, location, page, salary, showToast]);
 
   const createJob = async () => {
     setSaving(true);
@@ -120,13 +118,8 @@ export default function JobList({ user }: { user: User }) {
 
   return (
     <ContentColumn className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
-      <header className="mt-4 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h2 font-bold text-foreground">Vagas</h1>
-          <p className="text-body-sm text-muted-foreground">
-            Oportunidades verificadas para a comunidade.
-          </p>
-        </div>
+      <PageHeader title="Vagas" />
+      <div className="flex justify-end">
         <Button
           size="sm"
           iconLeft={<Plus size={16} />}
@@ -136,15 +129,7 @@ export default function JobList({ user }: { user: User }) {
         >
           Criar anuncio
         </Button>
-      </header>
-      <UnifiedSearchInput
-        value={search}
-        onChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        staticPlaceholder="Buscar por cargo, empresa ou palavra-chave..."
-      />
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Select
           value={employmentType}

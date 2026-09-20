@@ -9,7 +9,7 @@ import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import { Check, Heart, MapPin, Plus } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
-import UnifiedSearchInput from '../components/search/UnifiedSearchInput';
+import PageHeader from '../components/navigation/PageHeader';
 import {
   type FieldErrors,
   hasFieldErrors,
@@ -106,7 +106,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('Proximos');
-  const [search, setSearch] = useState('');
   const [events, setEvents] = useState<EventItem[]>(initialData?.events ?? []);
   const [resultScope, setResultScope] = useState<'local' | 'global'>(initialData?.scope ?? 'local');
   const initialPageConsumedRef = React.useRef(false);
@@ -335,15 +334,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       return eventDate >= todayStart && eventDate <= weekEnd;
     }
 
-    const term = search.trim().toLowerCase();
-    if (!term) {
-      return eventDate >= now || isSameLocalDay(eventDate, now);
-    }
-
-    return (
-      (eventDate >= now || isSameLocalDay(eventDate, now)) &&
-      `${item.title} ${item.venueName} ${item.locationLabel}`.toLowerCase().includes(term)
-    );
+    return eventDate >= now || isSameLocalDay(eventDate, now);
   });
 
   const sectionTitle =
@@ -355,21 +346,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   return (
     <ContentColumn className="space-y-6 px-5 pb-20 animate-in fade-in duration-500">
       <div className="mt-4 space-y-4">
-        <div>
-          <div>
-            <h1 className="text-2xl font-bold theme-text">Agenda de Eventos</h1>
-            <p className="mt-1 text-xs font-semibold text-slate-500">
-              {isProfessionalMode
-                ? `Cadastrando como ${professionalIdentity?.name}. Novos eventos serao vinculados a este negocio.`
-                : 'Cadastrando como pessoa. Use o modo profissional para publicar eventos do negocio.'}
-            </p>
-          </div>
-        </div>
-        <UnifiedSearchInput
-          value={search}
-          onChange={setSearch}
-          staticPlaceholder="Buscar eventos por titulo ou local..."
-        />
+        <PageHeader title="Eventos" />
         <button
           type="button"
           onClick={() => setShowCreateForm((current) => !current)}

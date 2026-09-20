@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { MapPin, Plus } from "lucide-react";
-import UnifiedSearchInput from "@/components/search/UnifiedSearchInput";
 import {
   Button,
   Card,
@@ -17,6 +16,7 @@ import {
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
+import PageHeader from "@/components/navigation/PageHeader";
 
 type Housing = {
   id: string;
@@ -40,7 +40,6 @@ const emptyDraft = {
 export default function HousingList({ user: _user }: { user: User }) {
   const { showToast } = useToast();
   const [items, setItems] = useState<Housing[]>([]);
-  const [search, setSearch] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
@@ -55,7 +54,6 @@ export default function HousingList({ user: _user }: { user: User }) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
-      if (search) params.set("q", search);
       if (propertyType) params.set("propertyType", propertyType);
       if (location) params.set("location", location);
       if (price) params.set("price", price);
@@ -83,7 +81,7 @@ export default function HousingList({ user: _user }: { user: User }) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [location, page, price, propertyType, search, showToast]);
+  }, [location, page, price, propertyType, showToast]);
   const createHousing = async () => {
     setSaving(true);
     try {
@@ -110,13 +108,8 @@ export default function HousingList({ user: _user }: { user: User }) {
   };
   return (
     <ContentColumn className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
-      <header className="mt-4 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h2 font-bold text-foreground">Moradia</h1>
-          <p className="text-body-sm text-muted-foreground">
-            Encontre seu proximo lar na comunidade.
-          </p>
-        </div>
+      <PageHeader title="Moradia" />
+      <div className="flex justify-end">
         <Button
           size="sm"
           iconLeft={<Plus size={16} />}
@@ -124,15 +117,7 @@ export default function HousingList({ user: _user }: { user: User }) {
         >
           Criar anuncio
         </Button>
-      </header>
-      <UnifiedSearchInput
-        value={search}
-        onChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        staticPlaceholder="Buscar moradias..."
-      />
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Select
           value={propertyType}

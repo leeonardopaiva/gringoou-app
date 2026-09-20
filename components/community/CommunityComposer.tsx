@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { BriefcaseBusiness, Camera, Link as LinkIcon, Play, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, Camera, Check, Link as LinkIcon, MoreHorizontal, Play, UserRound } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import type { ComposerMode } from '@/components/community/utils';
 import { handleAvatarError } from '@/lib/avatar';
@@ -52,32 +52,32 @@ type ModeButtonProps = {
 };
 
 const Root: React.FC<RootProps> = ({ children }) => (
-  <div className="space-y-4 rounded-card bg-surface p-4">
+  <div className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-3 shadow-sm">
     {children}
   </div>
 );
 
 const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, placeholder }) => (
-  <div className="flex items-start gap-3">
+  <div className="flex items-center gap-3">
     {avatarHref ? (
       <Link href={avatarHref} className="transition hover:opacity-90">
-        <img src={avatar} className="h-10 w-10 rounded-full object-cover" alt="User" onError={handleAvatarError} />
+        <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt="User" onError={handleAvatarError} />
       </Link>
     ) : (
-      <img src={avatar} className="h-10 w-10 rounded-full object-cover" alt="User" onError={handleAvatarError} />
+      <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt="User" onError={handleAvatarError} />
     )}
     <div className="min-w-0 flex-1">
       <textarea
-        rows={3}
+        rows={1}
         value={value}
         maxLength={COMMUNITY_POST_MAX_LENGTH}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="min-h-[96px] w-full rounded-md border-none bg-bg px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-brand-200"
+        className="min-h-11 w-full resize-none rounded-full border-none bg-slate-100 px-4 py-3 text-sm text-foreground outline-none transition focus:bg-white focus:ring-2 focus:ring-brand-200"
       />
-      <div className="mt-1 flex justify-end px-1">
+      {value ? <div className="mt-1 flex justify-end px-1">
         <CharacterCounter current={value.length} max={COMMUNITY_POST_MAX_LENGTH} />
-      </div>
+      </div> : null}
     </div>
   </div>
 );
@@ -126,6 +126,46 @@ const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
   </div>
 );
 
+const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
+  value,
+  onChange,
+  personalName,
+  professionalName,
+  professionalDisabled = false,
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const selectedName = value === 'professional' ? professionalName || 'Negócio' : personalName;
+  const selectedIcon = value === 'professional' ? <BriefcaseBusiness size={14} /> : <UserRound size={14} />;
+
+  const select = (nextValue: PersonaMode) => {
+    if (nextValue === 'professional' && professionalDisabled) return;
+    onChange(nextValue);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+      <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600">
+        <span className="text-brand-500">{selectedIcon}</span>
+        <span className="truncate">Publicando como {selectedName}</span>
+      </span>
+      <button type="button" onClick={() => setOpen((current) => !current)} aria-label="Escolher perfil de publicação" aria-expanded={open} className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white hover:text-brand-600">
+        <MoreHorizontal size={18} />
+      </button>
+      {open ? (
+        <div className="absolute right-0 top-[calc(100%+0.375rem)] z-20 w-56 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg">
+          <button type="button" onClick={() => select('personal')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            <UserRound size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{personalName}</span>{value === 'personal' ? <Check size={16} className="text-brand-500" /> : null}
+          </button>
+          <button type="button" onClick={() => select('professional')} disabled={professionalDisabled} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
+            <BriefcaseBusiness size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{professionalName || 'Cadastrar negócio'}</span>{value === 'professional' ? <Check size={16} className="text-brand-500" /> : null}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 const MediaField: React.FC<MediaFieldProps> = ({
   mode,
   imageUrl,
@@ -164,17 +204,19 @@ const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, onClick })
   <button
     type="button"
     onClick={onClick}
-    className={`flex items-center gap-1 text-xs font-bold ${
-      active ? 'text-brand-500' : 'text-muted-foreground'
+    aria-label={label}
+    title={label}
+    className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
+      active ? 'bg-brand-50 text-brand-600' : 'text-muted-foreground hover:bg-slate-100 hover:text-brand-600'
     }`}
   >
-    {icon} {label}
+    {icon}
   </button>
 );
 
 const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish }) => (
-  <div className="flex items-center justify-between pt-2">
-    <div className="flex items-center gap-4">
+  <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+    <div className="flex items-center gap-1">
       <ModeButton
         active={mode === 'photo'}
         icon={<Camera size={16} />}
@@ -194,7 +236,7 @@ const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish }) => (
         onClick={() => onModeChange(mode === 'link' ? 'text' : 'link')}
       />
     </div>
-    <Button onClick={onPublish} size="sm">
+    <Button onClick={onPublish} size="sm" className="min-w-[76px] rounded-full">
       Publicar
     </Button>
   </div>
@@ -202,7 +244,7 @@ const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish }) => (
 
 const CommunityComposer = {
   Root,
-  AuthorSwitch,
+  AuthorSwitch: CompactAuthorMenu,
   Editor,
   MediaField,
   Actions,

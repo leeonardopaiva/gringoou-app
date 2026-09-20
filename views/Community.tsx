@@ -764,12 +764,8 @@ const Community: React.FC<{
   };
 
   return (
-    <ContentColumn className="animate-in space-y-4 fade-in duration-500">
-      <header className="mt-4 px-5">
-        <h1 className="text-h2 font-bold text-foreground">Comunidade</h1>
-      </header>
-
-      <div className="px-5">
+    <ContentColumn className="animate-in space-y-3 px-5 pb-20 pt-4 fade-in duration-500">
+      <div>
         <CommunityComposer.Root>
           <CommunityComposer.AuthorSwitch
             value={postPersonaMode}
@@ -817,8 +813,8 @@ const Community: React.FC<{
         </CommunityComposer.Root>
       </div>
 
-      <div className="px-5">
-        <div className="flex items-center gap-3 rounded-card bg-secondary p-4 text-foreground shadow-xs">
+      <div>
+        <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-foreground">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
             <UserPlus size={19} aria-hidden="true" />
           </span>
@@ -838,7 +834,7 @@ const Community: React.FC<{
         </div>
       </div>
 
-      <div className="space-y-4 px-5 pb-20">
+      <div className="space-y-3">
         {displayedPosts.length === 0 && !postsLoading ? (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm font-medium text-slate-500">
             Ninguem publicou por aqui ainda. Seja o primeiro da sua regiao.

@@ -9,7 +9,6 @@ import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import AddressAutocomplete from '../components/forms/AddressAutocomplete';
 import { Heart, MapPin, Megaphone, Plus } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
-import UnifiedSearchInput from '../components/search/UnifiedSearchInput';
 import { formatLoosePhoneInput } from '../lib/forms/phone';
 import {
   type FieldErrors,
@@ -25,6 +24,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { FeedCard } from '../components/ui/FeedCard';
 import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
+import PageHeader from '../components/navigation/PageHeader';
 
 const SAMPLE_BUSINESSES: Business[] = [
   {
@@ -85,13 +85,11 @@ const BusinessList: React.FC<BusinessListProps> = ({
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [resultScope, setResultScope] = useState<'local' | 'global'>(initialData?.scope ?? 'local');
   const initialPageConsumedRef = React.useRef(false);
-  const [search, setSearch] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [createForm, setCreateForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<BusinessField>>({});
-  const deferredSearch = useDeferredValue(search);
   const isProfessionalMode = personaMode === 'professional' && Boolean(professionalIdentity);
   const activeRegionKey = isProfessionalMode
     ? professionalIdentity?.regionKey || session?.user?.regionKey || ''
@@ -129,7 +127,6 @@ const BusinessList: React.FC<BusinessListProps> = ({
       !initialPageConsumedRef.current &&
       initialData?.regionKey === activeRegionKey &&
       activeFilter === 'Todos' &&
-      !deferredSearch.trim() &&
       refreshKey === 0
     ) {
       initialPageConsumedRef.current = true;
@@ -143,9 +140,6 @@ const BusinessList: React.FC<BusinessListProps> = ({
         const params = new URLSearchParams();
         if (activeFilter && activeFilter !== 'Todos') {
           params.set('category', activeFilter);
-        }
-        if (deferredSearch.trim()) {
-          params.set('search', deferredSearch.trim());
         }
         if (activeRegionKey) {
           params.set('region', activeRegionKey);
@@ -178,7 +172,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
     return () => {
       ignore = true;
     };
-  }, [activeFilter, activeRegionKey, deferredSearch, initialData?.regionKey, refreshKey]);
+  }, [activeFilter, activeRegionKey, initialData?.regionKey, refreshKey]);
 
   const handleCreateBusiness = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -292,22 +286,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
   return (
     <ContentColumn className="space-y-6 px-5 pb-20 animate-in fade-in duration-500">
       <div className="mt-4 space-y-4">
-        <div>
-          <div>
-            <h1 className="text-2xl font-bold theme-text">Negócios</h1>
-            <p className="mt-1 text-xs font-semibold text-slate-500">
-              {isProfessionalMode
-                ? `Editando como ${professionalIdentity?.name}. Os demais negócios ficam apenas para consulta.`
-                : 'Participe da comunidade com seu perfil pessoal e crie gratuitamente a página do seu negócio.'}
-            </p>
-          </div>
-        </div>
-        <UnifiedSearchInput
-          value={search}
-          onChange={setSearch}
-          staticPlaceholder="Buscar negócios brasileiros..."
-        />
-
+        <PageHeader title="Negócios" />
         <button
           type="button"
           onClick={() => setShowCreateForm((current) => !current)}

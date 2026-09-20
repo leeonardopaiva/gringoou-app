@@ -92,7 +92,7 @@ type CommentComposerProps = {
 };
 
 const Root: React.FC<RootProps> = ({ children, className = '' }) => (
-  <FeedCard.Root className={`space-y-4 p-5 ${className}`.trim()}>
+  <FeedCard.Root className={`space-y-3 rounded-[18px] p-4 ${className}`.trim()}>
     {children}
   </FeedCard.Root>
 );
@@ -109,10 +109,10 @@ const Header: React.FC<HeaderProps> = ({
   <div className="flex items-center justify-between">
     {authorHref ? (
       <Link href={authorHref} className="flex items-center gap-3 transition hover:opacity-90">
-        <img src={authorImage} className="h-10 w-10 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+        <img src={authorImage} className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+            <h5 className="text-[13px] font-bold text-foreground">{authorName}</h5>
             {authorType === 'BUSINESS' ? <BusinessBadge /> : null}
           </div>
           <p className="text-[10px] text-slate-400">
@@ -122,10 +122,10 @@ const Header: React.FC<HeaderProps> = ({
       </Link>
     ) : (
       <div className="flex items-center gap-3">
-        <img src={authorImage} className="h-10 w-10 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+        <img src={authorImage} className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h5 className="text-sm font-bold text-foreground">{authorName}</h5>
+            <h5 className="text-[13px] font-bold text-foreground">{authorName}</h5>
             {authorType === 'BUSINESS' ? <BusinessBadge /> : null}
           </div>
           <p className="text-[10px] text-slate-400">
@@ -187,7 +187,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
 
   return (
     <>
-      <FeedCard.Content text={content} className="px-0 pb-0" />
+      <FeedCard.Content text={content} className="px-0 pb-0 text-[13px] leading-5" />
 
       {youtubeEmbedUrl ? (
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-950">
@@ -291,8 +291,8 @@ const Actions: React.FC<ActionsProps> = ({
   likesPreview,
   onShare,
 }) => (
-  <div className="flex items-center justify-between pt-2">
-    <div className="flex items-center gap-4">
+  <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+    <div className="flex items-center gap-2">
       <div
         className="relative flex items-center gap-1.5"
         onMouseEnter={onLikesHoverStart}
@@ -301,8 +301,8 @@ const Actions: React.FC<ActionsProps> = ({
         <button
           type="button"
           onClick={onToggleLike}
-          className={`flex items-center gap-1.5 text-xs font-bold ${
-            liked ? 'text-brand-500' : 'text-muted-foreground'
+        className={`inline-flex h-8 items-center gap-1.5 rounded-full bg-slate-50 px-3 text-xs font-bold ${
+            liked ? 'text-brand-600' : 'text-muted-foreground hover:bg-brand-50 hover:text-brand-600'
           }`}
         >
           <ThumbsUp size={16} />
@@ -323,7 +323,7 @@ const Actions: React.FC<ActionsProps> = ({
         type="button"
         onClick={onToggleComments}
         disabled={commentCount === 0 || !onToggleComments}
-        className={`flex items-center gap-1.5 text-xs font-bold ${
+        className={`inline-flex h-8 items-center gap-1.5 rounded-full bg-slate-50 px-3 text-xs font-bold ${
           commentCount > 0 && onToggleComments
             ? commentsExpanded
               ? 'text-brand-500'

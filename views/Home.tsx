@@ -2,10 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
-  MapPin,
-  ChevronDown,
   ExternalLink,
   Building2,
   House,
@@ -14,16 +11,12 @@ import {
   CalendarDays,
   ShoppingBag,
   UserPlus,
-  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
-import RegionSelector from '../components/RegionSelector';
-import UnifiedSearchInput from '../components/search/UnifiedSearchInput';
 import { useRegionBanners, useRegionCommunityPosts } from '../hooks/useRegionContent';
 import { trackAnalyticsEvent } from '../lib/analytics';
 import { Button } from '../components/ui/Button';
-import { Modal } from '../components/ui/Modal';
 import { TrendsCarousel, type TrendItem } from '../components/app/TrendsCarousel';
 import { STATIC_HOUSING, STATIC_JOBS } from '../lib/static-catalog';
 import { BannerAd, Business, EventItem, User } from '../types';
@@ -31,23 +24,13 @@ import type { HomeInitialData } from '../lib/content-contracts';
 import { ViewableAdSlot } from '../components/ads/ViewableAdSlot';
 import { ContentColumn } from '../components/ui/ContentColumn';
 
-const animatedSearchTerms = ['restaurantes', 'bares', 'eventos', 'pessoas'];
-
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
   const router = useRouter();
-  const { update } = useSession();
   const { showToast } = useToast();
-  const [editingRegion, setEditingRegion] = useState(false);
-  const [selectedRegionKey, setSelectedRegionKey] = useState(user.regionKey || '');
-  const [savingRegion, setSavingRegion] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isAiSearchOpen, setIsAiSearchOpen] = useState(false);
-  const [aiSearchLoading, setAiSearchLoading] = useState(false);
   const [latestBusiness, setLatestBusiness] = useState<Business | null>(initialData?.latestBusiness ?? null);
   const [latestEvent, setLatestEvent] = useState<EventItem | null>(initialData?.latestEvent ?? null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [submittingBannerId, setSubmittingBannerId] = useState<string | null>(null);
-  const [searchPlaceholderIndex, setSearchPlaceholderIndex] = useState(0);
   const { data: banners } = useRegionBanners('home', user.regionKey);
   const { data: communityPosts } = useRegionCommunityPosts(user.regionKey, 4);
   const latestPost = communityPosts[0] ?? initialData?.latestPost;
@@ -60,27 +43,6 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     { href: '/vagas', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
     { href: '/moradia', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
   ];
-
-  const handleAiSearch = async () => {
-    const query = searchQuery.trim();
-    if (!query) return showToast('Descreva o que deseja encontrar.', 'info');
-    setAiSearchLoading(true);
-    try {
-      const response = await fetch('/api/search/interpret', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.filters) throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
-      const params = new URLSearchParams();
-      Object.entries(payload.filters as Record<string, string>).forEach(([key, value]) => { if (value && !(key === 'category' && value === 'all')) params.set(key, value); });
-      if (!params.get('q')) params.set('q', query);
-      setIsAiSearchOpen(false);
-      router.push(`/buscar?${params.toString()}`);
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error'); }
-    finally { setAiSearchLoading(false); }
-  };
-
-  useEffect(() => {
-    setSelectedRegionKey(user.regionKey || '');
-  }, [user.regionKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -121,51 +83,6 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       window.clearInterval(intervalId);
     };
   }, [banners.length]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setSearchPlaceholderIndex((current) => (current + 1) % animatedSearchTerms.length);
-    }, 2200);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const handleRegionSave = async () => {
-    if (!selectedRegionKey) {
-      showToast('Selecione uma regiao valida antes de salvar.', 'error');
-      return;
-    }
-
-    setSavingRegion(true);
-
-    try {
-      const response = await fetch('/api/profile/region', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ regionKey: selectedRegionKey }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel atualizar a sua regiao.', 'error');
-        return;
-      }
-
-      await update();
-      setEditingRegion(false);
-      showToast('Regiao de visualizacao atualizada.', 'success');
-    } catch (error) {
-      console.error('Failed to update region from home:', error);
-      showToast('Nao foi possivel atualizar a sua regiao.', 'error');
-    } finally {
-      setSavingRegion(false);
-    }
-  };
 
   const handleDisabledFeatureClick = (targetKey: string, label: string) => {
     showToast(`${label} chega em breve.`, 'info');
@@ -224,67 +141,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   };
 
   return (
-    <ContentColumn className="animate-in space-y-5 px-5 pb-28 fade-in slide-in-from-bottom-4 duration-500 md:pb-8">
-      <div className="relative mt-3 inline-block">
-        <button
-          type="button"
-          onClick={() => {
-            setEditingRegion((current) => !current);
-          }}
-          className="inline-flex h-7 items-center gap-1 rounded-full bg-brand-100 px-2.5 text-[11px] font-semibold text-brand-500 transition hover:brightness-95"
-        >
-          <MapPin size={12} />
-          <span className="leading-none">{user.location}</span>
-          <ChevronDown
-            size={12}
-            className={`transition-transform ${editingRegion ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        {editingRegion ? (
-          <div className="absolute left-0 top-full z-[120] mt-2 w-[min(24rem,calc(100vw-2.5rem))] rounded-2xl border border-border bg-surface p-4 shadow-lg">
-            <RegionSelector
-              value={selectedRegionKey}
-              onChange={(region) => {
-                setSelectedRegionKey(region.key);
-              }}
-              autoDetect
-              hint="Escolha a regiao para priorizar negocios, comunidade e eventos."
-            />
-
-            <div className="mt-4 flex gap-3">
-              <Button variant="primary" fullWidth loading={savingRegion} onClick={handleRegionSave}>
-                Salvar regiao
-              </Button>
-              <Button
-                variant="secondary"
-                fullWidth
-                disabled={savingRegion}
-                onClick={() => {
-                  setEditingRegion(false);
-                  setSelectedRegionKey(user.regionKey || '');
-                }}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <UnifiedSearchInput
-        value={searchQuery}
-        onChange={setSearchQuery}
-        animatedTerms={animatedSearchTerms}
-        animatedIndex={searchPlaceholderIndex}
-        onSubmit={() => {
-          const trimmed = searchQuery.trim();
-          if (!trimmed) return;
-          router.push(`/buscar?q=${encodeURIComponent(trimmed)}`);
-        }}
-        onFilterClick={() => setIsAiSearchOpen(true)}
-      />
-
+    <ContentColumn className="animate-in space-y-5 px-5 pb-28 pt-4 fade-in slide-in-from-bottom-4 duration-500 md:pb-8">
       <div className="flex items-center justify-between">
         <h3 className="text-body-sm font-bold text-text">Categorias</h3>
         <button type="button" onClick={() => router.push('/buscar')} className="text-body-sm font-semibold text-brand-500">
@@ -378,52 +235,6 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       ) : null}
 
       <TrendsCarousel items={trendItems} />
-
-      <Modal
-        open={isAiSearchOpen}
-        onClose={() => setIsAiSearchOpen(false)}
-        title="O que você procura?"
-        description="Pesquise em toda a comunidade ou escolha uma categoria."
-        fullscreen
-      >
-        <div className="mx-auto mt-6 max-w-2xl space-y-8">
-          <UnifiedSearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            staticPlaceholder="Descreva o que você precisa..."
-            onSubmit={() => {
-              const trimmed = searchQuery.trim();
-              if (!trimmed) return;
-              setIsAiSearchOpen(false);
-              router.push(`/buscar?q=${encodeURIComponent(trimmed)}`);
-            }}
-          />
-          <Button variant="primary" fullWidth iconLeft={<Sparkles size={16} />} loading={aiSearchLoading} onClick={() => void handleAiSearch()}>
-            Interpretar busca com IA
-          </Button>
-          <div>
-            <h3 className="mb-3 text-body-sm font-bold text-foreground">Explorar categorias</h3>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {trendItems.map(({ href, category, icon: Icon }) => (
-                <button
-                  key={href}
-                  type="button"
-                  onClick={() => {
-                    setIsAiSearchOpen(false);
-                    router.push(href);
-                  }}
-                  className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-card border border-border bg-surface p-4 text-center text-body-sm font-semibold text-foreground transition hover:border-brand-200 hover:bg-brand-100"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-brand-500">
-                    <Icon size={19} aria-hidden="true" />
-                  </span>
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Modal>
 
     </ContentColumn>
   );

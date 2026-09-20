@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Briefcase,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Home as HomeIcon,
   House,
   Menu,
@@ -40,9 +42,10 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   professional?: boolean;
+  href?: string;
 }
 
-export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', professional = false }) => {
+export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', professional = false, href = '/' }) => {
   const sizePx = {
     sm: 28,
     md: 38,
@@ -50,7 +53,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', profess
   }[size];
 
   return (
-    <Link href="/" aria-label="Home">
+    <Link href={href} aria-label="Home">
       <span className={`inline-flex items-center transition-opacity duration-300 ${professional ? 'opacity-95' : ''} ${className}`}>
         <GringoouLogo size={sizePx} />
         <span className="sr-only">Gringoou</span>
@@ -110,6 +113,8 @@ const SidebarContent: React.FC<{
   onProfessionalBusinessChange?: (businessId: string) => void;
   onItemClick?: () => void;
   onSignOut?: () => void;
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 }> = ({
   user,
   sourcePath,
@@ -124,6 +129,8 @@ const SidebarContent: React.FC<{
   onProfessionalBusinessChange,
   onItemClick,
   onSignOut,
+  collapsed = false,
+  onToggleCollapsed,
 }) => {
   const { showToast } = useToast();
   const isProfessionalTheme = personaMode === 'professional';
@@ -161,11 +168,28 @@ const SidebarContent: React.FC<{
   };
 
   return (
-    <div className="space-y-4 p-5 pb-20 pt-7 md:flex md:h-full md:flex-col md:justify-between md:px-6 md:py-7">
+    <div className={`space-y-4 p-5 pb-20 pt-7 md:flex md:h-full md:flex-col md:justify-between md:py-7 ${collapsed ? 'md:px-3' : 'md:px-6'}`}>
       <div className="space-y-4">
-        <div className="mb-5 flex flex-col gap-6">
-          <Logo size="lg" professional={isProfessionalTheme} />
-          <div className="px-1">
+        <div className="mb-5 space-y-4">
+          <div className={`flex items-center gap-1 ${collapsed ? 'justify-center' : 'justify-start'}`}>
+          {collapsed ? (
+            <Link href="/inicio" aria-label="Ir para a Home" title="Home" className="flex h-9 w-9 items-center justify-center">
+              <img src="/assets/logo_simbolo.svg" alt="Gringoou" className="h-8 w-8 object-contain" />
+            </Link>
+          ) : (
+            <Logo size="lg" professional={isProfessionalTheme} href="/inicio" />
+          )}
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            className="order-first hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 md:inline-flex"
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+          </div>
+          {!collapsed ? <div className="px-1">
             <div className="min-w-0">
               <div className="flex items-center gap-1">
                 <h2 className={`truncate text-body-sm font-semibold ${accentColorClass}`}>{activeName}</h2>
@@ -189,7 +213,7 @@ const SidebarContent: React.FC<{
                 {activeSubtitle}
               </p>
             </div>
-          </div>
+          </div> : null}
         </div>
 
         <SidebarMenu>
@@ -201,6 +225,7 @@ const SidebarContent: React.FC<{
               active={isActive(item.href)}
               disabled={item.disabled}
               badge={item.badge}
+              collapsed={collapsed}
               onClick={item.disabled ? () => handleDisabledNavigation(item) : () => onNavigate(item.href)}
             />
           ))}
@@ -210,12 +235,14 @@ const SidebarContent: React.FC<{
                 label="Admin"
                 icon={<ShieldCheck size={18} />}
                 active={sourcePath === '/admin'}
+                collapsed={collapsed}
                 onClick={() => onNavigate('/admin')}
               />
               <SidebarMenuItem
                 label="Moderar anuncios"
                 icon={<ShieldCheck size={18} />}
                 active={isActive('/admin/ads')}
+                collapsed={collapsed}
                 onClick={() => onNavigate('/admin/ads')}
               />
             </>
@@ -224,12 +251,13 @@ const SidebarContent: React.FC<{
             label={isProfessionalTheme ? 'Meu negocio' : 'Meu perfil'}
             icon={<UserIcon size={18} />}
             active={isActive('/profile')}
+            collapsed={collapsed}
             onClick={() => onNavigate('/profile')}
           />
         </SidebarMenu>
       </div>
 
-      <div className="space-y-2">
+      {!collapsed ? <div className="space-y-2">
         <Button variant="secondary" fullWidth onClick={() => onNavigate(professionalIdentity ? `/ads/promover/${professionalIdentity.id}` : '/negocios?create=1')}>
           {professionalIdentity ? 'Promover com Ads' : 'Divulgar meu negócio'}
         </Button>
@@ -240,9 +268,9 @@ const SidebarContent: React.FC<{
         >
           Cadastrar meu evento
         </button>
-      </div>
+      </div> : null}
 
-      {onSignOut ? (
+      {!collapsed && onSignOut ? (
         <Button
           variant="primary"
           fullWidth
@@ -255,7 +283,7 @@ const SidebarContent: React.FC<{
         </Button>
       ) : null}
 
-      <Button
+      {!collapsed ? <Button
         variant="ghost"
         fullWidth
         className="mt-3 border-2 border-slate-200 text-slate-700"
@@ -266,7 +294,7 @@ const SidebarContent: React.FC<{
         }}
       >
         Enviar sugestao
-      </Button>
+      </Button> : null}
     </div>
   );
 };
@@ -285,9 +313,12 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
+  const [isAiSearchLoading, setIsAiSearchLoading] = useState(false);
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -302,6 +333,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const activeName = isProfessionalTheme && professionalIdentity ? professionalIdentity.name : user.name;
   const activeAvatar =
     isProfessionalTheme && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : user.avatar;
+  const shortRegionLabel = user.location?.split(',')[0]?.trim() || 'Região';
 
   React.useEffect(() => {
     if (pathname === '/buscar') {
@@ -321,6 +353,37 @@ const Layout: React.FC<LayoutWithUserProps> = ({
     router.push(buildSearchPath(headerSearch));
   };
 
+  const handleHeaderAiSearch = async () => {
+    const query = headerSearch.trim();
+    if (!query) {
+      showToast('Descreva o que deseja encontrar.', 'info');
+      return;
+    }
+
+    setIsAiSearchLoading(true);
+    try {
+      const response = await fetch('/api/search/interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.filters) {
+        throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
+      }
+
+      const params = new URLSearchParams();
+      Object.entries(payload.filters as Record<string, string>).forEach(([key, value]) => {
+        if (value && !(key === 'category' && value === 'all')) params.set(key, value);
+      });
+      router.push(buildSearchPath(params.get('q') || query, params));
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error');
+    } finally {
+      setIsAiSearchLoading(false);
+    }
+  };
+
   return (
     <div className="app-shell min-h-screen bg-bg" data-persona={isProfessionalTheme ? 'professional' : 'personal'}>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden bg-bg font-sans md:max-w-none md:bg-transparent">
@@ -332,7 +395,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         ) : null}
 
         <div
-          className={`fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-border bg-bg transition-transform duration-300 ease-out md:w-72 md:translate-x-0 md:overflow-visible md:shadow-none ${
+          className={`fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-border bg-bg transition-[width,transform] duration-300 ease-out md:max-w-none md:translate-x-0 md:overflow-visible md:shadow-none ${isSidebarCollapsed ? 'md:w-20' : 'md:w-72'} ${
             isMenuOpen ? 'translate-x-0' : '-translate-x-full'
           } ${panelClass}`}
         >
@@ -350,11 +413,14 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             onProfessionalBusinessChange={onProfessionalBusinessChange}
             onItemClick={() => setIsMenuOpen(false)}
             onSignOut={onSignOut}
+            collapsed={isSidebarCollapsed}
+            onToggleCollapsed={() => setIsSidebarCollapsed((current) => !current)}
           />
         </div>
 
-        <div className="relative flex min-h-screen flex-1 flex-col md:pl-72">
-          <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-bg/95 px-5 pb-3 pt-4 backdrop-blur md:flex-nowrap md:px-8 md:py-4 xl:px-10">
+        <div className={`relative flex min-h-screen flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
+          <header className="sticky top-0 z-40 border-b border-border/70 bg-bg/95 backdrop-blur">
+            <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-3 px-5 pb-3 pt-4 md:flex-nowrap md:py-4">
             <div className="flex items-center gap-4 md:hidden">
               <button
                 type="button"
@@ -363,7 +429,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               >
                 <Menu size={28} />
               </button>
-              <Logo size="md" professional={isProfessionalTheme} />
+              <Logo size="md" professional={isProfessionalTheme} href="/inicio" />
             </div>
 
             <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
@@ -372,6 +438,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   value={headerSearch}
                   onChange={setHeaderSearch}
                   onSubmit={handleHeaderSearch}
+                  onFilterClick={() => void handleHeaderAiSearch()}
+                  filterLoading={isAiSearchLoading}
                   staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
                   className="h-11 shadow-none"
                 />
@@ -380,10 +448,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 type="button"
                 onClick={() => router.push('/profile?edit=region')}
                 aria-label={`Região da comunidade: ${user.location}`}
-                className="flex h-10 max-w-[116px] shrink-0 items-center gap-2 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:max-w-52"
+                title={`Alterar região: ${user.location}`}
+                className="flex h-10 max-w-[104px] shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:max-w-36"
               >
                 <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
-                <span className="truncate">{user.location}</span>
+                <span className="truncate">{shortRegionLabel}</span>
               </button>
             </div>
 
@@ -394,6 +463,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
                 professionalProfileHref={user.username && professionalIdentity ? `/profissional/${encodeURIComponent(user.username)}` : null}
               />
+            </div>
             </div>
           </header>
 

@@ -1,12 +1,11 @@
 'use client';
 
-import React, { FormEvent, startTransition, useEffect, useMemo, useState } from 'react';
+import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Briefcase, CalendarDays, Clock3, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
 import { ContentColumn } from '@/components/ui';
 import RegionSelector from '@/components/RegionSelector';
-import UnifiedSearchInput from '@/components/search/UnifiedSearchInput';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { buildSearchPath } from '@/lib/search-navigation';
 
@@ -50,14 +49,11 @@ const SearchResults: React.FC = () => {
   const params = useMemo(() => new URLSearchParams(paramsKey), [paramsKey]);
   const queryFromUrl = params.get('q')?.trim() ?? '';
   const activeTab = (params.get('category') || 'all') as SearchCategory;
-  const [query, setQuery] = useState(queryFromUrl);
   const [results, setResults] = useState<SearchResponse>(emptyResults);
   const [loading, setLoading] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
   const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '' });
 
-  useEffect(() => setQuery(queryFromUrl), [queryFromUrl]);
   useEffect(() => setFilterDraft({
     region: params.get('region') || '',
     country: params.get('country') || '',
@@ -86,22 +82,9 @@ const SearchResults: React.FC = () => {
     if (!('page' in updates)) next.delete('page');
     router.push(buildSearchPath(next.get('q') || '', next));
   };
-  const submitSearch = (event?: FormEvent) => { event?.preventDefault(); router.push(buildSearchPath(query, params)); };
   const clearFilters = () => {
     setFilterDraft({ region: '', country: '', city: '', businessType: '' });
     navigateWith({ region: null, country: null, city: null, businessType: null, page: null });
-  };
-  const runAiSearch = async () => {
-    if (!query.trim()) return showToast('Descreva o que deseja encontrar.', 'info');
-    setAiLoading(true);
-    try {
-      const response = await fetch('/api/search/interpret', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.filters) throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
-      const filters = payload.filters as Record<string, string>;
-      navigateWith({ q: filters.q || query, category: filters.category || 'all', city: filters.city || null, country: filters.country || null, businessType: filters.businessType || null, page: null });
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error'); }
-    finally { setAiLoading(false); }
   };
   const visible = (category: Exclude<SearchCategory, 'all'>) => activeTab === 'all' || activeTab === category;
   const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType'));
@@ -109,13 +92,9 @@ const SearchResults: React.FC = () => {
   return (
     <ContentColumn className="animate-in space-y-6 px-5 py-4 pb-24 fade-in duration-500">
       <header><h1 className="text-h2 font-bold text-foreground">Busca</h1><p className="mt-1 text-sm text-slate-500">Encontre pessoas, grupos, negócios, eventos, vagas e conversas.</p></header>
-      <form onSubmit={submitSearch} className="space-y-3">
-        <UnifiedSearchInput value={query} onChange={setQuery} onSubmit={() => submitSearch()} staticPlaceholder="Buscar na Gringoou" />
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
-          <button type="button" onClick={() => void runAiSearch()} disabled={aiLoading} className="inline-flex h-10 items-center gap-2 rounded-full bg-violet-600 px-4 text-xs font-bold text-white disabled:opacity-60"><Sparkles size={15} /> {aiLoading ? 'Interpretando...' : 'Busca com IA'}</button>
-        </div>
-      </form>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
+      </div>
 
       {filtersOpen ? <section className="grid gap-4 rounded-[28px] border border-slate-200 bg-white p-4 sm:grid-cols-2">
         <RegionSelector value={filterDraft.region} onChange={(region) => setFilterDraft((current) => ({ ...current, region: region.key }))} onClear={() => setFilterDraft((current) => ({ ...current, region: '' }))} allowEmpty emptyLabel="Todas as regiões" label="Localidade" />
@@ -141,7 +120,7 @@ const SearchResults: React.FC = () => {
         {visible('jobs') && results.jobs.length ? <ResultSection title="Vagas" icon={<Briefcase size={16} />}>{results.jobs.map((job) => <Link key={job.id} href={`/vagas/${job.id}`} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><p className="font-bold">{job.title}</p><p className="mt-1 text-sm font-semibold text-brand-600">{job.company}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {job.locationLabel}</p><p className="mt-2 text-xs text-slate-500">{job.employmentType}{job.salary ? ` · ${job.salary}` : ''}</p></Link>)}</ResultSection> : null}
         {visible('events') && results.events.length ? <ResultSection title="Eventos" icon={<CalendarDays size={16} />}>{results.events.map((event) => <Link key={event.id} href={`/eventos/${event.slug}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"><img src={event.imageUrl || `https://picsum.photos/seed/${event.id}/240`} alt={event.title} className="w-28 object-cover" /><div className="min-w-0 p-4"><p className="font-bold">{event.title}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><Clock3 size={12} /> {formatDateTime(event.startsAt)}</p><p className="mt-1 text-xs text-slate-500">{event.venueName}</p></div></Link>)}</ResultSection> : null}
         {visible('posts') && results.posts.length ? <ResultSection title="Comunidade" icon={<Users size={16} />}>{results.posts.map((post) => <Link key={post.id} href={`/community?post=${post.id}`} className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={post.author.image || `https://picsum.photos/seed/${post.id}/120`} alt={post.author.name || 'Autor'} className="h-12 w-12 rounded-full object-cover" /><div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate font-bold">{post.author.name || 'Membro'}</p>{post.authorType === 'BUSINESS' ? <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold text-brand-600">NEGÓCIO</span> : null}</div><p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.content}</p><p className="mt-2 text-xs text-slate-500">{post._count.reactions} curtidas · {post._count.comments} comentários</p></div></Link>)}</ResultSection> : null}
-        {visible('interests') && results.interests.length ? <ResultSection title="Interesses" icon={<Sparkles size={16} />}><div className="flex flex-wrap gap-2">{results.interests.map((interest) => <button key={interest} type="button" onClick={() => { setQuery(interest); router.push(buildSearchPath(interest, params)); }} className="rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">{interest}</button>)}</div></ResultSection> : null}
+        {visible('interests') && results.interests.length ? <ResultSection title="Interesses" icon={<Sparkles size={16} />}><div className="flex flex-wrap gap-2">{results.interests.map((interest) => <button key={interest} type="button" onClick={() => router.push(buildSearchPath(interest, params))} className="rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">{interest}</button>)}</div></ResultSection> : null}
       </div> : null}
 
       {!loading && results.pagination.totalPages > 1 ? <div className="flex items-center justify-center gap-3"><button type="button" disabled={results.pagination.page <= 1} onClick={() => navigateWith({ page: String(results.pagination.page - 1) })} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold disabled:opacity-40">Anterior</button><span className="text-sm text-slate-500">{results.pagination.page} de {results.pagination.totalPages}</span><button type="button" disabled={results.pagination.page >= results.pagination.totalPages} onClick={() => navigateWith({ page: String(results.pagination.page + 1) })} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold disabled:opacity-40">Próxima</button></div> : null}

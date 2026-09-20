@@ -6,6 +6,7 @@ type UnifiedSearchInputProps = {
   onChange: (value: string) => void;
   onSubmit?: () => void;
   onFilterClick?: () => void;
+  filterLoading?: boolean;
   animatedTerms?: string[];
   animatedIndex?: number;
   staticPlaceholder?: string;
@@ -17,6 +18,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
   onChange,
   onSubmit,
   onFilterClick,
+  filterLoading = false,
   animatedTerms,
   animatedIndex = 0,
   staticPlaceholder,
@@ -55,10 +57,12 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       <button
         type="button"
         onClick={onFilterClick}
+        disabled={filterLoading}
         aria-label="Abrir busca inteligente"
-        className="mr-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105"
+        title="Busca com inteligência artificial"
+        className="mr-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:cursor-wait disabled:opacity-70"
       >
-        <Sparkles size={16} aria-hidden="true" />
+        <Sparkles size={16} aria-hidden="true" className={filterLoading ? 'animate-pulse' : ''} />
       </button>
     ) : null}
   </form>
