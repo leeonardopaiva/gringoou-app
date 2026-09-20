@@ -13,7 +13,7 @@ import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type Prof
 import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, ProfileInitialData } from './lib/content-contracts';
 
 const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== 'false';
-const EMAIL_AUTH_ENABLED = false;
+const EMAIL_AUTH_ENABLED = process.env.NEXT_PUBLIC_EMAIL_AUTH_ENABLED === 'true';
 const PASSWORD_AUTH_ENABLED = true;
 const DEV_AUTH_ENABLED =
   process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_AUTH_ENABLED === 'true';
@@ -422,12 +422,8 @@ const App: React.FC<{
         return;
       }
 
-      setRegistrationNotice(payload?.message ?? 'Conta criada. Entrando...');
-      const result = await performPasswordLogin(values.email, values.password);
-
-      if (!result.ok) {
-        setRegistrationNotice('Conta criada. Agora entre com seu email e senha.');
-      }
+      setRegistrationNotice(payload?.message ?? 'Conta criada. Enviando confirmação...');
+      await requestMagicLink(values.email);
     } catch (error) {
       console.error('Password registration failed:', error);
       setRegistrationError('Nao foi possivel criar a conta.');

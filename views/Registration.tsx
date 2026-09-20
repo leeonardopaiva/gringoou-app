@@ -891,7 +891,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           Criar conta por email e senha
                         </Button>
                         <p className="px-2 text-center text-xs leading-6 text-slate-500">
-                          Cadastro sem verificação por email, usado enquanto o magic link não estiver configurado.
+                          Após o cadastro, enviaremos um link para confirmar seu email.
                         </p>
                       </div>
                     ) : null}
@@ -1060,7 +1060,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                         <Card variant="secondary" className={`${secondaryCardClass} border-amber-100 bg-amber-50`}>
                           <Card.Content className="p-4 text-xs leading-6 text-amber-800">
-                            Cadastro sem verificação por email. Use este fluxo enquanto o magic link não estiver configurado.
+                            Após o cadastro, confirme seu email pelo link antes de entrar com a senha.
                           </Card.Content>
                         </Card>
 

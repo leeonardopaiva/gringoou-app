@@ -69,10 +69,16 @@ export const authOptions: NextAuthOptions = {
                   recruiterVerified: true,
                   isAdvertiser: true,
                   passwordHash: true,
+                  emailVerified: true,
+                  emailVerificationRequired: true,
                 },
               });
 
-              if (!user || !(await verifyPassword(password, user.passwordHash))) {
+              if (
+                !user ||
+                (user.emailVerificationRequired && !user.emailVerified) ||
+                !(await verifyPassword(password, user.passwordHash))
+              ) {
                 return null;
               }
 
@@ -115,7 +121,17 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === 'email' && user.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            emailVerified: new Date(),
+            emailVerificationRequired: false,
+          },
+        });
+      }
+
       if (user.id && isConfiguredAdminEmail(user.email)) {
         await syncAdminRole(user.id, user.email);
       }
