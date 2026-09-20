@@ -44,7 +44,13 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       placeholder={!animatedTerms ? staticPlaceholder : ''}
       className="w-full bg-transparent py-4 pl-12 pr-2 text-sm text-slate-700 outline-none"
     />
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+    <button
+      type="submit"
+      aria-label="Executar busca"
+      className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+    >
+      <Search size={20} aria-hidden="true" />
+    </button>
     {onFilterClick ? (
       <button
         type="button"

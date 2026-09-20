@@ -14,6 +14,7 @@ import {
   CalendarDays,
   ShoppingBag,
   UserPlus,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -41,6 +42,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   const [savingRegion, setSavingRegion] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiSearchOpen, setIsAiSearchOpen] = useState(false);
+  const [aiSearchLoading, setAiSearchLoading] = useState(false);
   const [latestBusiness, setLatestBusiness] = useState<Business | null>(initialData?.latestBusiness ?? null);
   const [latestEvent, setLatestEvent] = useState<EventItem | null>(initialData?.latestEvent ?? null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
@@ -58,6 +60,23 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     { href: '/vagas', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
     { href: '/moradia', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
   ];
+
+  const handleAiSearch = async () => {
+    const query = searchQuery.trim();
+    if (!query) return showToast('Descreva o que deseja encontrar.', 'info');
+    setAiSearchLoading(true);
+    try {
+      const response = await fetch('/api/search/interpret', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.filters) throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
+      const params = new URLSearchParams();
+      Object.entries(payload.filters as Record<string, string>).forEach(([key, value]) => { if (value && !(key === 'category' && value === 'all')) params.set(key, value); });
+      if (!params.get('q')) params.set('q', query);
+      setIsAiSearchOpen(false);
+      router.push(`/buscar?${params.toString()}`);
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error'); }
+    finally { setAiSearchLoading(false); }
+  };
 
   useEffect(() => {
     setSelectedRegionKey(user.regionKey || '');
@@ -379,6 +398,9 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
               router.push(`/buscar?q=${encodeURIComponent(trimmed)}`);
             }}
           />
+          <Button variant="primary" fullWidth iconLeft={<Sparkles size={16} />} loading={aiSearchLoading} onClick={() => void handleAiSearch()}>
+            Interpretar busca com IA
+          </Button>
           <div>
             <h3 className="mb-3 text-body-sm font-bold text-foreground">Explorar categorias</h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { getGroupPostPermissions } from '@/lib/server/group-permissions';
 
 type RouteContext = {
   params: Promise<{
@@ -73,6 +74,9 @@ export async function POST(_request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
+  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
+  if (!permissions) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+  if (!permissions.canInteract) return NextResponse.json({ error: 'Apenas membros aprovados podem reagir.' }, { status: 403 });
 
   const existingReaction = await prisma.postReaction.findUnique({
     where: {

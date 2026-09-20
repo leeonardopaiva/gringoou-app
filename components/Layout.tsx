@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Briefcase,
   Calendar,
   Home as HomeIcon,
   House,
   Menu,
+  MapPin,
   MessageCircle,
   MessageSquarePlus,
   Newspaper,
@@ -32,6 +33,8 @@ import { GringoouLogo } from './icons/GringoouLogo';
 import { SidebarMenu, SidebarMenuItem } from './navigation/SidebarMenu';
 import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, User, UserRole } from '../types';
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
+import UnifiedSearchInput from './search/UnifiedSearchInput';
+import { buildSearchPath } from '../lib/search-navigation';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -281,8 +284,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 }) => {
   const pathname = usePathname() || '/';
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -298,12 +303,22 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const activeAvatar =
     isProfessionalTheme && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : user.avatar;
 
+  React.useEffect(() => {
+    if (pathname === '/buscar') {
+      setHeaderSearch(searchParams?.get('q') ?? '');
+    }
+  }, [pathname, searchParams]);
+
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
   const handleNavigate = (href: string) => {
     setIsMenuOpen(false);
     router.push(href);
+  };
+
+  const handleHeaderSearch = () => {
+    router.push(buildSearchPath(headerSearch));
   };
 
   return (
@@ -339,7 +354,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         </div>
 
         <div className="relative flex min-h-screen flex-1 flex-col md:pl-72">
-          <header className="sticky top-0 z-40 flex items-center justify-between bg-bg px-5 pb-2 pt-6 md:justify-end md:border-b md:border-border md:px-8 md:py-4 xl:px-10">
+          <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-bg/95 px-5 pb-3 pt-4 backdrop-blur md:flex-nowrap md:px-8 md:py-4 xl:px-10">
             <div className="flex items-center gap-4 md:hidden">
               <button
                 type="button"
@@ -349,6 +364,27 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <Menu size={28} />
               </button>
               <Logo size="md" professional={isProfessionalTheme} />
+            </div>
+
+            <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
+              <div className="min-w-0 flex-1">
+                <UnifiedSearchInput
+                  value={headerSearch}
+                  onChange={setHeaderSearch}
+                  onSubmit={handleHeaderSearch}
+                  staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
+                  className="h-11 shadow-none"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push('/profile?edit=region')}
+                aria-label={`Região da comunidade: ${user.location}`}
+                className="flex h-10 max-w-[116px] shrink-0 items-center gap-2 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:max-w-52"
+              >
+                <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
+                <span className="truncate">{user.location}</span>
+              </button>
             </div>
 
             <div className="flex h-10 items-center gap-2">

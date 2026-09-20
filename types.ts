@@ -22,6 +22,7 @@ export interface User {
   regionKey?: string | null;
   email?: string | null;
   phone?: string | null;
+  birthCity?: string | null;
   recruiterVerified?: boolean;
 }
 
@@ -90,6 +91,7 @@ export interface PublicProfessionalProfile {
     name: string;
     category: string;
     imageUrl?: string | null;
+    coverImageUrl?: string | null;
     locationLabel?: string | null;
     ratingAverage: number;
     ratingCount: number;
@@ -117,6 +119,7 @@ export interface PublicUserProfile {
   interests: string[];
   galleryUrls: string[];
   locationLabel?: string | null;
+  birthCity?: string | null;
   joinedAt: string;
   publicPath: string;
   friendFeature: {
@@ -148,6 +151,8 @@ export interface PublicUserProfile {
     category?: string | null;
     regionKey?: string | null;
     regionLabel?: string | null;
+    countryCode?: string;
+    isPublic?: boolean;
     role: string;
     memberCount: number;
     publicPath: string;

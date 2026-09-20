@@ -1,418 +1,155 @@
 'use client';
 
-import React, { FormEvent, startTransition, useDeferredValue, useEffect, useState } from 'react';
+import React, { FormEvent, startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarDays, Clock3, MapPin, Search, Sparkles, Store, Users } from 'lucide-react';
-import type { Business, EventItem } from '@/types';
+import { Briefcase, CalendarDays, Clock3, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
 import { ContentColumn } from '@/components/ui';
+import RegionSelector from '@/components/RegionSelector';
+import UnifiedSearchInput from '@/components/search/UnifiedSearchInput';
+import { useToast } from '@/components/feedback/ToastProvider';
+import { buildSearchPath } from '@/lib/search-navigation';
 
-type SearchPostResult = {
-  id: string;
-  content: string;
-  imageUrl?: string | null;
-  createdAt: string;
-  locationLabel: string;
-  author: {
-    id: string;
-    name?: string | null;
-    username?: string | null;
-    image?: string | null;
-  };
-  authorHref?: string;
-  authorType?: 'USER' | 'BUSINESS';
-  _count: {
-    comments: number;
-    reactions: number;
-  };
-};
-
+type SearchCategory = 'all' | 'businesses' | 'events' | 'posts' | 'people' | 'groups' | 'jobs' | 'interests';
+type Counts = Record<Exclude<SearchCategory, 'all'>, number> & { total: number };
 type SearchResponse = {
   query: string;
-  businesses: Business[];
-  events: EventItem[];
-  posts: SearchPostResult[];
-  counts: {
-    businesses: number;
-    events: number;
-    posts: number;
-    total: number;
-  };
-  intelligence: {
-    enabled: boolean;
-    used: boolean;
-    summary: string | null;
-    terms: string[];
-  };
+  category: SearchCategory;
+  businesses: Array<{ id: string; slug: string; name: string; category: string; address: string; description?: string | null; imageUrl?: string | null; locationLabel: string }>;
+  events: Array<{ id: string; slug: string; title: string; venueName: string; startsAt: string; locationLabel: string; description: string; imageUrl?: string | null }>;
+  posts: Array<{ id: string; content: string; createdAt: string; locationLabel: string; authorHref?: string; authorType?: 'USER' | 'BUSINESS'; author: { name?: string | null; username?: string | null; image?: string | null }; _count: { comments: number; reactions: number } }>;
+  people: Array<{ id: string; name?: string | null; username?: string | null; image?: string | null; locationLabel?: string | null; interests: string[] }>;
+  groups: Array<{ id: string; name: string; slug: string; description?: string | null; imageUrl?: string | null; coverImageUrl?: string | null; category?: string | null; countryCode: string; isPublic: boolean; region?: { label: string } | null; _count: { members: number } }>;
+  jobs: Array<{ id: string; title: string; company: string; employmentType: string; locationLabel: string; salary?: string | null; createdAt: string }>;
+  interests: string[];
+  counts: Counts;
+  pagination: { page: number; pageSize: number; totalPages: number };
+  intelligence: { enabled: boolean; used: boolean; summary: string | null; terms: string[] };
 };
 
 const emptyResults: SearchResponse = {
-  query: '',
-  businesses: [],
-  events: [],
-  posts: [],
-  counts: {
-    businesses: 0,
-    events: 0,
-    posts: 0,
-    total: 0,
-  },
+  query: '', category: 'all', businesses: [], events: [], posts: [], people: [], groups: [], jobs: [], interests: [],
+  counts: { businesses: 0, events: 0, posts: 0, people: 0, groups: 0, jobs: 0, interests: 0, total: 0 },
+  pagination: { page: 1, pageSize: 6, totalPages: 1 },
   intelligence: { enabled: true, used: false, summary: null, terms: [] },
 };
 
-const formatDateTime = (value: string) =>
-  new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+const tabs: Array<{ id: SearchCategory; label: string }> = [
+  { id: 'all', label: 'Tudo' }, { id: 'people', label: 'Pessoas' }, { id: 'groups', label: 'Grupos' },
+  { id: 'businesses', label: 'Negócios' }, { id: 'jobs', label: 'Vagas' }, { id: 'events', label: 'Eventos' },
+  { id: 'posts', label: 'Comunidade' }, { id: 'interests', label: 'Interesses' },
+];
+
+const formatDateTime = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
 const SearchResults: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryFromUrl = searchParams?.get('q')?.trim() ?? '';
+  const { showToast } = useToast();
+  const paramsKey = searchParams?.toString() ?? '';
+  const params = useMemo(() => new URLSearchParams(paramsKey), [paramsKey]);
+  const queryFromUrl = params.get('q')?.trim() ?? '';
+  const activeTab = (params.get('category') || 'all') as SearchCategory;
   const [query, setQuery] = useState(queryFromUrl);
-  const [activeTab, setActiveTab] = useState<'all' | 'businesses' | 'events' | 'posts'>('all');
-  const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResponse>(emptyResults);
-  const deferredQuery = useDeferredValue(queryFromUrl);
+  const [loading, setLoading] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '' });
 
-  useEffect(() => {
-    setQuery(queryFromUrl);
-  }, [queryFromUrl]);
-
+  useEffect(() => setQuery(queryFromUrl), [queryFromUrl]);
+  useEffect(() => setFilterDraft({
+    region: params.get('region') || '',
+    country: params.get('country') || '',
+    city: params.get('city') || '',
+    businessType: params.get('businessType') || '',
+  }), [paramsKey]);
   useEffect(() => {
     let ignore = false;
+    const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType'));
+    if (!hasCriteria) { setResults(emptyResults); return; }
+    setLoading(true);
+    fetch(`/api/search?${paramsKey}`, { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload) throw new Error(payload?.error || 'Não foi possível buscar agora.');
+        if (!ignore) startTransition(() => setResults(payload));
+      })
+      .catch((error) => { if (!ignore) { setResults(emptyResults); showToast(error instanceof Error ? error.message : 'Não foi possível buscar agora.', 'error'); } })
+      .finally(() => { if (!ignore) setLoading(false); });
+    return () => { ignore = true; };
+  }, [paramsKey, queryFromUrl, showToast]);
 
-    const fetchResults = async () => {
-      if (!deferredQuery) {
-        startTransition(() => {
-          setResults(emptyResults);
-        });
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(deferredQuery)}`, {
-          cache: 'no-store',
-        });
-        const payload = (await response.json().catch(() => null)) as SearchResponse | null;
-
-        if (!response.ok || !payload) {
-          throw new Error('Não foi possível buscar agora.');
-        }
-
-        if (!ignore) {
-          startTransition(() => {
-            setResults(payload);
-          });
-        }
-      } catch (error) {
-        console.error('Failed to search:', error);
-
-        if (!ignore) {
-          startTransition(() => {
-            setResults(emptyResults);
-          });
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void fetchResults();
-
-    return () => {
-      ignore = true;
-    };
-  }, [deferredQuery]);
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = query.trim();
-
-    if (!trimmed) {
-      router.push('/buscar');
-      return;
-    }
-
-    router.push(`/buscar?q=${encodeURIComponent(trimmed)}`);
+  const navigateWith = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(params.toString());
+    Object.entries(updates).forEach(([key, value]) => value === null ? next.delete(key) : next.set(key, value));
+    if (!('page' in updates)) next.delete('page');
+    router.push(buildSearchPath(next.get('q') || '', next));
   };
-
-  const visibleBusinesses = activeTab === 'all' || activeTab === 'businesses';
-  const visibleEvents = activeTab === 'all' || activeTab === 'events';
-  const visiblePosts = activeTab === 'all' || activeTab === 'posts';
+  const submitSearch = (event?: FormEvent) => { event?.preventDefault(); router.push(buildSearchPath(query, params)); };
+  const clearFilters = () => {
+    setFilterDraft({ region: '', country: '', city: '', businessType: '' });
+    navigateWith({ region: null, country: null, city: null, businessType: null, page: null });
+  };
+  const runAiSearch = async () => {
+    if (!query.trim()) return showToast('Descreva o que deseja encontrar.', 'info');
+    setAiLoading(true);
+    try {
+      const response = await fetch('/api/search/interpret', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.filters) throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
+      const filters = payload.filters as Record<string, string>;
+      navigateWith({ q: filters.q || query, category: filters.category || 'all', city: filters.city || null, country: filters.country || null, businessType: filters.businessType || null, page: null });
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error'); }
+    finally { setAiLoading(false); }
+  };
+  const visible = (category: Exclude<SearchCategory, 'all'>) => activeTab === 'all' || activeTab === category;
+  const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType'));
 
   return (
-    <ContentColumn className="animate-in space-y-6 px-5 py-4 fade-in duration-500">
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-h2 font-bold text-foreground">Busca</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Encontre negócios, eventos e conversas da comunidade.
-          </p>
+    <ContentColumn className="animate-in space-y-6 px-5 py-4 pb-24 fade-in duration-500">
+      <header><h1 className="text-h2 font-bold text-foreground">Busca</h1><p className="mt-1 text-sm text-slate-500">Encontre pessoas, grupos, negócios, eventos, vagas e conversas.</p></header>
+      <form onSubmit={submitSearch} className="space-y-3">
+        <UnifiedSearchInput value={query} onChange={setQuery} onSubmit={() => submitSearch()} staticPlaceholder="Buscar na Gringoou" />
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
+          <button type="button" onClick={() => void runAiSearch()} disabled={aiLoading} className="inline-flex h-10 items-center gap-2 rounded-full bg-violet-600 px-4 text-xs font-bold text-white disabled:opacity-60"><Sparkles size={15} /> {aiLoading ? 'Interpretando...' : 'Busca com IA'}</button>
         </div>
+      </form>
 
-        <form onSubmit={handleSubmit} className="relative">
-          <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar na Gringoou"
-            className="w-full rounded-full bg-bg py-4 pl-12 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200"
-          />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-        </form>
+      {filtersOpen ? <section className="grid gap-4 rounded-[28px] border border-slate-200 bg-white p-4 sm:grid-cols-2">
+        <RegionSelector value={filterDraft.region} onChange={(region) => setFilterDraft((current) => ({ ...current, region: region.key }))} onClear={() => setFilterDraft((current) => ({ ...current, region: '' }))} allowEmpty emptyLabel="Todas as regiões" label="Localidade" />
+        <label className="space-y-2"><span className="text-sm font-bold">País</span><select value={filterDraft.country} onChange={(event) => setFilterDraft((current) => ({ ...current, country: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="">Todos</option><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
+        <label className="space-y-2"><span className="text-sm font-bold">Cidade ou estado</span><input value={filterDraft.city} onChange={(event) => setFilterDraft((current) => ({ ...current, city: event.target.value }))} placeholder="Ex.: Boston" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
+        <label className="space-y-2"><span className="text-sm font-bold">Tipo de negócio</span><input value={filterDraft.businessType} onChange={(event) => setFilterDraft((current) => ({ ...current, businessType: event.target.value }))} placeholder="Ex.: Restaurante" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
+        <div className="flex flex-wrap gap-2 sm:col-span-2"><button type="button" onClick={() => navigateWith({ region: filterDraft.region, country: filterDraft.country || null, city: filterDraft.city || null, businessType: filterDraft.businessType || null, page: null })} className="inline-flex h-10 items-center justify-center rounded-full bg-brand-500 px-5 text-xs font-bold text-white">Aplicar filtros</button><button type="button" onClick={clearFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 text-xs font-bold text-red-700"><X size={14} /> Limpar filtros</button></div>
+      </section> : null}
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <SearchTab label="Tudo" active={activeTab === 'all'} onClick={() => setActiveTab('all')} />
-          <SearchTab
-            label={`Negócios (${results.counts.businesses})`}
-            active={activeTab === 'businesses'}
-            onClick={() => setActiveTab('businesses')}
-          />
-          <SearchTab
-            label={`Eventos (${results.counts.events})`}
-            active={activeTab === 'events'}
-            onClick={() => setActiveTab('events')}
-          />
-          <SearchTab
-            label={`Comunidade (${results.counts.posts})`}
-            active={activeTab === 'posts'}
-            onClick={() => setActiveTab('posts')}
-          />
-        </div>
-      </div>
+      <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Categorias da busca">
+        {tabs.map((tab) => <button key={tab.id} type="button" onClick={() => navigateWith({ category: tab.id === 'all' ? null : tab.id, page: null })} className={`whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold ${activeTab === tab.id ? 'border-brand-500 bg-brand-500 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>{tab.label}{activeTab === tab.id && tab.id !== 'all' ? ` (${results.counts[tab.id]})` : ''}</button>)}
+      </nav>
 
-      {!queryFromUrl ? (
-        <EmptyState text="Digite um termo para buscar no app." />
-      ) : null}
+      {!hasCriteria ? <EmptyState text="Digite um termo ou selecione filtros para buscar no app." /> : null}
+      {loading ? <div className="space-y-3"><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /></div> : null}
+      {!loading && hasCriteria && results.counts.total === 0 ? <EmptyState text="Nenhum resultado encontrado com os filtros atuais." /> : null}
+      {!loading && results.intelligence.used ? <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4 text-sm text-violet-800"><p className="font-bold">Busca inteligente local</p><p className="mt-1">{results.intelligence.summary}</p></div> : null}
 
-      {queryFromUrl && !loading && results.counts.total === 0 ? (
-        <EmptyState text={`Nenhum resultado encontrado para "${queryFromUrl}".`} />
-      ) : null}
+      {!loading && hasCriteria ? <div className="space-y-7">
+        {visible('people') && results.people.length ? <ResultSection title="Pessoas" icon={<UserRound size={16} />}>{results.people.map((person) => <Link key={person.id} href={`/${person.username}`} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={person.image || `https://picsum.photos/seed/${person.id}/120`} alt={person.name || 'Pessoa'} className="h-14 w-14 rounded-full object-cover" /><div className="min-w-0"><p className="truncate font-bold">{person.name || 'Membro da comunidade'}</p><p className="text-xs text-brand-600">@{person.username}</p>{person.locationLabel ? <p className="mt-1 text-xs text-slate-500">{person.locationLabel}</p> : null}</div></Link>)}</ResultSection> : null}
+        {visible('groups') && results.groups.length ? <ResultSection title="Grupos" icon={<UsersRound size={16} />}>{results.groups.map((group) => <Link key={group.id} href={`/grupos/${group.slug}`} className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={group.imageUrl || group.coverImageUrl || `https://picsum.photos/seed/${group.id}/160`} alt={group.name} className="h-16 w-16 rounded-2xl object-cover" /><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate font-bold">{group.name}</p>{!group.isPublic ? <LockKeyhole size={14} className="text-slate-400" /> : null}</div><p className="mt-1 line-clamp-2 text-sm text-slate-600">{group.description || group.category || 'Grupo da comunidade'}</p><p className="mt-2 text-xs text-slate-500">{group.region?.label || group.countryCode} · {group._count.members} membros</p></div></Link>)}</ResultSection> : null}
+        {visible('businesses') && results.businesses.length ? <ResultSection title="Negócios" icon={<Store size={16} />}>{results.businesses.map((business) => <Link key={business.id} href={`/negocios/${business.slug}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"><img src={business.imageUrl || `https://picsum.photos/seed/${business.id}/240`} alt={business.name} className="w-28 object-cover" /><div className="min-w-0 p-4"><p className="font-bold">{business.name}</p><p className="mt-1 text-xs font-bold uppercase text-brand-500">{business.category}</p><p className="mt-2 line-clamp-2 text-sm text-slate-600">{business.description || business.address}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {business.locationLabel}</p></div></Link>)}</ResultSection> : null}
+        {visible('jobs') && results.jobs.length ? <ResultSection title="Vagas" icon={<Briefcase size={16} />}>{results.jobs.map((job) => <Link key={job.id} href={`/vagas/${job.id}`} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><p className="font-bold">{job.title}</p><p className="mt-1 text-sm font-semibold text-brand-600">{job.company}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {job.locationLabel}</p><p className="mt-2 text-xs text-slate-500">{job.employmentType}{job.salary ? ` · ${job.salary}` : ''}</p></Link>)}</ResultSection> : null}
+        {visible('events') && results.events.length ? <ResultSection title="Eventos" icon={<CalendarDays size={16} />}>{results.events.map((event) => <Link key={event.id} href={`/eventos/${event.slug}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"><img src={event.imageUrl || `https://picsum.photos/seed/${event.id}/240`} alt={event.title} className="w-28 object-cover" /><div className="min-w-0 p-4"><p className="font-bold">{event.title}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><Clock3 size={12} /> {formatDateTime(event.startsAt)}</p><p className="mt-1 text-xs text-slate-500">{event.venueName}</p></div></Link>)}</ResultSection> : null}
+        {visible('posts') && results.posts.length ? <ResultSection title="Comunidade" icon={<Users size={16} />}>{results.posts.map((post) => <Link key={post.id} href={`/community?post=${post.id}`} className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={post.author.image || `https://picsum.photos/seed/${post.id}/120`} alt={post.author.name || 'Autor'} className="h-12 w-12 rounded-full object-cover" /><div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate font-bold">{post.author.name || 'Membro'}</p>{post.authorType === 'BUSINESS' ? <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold text-brand-600">NEGÓCIO</span> : null}</div><p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.content}</p><p className="mt-2 text-xs text-slate-500">{post._count.reactions} curtidas · {post._count.comments} comentários</p></div></Link>)}</ResultSection> : null}
+        {visible('interests') && results.interests.length ? <ResultSection title="Interesses" icon={<Sparkles size={16} />}><div className="flex flex-wrap gap-2">{results.interests.map((interest) => <button key={interest} type="button" onClick={() => { setQuery(interest); router.push(buildSearchPath(interest, params)); }} className="rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">{interest}</button>)}</div></ResultSection> : null}
+      </div> : null}
 
-      {loading ? (
-        <div className="space-y-3 pb-20">
-          <div className="h-24 animate-pulse rounded-3xl bg-white shadow-sm" />
-          <div className="h-24 animate-pulse rounded-3xl bg-white shadow-sm" />
-          <div className="h-24 animate-pulse rounded-3xl bg-white shadow-sm" />
-        </div>
-      ) : null}
-
-      {!loading && queryFromUrl && results.intelligence.used ? (
-        <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4">
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-violet-600 shadow-sm">
-              <Sparkles size={17} />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-800">Busca inteligente</p>
-              <p className="mt-1 text-sm leading-5 text-slate-600">{results.intelligence.summary}</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {results.intelligence.terms.slice(1).map((term) => (
-                  <span key={term} className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-violet-700">{term}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {!loading && queryFromUrl ? (
-        <div className="space-y-6 pb-20">
-          {visibleBusinesses ? (
-            <section className="space-y-3">
-              <SectionHeader
-                icon={<Store size={16} />}
-                title="Negócios"
-                count={results.counts.businesses}
-              />
-              {results.businesses.length === 0 ? (
-                <SectionEmpty text="Nenhum negócio encontrado." />
-              ) : (
-                results.businesses.map((business) => (
-                  <Link
-                    key={business.id}
-                    href={`/negocios/${business.slug || business.id}`}
-                    className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:border-slate-200"
-                  >
-                    <img
-                      src={business.imageUrl || `https://picsum.photos/seed/${business.id}/240`}
-                      alt={business.name}
-                      className="w-28 shrink-0 self-stretch object-cover"
-                    />
-                    <div className="min-w-0 flex-1 p-4">
-                      <h2 className="text-body-sm font-bold text-foreground">{business.name}</h2>
-                      <p className="mt-1 text-caption font-bold uppercase tracking-wide text-brand-500">
-                        {business.category}
-                      </p>
-                      <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                        {business.description || business.address}
-                      </p>
-                      <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500">
-                        <MapPin size={12} />
-                        <span className="truncate">{business.locationLabel || business.address}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </section>
-          ) : null}
-
-          {visibleEvents ? (
-            <section className="space-y-3">
-              <SectionHeader
-                icon={<CalendarDays size={16} />}
-                title="Eventos"
-                count={results.counts.events}
-              />
-              {results.events.length === 0 ? (
-                <SectionEmpty text="Nenhum evento encontrado." />
-              ) : (
-                results.events.map((event) => (
-                  <Link
-                    key={event.id}
-                    href={`/eventos/${event.slug || event.id}`}
-                    className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:border-slate-200"
-                  >
-                    <img
-                      src={event.imageUrl || `https://picsum.photos/seed/${event.id}/240`}
-                      alt={event.title}
-                      className="w-28 shrink-0 self-stretch object-cover"
-                    />
-                    <div className="min-w-0 flex-1 p-4">
-                      <h2 className="text-body-sm font-bold text-foreground">{event.title}</h2>
-                      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-slate-500">
-                        <Clock3 size={12} />
-                        <span>{formatDateTime(event.startsAt)}</span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
-                        <MapPin size={12} />
-                        <span className="truncate">{event.venueName}</span>
-                      </div>
-                      <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                        {event.description || event.locationLabel}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </section>
-          ) : null}
-
-          {visiblePosts ? (
-            <section className="space-y-3">
-              <SectionHeader
-                icon={<Users size={16} />}
-                title="Comunidade"
-                count={results.counts.posts}
-              />
-              {results.posts.length === 0 ? (
-                <SectionEmpty text="Nenhuma publicação encontrada." />
-              ) : (
-                results.posts.map((post) => (
-                  <div
-                    key={post.id}
-                    role="link"
-                    tabIndex={0}
-                    onClick={() => router.push(`/community?post=${post.id}`)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        router.push(`/community?post=${post.id}`);
-                      }
-                    }}
-                    className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-slate-200"
-                  >
-                    <Link
-                      href={post.authorHref || (post.author.username ? `/${post.author.username}` : '/community')}
-                      onClick={(event) => event.stopPropagation()}
-                      className="shrink-0 transition hover:opacity-80"
-                    >
-                      <img
-                        src={post.author.image || `https://picsum.photos/seed/${post.id}/160`}
-                        alt={post.author.name || 'Comunidade'}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    </Link>
-                    <Link href={`/community?post=${post.id}`} className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="truncate text-body-sm font-bold text-foreground">
-                          {post.author.name || 'Usuário da comunidade'}
-                        </h2>
-                        {post.author.username ? (
-                          <span className="truncate text-xs text-slate-400">@{post.author.username}</span>
-                        ) : null}
-                        {post.authorType === 'BUSINESS' ? (
-                          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase text-brand-600">Negócio</span>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.content}</p>
-                      <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-slate-500">
-                        <span>{formatDateTime(post.createdAt)}</span>
-                        <span>{post.locationLabel}</span>
-                        <span>{post._count.reactions} curtidas</span>
-                        <span>{post._count.comments} comentários</span>
-                      </div>
-                    </Link>
-                  </div>
-                ))
-              )}
-            </section>
-          ) : null}
-        </div>
-      ) : null}
+      {!loading && results.pagination.totalPages > 1 ? <div className="flex items-center justify-center gap-3"><button type="button" disabled={results.pagination.page <= 1} onClick={() => navigateWith({ page: String(results.pagination.page - 1) })} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold disabled:opacity-40">Anterior</button><span className="text-sm text-slate-500">{results.pagination.page} de {results.pagination.totalPages}</span><button type="button" disabled={results.pagination.page >= results.pagination.totalPages} onClick={() => navigateWith({ page: String(results.pagination.page + 1) })} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold disabled:opacity-40">Próxima</button></div> : null}
     </ContentColumn>
   );
 };
 
-const SearchTab: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({
-  label,
-  active,
-  onClick,
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold transition ${
-      active
-        ? 'border-brand-500 bg-brand-500 text-white'
-        : 'border-slate-200 bg-white text-slate-700'
-    }`}
-  >
-    {label}
-  </button>
-);
-
-const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; count: number }> = ({
-  icon,
-  title,
-  count,
-}) => (
-  <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
-    <span className="text-brand-500">{icon}</span>
-    <span>{title}</span>
-    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
-      {count}
-    </span>
-  </div>
-);
-
-const EmptyState: React.FC<{ text: string }> = ({ text }) => (
-  <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center text-sm font-medium text-slate-500">
-    {text}
-  </div>
-);
-
-const SectionEmpty: React.FC<{ text: string }> = ({ text }) => (
-  <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-6 text-sm font-medium text-slate-500">
-    {text}
-  </div>
-);
+const ResultSection: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => <section className="space-y-3"><div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500"><span className="text-brand-500">{icon}</span>{title}</div><div className="space-y-3">{children}</div></section>;
+const EmptyState: React.FC<{ text: string }> = ({ text }) => <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center text-sm font-medium text-slate-500"><Search size={24} className="mx-auto mb-3 text-slate-300" />{text}</div>;
 
 export default SearchResults;

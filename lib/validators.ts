@@ -71,6 +71,10 @@ const optionalDate = z
     message: 'Use uma data valida.',
   });
 
+const profileGalleryUrls = optionalUrlArray.refine((values) => values.length <= 8, {
+  message: 'Use no maximo 8 imagens na galeria do perfil',
+});
+
 export const usernameSchema = z
   .string()
   .trim()
@@ -114,6 +118,7 @@ export const jobSchema = z.object({
   description: z.string().trim().min(10).max(5000),
   employmentType: z.string().trim().min(2).max(60),
   locationLabel: z.string().trim().min(2).max(160),
+  countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
   salary: optionalString,
   contactUrl: optionalUrl,
   isActive: z.boolean().optional(),
@@ -161,7 +166,7 @@ export const updateProfileSchema = z.object({
       return normalized ? normalized : undefined;
     }),
   coverImageUrl: optionalUrl,
-  galleryUrls: optionalUrlArray,
+  galleryUrls: profileGalleryUrls,
   interests: z
     .array(z.string().trim().min(2).max(40))
     .max(8, 'Use no maximo 8 interesses')
@@ -305,6 +310,7 @@ export const communityPostSchema = z.object({
   externalUrl: optionalUrl,
   personaMode: z.enum(['personal', 'professional']).default('personal'),
   businessId: z.string().trim().min(1).optional(),
+  groupId: z.string().trim().min(1).optional(),
 });
 
 export const commentSchema = z.object({
@@ -358,6 +364,13 @@ export const communityGroupSchema = z.object({
       return normalized ? normalized : undefined;
     }),
   imageUrl: optionalUrl,
+  coverImageUrl: optionalUrl,
+  countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
+  isPublic: z.boolean().default(true),
+});
+
+export const communityGroupMemberActionSchema = z.object({
+  action: z.enum(['approve', 'block', 'remove', 'promote', 'demote']),
 });
 
 export const adminSuggestionSchema = z.object({

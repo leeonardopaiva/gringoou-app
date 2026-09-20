@@ -1,7 +1,8 @@
-import { CommunityPostStatus, FriendRequestStatus } from '@prisma/client';
+import { BusinessStatus, CommunityPostStatus, EventStatus, FriendRequestStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getVisibilityFilter } from '@/lib/visibility';
 
 type RouteContext = {
   params: Promise<{
@@ -29,6 +30,7 @@ export async function GET(_request: Request, context: RouteContext) {
       galleryUrls: true,
       locationLabel: true,
       regionKey: true,
+      birthCity: true,
       createdAt: true,
     },
   });
@@ -41,6 +43,7 @@ export async function GET(_request: Request, context: RouteContext) {
     ? {
         authorId: user.id,
         businessAuthorId: null,
+        groupId: null,
         status: CommunityPostStatus.PUBLISHED,
         regionKey: session.user.regionKey,
       }
@@ -53,6 +56,8 @@ export async function GET(_request: Request, context: RouteContext) {
     friendship,
     friendCount,
     postCount,
+    businesses,
+    events,
   ] = await Promise.all([
     postVisibilityWhere
       ? prisma.communityPost.findMany({
@@ -108,9 +113,8 @@ export async function GET(_request: Request, context: RouteContext) {
     prisma.communityGroupMember.findMany({
       where: {
         userId: user.id,
-        group: {
-          isPublic: true,
-        },
+        status: 'APPROVED',
+        ...(session?.user?.id === user.id ? {} : { group: { isPublic: true } }),
       },
       orderBy: [{ createdAt: 'desc' }],
       take: 24,
@@ -124,8 +128,11 @@ export async function GET(_request: Request, context: RouteContext) {
             slug: true,
             description: true,
             imageUrl: true,
+            coverImageUrl: true,
             category: true,
             regionKey: true,
+            countryCode: true,
+            isPublic: true,
             region: {
               select: {
                 label: true,
@@ -133,7 +140,7 @@ export async function GET(_request: Request, context: RouteContext) {
             },
             _count: {
               select: {
-                members: true,
+                members: { where: { status: 'APPROVED' } },
               },
             },
           },
@@ -168,6 +175,46 @@ export async function GET(_request: Request, context: RouteContext) {
           where: postVisibilityWhere,
         })
       : Promise.resolve(0),
+    prisma.business.findMany({
+      where: {
+        createdById: user.id,
+        status: BusinessStatus.PUBLISHED,
+        ...getVisibilityFilter(session?.user?.regionKey),
+      },
+      orderBy: [{ updatedAt: 'desc' }],
+      take: 6,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        category: true,
+        imageUrl: true,
+        locationLabel: true,
+        ratingAverage: true,
+        ratingCount: true,
+      },
+    }),
+    prisma.event.findMany({
+      where: {
+        createdById: user.id,
+        status: EventStatus.PUBLISHED,
+        startsAt: { gte: new Date() },
+        ...getVisibilityFilter(session?.user?.regionKey),
+      },
+      orderBy: [{ startsAt: 'asc' }],
+      take: 6,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        venueName: true,
+        startsAt: true,
+        imageUrl: true,
+        locationLabel: true,
+        ratingAverage: true,
+        ratingCount: true,
+      },
+    }),
   ]);
 
   const friendshipStatus = (() => {
@@ -205,6 +252,7 @@ export async function GET(_request: Request, context: RouteContext) {
       interests: user.interests,
       galleryUrls: user.galleryUrls,
       locationLabel: user.locationLabel,
+      birthCity: user.birthCity,
       joinedAt: user.createdAt,
       publicPath: `/${user.username}`,
       friendFeature: {
@@ -215,8 +263,8 @@ export async function GET(_request: Request, context: RouteContext) {
       },
       stats: {
         friendCount,
-        businessCount: 0,
-        eventCount: 0,
+        businessCount: businesses.length,
+        eventCount: events.length,
         postCount,
       },
       friends: friends
@@ -239,15 +287,18 @@ export async function GET(_request: Request, context: RouteContext) {
         slug: membership.group.slug,
         description: membership.group.description,
         imageUrl: membership.group.imageUrl,
+        coverImageUrl: membership.group.coverImageUrl,
         category: membership.group.category,
         regionKey: membership.group.regionKey,
         regionLabel: membership.group.region?.label ?? null,
+        countryCode: membership.group.countryCode,
+        isPublic: membership.group.isPublic,
         role: membership.role,
         memberCount: membership.group._count.members,
         publicPath: `/grupos/${membership.group.slug}`,
       })),
-      businesses: [],
-      events: [],
+      businesses,
+      events,
       posts,
     },
   });

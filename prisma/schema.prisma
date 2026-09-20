@@ -88,6 +88,12 @@ enum CommunityGroupMemberRole {
   MEMBER
 }
 
+enum CommunityGroupMembershipStatus {
+  PENDING
+  APPROVED
+  BLOCKED
+}
+
 enum BannerType {
   LINK
   REGISTRATION
@@ -223,6 +229,7 @@ model Job {
   description    String   @db.Text
   employmentType String
   locationLabel  String
+  countryCode    String   @default("US")
   salary         String?
   contactUrl     String?
   isActive       Boolean  @default(true)
@@ -259,6 +266,7 @@ model Region {
   label                     String           @unique
   city                      String
   state                     String
+  countryCode               String           @default("US")
   lat                       Float
   lng                       Float
   aliases                   String[]         @default([])
@@ -410,18 +418,21 @@ model CommunityPost {
   status           CommunityPostStatus @default(PUBLISHED)
   authorId         String
   businessAuthorId String?
+  groupId          String?
   regionKey        String
   locationLabel    String
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   author           User                @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   businessAuthor   Business?           @relation("CommunityPostBusinessAuthor", fields: [businessAuthorId], references: [id], onDelete: SetNull)
+  group            CommunityGroup?     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   comments         PostComment[]
   reactions        PostReaction[]
   reports          PostReport[]
 
   @@index([status, regionKey, createdAt])
   @@index([businessAuthorId, createdAt])
+  @@index([groupId, status, createdAt])
 }
 
 model PostComment {
@@ -699,8 +710,10 @@ model CommunityGroup {
   slug        String                 @unique
   description String?
   imageUrl    String?
+  coverImageUrl String?
   category    String?
   regionKey   String?
+  countryCode String                 @default("US")
   isPublic    Boolean                @default(true)
   createdById String
   createdAt   DateTime               @default(now())
@@ -708,9 +721,11 @@ model CommunityGroup {
   createdBy   User                   @relation("CommunityGroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
   region      Region?                @relation(fields: [regionKey], references: [key], onDelete: SetNull)
   members     CommunityGroupMember[]
+  posts       CommunityPost[]
 
   @@index([isPublic, createdAt])
   @@index([regionKey, createdAt])
+  @@index([countryCode, isPublic, createdAt])
   @@index([createdById, createdAt])
 }
 
@@ -719,13 +734,16 @@ model CommunityGroupMember {
   groupId   String
   userId    String
   role      CommunityGroupMemberRole @default(MEMBER)
+  status    CommunityGroupMembershipStatus @default(APPROVED)
   createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
   group     CommunityGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@index([userId, createdAt])
   @@index([groupId, createdAt])
+  @@index([groupId, status, createdAt])
 }
 
 model Suggestion {

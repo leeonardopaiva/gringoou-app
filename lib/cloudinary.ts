@@ -10,6 +10,7 @@ export type CloudinaryFolder =
   | 'banners'
   | 'businesses'
   | 'events'
+  | 'groups'
   | 'profiles'
   | 'community'
   | 'housing';

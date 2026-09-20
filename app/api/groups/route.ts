@@ -1,4 +1,4 @@
-import { CommunityGroupMemberRole, Prisma } from '@prisma/client';
+import { CommunityGroupMemberRole, CommunityGroupMembershipStatus, Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -7,25 +7,36 @@ import { slugify, uniqueSlug } from '@/lib/slug';
 import { communityGroupSchema } from '@/lib/validators';
 
 export async function GET(request: Request) {
+  const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search')?.trim();
   const region = searchParams.get('region')?.trim();
+  const country = searchParams.get('country')?.trim().toUpperCase();
   const rawLimit = Number(searchParams.get('limit') ?? 24);
   const rawOffset = Number(searchParams.get('offset') ?? 0);
   const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 24) : 24;
   const offset = Number.isFinite(rawOffset) ? Math.max(Math.trunc(rawOffset), 0) : 0;
 
   const baseWhere: Prisma.CommunityGroupWhereInput = {
-    isPublic: true,
-    ...(search
-      ? {
-          OR: [
+    AND: [
+      {
+        OR: [
+          { isPublic: true },
+          ...(session?.user?.id
+            ? [{ members: { some: { userId: session.user.id, status: { in: [CommunityGroupMembershipStatus.APPROVED, CommunityGroupMembershipStatus.PENDING] } } } }]
+            : []),
+        ],
+      },
+      ...(search
+        ? [{
+            OR: [
               { name: { contains: search, mode: 'insensitive' as const } },
               { category: { contains: search, mode: 'insensitive' as const } },
               { description: { contains: search, mode: 'insensitive' as const } },
             ],
-          }
-      : {}),
+          }]
+        : []),
+    ],
   };
 
   const groupSelect = {
@@ -34,7 +45,10 @@ export async function GET(request: Request) {
     slug: true,
     description: true,
     imageUrl: true,
+    coverImageUrl: true,
     category: true,
+    countryCode: true,
+    isPublic: true,
     regionKey: true,
     createdAt: true,
     region: {
@@ -44,10 +58,11 @@ export async function GET(request: Request) {
     },
     _count: {
       select: {
-        members: true,
+        members: { where: { status: CommunityGroupMembershipStatus.APPROVED } },
       },
     },
     members: {
+      where: { status: CommunityGroupMembershipStatus.APPROVED },
       orderBy: {
         createdAt: 'desc' as const,
       },
@@ -75,6 +90,7 @@ export async function GET(request: Request) {
             regionKey: region,
           }
         : {}),
+      ...(country ? { countryCode: country } : {}),
     },
     orderBy: [{ createdAt: 'desc' }],
     take: limit + 1,
@@ -92,7 +108,10 @@ export async function GET(request: Request) {
       slug: group.slug,
       description: group.description,
       imageUrl: group.imageUrl,
+      coverImageUrl: group.coverImageUrl,
       category: group.category,
+      countryCode: group.countryCode,
+      isPublic: group.isPublic,
       regionKey: group.regionKey,
       regionLabel: group.region?.label ?? null,
       memberCount: group._count.members,
@@ -156,13 +175,17 @@ export async function POST(request: Request) {
       slug,
       description: parsed.data.description,
       imageUrl: parsed.data.imageUrl,
+      coverImageUrl: parsed.data.coverImageUrl,
       category: parsed.data.category,
       regionKey: region?.key,
+      countryCode: region?.countryCode ?? parsed.data.countryCode,
+      isPublic: parsed.data.isPublic,
       createdById: session.user.id,
       members: {
         create: {
           userId: session.user.id,
           role: CommunityGroupMemberRole.OWNER,
+          status: CommunityGroupMembershipStatus.APPROVED,
         },
       },
     },

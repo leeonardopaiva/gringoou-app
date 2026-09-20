@@ -1,5 +1,7 @@
 export const getAppBaseUrl = (request?: Request) => {
-  const configuredUrl = process.env.NEXTAUTH_URL?.trim();
+  const configuredUrl =
+    process.env.APP_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim();
 
   if (configuredUrl) {
     return configuredUrl.replace(/\/$/, '');
@@ -15,6 +17,12 @@ export const getAppBaseUrl = (request?: Request) => {
 
   if (request) {
     return new URL(request.url).origin;
+  }
+
+  const authUrl = process.env.NEXTAUTH_URL?.trim();
+
+  if (authUrl) {
+    return authUrl.replace(/\/$/, '');
   }
 
   return 'http://localhost:3000';

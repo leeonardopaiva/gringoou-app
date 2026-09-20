@@ -2,16 +2,13 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { communityPostSchema } from '@/lib/validators';
+import { getGroupPostPermissions } from '@/lib/server/group-permissions';
 
 type RouteContext = {
   params: Promise<{
     postId: string;
   }>;
 };
-
-const canManagePost = (session: Awaited<ReturnType<typeof getServerAuthSession>>, authorId: string) =>
-  Boolean(session?.user?.id) &&
-  (session?.user?.role === 'ADMIN' || session?.user?.id === authorId);
 
 export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
@@ -21,19 +18,18 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
-  const existingPost = await prisma.communityPost.findUnique({
-    where: { id: postId },
-    select: {
-      id: true,
-      authorId: true,
-    },
-  });
+  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
+  const existingPost = permissions?.post;
 
   if (!existingPost) {
     return NextResponse.json({ error: 'Publicacao nao encontrada.' }, { status: 404 });
   }
 
-  if (!canManagePost(session, existingPost.authorId)) {
+  if (!permissions.canView) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (session.user.role !== 'ADMIN' && existingPost.authorId !== session.user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -74,19 +70,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
-  const existingPost = await prisma.communityPost.findUnique({
-    where: { id: postId },
-    select: {
-      id: true,
-      authorId: true,
-    },
-  });
+  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
+  const existingPost = permissions?.post;
 
   if (!existingPost) {
     return NextResponse.json({ error: 'Publicacao nao encontrada.' }, { status: 404 });
   }
 
-  if (!canManagePost(session, existingPost.authorId)) {
+  if (!permissions?.canManage) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

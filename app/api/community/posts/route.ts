@@ -1,4 +1,4 @@
-import { CommunityPostStatus } from '@prisma/client';
+import { CommunityGroupMemberRole, CommunityGroupMembershipStatus, CommunityPostStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
   const businessId = searchParams.get('businessId');
-  const regionKey = searchParams.get('region') ?? (businessId ? undefined : session?.user?.regionKey);
+  const groupId = searchParams.get('groupId');
+  const regionKey = searchParams.get('region') ?? (businessId || groupId ? undefined : session?.user?.regionKey);
   const manageBusiness = searchParams.get('manage') === '1';
   const canManageBusiness = manageBusiness && businessId && session?.user?.id
     ? Boolean(await prisma.business.findFirst({
@@ -25,11 +26,25 @@ export async function GET(request: Request) {
         select: { id: true },
       })) || session.user.role === 'ADMIN'
     : false;
+  const group = groupId ? await prisma.communityGroup.findUnique({
+    where: { id: groupId },
+    select: {
+      id: true, isPublic: true,
+      members: session?.user?.id ? { where: { userId: session.user.id }, take: 1, select: { role: true, status: true } } : false,
+    },
+  }) : null;
+  if (groupId && !group) return NextResponse.json({ error: 'Grupo não encontrado.' }, { status: 404 });
+  const groupMembership = group?.members?.[0];
+  const canViewGroup = Boolean(group?.isPublic || session?.user?.role === 'ADMIN' || groupMembership?.status === CommunityGroupMembershipStatus.APPROVED);
+  if (group && !canViewGroup) return NextResponse.json({ error: 'Este conteúdo é restrito aos membros aprovados.' }, { status: 403 });
+  const canManageGroup = Boolean(session?.user?.role === 'ADMIN' || (groupMembership?.status === CommunityGroupMembershipStatus.APPROVED && (groupMembership.role === CommunityGroupMemberRole.OWNER || groupMembership.role === CommunityGroupMemberRole.ADMIN)));
   const page = await getCommunityPostsPage({
     session,
     regionKey,
     businessId,
+    groupId,
     includeBusinessPending: canManageBusiness,
+    canManageGroup,
     limit: Number(searchParams.get('limit') ?? 20),
     offset: Number(searchParams.get('offset') ?? 0),
   });
@@ -96,6 +111,20 @@ export async function POST(request: Request) {
         })
       : null;
 
+  const targetGroup = parsed.data.groupId
+    ? await prisma.communityGroup.findUnique({
+        where: { id: parsed.data.groupId },
+        select: {
+          id: true, regionKey: true, region: { select: { label: true } },
+          members: { where: { userId: session.user.id, status: CommunityGroupMembershipStatus.APPROVED }, take: 1, select: { id: true } },
+        },
+      })
+    : null;
+
+  if (parsed.data.groupId && (!targetGroup || targetGroup.members.length === 0)) {
+    return NextResponse.json({ error: 'Apenas membros aprovados podem publicar neste grupo.' }, { status: 403 });
+  }
+
   if (parsed.data.personaMode === 'professional' && !professionalBusiness) {
     return NextResponse.json(
       { error: 'Selecione um perfil profissional valido para publicar como pagina.' },
@@ -132,8 +161,9 @@ export async function POST(request: Request) {
       status: hasExternalLink ? CommunityPostStatus.PENDING_REVIEW : CommunityPostStatus.PUBLISHED,
       authorId: session.user.id,
       businessAuthorId: professionalBusiness?.id ?? null,
-      regionKey: professionalBusiness?.regionKey ?? session.user.regionKey,
-      locationLabel: professionalBusiness?.locationLabel ?? session.user.locationLabel,
+      groupId: targetGroup?.id ?? null,
+      regionKey: targetGroup?.regionKey ?? professionalBusiness?.regionKey ?? session.user.regionKey,
+      locationLabel: targetGroup?.region?.label ?? professionalBusiness?.locationLabel ?? session.user.locationLabel,
     },
     include: {
       author: {

@@ -35,10 +35,11 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [nextOffset, setNextOffset] = useState(0);
+  const [country, setCountry] = useState('US');
 
   const loadGroupsPage = useCallback(
     async ({ offset, replace }: { offset: number; replace: boolean }) => {
-      if (!user.regionKey) {
+      if (!user.regionKey && !country) {
         setGroups([]);
         setLoadingInitial(false);
         setLoadingMore(false);
@@ -55,7 +56,8 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
 
       try {
         const payload = await loadRegionGroups({
-          regionKey: user.regionKey,
+          regionKey: country === 'US' ? user.regionKey : undefined,
+          country,
           limit: 8,
           offset,
         });
@@ -75,7 +77,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
         setLoadingMore(false);
       }
     },
-    [user.regionKey],
+    [country, user.regionKey],
   );
 
   const reloadGroups = useCallback(async () => {
@@ -101,12 +103,12 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
 
       void loadMoreGroups();
     },
-    { enabled: Boolean(user.regionKey) && hasMore },
+    { enabled: Boolean(user.regionKey || country) && hasMore },
   );
 
   useEffect(() => {
     void reloadGroups();
-  }, [reloadGroups, user.regionKey]);
+  }, [country, reloadGroups, user.regionKey]);
 
   return (
     <ContentColumn className="animate-in space-y-5 px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
@@ -134,6 +136,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
               {user.location}
             </div>
           ) : null}
+          <label className="space-y-1"><span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">País</span><select value={country} onChange={(event) => setCountry(event.target.value)} className="h-10 rounded-full border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700"><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
         </div>
       </section>
 
@@ -172,8 +175,8 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
                   className="group flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
                 >
                   <div className="relative aspect-[16/11] w-full overflow-hidden rounded-[20px] bg-slate-100">
-                    {group.imageUrl ? (
-                      <img src={group.imageUrl} alt={group.name} className="h-full w-full object-cover" />
+                    {group.coverImageUrl || group.imageUrl ? (
+                      <img src={group.coverImageUrl || group.imageUrl || ''} alt={group.name} className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-brand-100 text-sm font-bold text-brand-500">
                         {getInitials(group.name)}

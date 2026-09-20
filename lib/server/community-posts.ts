@@ -27,14 +27,18 @@ export async function getCommunityPostsPage({
   session,
   regionKey,
   businessId,
+  groupId,
   includeBusinessPending = false,
+  canManageGroup = false,
   limit = DEFAULT_LIMIT,
   offset = 0,
 }: {
   session: Session | null;
   regionKey?: string | null;
   businessId?: string | null;
+  groupId?: string | null;
   includeBusinessPending?: boolean;
+  canManageGroup?: boolean;
   limit?: number;
   offset?: number;
 }): Promise<CommunityPostsPage> {
@@ -57,6 +61,7 @@ export async function getCommunityPostsPage({
       ],
       ...(regionKey ? { regionKey } : {}),
       ...(businessId ? { businessAuthorId: businessId } : {}),
+      groupId: groupId ?? null,
     },
     orderBy: [{ createdAt: 'desc' }],
     take: pagination.limit + 1,
@@ -109,7 +114,7 @@ export async function getCommunityPostsPage({
             : undefined,
         authorType: post.businessAuthor ? 'BUSINESS' as const : 'USER' as const,
         comments: [...post.comments].reverse().map((comment) => {
-          const canManageComment = isAdmin || session?.user?.id === comment.authorId;
+          const canManageComment = isAdmin || canManageGroup || session?.user?.id === comment.authorId;
           return {
             id: comment.id,
             content: comment.content,
@@ -128,8 +133,8 @@ export async function getCommunityPostsPage({
           username: reaction.author.username,
           image: reaction.author.image,
         })),
-        canEdit: isAdmin || isPostOwner,
-        canDelete: isAdmin || isPostOwner,
+        canEdit: isAdmin || isPostOwner || canManageGroup,
+        canDelete: isAdmin || isPostOwner || canManageGroup,
       };
     }),
     hasMore,

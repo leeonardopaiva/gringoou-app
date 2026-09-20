@@ -58,8 +58,9 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Selecione um arquivo de imagem válido.');
+    const acceptedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    if (!acceptedTypes.has(file.type)) {
+      setUploadError('Use uma imagem JPG, PNG ou WebP.');
       return;
     }
 
@@ -113,7 +114,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={handleFileChange}
         disabled={!isCloudinaryEnabled || disabled || uploading}

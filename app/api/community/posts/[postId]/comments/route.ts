@@ -3,6 +3,7 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { commentSchema } from '@/lib/validators';
+import { getGroupPostPermissions } from '@/lib/server/group-permissions';
 
 type RouteContext = {
   params: Promise<{
@@ -32,6 +33,9 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
+  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
+  if (!permissions) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+  if (!permissions.canInteract) return NextResponse.json({ error: 'Apenas membros aprovados podem comentar.' }, { status: 403 });
   const body = await request.json();
   const parsed = commentSchema.safeParse(body);
 

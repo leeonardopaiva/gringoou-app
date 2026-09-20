@@ -42,11 +42,7 @@ export const loadRegionCommunityPosts = async ({
     return { posts: [] as Post[], hasMore: false, nextOffset: 0 };
   }
 
-  const query = new URLSearchParams({
-    region: regionKey,
-    limit: String(limit),
-    offset: String(offset),
-  });
+  const query = new URLSearchParams({ region: regionKey, limit: String(limit), offset: String(offset) });
 
   const payload = await fetchJson<{
     posts?: Post[];
@@ -63,22 +59,22 @@ export const loadRegionCommunityPosts = async ({
 
 export const loadRegionGroups = async ({
   regionKey,
+  country,
   limit = 2,
   offset = 0,
 }: {
   regionKey?: string | null;
+  country?: string | null;
   limit?: number;
   offset?: number;
 }) => {
-  if (!regionKey) {
+  if (!regionKey && !country) {
     return { groups: [] as RegionalGroupCard[], hasMore: false, nextOffset: 0 };
   }
 
-  const query = new URLSearchParams({
-    region: regionKey,
-    limit: String(limit),
-    offset: String(offset),
-  });
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (regionKey) query.set('region', regionKey);
+  if (country) query.set('country', country);
 
   const payload = await fetchJson<{
     groups?: RegionalGroupCard[];

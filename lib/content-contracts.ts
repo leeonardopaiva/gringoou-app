@@ -62,7 +62,10 @@ export interface RegionalGroupCard {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  coverImageUrl?: string | null;
   category: string | null;
+  countryCode?: string;
+  isPublic?: boolean;
   regionLabel: string | null;
   memberCount: number;
   createdAt: string;

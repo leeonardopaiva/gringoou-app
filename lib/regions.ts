@@ -3,6 +3,7 @@ export type RegionOption = {
   label: string;
   city: string;
   state: string;
+  countryCode?: string;
   lat: number;
   lng: number;
   aliases?: string[];

@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const employmentType = searchParams.get('employmentType')?.trim();
   const location = searchParams.get('location')?.trim();
   const salary = searchParams.get('salary')?.trim();
+  const country = searchParams.get('country')?.trim().toUpperCase();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
   const where = {
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
     ...(employmentType ? { employmentType: { equals: employmentType, mode: 'insensitive' as const } } : {}),
     ...(location ? { locationLabel: { contains: location, mode: 'insensitive' as const } } : {}),
     ...(salary ? { salary: { contains: salary, mode: 'insensitive' as const } } : {}),
+    ...(country ? { countryCode: country } : {}),
     ...(query ? { OR: [
       { title: { contains: query, mode: 'insensitive' as const } },
       { company: { contains: query, mode: 'insensitive' as const } },

@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
+import { getClientAppBaseUrl } from '../lib/client-app-url';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import RegionSelector from '../components/RegionSelector';
@@ -42,6 +43,10 @@ type ProfileState = {
   galleryUrls: string[];
   locationLabel: string;
   regionKey: string;
+  gender: '' | 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
+  age: number | null;
+  timeAbroad: '' | 'LESS_THAN_ONE_YEAR' | 'ONE_TO_THREE_YEARS' | 'THREE_TO_FIVE_YEARS' | 'MORE_THAN_FIVE_YEARS';
+  birthCity: string;
 };
 
 const emptyProfessionalProfile: ProfessionalProfileSummary = {
@@ -65,6 +70,10 @@ const buildProfileState = (user: User): ProfileState => ({
   galleryUrls: user.galleryUrls || [],
   locationLabel: user.location,
   regionKey: user.regionKey || '',
+  gender: '',
+  age: null,
+  timeAbroad: '',
+  birthCity: user.birthCity || '',
 });
 
 const Profile: React.FC<{
@@ -78,7 +87,7 @@ const Profile: React.FC<{
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
-  const initialProfile = initialData?.user
+  const initialProfile: ProfileState = initialData?.user
     ? {
         id: initialData.user.id,
         name: initialData.user.name || user.name,
@@ -86,6 +95,7 @@ const Profile: React.FC<{
         image: initialData.user.image || '', coverImageUrl: initialData.user.coverImageUrl || '', bio: initialData.user.bio || '',
         interests: initialData.user.interests, galleryUrls: initialData.user.galleryUrls,
         locationLabel: initialData.user.locationLabel || user.location, regionKey: initialData.user.regionKey || '',
+        gender: initialData.user.gender || '', age: initialData.user.age, timeAbroad: initialData.user.timeAbroad || '', birthCity: initialData.user.birthCity || '',
       }
     : buildProfileState(user);
   const [loading, setLoading] = useState(!initialData);
@@ -97,12 +107,16 @@ const Profile: React.FC<{
   const [referralSummary, setReferralSummary] = useState<ReferralSummary>({ referralUrl: null, registrationCount: 0 });
   const [avatarDraft, setAvatarDraft] = useState('');
   const [coverDraft, setCoverDraft] = useState('');
-  const [accountDraft, setAccountDraft] = useState({
+  const [accountDraft, setAccountDraft] = useState<Pick<ProfileState, 'name' | 'username' | 'email' | 'phone' | 'bio' | 'gender' | 'age' | 'timeAbroad' | 'birthCity'>>({
     name: user.name,
     username: user.username || '',
     email: user.email || '',
     phone: user.phone || '',
     bio: user.bio || '',
+    gender: initialProfile.gender,
+    age: initialProfile.age,
+    timeAbroad: initialProfile.timeAbroad,
+    birthCity: initialProfile.birthCity,
   });
   const [interestDrafts, setInterestDrafts] = useState<string[]>(user.interests || []);
   const [interestInput, setInterestInput] = useState('');
@@ -123,7 +137,7 @@ const Profile: React.FC<{
       initialDataConsumedRef.current = true;
       setAvatarDraft(initialProfile.image);
       setCoverDraft(initialProfile.coverImageUrl);
-      setAccountDraft({ name: initialProfile.name, username: initialProfile.username, email: initialProfile.email, phone: initialProfile.phone, bio: initialProfile.bio });
+      setAccountDraft({ name: initialProfile.name, username: initialProfile.username, email: initialProfile.email, phone: initialProfile.phone, bio: initialProfile.bio, gender: initialProfile.gender, age: initialProfile.age, timeAbroad: initialProfile.timeAbroad, birthCity: initialProfile.birthCity });
       setInterestDrafts(initialProfile.interests);
       setGalleryDraft(initialProfile.galleryUrls);
       setSelectedRegionKey(initialProfile.regionKey);
@@ -156,6 +170,10 @@ const Profile: React.FC<{
             galleryUrls: Array.isArray(payload.user.galleryUrls) ? payload.user.galleryUrls : [],
             locationLabel: payload.user.locationLabel || user.location,
             regionKey: payload.user.regionKey || user.regionKey || '',
+            gender: payload.user.gender || '',
+            age: payload.user.age ?? null,
+            timeAbroad: payload.user.timeAbroad || '',
+            birthCity: payload.user.birthCity || '',
           };
 
           setProfile(nextProfile);
@@ -167,6 +185,10 @@ const Profile: React.FC<{
             email: nextProfile.email,
             phone: nextProfile.phone,
             bio: nextProfile.bio,
+            gender: nextProfile.gender,
+            age: nextProfile.age,
+            timeAbroad: nextProfile.timeAbroad,
+            birthCity: nextProfile.birthCity,
           });
           setInterestDrafts(nextProfile.interests);
           setGalleryDraft(nextProfile.galleryUrls);
@@ -228,8 +250,13 @@ const Profile: React.FC<{
       setCoverDraft(profile.coverImageUrl);
     }
 
+    if (editSection === 'region') {
+      setEditing((current) => ({ ...current, region: true }));
+      setSelectedRegionKey(profile.regionKey);
+    }
+
     router.replace('/profile', { scroll: false });
-  }, [loading, profile.coverImageUrl, router, searchParams]);
+  }, [loading, profile.coverImageUrl, profile.regionKey, router, searchParams]);
 
   useEffect(() => {
     let ignore = false;
@@ -257,7 +284,7 @@ const Profile: React.FC<{
   }, [profile.username]);
 
   const publicProfileUrl = useMemo(
-    () => (profile.username ? `https://gringoou.com/${profile.username}` : 'https://gringoou.com/seu-perfil'),
+    () => `${getClientAppBaseUrl()}/${profile.username || 'seu-perfil'}`,
     [profile.username],
   );
 
@@ -277,6 +304,10 @@ const Profile: React.FC<{
           coverImageUrl: normalizeUrlFieldValue(nextProfile.coverImageUrl),
           galleryUrls: nextProfile.galleryUrls,
           interests: nextProfile.interests,
+          gender: nextProfile.gender || undefined,
+          age: nextProfile.age ?? undefined,
+          timeAbroad: nextProfile.timeAbroad || undefined,
+          birthCity: nextProfile.birthCity.trim() || undefined,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -290,6 +321,10 @@ const Profile: React.FC<{
         coverImageUrl: payload?.user?.coverImageUrl || '',
         interests: Array.isArray(payload?.user?.interests) ? payload.user.interests : nextProfile.interests,
         galleryUrls: Array.isArray(payload?.user?.galleryUrls) ? payload.user.galleryUrls : nextProfile.galleryUrls,
+        gender: payload?.user?.gender || nextProfile.gender,
+        age: payload?.user?.age ?? nextProfile.age,
+        timeAbroad: payload?.user?.timeAbroad || nextProfile.timeAbroad,
+        birthCity: payload?.user?.birthCity || nextProfile.birthCity,
       };
 
       setProfile((current) => ({ ...current, ...persistedProfile }));
@@ -299,6 +334,10 @@ const Profile: React.FC<{
         email: persistedProfile.email || nextProfile.email,
         phone: persistedProfile.phone || '',
         bio: persistedProfile.bio || '',
+        gender: persistedProfile.gender || '',
+        age: persistedProfile.age ?? null,
+        timeAbroad: persistedProfile.timeAbroad || '',
+        birthCity: persistedProfile.birthCity || '',
       });
       setCoverDraft(persistedProfile.coverImageUrl || '');
       setInterestDrafts(persistedProfile.interests || []);
@@ -407,7 +446,7 @@ const Profile: React.FC<{
   };
 
   const avatarImage = profile.image || DEFAULT_AVATAR_URL;
-  const referralUrl = referralSummary.referralUrl || (profile.username ? `https://gringoou.com/convite/${profile.username}` : 'https://gringoou.com/convite/seu-nome-publico');
+  const referralUrl = referralSummary.referralUrl || `${getClientAppBaseUrl()}/convite/${profile.username || 'seu-nome-publico'}`;
   const professionalIdentity = professionalProfile.identity;
   const isProfessionalView =
     canUseProfessionalMode && personaMode === 'professional' && Boolean(professionalIdentity);
@@ -528,7 +567,7 @@ const Profile: React.FC<{
         />
       ) : (
         <>
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre voce" description="Edite nome, apresentacao e telefone que aparecem no seu perfil." editing={editing.account} onToggle={() => { setEditing((c) => ({ ...c, account: !c.account })); setAccountDraft({ name: profile.name, username: profile.username, email: profile.email, phone: profile.phone, bio: profile.bio }); }}>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={editing.account} onToggle={() => { setEditing((c) => ({ ...c, account: !c.account })); setAccountDraft({ name: profile.name, username: profile.username, email: profile.email, phone: profile.phone, bio: profile.bio, gender: profile.gender, age: profile.age, timeAbroad: profile.timeAbroad, birthCity: profile.birthCity }); }}>
         {editing.account ? (
           <EditorCard>
             <Input value={accountDraft.name} onChange={(value) => setAccountDraft((c) => ({ ...c, name: value }))} placeholder="Nome completo" icon={<UserRound size={16} />} />
@@ -538,8 +577,14 @@ const Profile: React.FC<{
               <Input value={accountDraft.phone} onChange={(value) => setAccountDraft((c) => ({ ...c, phone: formatLoosePhoneInput(value) }))} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
             </div>
             <textarea rows={4} value={accountDraft.bio} onChange={(event) => setAccountDraft((c) => ({ ...c, bio: event.target.value }))} placeholder="Escreva uma frase curta sobre voce" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input value={accountDraft.birthCity} onChange={(value) => setAccountDraft((c) => ({ ...c, birthCity: value }))} placeholder="Cidade natal" icon={<MapPin size={16} />} />
+              <Input value={accountDraft.age ? String(accountDraft.age) : ''} onChange={(value) => setAccountDraft((c) => ({ ...c, age: value ? Number(value) : null }))} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
+              <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={accountDraft.gender} onChange={(event) => setAccountDraft((c) => ({ ...c, gender: event.target.value as ProfileState['gender'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
+              <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={accountDraft.timeAbroad} onChange={(event) => setAccountDraft((c) => ({ ...c, timeAbroad: event.target.value as ProfileState['timeAbroad'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
+            </div>
             <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'account' ? 'Salvando...' : 'Salvar dados'} onClick={() => void saveProfile({ name: accountDraft.name, username: accountDraft.username, phone: accountDraft.phone, bio: accountDraft.bio }, 'Seus dados foram atualizados.', 'account')} disabled={savingKey === 'account'} />
+              <PrimaryButton className={primaryButtonClass} label={savingKey === 'account' ? 'Salvando...' : 'Salvar dados'} onClick={() => void saveProfile({ name: accountDraft.name, username: accountDraft.username, phone: accountDraft.phone, bio: accountDraft.bio, gender: accountDraft.gender, age: accountDraft.age, timeAbroad: accountDraft.timeAbroad, birthCity: accountDraft.birthCity }, 'Seus dados foram atualizados.', 'account')} disabled={savingKey === 'account'} />
               <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, account: false }))} disabled={savingKey === 'account'} />
             </ActionRow>
           </EditorCard>

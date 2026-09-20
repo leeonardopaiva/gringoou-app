@@ -21,6 +21,7 @@ import RegionSelector from '../components/RegionSelector';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
+import { ImageLightbox } from '../components/community/ImageLightbox';
 
 type PublicProfileProps = {
   username: string;
@@ -40,6 +41,7 @@ const defaultProfile: PublicUserProfile = {
   interests: [],
   galleryUrls: [],
   locationLabel: null,
+  birthCity: null,
   joinedAt: new Date().toISOString(),
   publicPath: '/',
   friendFeature: {
@@ -116,11 +118,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [friendActionLoading, setFriendActionLoading] = useState(false);
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [groupDraft, setGroupDraft] = useState({
     name: '',
     category: '',
     description: '',
     regionKey: '',
+    countryCode: 'US',
+    isPublic: true,
   });
 
   useEffect(() => {
@@ -173,8 +178,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     [profile],
   );
   const heroImage = profile.coverImageUrl || null;
-  const photoPreview = photoItems.slice(0, 6);
-  const extraPhotos = Math.max(photoItems.length - photoPreview.length, 0);
+  const photoPreview = photoItems;
   const interests = useMemo(() => {
     if (profile.interests.length > 0) {
       return profile.interests.slice(0, 8);
@@ -258,7 +262,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       }
 
       showToast('Grupo criado.', 'success');
-      setGroupDraft({ name: '', category: '', description: '', regionKey: '' });
+      setGroupDraft({ name: '', category: '', description: '', regionKey: '', countryCode: 'US', isPublic: true });
       setGroupModalOpen(false);
       refreshProfile();
     } catch (createError) {
@@ -312,7 +316,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     { id: 'groups' as const, label: 'Grupos' },
     { id: 'interests' as const, label: 'Interesses' },
     { id: 'photos' as const, label: 'Fotos' },
-    { id: 'recommendations' as const, label: 'Recomendações' },
   ];
   const friendStatus = profile.friendFeature.status || (viewer ? 'none' : 'signed_out');
 
@@ -367,7 +370,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </div>
           </div>
 
-          <div className="-mt-8 rounded-t-[36px] bg-white px-5 pb-8 pt-20 shadow-sm">
+          <div className="rounded-t-[36px] bg-white px-5 pb-8 pt-24 shadow-sm sm:pt-28">
             <div className="flex flex-col items-center text-center">
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -478,10 +481,25 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
                 </p>
 
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {profile.locationLabel ? (
+                    <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Região atual</p>
+                      <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><MapPin size={16} className="text-brand-500" /> {profile.locationLabel}</p>
+                    </div>
+                  ) : null}
+                  {profile.birthCity ? (
+                    <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Cidade natal</p>
+                      <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><Globe2 size={16} className="text-brand-500" /> {profile.birthCity}</p>
+                    </div>
+                  ) : null}
+                </div>
+
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexões" />
-                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" />
-                  <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" />
+                  <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
+                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" href={profile.stats.businessCount > 0 ? `/profissional/${profile.username}` : undefined} />
+                  <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" href={profile.stats.eventCount > 0 ? `/profissional/${profile.username}` : undefined} />
                   <ProfileMetric icon={<MessageSquareText size={16} />} value={profile.stats.postCount} label="Posts" />
                 </div>
               </section>
@@ -577,13 +595,15 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       />
                       <RegionSelector
                         value={groupDraft.regionKey}
-                        onChange={(region) => setGroupDraft((current) => ({ ...current, regionKey: region.key }))}
+                        onChange={(region) => setGroupDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))}
                         onClear={() => setGroupDraft((current) => ({ ...current, regionKey: '' }))}
                         allowEmpty
                         emptyLabel="Sem regiao especifica"
                         label="Regiao opcional"
                         hint="Use apenas quando o grupo for local."
                       />
+                      <label className="space-y-2"><span className="text-sm font-bold text-slate-800">País de descoberta</span><select value={groupDraft.countryCode} onChange={(event) => setGroupDraft((current) => ({ ...current, countryCode: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
+                      <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={groupDraft.isPublic} onChange={(event) => setGroupDraft((current) => ({ ...current, isPublic: event.target.checked }))} className="mt-1" /><span><strong className="block text-sm">Grupo público</strong><span className="text-xs text-slate-500">Grupos restritos exigem aprovação para acessar o mural.</span></span></label>
                       <button
                         type="button"
                         onClick={() => void handleCreateGroup()}
@@ -680,29 +700,21 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <EmptyPublicState text="Nenhuma foto publica disponivel para este perfil." />
                 ) : (
                   <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {photoPreview.map((photo, index) => {
-                      const showOverflow = index === photoPreview.length - 1 && extraPhotos > 0;
-
-                      return (
-                        <div
+                    {photoPreview.map((photo, index) => (
+                        <button
+                          type="button"
                           key={`${photo}-${index}`}
-                          className="relative overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50 shadow-sm"
+                          onClick={() => setSelectedPhoto(photo)}
+                          className="relative overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                          aria-label={`Ampliar foto ${index + 1} de ${profile.name}`}
                         >
                           <img
                             src={photo}
                             alt={`${profile.name} - foto ${index + 1}`}
                             className="aspect-square w-full object-cover"
                           />
-                          {showOverflow ? (
-                            <div className="absolute inset-0 flex items-end justify-end bg-slate-950/20 p-3">
-                              <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xl font-bold text-white">
-                                +{extraPhotos}
-                              </span>
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })}
+                        </button>
+                    ))}
                   </div>
                 )}
               </section>
@@ -780,25 +792,38 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               </section>
             ) : null}
           </div>
+          <ImageLightbox
+            open={Boolean(selectedPhoto)}
+            src={selectedPhoto || ''}
+            alt={`Foto ampliada de ${profile.name}`}
+            onClose={() => setSelectedPhoto(null)}
+          />
         </div>
       </div>
     </div>
   );
 };
 
-const ProfileMetric: React.FC<{ icon: React.ReactNode; value: number; label: string }> = ({
+const ProfileMetric: React.FC<{ icon: React.ReactNode; value: number; label: string; onClick?: () => void; href?: string }> = ({
   icon,
   value,
   label,
-}) => (
-  <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4 text-center">
+  onClick,
+  href,
+}) => {
+  const content = <>
     <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-100 text-brand-500">
       {icon}
     </div>
     <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
     <p className="text-xs font-medium text-slate-500">{label}</p>
-  </div>
-);
+  </>;
+  const className = `rounded-[24px] border border-slate-100 bg-slate-50 p-4 text-center ${onClick || href ? 'cursor-pointer transition hover:border-brand-200 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300' : ''}`;
+
+  if (href) return <Link href={href} className={className}>{content}</Link>;
+  if (onClick) return <button type="button" onClick={onClick} className={className}>{content}</button>;
+  return <div className={className}>{content}</div>;
+};
 
 const EmptyPublicState: React.FC<{ text: string }> = ({ text }) => (
   <div className="mt-5 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">

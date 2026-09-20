@@ -32,6 +32,7 @@ const emptyDraft = {
   description: "",
   employmentType: "Tempo integral",
   locationLabel: "",
+  countryCode: "US",
   salary: "",
   contactUrl: "",
 };
@@ -269,6 +270,9 @@ export default function JobList({ user }: { user: User }) {
               setDraft({ ...draft, locationLabel: e.target.value })
             }
           />
+          <Select value={draft.countryCode} onChange={(event) => setDraft({ ...draft, countryCode: event.target.value })}>
+            <option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option>
+          </Select>
           <Input
             placeholder="Salario"
             value={draft.salary}
