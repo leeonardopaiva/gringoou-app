@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
-import { updateEventMediaSchema } from '@/lib/validators';
+import { eventUpdateSchema } from '@/lib/validators';
 import { isVisibleForRegion } from '@/lib/visibility';
 
 type RouteContext = {
@@ -125,7 +125,7 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   const body = await request.json();
-  const parsed = updateEventMediaSchema.safeParse(body);
+  const parsed = eventUpdateSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -173,8 +173,14 @@ export async function PUT(request: Request, context: RouteContext) {
   const event = await prisma.event.update({
     where: { id: existingEvent.id },
     data: {
-      imageUrl: parsed.data.imageUrl ?? null,
-      galleryUrls: parsed.data.galleryUrls,
+      ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
+      ...(parsed.data.description !== undefined ? { description: parsed.data.description } : {}),
+      ...(parsed.data.venueName !== undefined ? { venueName: parsed.data.venueName } : {}),
+      ...(parsed.data.startsAt !== undefined ? { startsAt: new Date(parsed.data.startsAt) } : {}),
+      ...(parsed.data.endsAt !== undefined ? { endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null } : {}),
+      ...(parsed.data.externalUrl !== undefined ? { externalUrl: parsed.data.externalUrl ?? null } : {}),
+      ...(parsed.data.imageUrl !== undefined ? { imageUrl: parsed.data.imageUrl ?? null } : {}),
+      ...(parsed.data.galleryUrls !== undefined ? { galleryUrls: parsed.data.galleryUrls } : {}),
     },
     select: {
       id: true,

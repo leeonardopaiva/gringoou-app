@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
   const viewerRegionKey = searchParams.get('region') ?? session?.user?.regionKey;
-  return NextResponse.json(await getEventsPage({ session, regionKey: viewerRegionKey }));
+  return NextResponse.json(await getEventsPage({ session, regionKey: viewerRegionKey, category: searchParams.get('category') || undefined }));
 }
 
 export async function POST(request: Request) {
@@ -103,6 +103,7 @@ export async function POST(request: Request) {
         slug,
         description: parsed.data.description,
         venueName: parsed.data.venueName,
+        category: parsed.data.category,
         startsAt: new Date(parsed.data.startsAt),
         endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null,
         locationLabel: professionalBusiness?.locationLabel ?? region!.label,

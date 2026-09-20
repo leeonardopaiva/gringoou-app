@@ -89,6 +89,7 @@ type CommentComposerProps = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const Root: React.FC<RootProps> = ({ children, className = '' }) => (
@@ -187,7 +188,15 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
 
   return (
     <>
-      <FeedCard.Content text={content} className="px-0 pb-0 text-[13px] leading-5" />
+      <div className="whitespace-pre-wrap px-0 pb-0 text-[13px] leading-5 text-slate-700">
+        {content.split(/(#[\p{L}\p{N}_-]+)/gu).map((part, index) =>
+          /^#[\p{L}\p{N}_-]+$/u.test(part) ? (
+            <Link key={`${part}-${index}`} href={`/buscar?q=${encodeURIComponent(part)}`} className="font-semibold text-brand-600 hover:underline">
+              {part}
+            </Link>
+          ) : part,
+        )}
+      </div>
 
       {youtubeEmbedUrl ? (
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-950">
@@ -381,12 +390,14 @@ const CommentComposer: React.FC<CommentComposerProps> = ({
   value,
   onChange,
   onSubmit,
+  onKeyDown,
 }) => (
   <div className="flex items-center gap-2">
     <input
       type="text"
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      onKeyDown={onKeyDown}
       placeholder="Escreva um comentario..."
       className="flex-1 rounded-full bg-bg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-200"
     />

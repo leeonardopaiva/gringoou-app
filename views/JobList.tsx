@@ -14,7 +14,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { useToast } from "@/components/feedback/ToastProvider";
-import { User, UserRole } from "@/types";
+import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
 
 type Job = {
@@ -35,6 +35,7 @@ const emptyDraft = {
   countryCode: "US",
   salary: "",
   contactUrl: "",
+  businessId: "",
 };
 
 export default function JobList({ user }: { user: User }) {
@@ -50,10 +51,15 @@ export default function JobList({ user }: { user: User }) {
   const [companyInviteOpen, setCompanyInviteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
-  const canPublish =
-    user.role === UserRole.COMPANY ||
-    user.role === UserRole.ADMIN ||
-    user.recruiterVerified;
+  const [publishAs, setPublishAs] = useState<'person' | 'business'>('person');
+  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
+  const canPublish = Boolean(user.id);
+
+  useEffect(() => {
+    void fetch('/api/businesses?mine=1').then((response) => response.ok ? response.json() : null).then((payload) => {
+      setBusinesses(Array.isArray(payload?.businesses) ? payload.businesses : []);
+    }).catch(() => setBusinesses([]));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -95,7 +101,7 @@ export default function JobList({ user }: { user: User }) {
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify({ ...draft, company: publishAs === 'person' ? draft.company || user.name : draft.company }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
@@ -127,7 +133,7 @@ export default function JobList({ user }: { user: User }) {
             canPublish ? setModalOpen(true) : setCompanyInviteOpen(true)
           }
         >
-          Criar anuncio
+          Criar vaga
         </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -201,18 +207,17 @@ export default function JobList({ user }: { user: User }) {
       <Modal
         open={companyInviteOpen}
         onClose={() => setCompanyInviteOpen(false)}
-        title="Publique como empresa"
-        description="Vagas podem ser publicadas apenas por empresas ou recrutadores verificados."
+        title="Cadastre seu negócio"
+        description="Para publicar como empresa, cadastre primeiro a página profissional do negócio."
       >
         <p className="text-body-sm text-muted-foreground">
-          Migre para um perfil corporativo ou solicite verificacao para anunciar
-          oportunidades.
+          Você também pode publicar diretamente como pessoa pelo botão Criar vaga.
         </p>
         <Link
           href="/profile"
           className="mt-5 inline-flex rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white"
         >
-          Ir para configuracoes do perfil
+          Criar negócio
         </Link>
       </Modal>
       <Modal
@@ -221,6 +226,18 @@ export default function JobList({ user }: { user: User }) {
         title="Criar vaga"
       >
         <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1">
+            <button type="button" onClick={() => { setPublishAs('person'); setDraft((current) => ({ ...current, businessId: '' })); }} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'person' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como pessoa</button>
+            <button type="button" onClick={() => setPublishAs('business')} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'business' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como empresa</button>
+          </div>
+          {publishAs === 'business' ? businesses.length ? (
+            <Select value={draft.businessId} onChange={(event) => setDraft({ ...draft, businessId: event.target.value })}>
+              <option value="">Selecione o negócio</option>
+              {businesses.map((business) => <option key={business.id} value={business.id}>{business.name}</option>)}
+            </Select>
+          ) : (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Você ainda não possui negócio cadastrado. <Link className="font-bold underline" href="/negocios?create=1">Criar negócio</Link></div>
+          ) : null}
           <Input
             placeholder="Titulo"
             value={draft.title}
@@ -230,6 +247,7 @@ export default function JobList({ user }: { user: User }) {
             placeholder="Empresa"
             value={draft.company}
             onChange={(e) => setDraft({ ...draft, company: e.target.value })}
+            disabled={publishAs === 'business' && Boolean(draft.businessId)}
           />
           <Textarea
             placeholder="Descricao"
@@ -268,7 +286,7 @@ export default function JobList({ user }: { user: User }) {
             value={draft.contactUrl}
             onChange={(e) => setDraft({ ...draft, contactUrl: e.target.value })}
           />
-          <Button fullWidth loading={saving} onClick={() => void createJob()}>
+          <Button fullWidth loading={saving} disabled={publishAs === 'business' && (!draft.businessId || businesses.length === 0)} onClick={() => void createJob()}>
             Publicar vaga
           </Button>
         </div>

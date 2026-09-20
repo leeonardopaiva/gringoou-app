@@ -18,6 +18,7 @@ import ImageGalleryField from '../components/forms/ImageGalleryField';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { User } from '../types';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import { LinkifiedText } from '../components/ui/LinkifiedText';
 
 interface EventDetailProps {
   eventId?: string;
@@ -475,7 +476,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
               </p>
             ) : null}
           </div>
-          <p className="text-sm leading-relaxed text-slate-600">{event.description}</p>
+          <LinkifiedText text={event.description} className="text-sm leading-relaxed text-slate-600" />
           {event.externalUrl ? (
             <a
               href={event.externalUrl}

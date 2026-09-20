@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
+import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import PageHeader from "@/components/navigation/PageHeader";
 
 type Housing = {
@@ -49,6 +50,11 @@ export default function HousingList({ user: _user }: { user: User }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
+  const formatPrice = (value: string) => {
+    const amount = Number(value.replace(/[^0-9.,]/g, '').replace(',', '.'));
+    if (!Number.isFinite(amount) || amount <= 0) return value || 'Valor a combinar';
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+  };
   useEffect(() => {
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
@@ -174,7 +180,7 @@ export default function HousingList({ user: _user }: { user: User }) {
                 <p className="mt-1 flex items-center gap-1 text-caption text-muted-foreground">
                   <MapPin size={13} /> {item.locationLabel}
                 </p>
-                <p className="mt-2 font-bold">{item.price}</p>
+                <p className="mt-2 font-bold">{formatPrice(item.price)}</p>
                 <Link
                   href={`/moradia/${item.id}`}
                   className="mt-3 inline-flex rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white"
@@ -220,12 +226,10 @@ export default function HousingList({ user: _user }: { user: User }) {
             <option>Quarto</option>
             <option>Republica</option>
           </Select>
-          <Input
-            placeholder="Localizacao"
+          <AddressAutocomplete
+            placeholder="Pesquise cidade, rua ou endereço"
             value={draft.locationLabel}
-            onChange={(e) =>
-              setDraft({ ...draft, locationLabel: e.target.value })
-            }
+            onChange={(locationLabel) => setDraft({ ...draft, locationLabel })}
           />
           <Input
             placeholder="Preco"

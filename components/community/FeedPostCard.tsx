@@ -13,6 +13,7 @@ type FeedPostCardProps = {
   onUpdateComment: (commentId: string, content: string) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onSharePost: () => void;
+  onPostPreference?: (action: 'save' | 'interest' | 'hide' | 'report' | 'mute') => void;
 };
 
 const FeedPostCard: React.FC<FeedPostCardProps> = ({
@@ -24,6 +25,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onUpdateComment,
   onDeleteComment,
   onSharePost,
+  onPostPreference = () => undefined,
 }) => {
   const authorHref = post.authorHref || (post.author.username ? `/${post.author.username}` : undefined);
   const [commentText, setCommentText] = useState('');
@@ -217,7 +219,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
         locationLabel={post.locationLabel}
         menu={
           <PostCard.Menu
-            open={postMenuOpen && Boolean(post.canEdit || post.canDelete)}
+            open={postMenuOpen}
             onToggle={() => setPostMenuOpen((current) => !current)}
           >
             {post.canEdit ? (
@@ -241,6 +243,16 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 Apagar
               </PostCard.MenuItem>
             ) : null}
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('interest'); }}>
+              {post.viewerIsInterested ? 'Remover interesse' : 'Tenho interesse'}
+            </PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>Não tenho interesse</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('save'); }}>
+              {post.viewerHasSaved ? 'Remover dos salvos' : 'Salvar post'}
+            </PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>Ocultar</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('report'); }}>Reportar</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('mute'); }}>Mutar usuário</PostCard.MenuItem>
           </PostCard.Menu>
         }
       />
@@ -396,6 +408,12 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
         value={commentText}
         onChange={setCommentText}
         onSubmit={handleCommentSubmit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            handleCommentSubmit();
+          }
+        }}
       />
 
       {!supportsHover && likesOpen && likesPreviewContent ? (

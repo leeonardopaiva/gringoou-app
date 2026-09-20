@@ -27,6 +27,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import { PublicLinksBlock } from '../components/profile/PublicLinksBlock';
 import { BusinessPostsPanel } from '../components/business/BusinessPostsPanel';
+import { ImageLightbox } from '../components/community/ImageLightbox';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -376,6 +377,8 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   const callHref = normalizePhoneLink(business.phone || business.whatsapp);
   const whatsappHref = normalizeWhatsappLink(business.whatsapp || business.phone);
   const galleryImages = [business.imageUrl, ...business.galleryUrls].filter(Boolean);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const mapQuery = encodeURIComponent(business.address || business.locationLabel);
   const isPendingReview = business.status === 'PENDING_REVIEW';
 
   if (loading) {
@@ -643,6 +646,11 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           <p className="theme-text text-base font-bold">{business.address}</p>
           <p className="text-sm leading-relaxed text-slate-600">{business.description}</p>
 
+          <div className="flex flex-wrap gap-2 pt-1">
+            <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200"><MapPin size={14} /> Google Maps</a>
+            <a href={`https://waze.com/ul?q=${mapQuery}&navigate=yes`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200">Waze</a>
+          </div>
+
           {business.website || business.instagram ? (
             <div className="flex flex-wrap gap-2 pt-2">
               {business.website ? (
@@ -698,13 +706,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {galleryImages.map((imageUrl, index) => (
-                <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded-[24px] bg-slate-50">
+                <button key={`${imageUrl}-${index}`} type="button" onClick={() => setSelectedImage(imageUrl)} className="overflow-hidden rounded-[24px] bg-slate-50" aria-label={`Ampliar imagem ${index + 1}`}>
                   <img
                     src={imageUrl}
                     className="aspect-square w-full object-cover"
                     alt={`${business.name} - imagem ${index + 1}`}
                   />
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -714,6 +722,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       <div className="px-5 pb-8">
         <BusinessPostsPanel businessId={business.id} businessName={business.name} management={managementMode} />
       </div>
+      <ImageLightbox open={Boolean(selectedImage)} onClose={() => setSelectedImage(null)} src={selectedImage || ''} alt={`Imagem de ${business.name}`} />
 
       {isEditModalOpen ? (
         <div

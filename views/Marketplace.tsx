@@ -7,7 +7,7 @@ import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
-import { Check, Heart, MapPin, Plus } from 'lucide-react';
+import { Check, Heart, MapPin, Plus, Search } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
 import {
@@ -68,6 +68,7 @@ const emptyForm: {
   startsAt: string;
   endsAt: string;
   regionKey: string;
+  category: string;
   externalUrl: string;
   imageUrl: string;
   galleryUrls: string[];
@@ -78,6 +79,7 @@ const emptyForm: {
   startsAt: '',
   endsAt: '',
   regionKey: '',
+  category: 'Outros',
   externalUrl: '',
   imageUrl: '',
   galleryUrls: [],
@@ -106,6 +108,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('Proximos');
+  const [search, setSearch] = useState('');
   const [events, setEvents] = useState<EventItem[]>(initialData?.events ?? []);
   const [resultScope, setResultScope] = useState<'local' | 'global'>(initialData?.scope ?? 'local');
   const initialPageConsumedRef = React.useRef(false);
@@ -177,8 +180,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       } catch (error) {
         console.error('Failed to load events:', error);
         if (!ignore) {
-          setEvents(SAMPLE_EVENTS);
-          setResultScope('global');
+          setEvents([]);
+          setResultScope('local');
         }
       }
     };
@@ -326,12 +329,21 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       return false;
     }
 
+    const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR');
+    if (normalizedSearch && ![item.title, item.description, item.venueName, item.locationLabel].filter(Boolean).some((value) => value!.toLocaleLowerCase('pt-BR').includes(normalizedSearch))) {
+      return false;
+    }
+
     if (activeTab === 'Hoje') {
       return isSameLocalDay(eventDate, now);
     }
 
     if (activeTab === 'Esta semana') {
       return eventDate >= todayStart && eventDate <= weekEnd;
+    }
+
+    if (activeTab !== 'Proximos') {
+      return item.category === activeTab;
     }
 
     return eventDate >= now || isSameLocalDay(eventDate, now);
@@ -369,8 +381,12 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             </div>
           </div>
         </button>
+        <div className="relative">
+          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar eventos" className="w-full rounded-full border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
+        </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking'].map((tab) => (
+            {['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros'].map((tab) => (
                 <button 
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -429,6 +445,9 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.venueName} />
+            <select value={createForm.category} onChange={(event) => setCreateForm((current) => ({ ...current, category: event.target.value }))} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
+              {['Cultural', 'Networking', 'Esporte', 'Gastronomia', 'Família', 'Outros'].map((category) => <option key={category}>{category}</option>)}
+            </select>
             <div className="grid grid-cols-2 gap-3">
               <input
                 required
@@ -485,7 +504,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               error={fieldErrors.imageUrl}
               folder="events"
               placeholder="Link da imagem do evento"
-              hint="Envie a imagem do evento pela Cloudinary ou cole uma URL publica."
+              hint=""
             />
             <ImageGalleryField
               value={createForm.galleryUrls}
@@ -608,7 +627,9 @@ const EventCard: React.FC<{
                 <div className="flex items-center gap-1 theme-text text-[10px] font-bold mt-2">
                     <MapPin size={10} fill="currentColor" /> {location}
                 </div>
-                <p className="mt-1 text-[10px] text-slate-400">{region}</p>
+                {region.trim().toLocaleLowerCase('pt-BR') !== location.trim().toLocaleLowerCase('pt-BR') ? (
+                  <p className="mt-1 text-[10px] text-slate-400">{region}</p>
+                ) : null}
                 <div className="mt-2">
                     <StarRating average={item.ratingAverage ?? 0} count={item.ratingCount ?? 0} compact />
                 </div>

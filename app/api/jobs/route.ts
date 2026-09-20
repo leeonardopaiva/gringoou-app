@@ -35,15 +35,30 @@ export async function POST(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!session.user.onboardingCompleted) return NextResponse.json({ error: 'Complete seu perfil antes de publicar.' }, { status: 403 });
-  if (session.user.role !== 'COMPANY' && session.user.role !== 'ADMIN' && !session.user.recruiterVerified) {
-    return NextResponse.json({ error: 'Apenas empresas e recrutadores verificados podem publicar vagas.', code: 'COMPANY_REQUIRED' }, { status: 403 });
-  }
-
   const parsed = jobSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
   }
 
-  const job = await prisma.job.create({ data: { ...parsed.data, createdById: session.user.id } });
+  const business = parsed.data.businessId
+    ? await prisma.business.findFirst({
+        where: {
+          id: parsed.data.businessId,
+          OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }],
+        },
+        select: { id: true, name: true },
+      })
+    : null;
+  if (parsed.data.businessId && !business) {
+    return NextResponse.json({ error: 'Selecione um negócio que você administra.' }, { status: 403 });
+  }
+  const job = await prisma.job.create({
+    data: {
+      ...parsed.data,
+      company: business?.name ?? parsed.data.company,
+      businessId: business?.id,
+      createdById: session.user.id,
+    },
+  });
   return NextResponse.json({ job }, { status: 201 });
 }

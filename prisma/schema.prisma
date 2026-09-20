@@ -204,6 +204,9 @@ model User {
   postComments              PostComment[]          @relation("PostCommentAuthor")
   postReactions             PostReaction[]         @relation("PostReactionAuthor")
   postReports               PostReport[]           @relation("PostReportAuthor")
+  postPreferences           CommunityPostPreference[]
+  mutedUsers                UserMute[]             @relation("UserMuteSource")
+  mutedByUsers              UserMute[]             @relation("UserMuteTarget")
   emailChangeTokens         EmailChangeToken[]
   suggestions               Suggestion[]
   businessFavorites         BusinessFavorite[]
@@ -232,14 +235,17 @@ model Job {
   countryCode    String   @default("US")
   salary         String?
   contactUrl     String?
+  businessId     String?
   isActive       Boolean  @default(true)
   createdById    String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   createdBy      User     @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  business       Business? @relation("JobBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
   @@index([isActive, createdAt])
   @@index([createdById, createdAt])
+  @@index([businessId, createdAt])
 }
 
 model Housing {
@@ -358,6 +364,7 @@ model Business {
   ratings             BusinessRating[]
   communityPosts      CommunityPost[]    @relation("CommunityPostBusinessAuthor")
   events              Event[]            @relation("EventBusiness")
+  jobs                Job[]              @relation("JobBusiness")
   adAccount            AdAccount?
 
   @@index([status, regionKey])
@@ -383,6 +390,7 @@ model Event {
   slug                String          @unique
   description         String
   venueName           String
+  category            String          @default("Outros")
   startsAt            DateTime
   endsAt              DateTime?
   locationLabel       String
@@ -408,6 +416,7 @@ model Event {
   @@index([status, regionKey, startsAt])
   @@index([visibilityScope, visibilityRegionKey, startsAt])
   @@index([businessId, startsAt])
+  @@index([category, regionKey, startsAt])
 }
 
 model CommunityPost {
@@ -429,6 +438,7 @@ model CommunityPost {
   comments         PostComment[]
   reactions        PostReaction[]
   reports          PostReport[]
+  preferences      CommunityPostPreference[]
 
   @@index([status, regionKey, createdAt])
   @@index([businessAuthorId, createdAt])
@@ -744,6 +754,34 @@ model CommunityGroupMember {
   @@index([userId, createdAt])
   @@index([groupId, createdAt])
   @@index([groupId, status, createdAt])
+}
+
+model CommunityPostPreference {
+  id          String        @id @default(cuid())
+  postId      String
+  userId      String
+  isSaved     Boolean       @default(false)
+  isInterested Boolean      @default(false)
+  isHidden    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  post        CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, isSaved, updatedAt])
+}
+
+model UserMute {
+  id        String   @id @default(cuid())
+  userId    String
+  mutedUserId String
+  createdAt DateTime @default(now())
+  user      User     @relation("UserMuteSource", fields: [userId], references: [id], onDelete: Cascade)
+  mutedUser User     @relation("UserMuteTarget", fields: [mutedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mutedUserId])
+  @@index([mutedUserId])
 }
 
 model Suggestion {

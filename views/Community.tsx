@@ -45,6 +45,7 @@ const Community: React.FC<{
   const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   const [postsHasMore, setPostsHasMore] = useState(initialData?.hasMore ?? true);
   const [postsNextOffset, setPostsNextOffset] = useState(initialData?.nextOffset ?? 0);
+  const [feedFilter, setFeedFilter] = useState<'recent' | 'mine' | 'saved'>('recent');
   const initialPageConsumedRef = useRef(false);
   const pendingLikeIdsRef = useRef(new Set<string>());
   const targetPostAutoLoadAttemptsRef = useRef(0);
@@ -491,6 +492,35 @@ const Community: React.FC<{
     }
   };
 
+  const handlePostPreference = async (postId: string, action: 'save' | 'interest' | 'hide' | 'report' | 'mute') => {
+    try {
+      const response = await fetch(`/api/community/posts/${postId}/preference`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a preferência.');
+      if (action === 'hide' || action === 'mute') {
+        setPosts((current) => current.filter((post) => post.id !== postId));
+      } else if (action !== 'report') {
+        setPosts((current) => current.map((post) => post.id === postId ? {
+          ...post,
+          viewerHasSaved: action === 'save' ? Boolean(payload?.preference?.isSaved) : post.viewerHasSaved,
+          viewerIsInterested: action === 'interest' ? Boolean(payload?.preference?.isInterested) : post.viewerIsInterested,
+        } : post));
+      }
+      showToast(payload?.message ?? (action === 'report' ? 'Publicação reportada.' : 'Preferência atualizada.'), 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a preferência.', 'error');
+    }
+  };
+
+  const handleComposerKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void handlePublish();
+    }
+  };
+
   const handleAddComment = async (postId: string, content: string) => {
     const normalizedContent = content.trim();
     const temporaryCommentId = `optimistic-${crypto.randomUUID()}`;
@@ -779,6 +809,7 @@ const Community: React.FC<{
             avatarHref={composerHref}
             value={postContent}
             onChange={setPostContent}
+            onKeyDown={handleComposerKeyDown}
             placeholder={
               composerMode === 'link'
                 ? 'Adicione uma descricao para o link...'
@@ -834,13 +865,30 @@ const Community: React.FC<{
         </div>
       </div>
 
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {([
+          ['recent', 'Recentes'],
+          ['mine', 'Meus posts'],
+          ['saved', 'Salvos'],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setFeedFilter(value)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition ${feedFilter === value ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-3">
         {displayedPosts.length === 0 && !postsLoading ? (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm font-medium text-slate-500">
             Ninguem publicou por aqui ainda. Seja o primeiro da sua regiao.
           </div>
         ) : null}
-        {displayedPosts.map((post, index) => {
+        {displayedPosts.filter((post) => feedFilter === 'recent' || (feedFilter === 'mine' && post.author.id === user.id) || (feedFilter === 'saved' && post.viewerHasSaved)).map((post, index) => {
           const banner = getBannerAfterPost(index);
 
           return (
@@ -859,6 +907,7 @@ const Community: React.FC<{
                   }
                   onDeleteComment={(commentId) => handleDeleteComment(post.id, commentId)}
                   onSharePost={() => handleSharePost(post)}
+                  onPostPreference={(action) => void handlePostPreference(post.id, action)}
                 />
               </div>
               {banner ? (

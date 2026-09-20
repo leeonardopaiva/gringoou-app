@@ -121,6 +121,7 @@ export const jobSchema = z.object({
   countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
   salary: optionalString,
   contactUrl: optionalUrl,
+  businessId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -274,6 +275,7 @@ export const eventSchema = z.object({
   title: z.string().trim().min(4).max(100),
   description: z.string().trim().min(10).max(700),
   venueName: z.string().trim().min(3).max(100),
+  category: z.string().trim().min(2).max(60).default('Outros'),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime().optional(),
   regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
@@ -368,6 +370,8 @@ export const communityGroupSchema = z.object({
   countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
   isPublic: z.boolean().default(true),
 });
+
+export const eventUpdateSchema = eventSchema.partial();
 
 export const communityGroupMemberActionSchema = z.object({
   action: z.enum(['approve', 'block', 'remove', 'promote', 'demote']),

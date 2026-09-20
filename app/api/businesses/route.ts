@@ -11,6 +11,15 @@ import { getBusinessesPage } from '@/lib/server/businesses';
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
+  if (searchParams.get('mine') === '1') {
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const businesses = await prisma.business.findMany({
+      where: { OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }] },
+      select: { id: true, name: true, status: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return NextResponse.json({ businesses });
+  }
   const category = searchParams.get('category');
   const search = searchParams.get('search');
   const viewerRegionKey = searchParams.get('region') ?? session?.user?.regionKey;

@@ -224,6 +224,8 @@ export interface Post {
   status?: 'PUBLISHED' | 'PENDING_REVIEW' | 'REMOVED';
   canEdit?: boolean;
   canDelete?: boolean;
+  viewerHasSaved?: boolean;
+  viewerIsInterested?: boolean;
 }
 
 export interface PostComment {
@@ -233,6 +235,8 @@ export interface PostComment {
   author: CommunityAuthor;
   canEdit?: boolean;
   canDelete?: boolean;
+  viewerHasSaved?: boolean;
+  viewerIsInterested?: boolean;
 }
 
 export interface Business {
@@ -265,6 +269,7 @@ export interface EventItem {
   slug?: string;
   title: string;
   venueName: string;
+  category?: string;
   startsAt: string;
   locationLabel: string;
   description?: string;

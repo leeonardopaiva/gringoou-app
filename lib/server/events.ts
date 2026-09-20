@@ -8,12 +8,13 @@ import type { EventItem } from '@/types';
 
 export type EventsPage = { events: EventItem[]; scope: 'local' | 'global' };
 
-export async function getEventsPage({ session, regionKey }: { session: Session | null; regionKey?: string | null }): Promise<EventsPage> {
+export async function getEventsPage({ session, regionKey, category }: { session: Session | null; regionKey?: string | null; category?: string | null }): Promise<EventsPage> {
   const viewerId = session?.user?.id;
   const isAdmin = session?.user?.role === UserRole.ADMIN;
   const events = await prisma.event.findMany({
     where: {
       startsAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      ...(category ? { category } : {}),
       OR: [
         { status: EventStatus.PUBLISHED, ...getVisibilityFilter(regionKey) },
         ...(viewerId ? [{ status: EventStatus.PENDING_REVIEW, createdById: viewerId }] : []),
@@ -23,7 +24,7 @@ export async function getEventsPage({ session, regionKey }: { session: Session |
     orderBy: [{ startsAt: 'asc' }],
     take: 24,
     select: {
-      id: true, slug: true, title: true, description: true, venueName: true, startsAt: true,
+      id: true, slug: true, title: true, description: true, venueName: true, category: true, startsAt: true,
       endsAt: true, locationLabel: true, regionKey: true, externalUrl: true, imageUrl: true,
       galleryUrls: true, ratingAverage: true, ratingCount: true, visibilityScope: true,
       status: true, createdById: true, businessId: true,

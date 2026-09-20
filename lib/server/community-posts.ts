@@ -44,6 +44,7 @@ export async function getCommunityPostsPage({
 }): Promise<CommunityPostsPage> {
   const pagination = normalizeCommunityPagination(limit, offset);
   const isAdmin = session?.user?.role === 'ADMIN';
+  const viewerId = session?.user?.id;
 
   const posts = await prisma.communityPost.findMany({
     where: {
@@ -62,6 +63,14 @@ export async function getCommunityPostsPage({
       ...(regionKey ? { regionKey } : {}),
       ...(businessId ? { businessAuthorId: businessId } : {}),
       groupId: groupId ?? null,
+      ...(viewerId
+        ? {
+            AND: [
+              { preferences: { none: { userId: viewerId, isHidden: true } } },
+              { author: { mutedByUsers: { none: { userId: viewerId } } } },
+            ],
+          }
+        : {}),
     },
     orderBy: [{ createdAt: 'desc' }],
     take: pagination.limit + 1,
@@ -78,6 +87,7 @@ export async function getCommunityPostsPage({
         orderBy: [{ createdAt: 'desc' }],
         select: { authorId: true, author: { select: { id: true, name: true, username: true, image: true } } },
       },
+      preferences: viewerId ? { where: { userId: viewerId }, select: { isSaved: true, isInterested: true } } : false,
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -135,6 +145,8 @@ export async function getCommunityPostsPage({
         })),
         canEdit: isAdmin || isPostOwner || canManageGroup,
         canDelete: isAdmin || isPostOwner || canManageGroup,
+        viewerHasSaved: post.preferences[0]?.isSaved ?? false,
+        viewerIsInterested: post.preferences[0]?.isInterested ?? false,
       };
     }),
     hasMore,

@@ -25,7 +25,11 @@ export async function PUT(request: Request, context: RouteContext) {
   }
   const parsed = jobSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
-  return NextResponse.json({ job: await prisma.job.update({ where: { id: jobId }, data: parsed.data }) });
+  const business = parsed.data.businessId
+    ? await prisma.business.findFirst({ where: { id: parsed.data.businessId, OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }] }, select: { id: true, name: true } })
+    : null;
+  if (parsed.data.businessId && !business) return NextResponse.json({ error: 'Selecione um negócio que você administra.' }, { status: 403 });
+  return NextResponse.json({ job: await prisma.job.update({ where: { id: jobId }, data: { ...parsed.data, company: business?.name ?? parsed.data.company, businessId: business?.id } }) });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {

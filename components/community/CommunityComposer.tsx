@@ -19,6 +19,7 @@ type EditorProps = {
   avatarHref?: string;
   value: string;
   onChange: (value: string) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   placeholder: string;
 };
 
@@ -57,7 +58,7 @@ const Root: React.FC<RootProps> = ({ children }) => (
   </div>
 );
 
-const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, placeholder }) => (
+const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, onKeyDown, placeholder }) => (
   <div className="flex items-center gap-3">
     {avatarHref ? (
       <Link href={avatarHref} className="transition hover:opacity-90">
@@ -72,6 +73,7 @@ const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, pl
         value={value}
         maxLength={COMMUNITY_POST_MAX_LENGTH}
         onChange={(event) => onChange(event.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         className="min-h-11 w-full resize-none rounded-full border-none bg-slate-100 px-4 py-3 text-sm text-foreground outline-none transition focus:bg-white focus:ring-2 focus:ring-brand-200"
       />
