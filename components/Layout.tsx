@@ -184,7 +184,7 @@ const SidebarContent: React.FC<{
             onClick={onToggleCollapsed}
             aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="order-first hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 md:inline-flex"
+            className="order-last hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 md:inline-flex"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
