@@ -6,12 +6,15 @@ import { jobSchema } from '@/lib/validators';
 type RouteContext = { params: Promise<{ jobId: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const session = await getServerAuthSession();
   const { jobId } = await context.params;
   const job = await prisma.job.findUnique({
     where: { id: jobId },
     include: { createdBy: { select: { id: true, name: true, username: true } } },
   });
-  return job ? NextResponse.json({ job }) : NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+  return job
+    ? NextResponse.json({ job: { ...job, canEdit: session?.user?.id === job.createdById || session?.user?.role === 'ADMIN' } })
+    : NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: RouteContext) {

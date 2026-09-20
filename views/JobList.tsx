@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
+import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 
 type Job = {
   id: string;
@@ -25,6 +26,7 @@ type Job = {
   employmentType: string;
   locationLabel: string;
   salary?: string | null;
+  imageUrl?: string | null;
 };
 const emptyDraft = {
   title: "",
@@ -36,6 +38,7 @@ const emptyDraft = {
   salary: "",
   contactUrl: "",
   businessId: "",
+  imageUrl: "",
 };
 
 export default function JobList({ user }: { user: User }) {
@@ -101,7 +104,11 @@ export default function JobList({ user }: { user: User }) {
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, company: publishAs === 'person' ? draft.company || user.name : draft.company }),
+        body: JSON.stringify({
+          ...draft,
+          businessId: draft.businessId || undefined,
+          company: publishAs === 'person' ? draft.company || user.name : draft.company,
+        }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
@@ -176,7 +183,9 @@ export default function JobList({ user }: { user: User }) {
           </p>
         ) : jobs.length ? (
           jobs.map((job) => (
-            <Card key={job.id} className="border border-border shadow-xs">
+            <Card key={job.id} padded={false} className="overflow-hidden border border-border shadow-xs">
+            {job.imageUrl ? <img src={job.imageUrl} alt={'Capa da vaga ' + job.title} className="h-36 w-full object-cover" /> : null}
+            <div className="p-4">
             <div className="p-1">
                 <h3 className="text-body-sm font-bold">{job.title}</h3>
                 <p className="mt-1 flex items-center gap-1 text-caption font-semibold text-brand-500">
@@ -194,6 +203,7 @@ export default function JobList({ user }: { user: User }) {
                 >
                   Ver vaga
                 </Link>
+            </div>
             </div>
             </Card>
           ))
@@ -238,6 +248,13 @@ export default function JobList({ user }: { user: User }) {
           ) : (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Você ainda não possui negócio cadastrado. <Link className="font-bold underline" href="/negocios?create=1">Criar negócio</Link></div>
           ) : null}
+          <CloudinaryImageField
+            value={draft.imageUrl}
+            onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
+            folder="jobs"
+            height={160}
+            hint="Adicione uma capa para destacar a vaga."
+          />
           <Input
             placeholder="Titulo"
             value={draft.title}

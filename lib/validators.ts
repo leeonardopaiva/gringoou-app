@@ -121,6 +121,7 @@ export const jobSchema = z.object({
   countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
   salary: optionalString,
   contactUrl: optionalUrl,
+  imageUrl: optionalUrl,
   businessId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),
 });

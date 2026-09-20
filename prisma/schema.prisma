@@ -235,6 +235,7 @@ model Job {
   countryCode    String   @default("US")
   salary         String?
   contactUrl     String?
+  imageUrl       String?
   businessId     String?
   isActive       Boolean  @default(true)
   createdById    String
