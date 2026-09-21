@@ -41,6 +41,23 @@ const tabs: Array<{ id: SearchCategory; label: string }> = [
 
 const formatDateTime = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
+const buildAssistantSummary = (results: SearchResponse) => {
+  const parts = [
+    results.counts.businesses ? `${results.counts.businesses} negócio${results.counts.businesses === 1 ? '' : 's'}` : '',
+    results.counts.events ? `${results.counts.events} evento${results.counts.events === 1 ? '' : 's'}` : '',
+    results.counts.jobs ? `${results.counts.jobs} vaga${results.counts.jobs === 1 ? '' : 's'}` : '',
+    results.counts.groups ? `${results.counts.groups} grupo${results.counts.groups === 1 ? '' : 's'}` : '',
+    results.counts.posts ? `${results.counts.posts} publicaç${results.counts.posts === 1 ? 'ão' : 'ões'}` : '',
+    results.counts.people ? `${results.counts.people} pessoa${results.counts.people === 1 ? '' : 's'}` : '',
+  ].filter(Boolean);
+
+  if (parts.length === 0) {
+    return 'Não encontrei uma resposta nos conteúdos públicos da comunidade. Tente detalhar o serviço, assunto ou localidade.';
+  }
+
+  return `Encontrei ${parts.slice(0, 3).join(', ')} relacionados ao seu pedido. Estas sugestões vêm dos dados publicados no Gringoou.`;
+};
+
 const SearchResults: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +66,7 @@ const SearchResults: React.FC = () => {
   const params = useMemo(() => new URLSearchParams(paramsKey), [paramsKey]);
   const queryFromUrl = params.get('q')?.trim() ?? '';
   const activeTab = (params.get('category') || 'all') as SearchCategory;
+  const assistantEnabled = params.get('assistant') === '1';
   const [results, setResults] = useState<SearchResponse>(emptyResults);
   const [loading, setLoading] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -111,6 +129,13 @@ const SearchResults: React.FC = () => {
       {!hasCriteria ? <EmptyState text="Digite um termo ou selecione filtros para buscar no app." /> : null}
       {loading ? <div className="space-y-3"><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /></div> : null}
       {!loading && hasCriteria && results.counts.total === 0 ? <EmptyState text="Nenhum resultado encontrado com os filtros atuais." /> : null}
+      {!loading && assistantEnabled && hasCriteria ? (
+        <section className="rounded-[24px] border border-brand-100 bg-brand-50/70 p-4" aria-live="polite">
+          <div className="flex items-center gap-2 text-sm font-bold text-brand-700"><Sparkles size={17} /> Assistente da comunidade</div>
+          <p className="mt-2 text-sm leading-6 text-slate-700">{buildAssistantSummary(results)}</p>
+          <p className="mt-2 text-xs text-slate-500">O Gemini interpretou sua pergunta; os resultados e recomendações são obtidos diretamente da plataforma.</p>
+        </section>
+      ) : null}
       {!loading && results.intelligence.used ? <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4 text-sm text-violet-800"><p className="font-bold">Busca inteligente local</p><p className="mt-1">{results.intelligence.summary}</p></div> : null}
 
       {!loading && hasCriteria ? <div className="space-y-7">

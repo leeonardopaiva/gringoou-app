@@ -376,6 +376,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
       Object.entries(payload.filters as Record<string, string>).forEach(([key, value]) => {
         if (value && !(key === 'category' && value === 'all')) params.set(key, value);
       });
+      params.set('assistant', '1');
       router.push(buildSearchPath(params.get('q') || query, params));
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error');
@@ -461,7 +462,6 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               <CommunityAccountMenu
                 user={{ name: user.name, avatar: user.avatar, email: user.email }}
                 profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
-                professionalProfileHref={user.username && professionalIdentity ? `/profissional/${encodeURIComponent(user.username)}` : null}
               />
             </div>
             </div>

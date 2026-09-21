@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, Store, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, UserRound } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 
 type BusinessAccount = { id: string; name: string; logoUrl: string | null; publicPath?: string | null };
@@ -11,10 +11,9 @@ type BusinessAccount = { id: string; name: string; logoUrl: string | null; publi
 type CommunityAccountMenuProps = {
   user: { name: string; avatar: string; email?: string | null };
   profileHref: string;
-  professionalProfileHref?: string | null;
 };
 
-export function CommunityAccountMenu({ user, profileHref, professionalProfileHref }: CommunityAccountMenuProps) {
+export function CommunityAccountMenu({ user, profileHref }: CommunityAccountMenuProps) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -69,7 +68,6 @@ export function CommunityAccountMenu({ user, profileHref, professionalProfileHre
               <button type="button" onClick={() => { setOpen(false); router.push('/profile'); }} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"><Settings size={14} className="mr-1 inline" />Editar perfil</button>
               <button type="button" onClick={() => { setOpen(false); router.push(profileHref); }} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50"><ExternalLink size={14} className="mr-1 inline" />Perfil público</button>
             </div>
-            {professionalProfileHref ? <button type="button" onClick={() => { setOpen(false); router.push(professionalProfileHref); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-600"><Store size={14} />Ver vitrine profissional</button> : null}
           </div>
           <div className="border-t border-slate-100 p-4">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Negócios</p>

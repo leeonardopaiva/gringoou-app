@@ -6,9 +6,14 @@ import type { BusinessesInitialData, EventsInitialData, ProfileInitialData } fro
 import { getBusinessesPage } from '@/lib/server/businesses';
 import { getEventsPage } from '@/lib/server/events';
 import { getProfileData } from '@/lib/server/profile';
+import { redirect } from 'next/navigation';
 
 export default async function CatchAllPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const [{ slug }, session] = await Promise.all([params, getCachedServerAuthSession()]);
+
+  if (slug[0] === 'profissional' && slug[1]) {
+    redirect(`/perfil/${encodeURIComponent(slug[1])}`);
+  }
   let initialCommunityData: CommunityInitialData | undefined;
   let initialBusinessesData: BusinessesInitialData | undefined;
   let initialEventsData: EventsInitialData | undefined;

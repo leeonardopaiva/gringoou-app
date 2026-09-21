@@ -437,13 +437,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   </button>
                 )}
                 {profile.stats.businessCount > 0 || profile.stats.eventCount > 0 ? (
-                  <Link
-                    href={`/profissional/${profile.username}`}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('recommendations')}
                     className="inline-flex min-h-12 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-8 text-base font-bold text-slate-700 shadow-sm"
                   >
                     <BadgeCheck size={20} />
-                    Ver vitrine profissional
-                  </Link>
+                    Ver negócios e eventos
+                  </button>
                 ) : null}
               </div>
             </div>
@@ -498,8 +499,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
-                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" href={profile.stats.businessCount > 0 ? `/profissional/${profile.username}` : undefined} />
-                  <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" href={profile.stats.eventCount > 0 ? `/profissional/${profile.username}` : undefined} />
+                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
+                  <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
                   <ProfileMetric icon={<MessageSquareText size={16} />} value={profile.stats.postCount} label="Posts" />
                 </div>
               </section>

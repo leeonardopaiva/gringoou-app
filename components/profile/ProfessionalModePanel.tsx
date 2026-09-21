@@ -50,13 +50,8 @@ type ProfessionalModePanelProps = {
 
 const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
   professionalProfile,
-  username,
 }) => {
-  const publicProfessionalPath = username ? `/profissional/${username}` : null;
-  const publicLinks = [
-    ...(publicProfessionalPath ? [{ id: 'professional', label: 'Vitrine profissional', path: publicProfessionalPath }] : []),
-    ...professionalProfile.businesses.map((business) => ({ id: business.id, label: business.name, path: business.publicPath })),
-  ];
+  const publicLinks = professionalProfile.businesses.map((business) => ({ id: business.id, label: business.name, path: business.publicPath }));
 
   return (
     <div className="space-y-5">
@@ -146,7 +141,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
           </div>
         ) : (
           <div className="mt-4 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Nenhum negócio vinculado ainda. Cadastre o primeiro gratuitamente para ativar sua vitrine profissional.
+            Nenhum negócio vinculado ainda. Cadastre o primeiro gratuitamente para criar sua página pública.
           </div>
         )}
       </section>
