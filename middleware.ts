@@ -23,6 +23,7 @@ const PUBLIC_AUTH_PATHS = [
   '/ads/login',
   '/ads/register',
   '/api/ads/auth/register',
+  '/api/dev/email-preview',
 ];
 
 const isTruthyEnv = (value?: string | null) =>
