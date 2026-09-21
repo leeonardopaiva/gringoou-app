@@ -299,7 +299,7 @@ export default function JobList({ user }: { user: User }) {
             onChange={(e) => setDraft({ ...draft, salary: e.target.value })}
           />
           <Input
-            placeholder="Link para candidatura"
+            placeholder="Link ou telefone para contato"
             value={draft.contactUrl}
             onChange={(e) => setDraft({ ...draft, contactUrl: e.target.value })}
           />

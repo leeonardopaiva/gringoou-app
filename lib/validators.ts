@@ -71,6 +71,23 @@ const optionalDate = z
     message: 'Use uma data valida.',
   });
 
+const isValidPhoneContact = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15 && /^[+\d\s().-]+$/.test(value);
+};
+
+const optionalContact = z
+  .string()
+  .optional()
+  .transform((value) => (typeof value === 'string' ? emptyToUndefined(value) : undefined))
+  .transform((value) => {
+    if (!value || isValidPhoneContact(value)) return value;
+    return normalizeHttpUrlInput(value);
+  })
+  .refine((value) => !value || isValidPhoneContact(value) || isValidHttpUrl(value), {
+    message: 'Informe um telefone válido ou uma URL iniciando com http:// ou https://',
+  });
+
 const profileGalleryUrls = optionalUrlArray.refine((values) => values.length <= 8, {
   message: 'Use no maximo 8 imagens na galeria do perfil',
 });
@@ -120,7 +137,7 @@ export const jobSchema = z.object({
   locationLabel: z.string().trim().min(2).max(160),
   countryCode: z.string().trim().length(2).transform((value) => value.toUpperCase()).default('US'),
   salary: optionalString,
-  contactUrl: optionalUrl,
+  contactUrl: optionalContact,
   imageUrl: optionalUrl,
   businessId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),

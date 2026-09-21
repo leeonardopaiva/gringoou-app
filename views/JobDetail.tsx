@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, ExternalLink, MapPin, PencilLine, WalletCards } from 'lucide-react';
+import { ArrowLeft, Briefcase, ExternalLink, MapPin, PencilLine, Phone, WalletCards } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
@@ -101,6 +101,12 @@ export default function JobDetail({ jobId }: { jobId: string }) {
   if (!job) {
     return <ContentColumn className="px-5 py-10 text-center text-muted-foreground">Vaga não encontrada.</ContentColumn>;
   }
+  const contactIsUrl = Boolean(job.contactUrl && /^https?:\/\//i.test(job.contactUrl));
+  const contactHref = job.contactUrl
+    ? contactIsUrl
+      ? job.contactUrl
+      : 'tel:' + job.contactUrl.replace(/\D/g, '')
+    : '';
 
   return (
     <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500">
@@ -134,7 +140,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           <p className="mt-3 whitespace-pre-wrap text-body-sm leading-7 text-muted-foreground">{job.description}</p>
           <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>
         </section>
-        {job.contactUrl ? <a href={job.contactUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white"><ExternalLink size={17} /> Candidatar-se</a> : null}
+        {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
       </div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar vaga" description="Atualize os dados e a capa da publicação." className="max-w-xl">
@@ -148,7 +154,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           </Select>
           <Input value={draft?.locationLabel || ''} onChange={(event) => updateDraft('locationLabel', event.target.value)} placeholder="Localização" />
           <Input value={draft?.salary || ''} onChange={(event) => updateDraft('salary', event.target.value)} placeholder="Salário" />
-          <Input value={draft?.contactUrl || ''} onChange={(event) => updateDraft('contactUrl', event.target.value)} placeholder="Link para candidatura" />
+          <Input value={draft?.contactUrl || ''} onChange={(event) => updateDraft('contactUrl', event.target.value)} placeholder="Link ou telefone para contato" />
           <Button fullWidth loading={saving} onClick={() => void save()}>Salvar alterações</Button>
         </div>
       </Modal>
