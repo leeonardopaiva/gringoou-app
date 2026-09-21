@@ -149,6 +149,19 @@ export const sendTransactionalEmail = async ({
   );
 };
 
+export const sendMagicLinkPreviewEmail = async (to: string) => {
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const previewUrl = `${appUrl}/login?emailPreview=1`;
+
+  await sendTransactionalEmail({
+    to,
+    subject: '[TESTE] Confirme seu e-mail na Gringoou',
+    text: buildMagicLinkEmailText(previewUrl),
+    html: buildMagicLinkEmailHtml(previewUrl),
+    devLabel: 'Prévia do magic link',
+  });
+};
+
 export const sendMagicLinkVerification = async ({
   identifier,
   url,
