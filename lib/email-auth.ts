@@ -1,4 +1,5 @@
 import { createTransport } from 'nodemailer';
+import { join } from 'node:path';
 import type { SendVerificationRequestParams } from 'next-auth/providers/email';
 import { isDevAuthEnabled, normalizeMagicLinkEmail, saveDevMagicLink } from '@/lib/dev-magic-links';
 import { consumeRateLimit } from '@/lib/rate-limit';
@@ -53,8 +54,6 @@ const escapeEmailHtml = (value: string) =>
 
 const buildMagicLinkEmailHtml = (url: string) => {
   const safeUrl = escapeEmailHtml(url);
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://gringoou.com').replace(/\/$/, '');
-  const logoUrl = escapeEmailHtml(`${appUrl}/assets/gringoou-logo.png`);
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -73,7 +72,7 @@ const buildMagicLinkEmailHtml = (url: string) => {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;">
             <tr>
               <td align="center" style="padding:0 0 24px;">
-                <img src="${logoUrl}" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
+                <img src="cid:gringoou-logo" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
               </td>
             </tr>
             <tr>
@@ -83,8 +82,8 @@ const buildMagicLinkEmailHtml = (url: string) => {
                   <p style="margin:0 auto;max-width:420px;font-size:15px;line-height:25px;color:#64788b;">Recebemos uma solicitação para acessar sua conta na Gringoou. Confirme seu e-mail para continuar.</p>
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:28px auto;">
                     <tr>
-                      <td align="center" bgcolor="#0f4c81" style="border-radius:999px;">
-                        <a href="${safeUrl}" style="display:inline-block;padding:15px 32px;font-size:15px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;">Confirmar E-mail</a>
+                      <td align="center" bgcolor="#0086ff" style="border-radius:999px;background-color:#0086ff;">
+                        <a href="${safeUrl}" style="display:inline-block;padding:15px 32px;font-size:15px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;background-color:#0086ff;border-radius:999px;">Confirmar E-mail</a>
                       </td>
                     </tr>
                   </table>
@@ -110,6 +109,13 @@ type TransactionalEmailInput = {
   text: string;
   html: string;
   devLabel?: string;
+  attachments?: Array<{ filename: string; path: string; cid: string }>;
+};
+
+const magicLinkLogoAttachment = {
+  filename: 'gringoou-logo.png',
+  path: join(process.cwd(), 'public', 'assets', 'gringoou-logo.png'),
+  cid: 'gringoou-logo',
 };
 
 export const sendTransactionalEmail = async ({
@@ -118,6 +124,7 @@ export const sendTransactionalEmail = async ({
   text,
   html,
   devLabel,
+  attachments,
 }: TransactionalEmailInput) => {
   if (isEmailServerConfigured) {
     const transport = createTransport(emailProviderServer);
@@ -127,6 +134,7 @@ export const sendTransactionalEmail = async ({
       subject,
       text,
       html,
+      attachments,
     });
 
     const failedRecipients = result.rejected.concat(result.pending).filter(Boolean);
@@ -159,6 +167,7 @@ export const sendMagicLinkPreviewEmail = async (to: string) => {
     text: buildMagicLinkEmailText(previewUrl),
     html: buildMagicLinkEmailHtml(previewUrl),
     devLabel: 'Prévia do magic link',
+    attachments: [magicLinkLogoAttachment],
   });
 };
 
@@ -191,5 +200,6 @@ export const sendMagicLinkVerification = async ({
     text: buildMagicLinkEmailText(url),
     html: buildMagicLinkEmailHtml(url),
     devLabel: 'Magic link',
+    attachments: [magicLinkLogoAttachment],
   });
 };
