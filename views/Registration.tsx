@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Globe, RefreshCcw, Shield } from 'lucide-react';
+import { Globe, MailCheck, RefreshCcw, Shield } from 'lucide-react';
 import { Button, Card, Input } from '@heroui/react';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import RegionSelector from '../components/RegionSelector';
@@ -704,7 +704,12 @@ const Registration: React.FC<RegistrationProps> = ({
               </div>
 
               {error ? <p className="mt-6 text-center text-sm text-red-600">{error}</p> : null}
-              {notice ? <p className="mt-4 text-center text-sm text-slate-500">{notice}</p> : null}
+              {notice ? (
+                <div className="mx-auto mt-6 flex w-full max-w-[360px] items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-100">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600"><MailCheck size={18} /></span>
+                  <p className="text-sm font-semibold leading-5 text-brand-700">{notice}</p>
+                </div>
+              ) : null}
             </Card.Content>
           </Card>
         </div>
@@ -1501,9 +1506,10 @@ const Registration: React.FC<RegistrationProps> = ({
             ) : null}
 
             {notice ? (
-              <Card variant="secondary" className="border border-blue-100 bg-blue-50 shadow-none">
-                <Card.Content className="p-4 text-sm font-medium text-blue-700">{notice}</Card.Content>
-              </Card>
+              <div className="flex items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 ring-1 ring-brand-100">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600"><MailCheck size={18} /></span>
+                <p className="text-sm font-semibold leading-5 text-brand-700">{notice}</p>
+              </div>
             ) : null}
 
             <Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>

@@ -53,6 +53,8 @@ const escapeEmailHtml = (value: string) =>
 
 const buildMagicLinkEmailHtml = (url: string) => {
   const safeUrl = escapeEmailHtml(url);
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://gringoou.com').replace(/\/$/, '');
+  const logoUrl = escapeEmailHtml(`${appUrl}/assets/gringoou-logo.png`);
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -61,42 +63,33 @@ const buildMagicLinkEmailHtml = (url: string) => {
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Seu acesso à Gringoou</title>
   </head>
-  <body style="margin:0;padding:0;background-color:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#17324d;">
+  <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#17324d;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
       Seu link seguro para entrar na comunidade Gringoou.
     </div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#f3f7fb;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#f4f6f8;">
       <tr>
         <td align="center" style="padding:32px 16px;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;">
             <tr>
-              <td align="center" style="padding:0 0 20px;">
-                <span style="font-size:30px;line-height:36px;font-weight:800;letter-spacing:-1.2px;color:#0f4c81;">Gringo<span style="color:#28b8c7;">ou</span></span>
-                <div style="margin-top:6px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#6b8299;">Comunidade brasileira no exterior</div>
+              <td align="center" style="padding:0 0 24px;">
+                <img src="${logoUrl}" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
               </td>
             </tr>
             <tr>
-              <td style="overflow:hidden;border:1px solid #dce8f2;border-radius:24px;background-color:#ffffff;box-shadow:0 12px 32px rgba(15,76,129,0.08);">
-                <div style="height:8px;background-color:#28b8c7;"></div>
-                <div style="padding:38px 36px 34px;">
-                  <div style="display:inline-block;margin-bottom:20px;border-radius:999px;background-color:#e9f9fb;padding:8px 13px;font-size:12px;font-weight:700;color:#167d8a;">Acesso seguro</div>
-                  <h1 style="margin:0 0 14px;font-size:28px;line-height:36px;font-weight:800;letter-spacing:-0.5px;color:#123b5d;">Seu link de acesso chegou</h1>
-                  <p style="margin:0;font-size:16px;line-height:26px;color:#50677d;">Recebemos uma solicitação para entrar na sua conta. Use o botão abaixo para continuar com segurança.</p>
-                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0;">
+              <td style="border-radius:24px;background-color:#ffffff;">
+                <div style="padding:42px 38px 36px;text-align:center;">
+                  <h1 style="margin:0 0 14px;font-size:26px;line-height:34px;font-weight:800;letter-spacing:-0.4px;color:#123b5d;">Confirme seu e-mail</h1>
+                  <p style="margin:0 auto;max-width:420px;font-size:15px;line-height:25px;color:#64788b;">Recebemos uma solicitação para acessar sua conta na Gringoou. Confirme seu e-mail para continuar.</p>
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:28px auto;">
                     <tr>
                       <td align="center" bgcolor="#0f4c81" style="border-radius:999px;">
-                        <a href="${safeUrl}" style="display:inline-block;padding:15px 28px;font-size:16px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;">Entrar na Gringoou</a>
+                        <a href="${safeUrl}" style="display:inline-block;padding:15px 32px;font-size:15px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;">Confirmar E-mail</a>
                       </td>
                     </tr>
                   </table>
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-radius:16px;background-color:#f3fafb;">
-                    <tr>
-                      <td style="padding:16px 18px;font-size:13px;line-height:20px;color:#50677d;"><strong style="color:#167d8a;">Este link expira em 15 minutos</strong> e só pode ser utilizado uma vez.</td>
-                    </tr>
-                  </table>
-                  <p style="margin:24px 0 8px;font-size:13px;line-height:20px;color:#71869a;">Se o botão não funcionar, copie e cole este endereço no navegador:</p>
-                  <p style="margin:0;word-break:break-all;font-size:12px;line-height:18px;color:#0f6f91;"><a href="${safeUrl}" style="color:#0f6f91;text-decoration:underline;">${safeUrl}</a></p>
-                  <div style="margin-top:28px;border-top:1px solid #e6edf3;padding-top:22px;font-size:13px;line-height:21px;color:#71869a;">Se você não solicitou este acesso, pode ignorar este e-mail. Sua conta continuará protegida.</div>
+                  <p style="margin:0;font-size:13px;line-height:21px;color:#7b8d9d;">O link expira em 15 minutos e pode ser utilizado apenas uma vez.</p>
+                  <div style="margin-top:26px;border-top:1px solid #edf1f4;padding-top:22px;font-size:12px;line-height:20px;color:#8a9aa8;">Se você não solicitou este acesso, ignore este e-mail. Sua conta continuará protegida.</div>
                 </div>
               </td>
             </tr>
@@ -181,7 +174,7 @@ export const sendMagicLinkVerification = async ({
 
   await sendTransactionalEmail({
     to: normalizedEmail,
-    subject: 'Seu link de acesso para a Gringoou',
+    subject: 'Confirme seu e-mail na Gringoou',
     text: buildMagicLinkEmailText(url),
     html: buildMagicLinkEmailHtml(url),
     devLabel: 'Magic link',

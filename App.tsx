@@ -340,7 +340,7 @@ const App: React.FC<{
       setRegistrationNotice(
         isLocalTest
           ? 'Magic link de teste gerado. Se o redirecionamento nao abrir, confira o terminal local.'
-          : 'Enviamos um magic link para o seu email. Abra o link para entrar.',
+          : 'Enviamos o link de confirmação no seu email.',
       );
     } catch (error) {
       console.error('Email sign-in failed:', error);
