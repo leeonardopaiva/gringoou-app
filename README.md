@@ -10,7 +10,7 @@
    `GOOGLE_CLIENT_SECRET=...`
    `NEXTAUTH_SECRET=...`
    `GEMINI_API_KEY=...`
-   `GEMINI_MODEL=gemini-2.5-flash`
+   `GEMINI_MODEL=gemini-3.6-flash`
 3. No Google Cloud Console, adicione `http://localhost:3000/api/auth/callback/google` em Authorized redirect URIs para testar localmente.
 4. Inicie em modo desenvolvimento:
    `npm run dev`

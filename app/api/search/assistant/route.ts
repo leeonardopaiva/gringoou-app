@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
       contents: [
         'Você é o assistente comunitário do Gringoou.',
         'Responda em português do Brasil, em até três parágrafos curtos, de forma acolhedora e objetiva.',

@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
       contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country e businessType. Categorias válidas: all, businesses, events, posts, people, groups, jobs, interests. Use country ISO-2. Não inclua dados não presentes na frase. Busca: ${JSON.stringify(query)}`,
       config: { temperature: 0, responseMimeType: 'application/json' },
     });
