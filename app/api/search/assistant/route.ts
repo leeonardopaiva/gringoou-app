@@ -18,11 +18,6 @@ const requestSchema = z.object({
   context: z.array(contextItemSchema).max(30),
 });
 
-const answerSchema = z.object({
-  answer: z.string().trim().min(1).max(1600),
-  referenceIds: z.array(z.string()).max(6).default([]),
-});
-
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
@@ -70,14 +65,22 @@ export async function POST(request: Request) {
       ].join('\n'),
       config: { temperature: 0.2, responseMimeType: 'application/json' },
     });
-    const answer = answerSchema.parse(JSON.parse(response.text || '{}'));
+    const rawAnswer = JSON.parse((response.text || '{}').replace(/^```(?:json)?\s*|\s*```$/gi, '')) as Record<string, unknown>;
+    const answerText = [rawAnswer.answer, rawAnswer.response, rawAnswer.summary]
+      .find((value): value is string => typeof value === 'string' && Boolean(value.trim()))
+      ?.trim()
+      .slice(0, 1600);
+    if (!answerText) throw new Error('INVALID_AI_RESPONSE');
+    const referenceIds = Array.isArray(rawAnswer.referenceIds)
+      ? rawAnswer.referenceIds.filter((value): value is string => typeof value === 'string').slice(0, 6)
+      : [];
     const byId = new Map(context.map((item) => [item.id, item]));
-    const references = Array.from(new Set(answer.referenceIds))
+    const references = Array.from(new Set(referenceIds))
       .map((id) => byId.get(id))
       .filter((item): item is z.infer<typeof contextItemSchema> => Boolean(item))
       .map(({ id, title, href, type }) => ({ id, label: title, href, type }));
 
-    return NextResponse.json({ answer: answer.answer, references });
+    return NextResponse.json({ answer: answerText, references });
   } catch (error) {
     console.error('Community assistant failed:', error);
     return NextResponse.json({ error: 'O assistente não conseguiu responder agora.' }, { status: 502 });

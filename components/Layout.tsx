@@ -36,6 +36,7 @@ import { SidebarMenu, SidebarMenuItem } from './navigation/SidebarMenu';
 import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, User, UserRole } from '../types';
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 import UnifiedSearchInput from './search/UnifiedSearchInput';
+import CommunityAssistantModal from './search/CommunityAssistantModal';
 import { buildSearchPath } from '../lib/search-navigation';
 
 interface LogoProps {
@@ -313,12 +314,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { showToast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
-  const [isAiSearchLoading, setIsAiSearchLoading] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -351,38 +351,6 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
   const handleHeaderSearch = () => {
     router.push(buildSearchPath(headerSearch));
-  };
-
-  const handleHeaderAiSearch = async () => {
-    const query = headerSearch.trim();
-    if (!query) {
-      showToast('Descreva o que deseja encontrar.', 'info');
-      return;
-    }
-
-    setIsAiSearchLoading(true);
-    try {
-      const response = await fetch('/api/search/interpret', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.filters) {
-        throw new Error(payload?.error || 'Não foi possível interpretar a busca.');
-      }
-
-      const params = new URLSearchParams();
-      Object.entries(payload.filters as Record<string, string>).forEach(([key, value]) => {
-        if (value && !(key === 'category' && value === 'all')) params.set(key, value);
-      });
-      params.set('assistant', '1');
-      router.push(buildSearchPath(params.get('q') || query, params));
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível interpretar a busca.', 'error');
-    } finally {
-      setIsAiSearchLoading(false);
-    }
   };
 
   return (
@@ -439,8 +407,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   value={headerSearch}
                   onChange={setHeaderSearch}
                   onSubmit={handleHeaderSearch}
-                  onFilterClick={() => void handleHeaderAiSearch()}
-                  filterLoading={isAiSearchLoading}
+                  onFilterClick={() => setIsAssistantOpen(true)}
                   staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
                   className="h-11 shadow-none"
                 />
@@ -539,6 +506,12 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               </nav>
             </div>
           </div>
+          <CommunityAssistantModal
+            open={isAssistantOpen}
+            initialQuery={headerSearch}
+            regionLabel={shortRegionLabel}
+            onClose={() => setIsAssistantOpen(false)}
+          />
         </div>
       </div>
     </div>
