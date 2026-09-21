@@ -14,7 +14,8 @@
    `AI_PROVIDER=gemini`
    Para usar Claude, altere para `AI_PROVIDER=claude` e configure:
    `ANTHROPIC_API_KEY=...`
-   `CLAUDE_MODEL=claude-haiku-4-5-20251001`
+   `CLAUDE_MODEL=claude-opus-5`
+   `CLAUDE_EFFORT=low`
 3. No Google Cloud Console, adicione `http://localhost:3000/api/auth/callback/google` em Authorized redirect URIs para testar localmente.
 4. Inicie em modo desenvolvimento:
    `npm run dev`
@@ -23,6 +24,7 @@
 
 > A chave do Gemini deve existir somente no servidor. Nunca use o prefixo `NEXT_PUBLIC_` para essa credencial.
 > A chave da Anthropic também deve existir somente no servidor. A troca de provedor não exige comentar ou alterar código.
+> O comportamento do assistente Claude fica em `config/claude-community-agent.json`. As ferramentas do Console são executadas no Gringoou por consultas Prisma controladas, somente com dados públicos.
 
 ## Modo de manutencao
 
