@@ -121,7 +121,64 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        const googleProfile = profile as { email?: string; email_verified?: boolean } | undefined;
+        const verifiedEmail = googleProfile?.email_verified === true
+          ? normalizeAuthEmail(googleProfile.email || user.email || '')
+          : '';
+
+        if (!verifiedEmail) {
+          return false;
+        }
+
+        const existingAccount = await prisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          select: { id: true },
+        });
+
+        if (!existingAccount) {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: verifiedEmail },
+            select: { id: true },
+          });
+
+          if (existingUser) {
+            await prisma.account.upsert({
+              where: {
+                provider_providerAccountId: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                },
+              },
+              create: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state ? String(account.session_state) : null,
+              },
+              update: {},
+            });
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { emailVerified: new Date(), emailVerificationRequired: false },
+            });
+          }
+        }
+      }
+
       if (account?.provider === 'email' && user.id) {
         await prisma.user.update({
           where: { id: user.id },
