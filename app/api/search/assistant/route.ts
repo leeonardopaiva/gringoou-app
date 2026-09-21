@@ -1,8 +1,8 @@
-import { GoogleGenAI } from '@google/genai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { generateGeminiJson } from '@/lib/gemini';
 
 const contextItemSchema = z.object({
   id: z.string().max(100),
@@ -50,9 +50,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+    const response = await generateGeminiJson({
+      apiKey,
+      temperature: 0.2,
       contents: [
         'Você é o assistente comunitário do Gringoou.',
         'Responda em português do Brasil, em até três parágrafos curtos, de forma acolhedora e objetiva.',
@@ -63,9 +63,8 @@ export async function POST(request: Request) {
         `Pergunta: ${JSON.stringify(query)}`,
         `Resultados públicos: ${JSON.stringify(context)}`,
       ].join('\n'),
-      config: { temperature: 0.2, responseMimeType: 'application/json' },
     });
-    const rawAnswer = JSON.parse((response.text || '{}').replace(/^```(?:json)?\s*|\s*```$/gi, '')) as Record<string, unknown>;
+    const rawAnswer = response.data as Record<string, unknown>;
     const answerText = [rawAnswer.answer, rawAnswer.response, rawAnswer.summary]
       .find((value): value is string => typeof value === 'string' && Boolean(value.trim()))
       ?.trim()
@@ -80,9 +79,17 @@ export async function POST(request: Request) {
       .filter((item): item is z.infer<typeof contextItemSchema> => Boolean(item))
       .map(({ id, title, href, type }) => ({ id, label: title, href, type }));
 
-    return NextResponse.json({ answer: answerText, references });
+    return NextResponse.json({ answer: answerText, references, model: response.model });
   } catch (error) {
     console.error('Community assistant failed:', error);
-    return NextResponse.json({ error: 'O assistente não conseguiu responder agora.' }, { status: 502 });
+    const references = context.slice(0, 6).map(({ id, title, href, type }) => ({ id, label: title, href, type }));
+    const highlights = context.slice(0, 3).map((item) => `${item.title}${item.location ? ` (${item.location})` : ''}`).join(', ');
+    return NextResponse.json({
+      answer: highlights
+        ? `Encontrei estes resultados na comunidade: ${highlights}. A resposta inteligente está temporariamente indisponível, mas você pode abrir as referências abaixo.`
+        : 'A resposta inteligente está temporariamente indisponível e não encontrei resultados locais suficientes para esta consulta.',
+      references,
+      degraded: true,
+    });
   }
 }

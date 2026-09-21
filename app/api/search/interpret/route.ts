@@ -1,7 +1,7 @@
-import { GoogleGenAI } from '@google/genai';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { generateGeminiJson } from '@/lib/gemini';
 
 const SEARCH_CATEGORIES = ['all', 'businesses', 'events', 'posts', 'people', 'groups', 'jobs', 'interests'] as const;
 type SearchCategory = (typeof SEARCH_CATEGORIES)[number];
@@ -59,16 +59,13 @@ export async function POST(request: Request) {
   if (!apiKey) return NextResponse.json({ error: 'A busca com IA não está configurada no servidor.' }, { status: 503 });
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+    const response = await generateGeminiJson({
+      apiKey,
       contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country e businessType. Categorias válidas: all, businesses, events, posts, people, groups, jobs, interests. Use country ISO-2. Não inclua dados não presentes na frase. Busca: ${JSON.stringify(query)}`,
-      config: { temperature: 0, responseMimeType: 'application/json' },
     });
-    const parsedJson = JSON.parse((response.text || '{}').replace(/^```(?:json)?\s*|\s*```$/gi, ''));
-    return NextResponse.json({ filters: normalizeAiFilters(parsedJson, query) });
+    return NextResponse.json({ filters: normalizeAiFilters(response.data, query), model: response.model });
   } catch (error) {
     console.error('Search interpretation failed:', error);
-    return NextResponse.json({ error: 'Não foi possível interpretar a busca agora.' }, { status: 502 });
+    return NextResponse.json({ filters: normalizeAiFilters({}, query), degraded: true });
   }
 }
