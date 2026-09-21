@@ -70,13 +70,9 @@ const buildMagicLinkEmailHtml = (url: string) => {
         <td align="center" style="padding:32px 16px;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;">
             <tr>
-              <td align="center" style="padding:0 0 24px;">
-                <img src="https://www.gringoou.com/assets/gringoou-logo.png" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
-              </td>
-            </tr>
-            <tr>
               <td style="border-radius:24px;background-color:#ffffff;">
                 <div style="padding:42px 38px 36px;text-align:center;">
+                  <img src="https://www.gringoou.com/assets/gringoou-logo.png" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;margin:0 auto 30px;border:0;outline:none;text-decoration:none;">
                   <h1 style="margin:0 0 14px;font-size:26px;line-height:34px;font-weight:800;letter-spacing:-0.4px;color:#123b5d;">Confirme seu e-mail</h1>
                   <p style="margin:0 auto;max-width:420px;font-size:15px;line-height:25px;color:#64788b;">Recebemos uma solicitação para acessar sua conta na Gringoou. Confirme seu e-mail para continuar.</p>
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:28px auto;">
@@ -153,7 +149,7 @@ export const sendMagicLinkPreviewEmail = async (to: string) => {
 
   await sendTransactionalEmail({
     to,
-    subject: '[TESTE] Confirme seu e-mail na Gringoou',
+    subject: '[TESTE] Confirme seu e-mail no Gringoou',
     text: buildMagicLinkEmailText(previewUrl),
     html: buildMagicLinkEmailHtml(previewUrl),
     devLabel: 'Prévia do magic link',
@@ -185,7 +181,7 @@ export const sendMagicLinkVerification = async ({
 
   await sendTransactionalEmail({
     to: normalizedEmail,
-    subject: 'Confirme seu e-mail na Gringoou',
+    subject: 'Confirme seu e-mail no Gringoou',
     text: buildMagicLinkEmailText(url),
     html: buildMagicLinkEmailHtml(url),
     devLabel: 'Magic link',

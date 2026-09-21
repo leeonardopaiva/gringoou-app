@@ -15,12 +15,12 @@ export async function POST(request: Request) {
   const rateLimit = await consumeRateLimit({
     scope: 'dev:email-preview',
     key: getRateLimitKey(request),
-    max: 5,
+    max: 20,
     windowMs: 15 * 60 * 1000,
   });
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Limite de e-mails de teste atingido.' },
+      { error: 'Limite de 20 e-mails de teste em 15 minutos atingido.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
