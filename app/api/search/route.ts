@@ -21,15 +21,27 @@ const SEARCH_SYNONYM_GROUPS = [
   ['evento', 'festa', 'encontro', 'event', 'party', 'meetup'],
 ] as const;
 
+const SEARCH_STOP_WORDS = new Set([
+  'para', 'com', 'sem', 'uma', 'umas', 'uns', 'que', 'qual', 'quais', 'onde', 'como', 'perto', 'proximo', 'proximos',
+  'mostrar', 'mostre', 'buscar', 'busco', 'procuro', 'encontre', 'encontrar', 'preciso', 'gostaria', 'regiao', 'cidade',
+  'negocio', 'negocios', 'evento', 'eventos', 'vaga', 'vagas', 'emprego', 'empregos', 'moradia', 'moradias', 'grupo', 'grupos',
+  'the', 'and', 'for', 'with', 'near', 'find', 'show', 'business', 'businesses', 'event', 'events', 'jobs', 'housing', 'groups',
+]);
+
 const normalizeSearchTerm = (value: string) =>
   value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 const buildSearchIntelligence = (query: string) => {
-  const normalizedWords = normalizeSearchTerm(query).split(/\s+/).filter((word) => word.length >= 3);
+  const queryWords = query.toLowerCase().match(/[\p{L}\p{N}@._-]+/gu) || [];
+  const normalizedWords = queryWords.map(normalizeSearchTerm).filter((word) => word.length >= 3);
+  const meaningfulWords = queryWords.filter((word) => {
+    const normalized = normalizeSearchTerm(word);
+    return normalized.length >= 3 && !SEARCH_STOP_WORDS.has(normalized);
+  });
   const expanded = SEARCH_SYNONYM_GROUPS
     .filter((group) => group.some((term) => normalizedWords.includes(normalizeSearchTerm(term))))
     .flat();
-  const terms = Array.from(new Set([query, ...expanded])).filter(Boolean).slice(0, 10);
+  const terms = Array.from(new Set([...meaningfulWords, ...expanded])).filter(Boolean).slice(0, 14);
   return {
     enabled: true,
     used: terms.length > 1,
@@ -115,7 +127,7 @@ export async function GET(request: Request) {
   const businessWhere: Prisma.BusinessWhereInput = {
     status: BusinessStatus.PUBLISHED,
     AND: [
-      ...(query ? [{ OR: terms.flatMap((term) => [
+      ...(terms.length ? [{ OR: terms.flatMap((term) => [
         { name: { contains: term, mode: Prisma.QueryMode.insensitive } },
         { category: { contains: term, mode: Prisma.QueryMode.insensitive } },
         { address: { contains: term, mode: Prisma.QueryMode.insensitive } },
@@ -130,7 +142,7 @@ export async function GET(request: Request) {
     status: EventStatus.PUBLISHED,
     ...eventDateWhere,
     AND: [
-      ...(query ? [{ OR: terms.flatMap((term) => [
+      ...(terms.length ? [{ OR: terms.flatMap((term) => [
         { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
         { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
         { venueName: { contains: term, mode: Prisma.QueryMode.insensitive } },
@@ -143,7 +155,7 @@ export async function GET(request: Request) {
   const postWhere: Prisma.CommunityPostWhereInput = {
     status: CommunityPostStatus.PUBLISHED,
     groupId: null,
-    ...(query ? { OR: terms.flatMap((term) => [
+    ...(terms.length ? { OR: terms.flatMap((term) => [
       { content: { contains: term, mode: Prisma.QueryMode.insensitive } },
       { locationLabel: { contains: term, mode: Prisma.QueryMode.insensitive } },
       { author: { OR: [
@@ -190,11 +202,11 @@ export async function GET(request: Request) {
             : []),
         ],
       },
-      ...(query ? [{ OR: [
-        { name: { contains: query, mode: Prisma.QueryMode.insensitive } },
-        { category: { contains: query, mode: Prisma.QueryMode.insensitive } },
-        { description: { contains: query, mode: Prisma.QueryMode.insensitive } },
-      ] }] : []),
+      ...(terms.length ? [{ OR: terms.flatMap((term) => [
+        { name: { contains: term, mode: Prisma.QueryMode.insensitive } },
+        { category: { contains: term, mode: Prisma.QueryMode.insensitive } },
+        { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      ]) }] : []),
       ...(country ? [{ countryCode: country }] : []),
       ...(Object.keys(regionWhere).length ? [regionWhere] : []),
     ],
@@ -202,17 +214,17 @@ export async function GET(request: Request) {
   const jobWhere: Prisma.JobWhereInput = {
     isActive: true,
     ...(country ? { countryCode: country } : {}),
-    ...(query ? { OR: [
-      { title: { contains: query, mode: Prisma.QueryMode.insensitive } },
-      { company: { contains: query, mode: Prisma.QueryMode.insensitive } },
-      { description: { contains: query, mode: Prisma.QueryMode.insensitive } },
-      { locationLabel: { contains: query, mode: Prisma.QueryMode.insensitive } },
-    ] } : {}),
+    ...(terms.length ? { OR: terms.flatMap((term) => [
+      { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { company: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
+      { locationLabel: { contains: term, mode: Prisma.QueryMode.insensitive } },
+    ]) } : {}),
     ...(city ? { locationLabel: { contains: city, mode: Prisma.QueryMode.insensitive } } : {}),
   };
   const housingWhere: Prisma.HousingWhereInput = {
     isActive: true,
-    ...(query ? { OR: terms.flatMap((term) => [
+    ...(terms.length ? { OR: terms.flatMap((term) => [
       { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
       { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
       { propertyType: { contains: term, mode: Prisma.QueryMode.insensitive } },

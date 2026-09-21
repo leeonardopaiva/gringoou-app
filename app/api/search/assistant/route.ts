@@ -19,6 +19,26 @@ const requestSchema = z.object({
   history: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string().trim().max(600) })).max(6).default([]),
 });
 
+const normalizeRequestPayload = (value: unknown) => {
+  const body = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const context = Array.isArray(body.context) ? body.context.slice(0, 30).map((entry) => {
+    const item = entry && typeof entry === 'object' && !Array.isArray(entry) ? entry as Record<string, unknown> : {};
+    return {
+      id: String(item.id || '').slice(0, 100),
+      type: item.type,
+      title: String(item.title || '').slice(0, 160),
+      description: String(item.description || '').slice(0, 320),
+      location: String(item.location || '').slice(0, 120),
+      href: String(item.href || '').slice(0, 300),
+    };
+  }) : [];
+  const history = Array.isArray(body.history) ? body.history.slice(-6).map((entry) => {
+    const item = entry && typeof entry === 'object' && !Array.isArray(entry) ? entry as Record<string, unknown> : {};
+    return { role: item.role, text: String(item.text || '').trim().slice(0, 600) };
+  }) : [];
+  return { query: String(body.query || '').trim().slice(0, 300), context, history };
+};
+
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
@@ -36,8 +56,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = requestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: 'Dados da busca inválidos.' }, { status: 400 });
+  const parsed = requestSchema.safeParse(normalizeRequestPayload(await request.json().catch(() => null)));
+  if (!parsed.success) {
+    console.warn('Invalid community assistant payload', parsed.error.flatten().fieldErrors);
+    return NextResponse.json({ error: 'Não foi possível interpretar esta pergunta. Tente escrevê-la de outra forma.' }, { status: 400 });
+  }
 
   if (!isCommunityAiConfigured()) return NextResponse.json({ error: 'O assistente ainda não está configurado.' }, { status: 503 });
 

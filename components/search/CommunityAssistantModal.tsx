@@ -37,6 +37,9 @@ const followUpSuggestions = [
   'Existem outras opções na região?',
 ];
 
+const looksLikeFollowUp = (query: string) =>
+  query.length < 90 && /^(mostre|quais|qual|onde|e |e as|e os|existem|tem |há |perto|mais |outras|outros|dessas|desses)/i.test(query.trim());
+
 const buildContext = (results: SearchPayload) => [
   ...(results.businesses || []).slice(0, 5).map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: `${item.description || item.category}${item.ratingCount ? ` · avaliação ${item.ratingAverage?.toFixed(1)}/5 (${item.ratingCount})` : ''}`, location: item.locationLabel, href: `/negocios/${item.slug}` })),
   ...(results.events || []).slice(0, 5).map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: `${item.description} · início ${item.startsAt}${item.endsAt ? ` · fim ${item.endsAt}` : ''}`, location: item.locationLabel, href: `/eventos/${item.slug}` })),
@@ -45,7 +48,14 @@ const buildContext = (results: SearchPayload) => [
   ...(results.posts || []).slice(0, 4).map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
   ...(results.housing || []).slice(0, 4).map((item) => ({ id: `housing:${item.id}`, type: 'housing', title: item.title, description: `${item.propertyType} · ${item.price} · ${item.description}`, location: item.locationLabel, href: `/moradia/${item.id}` })),
   ...(results.people || []).slice(0, 4).map((item) => ({ id: `person:${item.id}`, type: 'person', title: item.name || `@${item.username || 'perfil'}`, description: `@${item.username || 'perfil'}${item.interests.length ? ` · interesses: ${item.interests.join(', ')}` : ''}`, location: item.locationLabel || '', href: item.username ? `/${item.username}` : '/community' })),
-].slice(0, 30).map((item) => ({ ...item, description: item.description.slice(0, 320) }));
+].slice(0, 30).map((item) => ({
+  ...item,
+  id: item.id.slice(0, 100),
+  title: item.title.slice(0, 160),
+  description: item.description.slice(0, 320),
+  location: item.location.slice(0, 120),
+  href: item.href.slice(0, 300),
+}));
 
 type CommunityAssistantModalProps = {
   open: boolean;
@@ -85,26 +95,31 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
   const ask = async (question: string) => {
     const query = question.trim();
     if (!query || loading) return;
+    const previousUserQuery = [...messages].reverse().find((message) => message.role === 'user')?.text;
+    const retrievalQuery = previousUserQuery && looksLikeFollowUp(query)
+      ? `${previousUserQuery}. Pergunta complementar: ${query}`.slice(0, 300)
+      : query;
 
     setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'user', text: query }]);
     setDraft('');
     setLoading(true);
 
     try {
-      let filters: Record<string, string> = { q: query, category: 'all', city: '', country: '', businessType: '' };
+      let filters: Record<string, string> = { q: retrievalQuery, category: 'all', city: '', country: '', businessType: '' };
       const interpretationResponse = await fetch('/api/search/interpret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query: retrievalQuery }),
       });
       const interpretation = await interpretationResponse.json().catch(() => null);
       if (interpretationResponse.ok && interpretation?.filters) filters = interpretation.filters;
 
-      const params = new URLSearchParams({ q: filters.q || query, pageSize: '8' });
+      const resolvedSearchQuery = typeof filters.q === 'string' ? filters.q : retrievalQuery;
+      const params = new URLSearchParams({ q: resolvedSearchQuery, pageSize: '8' });
       Object.entries(filters).forEach(([key, value]) => {
         if (value && key !== 'q' && !(key === 'category' && value === 'all')) params.set(key, value);
       });
-      const searchPath = buildSearchPath(filters.q || query, params);
+      const searchPath = buildSearchPath(resolvedSearchQuery, params);
       setLastSearchPath(searchPath);
 
       const searchResponse = await fetch(`/api/search?${params.toString()}`, { cache: 'no-store' });
@@ -114,7 +129,11 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
       const assistantResponse = await fetch('/api/search/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, context: buildContext(searchPayload), history: messages.slice(-6).map(({ role, text }) => ({ role, text })) }),
+        body: JSON.stringify({
+          query,
+          context: buildContext(searchPayload),
+          history: messages.slice(-6).map(({ role, text }) => ({ role, text: text.trim().slice(0, 600) })),
+        }),
       });
       const assistantPayload = await assistantResponse.json().catch(() => null);
       if (!assistantResponse.ok || !assistantPayload?.answer) throw new Error(assistantPayload?.error || 'Não foi possível gerar a resposta.');

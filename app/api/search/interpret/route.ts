@@ -33,7 +33,7 @@ const normalizeAiFilters = (value: unknown, fallbackQuery: string) => {
   const dateScope = DATE_SCOPES.includes(rawDateScope as (typeof DATE_SCOPES)[number]) ? rawDateScope : 'future';
 
   return {
-    q: cleanString(record.q, 80) || fallbackQuery.slice(0, 80),
+    q: typeof record.q === 'string' ? cleanString(record.q, 80) : fallbackQuery.slice(0, 80),
     category,
     city: cleanString(record.city, 80),
     country: /^[A-Z]{2}$/.test(country) ? country : '',
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   try {
     const response = await generateCommunityAiJson({
-      contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country, businessType, propertyType e dateScope. Categorias válidas: all, businesses, events, posts, people, groups, jobs, housing, interests. dateScope válido: future, today, weekend, ongoing, past ou any. Use country ISO-2. Para eventos sem período explícito use future. Não inclua dados não presentes na frase. Busca: ${JSON.stringify(query)}`,
+      contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country, businessType, propertyType e dateScope. Categorias válidas: all, businesses, events, posts, people, groups, jobs, housing, interests. dateScope válido: future, today, weekend, ongoing, past ou any. Use country ISO-2. Para eventos sem período explícito use future. Em q mantenha somente o assunto pesquisável, removendo comandos como "procuro" e "mostre", nomes de categoria genéricos e a cidade já extraída. Se não houver assunto específico, use q vazio. Não invente dados ausentes. Busca: ${JSON.stringify(query)}`,
     });
     return NextResponse.json({ filters: normalizeAiFilters(response.data, query), model: response.model, provider: response.provider });
   } catch (error) {
