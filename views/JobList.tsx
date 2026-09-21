@@ -17,6 +17,7 @@ import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
+import ImageGalleryField from "@/components/forms/ImageGalleryField";
 
 type Job = {
   id: string;
@@ -27,6 +28,7 @@ type Job = {
   locationLabel: string;
   salary?: string | null;
   imageUrl?: string | null;
+  galleryUrls: string[];
 };
 const emptyDraft = {
   title: "",
@@ -39,6 +41,7 @@ const emptyDraft = {
   contactUrl: "",
   businessId: "",
   imageUrl: "",
+  galleryUrls: [] as string[],
 };
 
 export default function JobList({ user }: { user: User }) {
@@ -106,6 +109,7 @@ export default function JobList({ user }: { user: User }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...draft,
+          galleryUrls: draft.galleryUrls.filter(Boolean),
           businessId: draft.businessId || undefined,
           company: publishAs === 'person' ? draft.company || user.name : draft.company,
         }),
@@ -255,6 +259,7 @@ export default function JobList({ user }: { user: User }) {
             height={160}
             hint="Adicione uma capa para destacar a vaga."
           />
+          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="jobs" maxItems={6} hint="Adicione até 6 fotos da vaga, equipe ou ambiente." />
           <Input
             placeholder="Titulo"
             value={draft.title}

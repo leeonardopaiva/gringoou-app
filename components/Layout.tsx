@@ -230,22 +230,22 @@ const SidebarContent: React.FC<{
               onClick={item.disabled ? () => handleDisabledNavigation(item) : () => onNavigate(item.href)}
             />
           ))}
-          {user.role === UserRole.ADMIN ? (
+          {user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR ? (
             <>
               <SidebarMenuItem
-                label="Admin"
+                label={user.role === UserRole.MODERATOR ? 'Moderação' : 'Admin'}
                 icon={<ShieldCheck size={18} />}
-                active={sourcePath === '/admin'}
+                active={isActive('/admin')}
                 collapsed={collapsed}
-                onClick={() => onNavigate('/admin')}
+                onClick={() => onNavigate(user.role === UserRole.MODERATOR ? '/admin/moderation' : '/admin')}
               />
-              <SidebarMenuItem
+              {user.role === UserRole.ADMIN ? <SidebarMenuItem
                 label="Moderar anuncios"
                 icon={<ShieldCheck size={18} />}
                 active={isActive('/admin/ads')}
                 collapsed={collapsed}
                 onClick={() => onNavigate('/admin/ads')}
-              />
+              /> : null}
             </>
           ) : null}
           <SidebarMenuItem

@@ -25,6 +25,7 @@ import BannerManagementSection, { type ManagedBanner } from '../components/admin
 import AdsModerationSection from '../components/admin/AdsModerationSection';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminAnalyticsSection from '../components/admin/AdminAnalyticsSection';
+import GroupReportsSection from '../components/admin/GroupReportsSection';
 import UserDeletionModal from '../components/admin/UserDeletionModal';
 import { Button, Modal } from '../components/ui';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -44,7 +45,7 @@ type PostAction = 'approve' | 'remove';
 
 type BusinessStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED' | 'SUSPENDED';
 type EventStatus = 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED' | 'CANCELED';
-type UserRoleValue = 'USER' | 'BUSINESS_OWNER' | 'ADMIN';
+type UserRoleValue = 'USER' | 'BUSINESS_OWNER' | 'MODERATOR' | 'ADMIN';
 type VisibilityScopeValue = 'GLOBAL' | 'USER_REGION' | 'SPECIFIC_REGION';
 
 type AdminActor = {
@@ -445,7 +446,7 @@ const eventStatusOptions: EventStatus[] = [
   'CANCELED',
 ];
 
-const userRoleOptions: UserRoleValue[] = ['USER', 'BUSINESS_OWNER', 'ADMIN'];
+const userRoleOptions: UserRoleValue[] = ['USER', 'BUSINESS_OWNER', 'MODERATOR', 'ADMIN'];
 const visibilityScopeOptions: VisibilityScopeValue[] = ['USER_REGION', 'SPECIFIC_REGION', 'GLOBAL'];
 
 const formatDateTime = (value: string) =>
@@ -1666,6 +1667,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'moderation' ? (
           <>
+        <GroupReportsSection />
         <ModerationSection
           title="Negocios em aprovacao"
           count={dashboard?.pendingBusinesses.length ?? 0}

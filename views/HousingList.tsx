@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
+import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import PageHeader from "@/components/navigation/PageHeader";
 
@@ -27,6 +28,7 @@ type Housing = {
   locationLabel: string;
   price: string;
   imageUrl?: string | null;
+  galleryUrls: string[];
 };
 const emptyDraft = {
   title: "",
@@ -35,6 +37,7 @@ const emptyDraft = {
   locationLabel: "",
   price: "",
   imageUrl: "",
+  galleryUrls: [] as string[],
   contactUrl: "",
 };
 
@@ -94,7 +97,7 @@ export default function HousingList({ user: _user }: { user: User }) {
       const response = await fetch("/api/housing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify({ ...draft, galleryUrls: draft.galleryUrls.filter(Boolean) }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
@@ -243,6 +246,7 @@ export default function HousingList({ user: _user }: { user: User }) {
             height={180}
             hint="Clique na area para selecionar a foto do anuncio."
           />
+          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="housing" maxItems={6} hint="Adicione até 6 fotos dos ambientes da moradia." />
           <Input
             placeholder="Link de contato"
             value={draft.contactUrl}

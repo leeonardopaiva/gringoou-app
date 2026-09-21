@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Check, LogIn, LockKeyhole, MapPin, Settings, ShieldCheck, Tag, Trash2, UserCheck, UsersRound } from 'lucide-react';
+import { Check, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UsersRound } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
 import type { User } from '../types';
@@ -74,6 +74,15 @@ const defaultGroup: PublicGroupState = {
 };
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
+const REPORT_REASONS = [
+  ['MISINFORMATION', 'Disseminação de informações falsas'],
+  ['VIOLENCE', 'Organização ou incentivo à violência'],
+  ['HATE_SPEECH', 'Grupo de ódio ou discurso de ódio'],
+  ['ILLEGAL_GOODS_SERVICES', 'Produtos ou serviços ilegais'],
+  ['SEXUALLY_EXPLICIT', 'Conteúdo sexualmente explícito'],
+  ['UNMODERATED', 'Administração não está moderando'],
+  ['IMPERSONATION', 'Falsidade ideológica'],
+] as const;
 
 const getInitials = (name: string) =>
   name
@@ -93,6 +102,9 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
   const [refreshKey, setRefreshKey] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reporting, setReporting] = useState(false);
   const [moderatingMemberId, setModeratingMemberId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ name: '', description: '', category: '', imageUrl: '', coverImageUrl: '', regionKey: '', countryCode: 'US', isPublic: true });
 
@@ -204,6 +216,23 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
     finally { setModeratingMemberId(null); }
   };
 
+  const reportGroup = async () => {
+    if (!reportReason) return;
+    setReporting(true);
+    try {
+      const response = await fetch(`/api/groups/${encodeURIComponent(group.slug)}/reports`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reportReason }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível enviar a denúncia.');
+      setReportOpen(false);
+      setReportReason('');
+      showToast(payload.message || 'Denúncia enviada para moderação.', 'success');
+    } catch (reportError) {
+      showToast(reportError instanceof Error ? reportError.message : 'Não foi possível enviar a denúncia.', 'error');
+    } finally {
+      setReporting(false);
+    }
+  };
+
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
@@ -244,12 +273,13 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
-            <div className={`relative h-72 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+          <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+            <div className={`relative h-44 sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.coverImageUrl || group.imageUrl ? (
                 <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-slate-950/10 to-transparent" />
+              {viewer && !group.canManage ? <button type="button" onClick={() => setReportOpen(true)} className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm" aria-label="Mais opções"><MoreHorizontal size={20} /></button> : null}
               <div className="absolute bottom-5 left-5 right-5 text-white">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-card bg-surface text-xl font-bold text-brand-500">
                   {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover" /> : getInitials(group.name)}
@@ -366,6 +396,10 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
               <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={draft.isPublic} onChange={(event) => setDraft((current) => ({ ...current, isPublic: event.target.checked }))} className="mt-1" /><span><strong className="block text-sm">Grupo público</strong><span className="text-xs text-slate-500">Desmarque para exigir aprovação antes de acessar membros e mural.</span></span></label>
               <button type="button" disabled={savingSettings || draft.name.trim().length < 2} onClick={() => void saveSettings()} className="w-full rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{savingSettings ? 'Salvando...' : 'Salvar configurações'}</button>
             </div>
+          </Modal>
+          <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="O que há de errado com este grupo?" description="Sua denúncia será analisada pela equipe de moderação.">
+            <div className="space-y-2">{REPORT_REASONS.map(([value, label]) => <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${reportReason === value ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:bg-slate-50'}`}><input type="radio" name="group-report-reason" value={value} checked={reportReason === value} onChange={() => setReportReason(value)} className="mt-1" /><span className="text-sm font-semibold text-slate-700">{label}</span></label>)}</div>
+            <button type="button" disabled={!reportReason || reporting} onClick={() => void reportGroup()} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white disabled:opacity-50"><Flag size={16} />{reporting ? 'Enviando...' : 'Enviar denúncia'}</button>
           </Modal>
         </div>
       </div>

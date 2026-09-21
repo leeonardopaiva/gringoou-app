@@ -12,7 +12,24 @@ enum UserRole {
   USER
   BUSINESS_OWNER
   COMPANY
+  MODERATOR
   ADMIN
+}
+
+enum CommunityGroupReportReason {
+  MISINFORMATION
+  VIOLENCE
+  HATE_SPEECH
+  ILLEGAL_GOODS_SERVICES
+  SEXUALLY_EXPLICIT
+  UNMODERATED
+  IMPERSONATION
+}
+
+enum CommunityGroupReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
 }
 
 enum Gender {
@@ -209,6 +226,7 @@ model User {
   mutedUsers                UserMute[]             @relation("UserMuteSource")
   mutedByUsers              UserMute[]             @relation("UserMuteTarget")
   emailChangeTokens         EmailChangeToken[]
+  passwordResetTokens       PasswordResetToken[]
   suggestions               Suggestion[]
   businessFavorites         BusinessFavorite[]
   eventFavorites            EventFavorite[]
@@ -220,6 +238,8 @@ model User {
   receivedFriendRequests    FriendRequest[]        @relation("FriendRequestRecipient")
   createdGroups             CommunityGroup[]       @relation("CommunityGroupCreator")
   groupMemberships          CommunityGroupMember[]
+  groupReports              CommunityGroupReport[] @relation("CommunityGroupReportAuthor")
+  reviewedGroupReports      CommunityGroupReport[] @relation("CommunityGroupReportReviewer")
   referredBy                User?                  @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals                 User[]                 @relation("UserReferrals")
 
@@ -237,6 +257,7 @@ model Job {
   salary         String?
   contactUrl     String?
   imageUrl       String?
+  galleryUrls    String[] @default([])
   businessId     String?
   isActive       Boolean  @default(true)
   createdById    String
@@ -258,6 +279,7 @@ model Housing {
   locationLabel String
   price         String
   imageUrl      String?
+  galleryUrls   String[] @default([])
   contactUrl    String?
   isActive      Boolean  @default(true)
   createdById   String
@@ -734,6 +756,7 @@ model CommunityGroup {
   region      Region?                @relation(fields: [regionKey], references: [key], onDelete: SetNull)
   members     CommunityGroupMember[]
   posts       CommunityPost[]
+  reports     CommunityGroupReport[]
 
   @@index([isPublic, createdAt])
   @@index([regionKey, createdAt])
@@ -756,6 +779,37 @@ model CommunityGroupMember {
   @@index([userId, createdAt])
   @@index([groupId, createdAt])
   @@index([groupId, status, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+}
+
+model CommunityGroupReport {
+  id           String                     @id @default(cuid())
+  groupId      String
+  reporterId   String
+  reason       CommunityGroupReportReason
+  status       CommunityGroupReportStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  group        CommunityGroup             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reporter     User                       @relation("CommunityGroupReportAuthor", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy   User?                      @relation("CommunityGroupReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, reporterId])
+  @@index([status, createdAt])
+  @@index([groupId, createdAt])
 }
 
 model CommunityPostPreference {

@@ -32,6 +32,8 @@ const mapUserRole = (role?: string | null): UserRole => {
   switch (role) {
     case UserRole.ADMIN:
       return UserRole.ADMIN;
+    case UserRole.MODERATOR:
+      return UserRole.MODERATOR;
     case UserRole.BUSINESS_OWNER:
       return UserRole.BUSINESS_OWNER;
     case UserRole.COMPANY:

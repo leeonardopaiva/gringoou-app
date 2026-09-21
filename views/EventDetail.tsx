@@ -19,6 +19,7 @@ import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { User } from '../types';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { LinkifiedText } from '../components/ui/LinkifiedText';
+import { ImageLightbox } from '../components/community/ImageLightbox';
 
 interface EventDetailProps {
   eventId?: string;
@@ -89,6 +90,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
   const [savingMedia, setSavingMedia] = useState(false);
   const [coverDraft, setCoverDraft] = useState('');
   const [galleryDraft, setGalleryDraft] = useState<string[]>([]);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -293,7 +295,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
     }
   };
 
-  const galleryImages = [event.imageUrl, ...event.galleryUrls].filter(Boolean);
+  const galleryImages = event.galleryUrls.filter(Boolean);
+  const cityRegion = [event.city, event.state].filter(Boolean).join(', ');
+  const showCityRegion = Boolean(cityRegion && (!event.city || !event.locationLabel.toLocaleLowerCase().includes(event.city.toLocaleLowerCase())));
   const isPendingReview = event.status === 'PENDING_REVIEW';
 
   if (loading) {
@@ -468,13 +472,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
           <p className="theme-text text-base font-bold">{event.venueName}</p>
           <div className="space-y-1 text-sm text-slate-600">
             <p>{event.locationLabel}</p>
-            {event.city || event.state ? (
-              <p>
-                {event.city}
-                {event.city && event.state ? ', ' : ''}
-                {event.state}
-              </p>
-            ) : null}
+            {showCityRegion ? <p>{cityRegion}</p> : null}
           </div>
           <LinkifiedText text={event.description} className="text-sm leading-relaxed text-slate-600" />
           {event.externalUrl ? (
@@ -518,15 +516,15 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
               Nenhuma imagem adicional cadastrada ainda.
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
               {galleryImages.map((imageUrl, index) => (
-                <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded-[24px] bg-slate-50">
+                <button type="button" onClick={() => setLightboxImage(imageUrl)} key={`${imageUrl}-${index}`} className="aspect-square overflow-hidden rounded-2xl bg-slate-50">
                   <img
                     src={imageUrl}
-                    className="aspect-square w-full object-cover"
+                    className="h-full w-full object-cover"
                     alt={`${event.title} - imagem ${index + 1}`}
                   />
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -615,6 +613,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
           </div>
         </div>
       ) : null}
+      <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`Imagem ampliada de ${event.title}`} onClose={() => setLightboxImage(null)} />
     </ContentColumn>
   );
 };

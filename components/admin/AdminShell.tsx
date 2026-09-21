@@ -27,6 +27,7 @@ import FriendRequestBell from '@/components/feedback/FriendRequestBell';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
+import { UserRole } from '@/types';
 
 const navigation = [
   { href: '/admin', label: 'Visao Geral', icon: LayoutGrid, exact: true },
@@ -86,7 +87,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="flex-1 overflow-y-auto px-3 py-5">
         <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Principal</p>
         <nav className="space-y-1" aria-label="Navegacao administrativa">
-          {navigation.map((item) => {
+          {navigation.filter((item) => user.role !== UserRole.MODERATOR || item.href === '/admin/moderation').map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
@@ -101,7 +102,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="border-t border-slate-200 p-4">
         <div className="flex items-center gap-3 px-2 py-2">
           <Avatar src={user.avatar} name={user.name} size="sm" />
-          <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">Administrador</p></div>
+          <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">{user.role === UserRole.MODERATOR ? 'Moderador' : 'Administrador'}</p></div>
         </div>
         <Link href="/inicio" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar a comunidade</Link>
         <button type="button" onClick={() => signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><LogOut size={14} />Sair</button>

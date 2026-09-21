@@ -4,6 +4,7 @@ import React from 'react';
 import { ShieldAlert } from 'lucide-react';
 import AdminPanel from '@/views/AdminPanel';
 import AdminShell from '@/components/admin/AdminShell';
+import GroupReportsSection from '@/components/admin/GroupReportsSection';
 import { UserRole, type User } from '@/types';
 
 type AdminWorkspaceProps = {
@@ -26,11 +27,16 @@ const AdminAccessDenied: React.FC = () => (
 );
 
 const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }) => {
-  if (currentUser.role !== UserRole.ADMIN) {
+  const isModerator = currentUser.role === UserRole.MODERATOR;
+  if (currentUser.role !== UserRole.ADMIN && !isModerator) {
     return <AdminAccessDenied />;
   }
 
   const segment = pathname.split('/')[2] || '';
+  if (isModerator) {
+    if (segment !== 'moderation') return <AdminAccessDenied />;
+    return <AdminShell user={currentUser}><div className="mx-auto max-w-6xl p-5 sm:p-8"><GroupReportsSection /></div></AdminShell>;
+  }
   const sectionBySegment = {
     ads: 'ads',
     moderation: 'moderation',

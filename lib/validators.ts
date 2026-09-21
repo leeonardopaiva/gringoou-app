@@ -139,6 +139,7 @@ export const jobSchema = z.object({
   salary: optionalString,
   contactUrl: optionalContact,
   imageUrl: optionalUrl,
+  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no maximo 6 fotos.').default([]),
   businessId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),
 });
@@ -150,7 +151,8 @@ export const housingSchema = z.object({
   locationLabel: z.string().trim().min(2).max(160),
   price: z.string().trim().min(1).max(80),
   imageUrl: optionalUrl,
-  contactUrl: optionalUrl,
+  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no maximo 6 fotos.').default([]),
+  contactUrl: optionalContact,
   isActive: z.boolean().optional(),
 });
 

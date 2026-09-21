@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Briefcase, ExternalLink, MapPin, PencilLine, Phone, WalletCards } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
+import ImageGalleryField from '@/components/forms/ImageGalleryField';
+import { ImageLightbox } from '@/components/community/ImageLightbox';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
@@ -19,6 +21,7 @@ type Job = {
   salary?: string | null;
   contactUrl?: string | null;
   imageUrl?: string | null;
+  galleryUrls: string[];
   businessId?: string | null;
   canEdit?: boolean;
   createdBy?: { name?: string | null };
@@ -31,6 +34,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -80,6 +84,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           salary: draft.salary || undefined,
           contactUrl: draft.contactUrl || undefined,
           imageUrl: draft.imageUrl || undefined,
+          galleryUrls: (draft.galleryUrls || []).filter(Boolean),
           businessId: draft.businessId || undefined,
         }),
       });
@@ -140,12 +145,14 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           <p className="mt-3 whitespace-pre-wrap text-body-sm leading-7 text-muted-foreground">{job.description}</p>
           <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>
         </section>
+        {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
         {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
       </div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar vaga" description="Atualize os dados e a capa da publicação." className="max-w-xl">
         <div className="space-y-3">
           <CloudinaryImageField value={draft?.imageUrl || ''} onChange={(value) => updateDraft('imageUrl', value)} folder="jobs" height={180} hint="Clique na área para selecionar a capa da vaga." />
+          <ImageGalleryField value={draft?.galleryUrls || []} onChange={(value) => updateDraft('galleryUrls', value)} folder="jobs" maxItems={6} hint="Adicione até 6 fotos da vaga, equipe ou ambiente." />
           <Input value={draft?.title || ''} onChange={(event) => updateDraft('title', event.target.value)} placeholder="Título" />
           <Input value={draft?.company || ''} onChange={(event) => updateDraft('company', event.target.value)} placeholder="Empresa ou responsável" disabled={Boolean(draft?.businessId)} />
           <Textarea value={draft?.description || ''} onChange={(event) => updateDraft('description', event.target.value)} placeholder="Descrição" />
@@ -158,6 +165,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           <Button fullWidth loading={saving} onClick={() => void save()}>Salvar alterações</Button>
         </div>
       </Modal>
+      <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`Imagem ampliada de ${job.title}`} onClose={() => setLightboxImage(null)} />
     </ContentColumn>
   );
 }

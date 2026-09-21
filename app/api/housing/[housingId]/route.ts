@@ -6,12 +6,13 @@ import { housingSchema } from '@/lib/validators';
 type RouteContext = { params: Promise<{ housingId: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const session = await getServerAuthSession();
   const { housingId } = await context.params;
   const housing = await prisma.housing.findUnique({
     where: { id: housingId },
     include: { createdBy: { select: { id: true, name: true, username: true } } },
   });
-  return housing ? NextResponse.json({ housing }) : NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  return housing ? NextResponse.json({ housing: { ...housing, canEdit: session?.user?.id === housing.createdById || session?.user?.role === 'ADMIN' } }) : NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: RouteContext) {
