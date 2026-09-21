@@ -3,23 +3,24 @@
 import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Briefcase, CalendarDays, Clock3, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
+import { Briefcase, CalendarDays, Clock3, House, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
 import { ContentColumn } from '@/components/ui';
 import RegionSelector from '@/components/RegionSelector';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { buildSearchPath } from '@/lib/search-navigation';
 
-type SearchCategory = 'all' | 'businesses' | 'events' | 'posts' | 'people' | 'groups' | 'jobs' | 'interests';
+type SearchCategory = 'all' | 'businesses' | 'events' | 'posts' | 'people' | 'groups' | 'jobs' | 'housing' | 'interests';
 type Counts = Record<Exclude<SearchCategory, 'all'>, number> & { total: number };
 type SearchResponse = {
   query: string;
   category: SearchCategory;
-  businesses: Array<{ id: string; slug: string; name: string; category: string; address: string; description?: string | null; imageUrl?: string | null; locationLabel: string }>;
-  events: Array<{ id: string; slug: string; title: string; venueName: string; startsAt: string; locationLabel: string; description: string; imageUrl?: string | null }>;
+  businesses: Array<{ id: string; slug: string; name: string; category: string; address: string; description?: string | null; imageUrl?: string | null; locationLabel: string; ratingAverage: number; ratingCount: number }>;
+  events: Array<{ id: string; slug: string; title: string; venueName: string; startsAt: string; endsAt?: string | null; locationLabel: string; description: string; imageUrl?: string | null }>;
   posts: Array<{ id: string; content: string; createdAt: string; locationLabel: string; authorHref?: string; authorType?: 'USER' | 'BUSINESS'; author: { name?: string | null; username?: string | null; image?: string | null }; _count: { comments: number; reactions: number } }>;
   people: Array<{ id: string; name?: string | null; username?: string | null; image?: string | null; locationLabel?: string | null; interests: string[] }>;
   groups: Array<{ id: string; name: string; slug: string; description?: string | null; imageUrl?: string | null; coverImageUrl?: string | null; category?: string | null; countryCode: string; isPublic: boolean; region?: { label: string } | null; _count: { members: number } }>;
   jobs: Array<{ id: string; title: string; company: string; employmentType: string; locationLabel: string; salary?: string | null; createdAt: string }>;
+  housing: Array<{ id: string; title: string; description: string; propertyType: string; price: string; locationLabel: string; imageUrl?: string | null; createdAt: string }>;
   interests: string[];
   counts: Counts;
   pagination: { page: number; pageSize: number; totalPages: number };
@@ -28,11 +29,12 @@ type SearchResponse = {
 type AssistantResponse = {
   answer: string;
   references: Array<{ id: string; label: string; href: string; type: string }>;
+  provider?: 'gemini' | 'claude';
 };
 
 const emptyResults: SearchResponse = {
-  query: '', category: 'all', businesses: [], events: [], posts: [], people: [], groups: [], jobs: [], interests: [],
-  counts: { businesses: 0, events: 0, posts: 0, people: 0, groups: 0, jobs: 0, interests: 0, total: 0 },
+  query: '', category: 'all', businesses: [], events: [], posts: [], people: [], groups: [], jobs: [], housing: [], interests: [],
+  counts: { businesses: 0, events: 0, posts: 0, people: 0, groups: 0, jobs: 0, housing: 0, interests: 0, total: 0 },
   pagination: { page: 1, pageSize: 6, totalPages: 1 },
   intelligence: { enabled: true, used: false, summary: null, terms: [] },
 };
@@ -40,6 +42,7 @@ const emptyResults: SearchResponse = {
 const tabs: Array<{ id: SearchCategory; label: string }> = [
   { id: 'all', label: 'Tudo' }, { id: 'people', label: 'Pessoas' }, { id: 'groups', label: 'Grupos' },
   { id: 'businesses', label: 'Negócios' }, { id: 'jobs', label: 'Vagas' }, { id: 'events', label: 'Eventos' },
+  { id: 'housing', label: 'Moradias' },
   { id: 'posts', label: 'Comunidade' }, { id: 'interests', label: 'Interesses' },
 ];
 
@@ -53,6 +56,7 @@ const buildAssistantSummary = (results: SearchResponse) => {
     results.counts.groups ? `${results.counts.groups} grupo${results.counts.groups === 1 ? '' : 's'}` : '',
     results.counts.posts ? `${results.counts.posts} publicaç${results.counts.posts === 1 ? 'ão' : 'ões'}` : '',
     results.counts.people ? `${results.counts.people} pessoa${results.counts.people === 1 ? '' : 's'}` : '',
+    results.counts.housing ? `${results.counts.housing} moradia${results.counts.housing === 1 ? '' : 's'}` : '',
   ].filter(Boolean);
 
   if (parts.length === 0) {
@@ -63,11 +67,13 @@ const buildAssistantSummary = (results: SearchResponse) => {
 };
 
 const buildAssistantContext = (results: SearchResponse) => [
-  ...results.businesses.map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: item.description || item.category, location: item.locationLabel, href: `/negocios/${item.slug}` })),
-  ...results.events.map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: item.description, location: item.locationLabel, href: `/eventos/${item.slug}` })),
-  ...results.jobs.map((item) => ({ id: `job:${item.id}`, type: 'job', title: item.title, description: `${item.company} · ${item.employmentType}${item.salary ? ` · ${item.salary}` : ''}`, location: item.locationLabel, href: `/vagas/${item.id}` })),
-  ...results.groups.map((item) => ({ id: `group:${item.id}`, type: 'group', title: item.name, description: item.description || item.category || 'Grupo da comunidade', location: item.region?.label || item.countryCode, href: `/grupos/${item.slug}` })),
-  ...results.posts.map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
+  ...results.businesses.slice(0, 5).map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: `${item.description || item.category}${item.ratingCount ? ` · avaliação ${item.ratingAverage.toFixed(1)}/5 (${item.ratingCount})` : ''}`, location: item.locationLabel, href: `/negocios/${item.slug}` })),
+  ...results.events.slice(0, 5).map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: `${item.description} · início ${item.startsAt}${item.endsAt ? ` · fim ${item.endsAt}` : ''}`, location: item.locationLabel, href: `/eventos/${item.slug}` })),
+  ...results.jobs.slice(0, 4).map((item) => ({ id: `job:${item.id}`, type: 'job', title: item.title, description: `${item.company} · ${item.employmentType}${item.salary ? ` · ${item.salary}` : ''}`, location: item.locationLabel, href: `/vagas/${item.id}` })),
+  ...results.groups.slice(0, 4).map((item) => ({ id: `group:${item.id}`, type: 'group', title: item.name, description: item.description || item.category || 'Grupo da comunidade', location: item.region?.label || item.countryCode, href: `/grupos/${item.slug}` })),
+  ...results.posts.slice(0, 4).map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
+  ...results.housing.slice(0, 4).map((item) => ({ id: `housing:${item.id}`, type: 'housing', title: item.title, description: `${item.propertyType} · ${item.price} · ${item.description}`, location: item.locationLabel, href: `/moradia/${item.id}` })),
+  ...results.people.slice(0, 4).map((item) => ({ id: `person:${item.id}`, type: 'person', title: item.name || `@${item.username || 'perfil'}`, description: `@${item.username || 'perfil'}${item.interests.length ? ` · ${item.interests.join(', ')}` : ''}`, location: item.locationLabel || '', href: item.username ? `/${item.username}` : '/community' })),
 ].slice(0, 30).map((item) => ({ ...item, description: item.description.slice(0, 320) }));
 
 const SearchResults: React.FC = () => {
@@ -85,17 +91,19 @@ const SearchResults: React.FC = () => {
   const [assistantResponse, setAssistantResponse] = useState<AssistantResponse | null>(null);
   const [assistantError, setAssistantError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '' });
+  const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '', propertyType: '', dateScope: 'future' });
 
   useEffect(() => setFilterDraft({
     region: params.get('region') || '',
     country: params.get('country') || '',
     city: params.get('city') || '',
     businessType: params.get('businessType') || '',
+    propertyType: params.get('propertyType') || '',
+    dateScope: params.get('dateScope') || 'future',
   }), [paramsKey]);
   useEffect(() => {
     let ignore = false;
-    const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType'));
+    const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
     if (!hasCriteria) { setResults(emptyResults); return; }
     setLoading(true);
     fetch(`/api/search?${paramsKey}`, { cache: 'no-store' })
@@ -144,11 +152,11 @@ const SearchResults: React.FC = () => {
     router.push(buildSearchPath(next.get('q') || '', next));
   };
   const clearFilters = () => {
-    setFilterDraft({ region: '', country: '', city: '', businessType: '' });
-    navigateWith({ region: null, country: null, city: null, businessType: null, page: null });
+    setFilterDraft({ region: '', country: '', city: '', businessType: '', propertyType: '', dateScope: 'future' });
+    navigateWith({ region: null, country: null, city: null, businessType: null, propertyType: null, dateScope: null, page: null });
   };
   const visible = (category: Exclude<SearchCategory, 'all'>) => activeTab === 'all' || activeTab === category;
-  const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType'));
+  const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
 
   return (
     <ContentColumn className="animate-in space-y-6 px-5 py-4 pb-24 fade-in duration-500">
@@ -162,7 +170,9 @@ const SearchResults: React.FC = () => {
         <label className="space-y-2"><span className="text-sm font-bold">País</span><select value={filterDraft.country} onChange={(event) => setFilterDraft((current) => ({ ...current, country: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="">Todos</option><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
         <label className="space-y-2"><span className="text-sm font-bold">Cidade ou estado</span><input value={filterDraft.city} onChange={(event) => setFilterDraft((current) => ({ ...current, city: event.target.value }))} placeholder="Ex.: Boston" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
         <label className="space-y-2"><span className="text-sm font-bold">Tipo de negócio</span><input value={filterDraft.businessType} onChange={(event) => setFilterDraft((current) => ({ ...current, businessType: event.target.value }))} placeholder="Ex.: Restaurante" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
-        <div className="flex flex-wrap gap-2 sm:col-span-2"><button type="button" onClick={() => navigateWith({ region: filterDraft.region, country: filterDraft.country || null, city: filterDraft.city || null, businessType: filterDraft.businessType || null, page: null })} className="inline-flex h-10 items-center justify-center rounded-full bg-brand-500 px-5 text-xs font-bold text-white">Aplicar filtros</button><button type="button" onClick={clearFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 text-xs font-bold text-red-700"><X size={14} /> Limpar filtros</button></div>
+        <label className="space-y-2"><span className="text-sm font-bold">Tipo de moradia</span><input value={filterDraft.propertyType} onChange={(event) => setFilterDraft((current) => ({ ...current, propertyType: event.target.value }))} placeholder="Ex.: Apartamento" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
+        <label className="space-y-2"><span className="text-sm font-bold">Período dos eventos</span><select value={filterDraft.dateScope} onChange={(event) => setFilterDraft((current) => ({ ...current, dateScope: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="future">Próximos eventos</option><option value="today">Hoje</option><option value="weekend">Fim de semana</option><option value="ongoing">Acontecendo agora</option><option value="past">Eventos anteriores</option><option value="any">Todos os eventos</option></select></label>
+        <div className="flex flex-wrap gap-2 sm:col-span-2"><button type="button" onClick={() => navigateWith({ region: filterDraft.region, country: filterDraft.country || null, city: filterDraft.city || null, businessType: filterDraft.businessType || null, propertyType: filterDraft.propertyType || null, dateScope: filterDraft.dateScope === 'future' ? null : filterDraft.dateScope, page: null })} className="inline-flex h-10 items-center justify-center rounded-full bg-brand-500 px-5 text-xs font-bold text-white">Aplicar filtros</button><button type="button" onClick={clearFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 text-xs font-bold text-red-700"><X size={14} /> Limpar filtros</button></div>
       </section> : null}
 
       <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Categorias da busca">
@@ -180,7 +190,7 @@ const SearchResults: React.FC = () => {
           </p>
           {assistantResponse?.references.length ? <div className="mt-3 flex flex-wrap gap-2">{assistantResponse.references.map((reference) => <Link key={reference.id} href={reference.href} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50">{reference.label}</Link>)}</div> : null}
           {assistantError ? <p className="mt-2 text-xs text-amber-700">{assistantError} Exibindo o resumo local.</p> : null}
-          <p className="mt-2 text-xs text-slate-500">Resposta gerada pelo Gemini a partir de resultados públicos do Gringoou. Confirme informações importantes diretamente na página indicada.</p>
+          <p className="mt-2 text-xs text-slate-500">Resposta gerada por {assistantResponse?.provider === 'claude' ? 'Claude' : assistantResponse?.provider === 'gemini' ? 'Gemini' : 'IA'} a partir de resultados públicos do Gringoou. Confirme informações importantes diretamente na página indicada.</p>
         </section>
       ) : null}
       {!loading && results.intelligence.used ? <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4 text-sm text-violet-800"><p className="font-bold">Busca inteligente local</p><p className="mt-1">{results.intelligence.summary}</p></div> : null}
@@ -190,6 +200,7 @@ const SearchResults: React.FC = () => {
         {visible('groups') && results.groups.length ? <ResultSection title="Grupos" icon={<UsersRound size={16} />}>{results.groups.map((group) => <Link key={group.id} href={`/grupos/${group.slug}`} className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={group.imageUrl || group.coverImageUrl || `https://picsum.photos/seed/${group.id}/160`} alt={group.name} className="h-16 w-16 rounded-2xl object-cover" /><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate font-bold">{group.name}</p>{!group.isPublic ? <LockKeyhole size={14} className="text-slate-400" /> : null}</div><p className="mt-1 line-clamp-2 text-sm text-slate-600">{group.description || group.category || 'Grupo da comunidade'}</p><p className="mt-2 text-xs text-slate-500">{group.region?.label || group.countryCode} · {group._count.members} membros</p></div></Link>)}</ResultSection> : null}
         {visible('businesses') && results.businesses.length ? <ResultSection title="Negócios" icon={<Store size={16} />}>{results.businesses.map((business) => <Link key={business.id} href={`/negocios/${business.slug}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"><img src={business.imageUrl || `https://picsum.photos/seed/${business.id}/240`} alt={business.name} className="w-28 object-cover" /><div className="min-w-0 p-4"><p className="font-bold">{business.name}</p><p className="mt-1 text-xs font-bold uppercase text-brand-500">{business.category}</p><p className="mt-2 line-clamp-2 text-sm text-slate-600">{business.description || business.address}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {business.locationLabel}</p></div></Link>)}</ResultSection> : null}
         {visible('jobs') && results.jobs.length ? <ResultSection title="Vagas" icon={<Briefcase size={16} />}>{results.jobs.map((job) => <Link key={job.id} href={`/vagas/${job.id}`} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><p className="font-bold">{job.title}</p><p className="mt-1 text-sm font-semibold text-brand-600">{job.company}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {job.locationLabel}</p><p className="mt-2 text-xs text-slate-500">{job.employmentType}{job.salary ? ` · ${job.salary}` : ''}</p></Link>)}</ResultSection> : null}
+        {visible('housing') && results.housing.length ? <ResultSection title="Moradias" icon={<House size={16} />}>{results.housing.map((item) => <Link key={item.id} href={`/moradia/${item.id}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">{item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="w-28 object-cover" /> : null}<div className="min-w-0 p-4"><p className="font-bold">{item.title}</p><p className="mt-1 text-xs font-bold uppercase text-brand-500">{item.propertyType}</p><p className="mt-2 font-semibold text-slate-700">{item.price}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><MapPin size={12} /> {item.locationLabel}</p></div></Link>)}</ResultSection> : null}
         {visible('events') && results.events.length ? <ResultSection title="Eventos" icon={<CalendarDays size={16} />}>{results.events.map((event) => <Link key={event.id} href={`/eventos/${event.slug}`} className="flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"><img src={event.imageUrl || `https://picsum.photos/seed/${event.id}/240`} alt={event.title} className="w-28 object-cover" /><div className="min-w-0 p-4"><p className="font-bold">{event.title}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500"><Clock3 size={12} /> {formatDateTime(event.startsAt)}</p><p className="mt-1 text-xs text-slate-500">{event.venueName}</p></div></Link>)}</ResultSection> : null}
         {visible('posts') && results.posts.length ? <ResultSection title="Comunidade" icon={<Users size={16} />}>{results.posts.map((post) => <Link key={post.id} href={`/community?post=${post.id}`} className="flex gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"><img src={post.author.image || `https://picsum.photos/seed/${post.id}/120`} alt={post.author.name || 'Autor'} className="h-12 w-12 rounded-full object-cover" /><div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate font-bold">{post.author.name || 'Membro'}</p>{post.authorType === 'BUSINESS' ? <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold text-brand-600">NEGÓCIO</span> : null}</div><p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.content}</p><p className="mt-2 text-xs text-slate-500">{post._count.reactions} curtidas · {post._count.comments} comentários</p></div></Link>)}</ResultSection> : null}
         {visible('interests') && results.interests.length ? <ResultSection title="Interesses" icon={<Sparkles size={16} />}><div className="flex flex-wrap gap-2">{results.interests.map((interest) => <button key={interest} type="button" onClick={() => router.push(buildSearchPath(interest, params))} className="rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">{interest}</button>)}</div></ResultSection> : null}

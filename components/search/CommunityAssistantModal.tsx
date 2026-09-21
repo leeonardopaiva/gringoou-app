@@ -16,11 +16,13 @@ type ChatMessage = {
 };
 
 type SearchPayload = {
-  businesses?: Array<{ id: string; slug: string; name: string; category: string; description?: string | null; locationLabel: string }>;
-  events?: Array<{ id: string; slug: string; title: string; description: string; locationLabel: string }>;
+  businesses?: Array<{ id: string; slug: string; name: string; category: string; description?: string | null; locationLabel: string; ratingAverage?: number; ratingCount?: number }>;
+  events?: Array<{ id: string; slug: string; title: string; description: string; locationLabel: string; startsAt: string; endsAt?: string | null }>;
   posts?: Array<{ id: string; content: string; locationLabel: string; author: { name?: string | null } }>;
   groups?: Array<{ id: string; slug: string; name: string; description?: string | null; category?: string | null; countryCode: string; region?: { label: string } | null }>;
   jobs?: Array<{ id: string; title: string; company: string; employmentType: string; salary?: string | null; locationLabel: string }>;
+  housing?: Array<{ id: string; title: string; description: string; propertyType: string; price: string; locationLabel: string }>;
+  people?: Array<{ id: string; name?: string | null; username?: string | null; locationLabel?: string | null; interests: string[] }>;
 };
 
 const suggestions = [
@@ -30,11 +32,13 @@ const suggestions = [
 ];
 
 const buildContext = (results: SearchPayload) => [
-  ...(results.businesses || []).map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: item.description || item.category, location: item.locationLabel, href: `/negocios/${item.slug}` })),
-  ...(results.events || []).map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: item.description, location: item.locationLabel, href: `/eventos/${item.slug}` })),
-  ...(results.jobs || []).map((item) => ({ id: `job:${item.id}`, type: 'job', title: item.title, description: `${item.company} · ${item.employmentType}${item.salary ? ` · ${item.salary}` : ''}`, location: item.locationLabel, href: `/vagas/${item.id}` })),
-  ...(results.groups || []).map((item) => ({ id: `group:${item.id}`, type: 'group', title: item.name, description: item.description || item.category || 'Grupo da comunidade', location: item.region?.label || item.countryCode, href: `/grupos/${item.slug}` })),
-  ...(results.posts || []).map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
+  ...(results.businesses || []).slice(0, 5).map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: `${item.description || item.category}${item.ratingCount ? ` · avaliação ${item.ratingAverage?.toFixed(1)}/5 (${item.ratingCount})` : ''}`, location: item.locationLabel, href: `/negocios/${item.slug}` })),
+  ...(results.events || []).slice(0, 5).map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: `${item.description} · início ${item.startsAt}${item.endsAt ? ` · fim ${item.endsAt}` : ''}`, location: item.locationLabel, href: `/eventos/${item.slug}` })),
+  ...(results.jobs || []).slice(0, 4).map((item) => ({ id: `job:${item.id}`, type: 'job', title: item.title, description: `${item.company} · ${item.employmentType}${item.salary ? ` · ${item.salary}` : ''}`, location: item.locationLabel, href: `/vagas/${item.id}` })),
+  ...(results.groups || []).slice(0, 4).map((item) => ({ id: `group:${item.id}`, type: 'group', title: item.name, description: item.description || item.category || 'Grupo da comunidade', location: item.region?.label || item.countryCode, href: `/grupos/${item.slug}` })),
+  ...(results.posts || []).slice(0, 4).map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
+  ...(results.housing || []).slice(0, 4).map((item) => ({ id: `housing:${item.id}`, type: 'housing', title: item.title, description: `${item.propertyType} · ${item.price} · ${item.description}`, location: item.locationLabel, href: `/moradia/${item.id}` })),
+  ...(results.people || []).slice(0, 4).map((item) => ({ id: `person:${item.id}`, type: 'person', title: item.name || `@${item.username || 'perfil'}`, description: `@${item.username || 'perfil'}${item.interests.length ? ` · interesses: ${item.interests.join(', ')}` : ''}`, location: item.locationLabel || '', href: item.username ? `/${item.username}` : '/community' })),
 ].slice(0, 30).map((item) => ({ ...item, description: item.description.slice(0, 320) }));
 
 type CommunityAssistantModalProps = {
@@ -102,7 +106,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
       const assistantResponse = await fetch('/api/search/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, context: buildContext(searchPayload) }),
+        body: JSON.stringify({ query, context: buildContext(searchPayload), history: messages.slice(-6).map(({ role, text }) => ({ role, text })) }),
       });
       const assistantPayload = await assistantResponse.json().catch(() => null);
       if (!assistantResponse.ok || !assistantPayload?.answer) throw new Error(assistantPayload?.error || 'Não foi possível gerar a resposta.');

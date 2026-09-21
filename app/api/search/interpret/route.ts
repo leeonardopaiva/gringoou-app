@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
-import { generateGeminiJson } from '@/lib/gemini';
+import { generateCommunityAiJson, isCommunityAiConfigured } from '@/lib/community-ai';
 
-const SEARCH_CATEGORIES = ['all', 'businesses', 'events', 'posts', 'people', 'groups', 'jobs', 'interests'] as const;
+const SEARCH_CATEGORIES = ['all', 'businesses', 'events', 'posts', 'people', 'groups', 'jobs', 'housing', 'interests'] as const;
+const DATE_SCOPES = ['future', 'today', 'weekend', 'ongoing', 'past', 'any'] as const;
 type SearchCategory = (typeof SEARCH_CATEGORIES)[number];
 
 const categoryAliases: Record<string, SearchCategory> = {
@@ -14,6 +15,7 @@ const categoryAliases: Record<string, SearchCategory> = {
   person: 'people', people: 'people', pessoa: 'people', pessoas: 'people',
   group: 'groups', groups: 'groups', grupo: 'groups', grupos: 'groups',
   job: 'jobs', jobs: 'jobs', vaga: 'jobs', vagas: 'jobs', emprego: 'jobs',
+  housing: 'housing', moradia: 'housing', moradias: 'housing', aluguel: 'housing', casa: 'housing', apartamento: 'housing',
   interest: 'interests', interests: 'interests', interesse: 'interests', interesses: 'interests',
 };
 
@@ -27,6 +29,8 @@ const normalizeAiFilters = (value: unknown, fallbackQuery: string) => {
   const rawCategory = cleanString(record.category, 40).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const category = categoryAliases[rawCategory] || 'all';
   const country = cleanString(record.country, 2).toUpperCase();
+  const rawDateScope = cleanString(record.dateScope, 20).toLowerCase();
+  const dateScope = DATE_SCOPES.includes(rawDateScope as (typeof DATE_SCOPES)[number]) ? rawDateScope : 'future';
 
   return {
     q: cleanString(record.q, 80) || fallbackQuery.slice(0, 80),
@@ -34,6 +38,8 @@ const normalizeAiFilters = (value: unknown, fallbackQuery: string) => {
     city: cleanString(record.city, 80),
     country: /^[A-Z]{2}$/.test(country) ? country : '',
     businessType: cleanString(record.businessType, 80),
+    dateScope,
+    propertyType: cleanString(record.propertyType, 80),
   };
 };
 
@@ -55,15 +61,13 @@ export async function POST(request: Request) {
   const query = typeof body?.query === 'string' ? body.query.trim().slice(0, 300) : '';
   if (!query) return NextResponse.json({ error: 'Descreva o que deseja encontrar.' }, { status: 400 });
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-  if (!apiKey) return NextResponse.json({ error: 'A busca com IA não está configurada no servidor.' }, { status: 503 });
+  if (!isCommunityAiConfigured()) return NextResponse.json({ error: 'A busca com IA não está configurada no servidor.' }, { status: 503 });
 
   try {
-    const response = await generateGeminiJson({
-      apiKey,
-      contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country e businessType. Categorias válidas: all, businesses, events, posts, people, groups, jobs, interests. Use country ISO-2. Não inclua dados não presentes na frase. Busca: ${JSON.stringify(query)}`,
+    const response = await generateCommunityAiJson({
+      contents: `Converta a busca abaixo em filtros da plataforma Gringoou. Retorne apenas JSON com q, category, city, country, businessType, propertyType e dateScope. Categorias válidas: all, businesses, events, posts, people, groups, jobs, housing, interests. dateScope válido: future, today, weekend, ongoing, past ou any. Use country ISO-2. Para eventos sem período explícito use future. Não inclua dados não presentes na frase. Busca: ${JSON.stringify(query)}`,
     });
-    return NextResponse.json({ filters: normalizeAiFilters(response.data, query), model: response.model });
+    return NextResponse.json({ filters: normalizeAiFilters(response.data, query), model: response.model, provider: response.provider });
   } catch (error) {
     console.error('Search interpretation failed:', error);
     return NextResponse.json({ filters: normalizeAiFilters({}, query), degraded: true });

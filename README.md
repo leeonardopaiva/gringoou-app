@@ -11,6 +11,10 @@
    `NEXTAUTH_SECRET=...`
    `GEMINI_API_KEY=...`
    `GEMINI_MODEL=gemini-3.6-flash`
+   `AI_PROVIDER=gemini`
+   Para usar Claude, altere para `AI_PROVIDER=claude` e configure:
+   `ANTHROPIC_API_KEY=...`
+   `CLAUDE_MODEL=claude-haiku-4-5-20251001`
 3. No Google Cloud Console, adicione `http://localhost:3000/api/auth/callback/google` em Authorized redirect URIs para testar localmente.
 4. Inicie em modo desenvolvimento:
    `npm run dev`
@@ -18,6 +22,7 @@
    `http://localhost:3000`
 
 > A chave do Gemini deve existir somente no servidor. Nunca use o prefixo `NEXT_PUBLIC_` para essa credencial.
+> A chave da Anthropic também deve existir somente no servidor. A troca de provedor não exige comentar ou alterar código.
 
 ## Modo de manutencao
 
