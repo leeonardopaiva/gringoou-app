@@ -265,6 +265,11 @@ const App: React.FC<{
     setRegistrationNotice(null);
 
     try {
+      // A tela de login representa troca de identidade, não vinculação de conta.
+      // Remover uma sessão residual evita o OAuthAccountNotLinked quando o
+      // navegador ainda carrega o JWT de outro usuário.
+      await signOut({ redirect: false });
+
       await signIn(
         'google',
         { callbackUrl: authCallbackUrl },
