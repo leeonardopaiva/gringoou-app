@@ -1,5 +1,4 @@
 import { createTransport } from 'nodemailer';
-import { join } from 'node:path';
 import type { SendVerificationRequestParams } from 'next-auth/providers/email';
 import { isDevAuthEnabled, normalizeMagicLinkEmail, saveDevMagicLink } from '@/lib/dev-magic-links';
 import { consumeRateLimit } from '@/lib/rate-limit';
@@ -72,7 +71,7 @@ const buildMagicLinkEmailHtml = (url: string) => {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;">
             <tr>
               <td align="center" style="padding:0 0 24px;">
-                <img src="cid:gringoou-logo" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
+                <img src="https://www.gringoou.com/assets/gringoou-logo.png" width="168" alt="Gringoou" style="display:block;width:168px;max-width:70%;height:auto;border:0;outline:none;text-decoration:none;">
               </td>
             </tr>
             <tr>
@@ -109,13 +108,6 @@ type TransactionalEmailInput = {
   text: string;
   html: string;
   devLabel?: string;
-  attachments?: Array<{ filename: string; path: string; cid: string }>;
-};
-
-const magicLinkLogoAttachment = {
-  filename: 'gringoou-logo.png',
-  path: join(process.cwd(), 'public', 'assets', 'gringoou-logo.png'),
-  cid: 'gringoou-logo',
 };
 
 export const sendTransactionalEmail = async ({
@@ -124,7 +116,6 @@ export const sendTransactionalEmail = async ({
   text,
   html,
   devLabel,
-  attachments,
 }: TransactionalEmailInput) => {
   if (isEmailServerConfigured) {
     const transport = createTransport(emailProviderServer);
@@ -134,7 +125,6 @@ export const sendTransactionalEmail = async ({
       subject,
       text,
       html,
-      attachments,
     });
 
     const failedRecipients = result.rejected.concat(result.pending).filter(Boolean);
@@ -167,7 +157,6 @@ export const sendMagicLinkPreviewEmail = async (to: string) => {
     text: buildMagicLinkEmailText(previewUrl),
     html: buildMagicLinkEmailHtml(previewUrl),
     devLabel: 'Prévia do magic link',
-    attachments: [magicLinkLogoAttachment],
   });
 };
 
@@ -200,6 +189,5 @@ export const sendMagicLinkVerification = async ({
     text: buildMagicLinkEmailText(url),
     html: buildMagicLinkEmailHtml(url),
     devLabel: 'Magic link',
-    attachments: [magicLinkLogoAttachment],
   });
 };
