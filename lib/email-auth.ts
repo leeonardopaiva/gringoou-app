@@ -98,6 +98,26 @@ const buildMagicLinkEmailHtml = (url: string) => {
 </html>`;
 };
 
+const buildPasswordResetEmailText = (url: string) =>
+  [
+    'Redefina sua senha da Gringoou',
+    '',
+    'Recebemos uma solicitação para redefinir sua senha.',
+    'Use o link abaixo para criar uma nova senha:',
+    url,
+    '',
+    'Este link expira em 30 minutos e só pode ser usado uma vez.',
+    'Se você não solicitou a alteração, ignore este e-mail.',
+  ].join('\n');
+
+const buildPasswordResetEmailHtml = (url: string) =>
+  buildMagicLinkEmailHtml(url)
+    .replaceAll('Confirme seu e-mail', 'Redefina sua senha')
+    .replace('Confirme seu e-mail para continuar.', 'Crie uma nova senha para continuar acessando sua conta.')
+    .replace('Confirmar E-mail', 'Redefinir senha')
+    .replace('O link expira em 15 minutos', 'O link expira em 30 minutos')
+    .replace('Se vocÃª nÃ£o solicitou este acesso', 'Se você não solicitou esta alteração');
+
 type TransactionalEmailInput = {
   to: string;
   subject: string;
@@ -185,5 +205,15 @@ export const sendMagicLinkVerification = async ({
     text: buildMagicLinkEmailText(url),
     html: buildMagicLinkEmailHtml(url),
     devLabel: 'Magic link',
+  });
+};
+
+export const sendPasswordResetEmail = async (to: string, url: string) => {
+  await sendTransactionalEmail({
+    to,
+    subject: 'Redefina sua senha no Gringoou',
+    text: buildPasswordResetEmailText(url),
+    html: buildPasswordResetEmailHtml(url),
+    devLabel: 'Redefinição de senha',
   });
 };

@@ -76,7 +76,7 @@ type RegistrationField =
   | 'confirmPassword'
   | 'captchaAnswer';
 
-type PasswordAuthView = 'none' | 'signin' | 'signup';
+type PasswordAuthView = 'none' | 'signin' | 'signup' | 'forgot' | 'reset';
 
 const fieldLabel = 'text-xs font-semibold uppercase tracking-[0.22em] text-slate-500';
 const inputClass =
@@ -131,6 +131,10 @@ const Registration: React.FC<RegistrationProps> = ({
     confirmPassword: '',
     captchaAnswer: '',
   });
+  const [passwordReset, setPasswordReset] = useState({ email: '', password: '', confirmPassword: '', token: '' });
+  const [passwordResetMessage, setPasswordResetMessage] = useState<string | null>(null);
+  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [captchaPrompt, setCaptchaPrompt] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
   const [loadingCaptcha, setLoadingCaptcha] = useState(false);
@@ -140,6 +144,17 @@ const Registration: React.FC<RegistrationProps> = ({
   const selectedCountry = findCountryByIso2(selectedCountryIso2);
   const passwordIssues = getPasswordValidationIssues(passwordSignUp.password);
   const showGoogleOnlyAuth = googleEnabled && !emailEnabled && !passwordEnabled;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('resetToken');
+    const email = params.get('email') || '';
+    if (token) {
+      setPasswordReset((current) => ({ ...current, token, email }));
+      setPasswordAuthView('reset');
+    }
+  }, []);
 
   useEffect(() => {
     const nextPhoneState = splitPhoneNumber(defaultValues?.phone);
@@ -321,16 +336,45 @@ const Registration: React.FC<RegistrationProps> = ({
   };
 
   const submitGoogleLogin = () => {
+    setGoogleSubmitting(true);
     onGoogleLogin();
   };
 
   const submitGoogleSelectAccount = () => {
+    setGoogleSubmitting(true);
     if (onGoogleSelectAccount) {
       onGoogleSelectAccount();
       return;
     }
 
     onGoogleLogin();
+  };
+
+  const requestPasswordReset = async () => {
+    if (!isValidEmail(passwordReset.email)) { setFieldErrors((current) => ({ ...current, email: 'Informe um email válido.' })); return; }
+    setPasswordResetLoading(true); setPasswordResetMessage(null);
+    try {
+      const response = await fetch('/api/auth/password-reset/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: passwordReset.email }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível solicitar a redefinição.');
+      setPasswordResetMessage(payload.message);
+    } catch (resetError) { setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível solicitar a redefinição.'); }
+    finally { setPasswordResetLoading(false); }
+  };
+
+  const confirmPasswordReset = async () => {
+    const issues = getPasswordValidationIssues(passwordReset.password);
+    if (issues.length) { setFieldErrors((current) => ({ ...current, password: issues[0] })); return; }
+    if (passwordReset.password !== passwordReset.confirmPassword) { setFieldErrors((current) => ({ ...current, confirmPassword: 'As senhas precisam ser iguais.' })); return; }
+    setPasswordResetLoading(true); setPasswordResetMessage(null);
+    try {
+      const response = await fetch('/api/auth/password-reset/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: passwordReset.token, password: passwordReset.password }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível redefinir a senha.');
+      setPasswordResetMessage(payload.message); setPasswordAuthView('signin'); setPasswordSignIn((current) => ({ ...current, email: passwordReset.email }));
+      window.history.replaceState({}, '', '/login');
+    } catch (resetError) { setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível redefinir a senha.'); }
+    finally { setPasswordResetLoading(false); }
   };
 
   const submitEmailLogin = async (email: string) => {
@@ -381,7 +425,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-base font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                   >
                     <GoogleIcon size={20} className="mr-2" />
-                    {submitting ? 'Entrando...' : 'Continuar com Google'}
+                    {googleSubmitting ? 'Entrando...' : 'Continuar com Google'}
                   </Button>
                 ) : null}
 
@@ -495,6 +539,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           className={inputClass}
                         />
                         <FieldErrorMessage message={fieldErrors.password} />
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
                       </>
                     ) : null}
 
@@ -533,6 +578,16 @@ const Registration: React.FC<RegistrationProps> = ({
                       </Button>
                     </div>
                   </form>
+                ) : null}
+
+                {passwordAuthView === 'forgot' || passwordAuthView === 'reset' ? (
+                  <div className="w-full max-w-[360px] space-y-3 pt-2">
+                    <div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div>
+                    {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
+                    {passwordResetMessage ? <div className="rounded-2xl bg-brand-50 p-3 text-sm font-medium text-brand-700">{passwordResetMessage}</div> : null}
+                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="rounded-full bg-brand-500 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                    <Button type="button" fullWidth variant="ghost" onPress={() => setPasswordAuthView('signin')} className="text-slate-500">Voltar ao login</Button>
+                  </div>
                 ) : null}
 
                 {passwordAuthView === 'signup' ? (
@@ -807,7 +862,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     onPress={submitGoogleLogin}
                     className="rounded-full bg-brand-500 font-semibold shadow-sm"
                   >
-                    {submitting ? 'Entrando...' : 'Continuar com Google'}
+                    {googleSubmitting ? 'Entrando...' : 'Continuar com Google'}
                   </Button>
                 ) : null}
 
@@ -984,6 +1039,8 @@ const Registration: React.FC<RegistrationProps> = ({
                           <FieldErrorMessage message={fieldErrors.password} />
                         </div>
 
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
+
                         <Button
                           type="submit"
                           fullWidth
@@ -998,6 +1055,15 @@ const Registration: React.FC<RegistrationProps> = ({
                           Ao se cadastrar, voce concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Politica de Privacidade</a>.
                         </p>
                       </form>
+                    ) : null}
+
+                    {passwordAuthView === 'forgot' || passwordAuthView === 'reset' ? (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" size="sm" variant="ghost" onPress={() => setPasswordAuthView('signin')} className="text-slate-500">Voltar</Button></div>
+                        {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
+                        {passwordResetMessage ? <div className="rounded-2xl bg-brand-50 p-3 text-sm font-medium text-brand-700">{passwordResetMessage}</div> : null}
+                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="rounded-full bg-brand-500 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                      </div>
                     ) : null}
 
                     {passwordAuthView === 'signup' ? (

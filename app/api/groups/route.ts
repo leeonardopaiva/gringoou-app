@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
-import { slugify, uniqueSlug } from '@/lib/slug';
+import { uniqueSlug } from '@/lib/slug';
 import { communityGroupSchema } from '@/lib/validators';
 
 export async function GET(request: Request) {
@@ -159,15 +159,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
   }
 
-  const baseSlug = slugify(parsed.data.name);
-  const slug =
-    baseSlug &&
-    !(await prisma.communityGroup.findUnique({
-      where: { slug: baseSlug },
-      select: { id: true },
-    }))
-      ? baseSlug
-      : uniqueSlug(parsed.data.name);
+  // Mantém a URL legível, mas inclui um código estável para impedir colisões
+  // mesmo quando grupos com o mesmo nome são criados simultaneamente.
+  const slug = uniqueSlug(parsed.data.name);
 
   const group = await prisma.communityGroup.create({
     data: {
