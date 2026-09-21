@@ -9,12 +9,15 @@
    `GOOGLE_CLIENT_ID=...`
    `GOOGLE_CLIENT_SECRET=...`
    `NEXTAUTH_SECRET=...`
-   `NEXT_PUBLIC_GEMINI_API_KEY=...`
+   `GEMINI_API_KEY=...`
+   `GEMINI_MODEL=gemini-2.5-flash`
 3. No Google Cloud Console, adicione `http://localhost:3000/api/auth/callback/google` em Authorized redirect URIs para testar localmente.
 4. Inicie em modo desenvolvimento:
    `npm run dev`
 5. Abra:
    `http://localhost:3000`
+
+> A chave do Gemini deve existir somente no servidor. Nunca use o prefixo `NEXT_PUBLIC_` para essa credencial.
 
 ## Modo de manutencao
 

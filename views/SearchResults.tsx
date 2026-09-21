@@ -25,6 +25,10 @@ type SearchResponse = {
   pagination: { page: number; pageSize: number; totalPages: number };
   intelligence: { enabled: boolean; used: boolean; summary: string | null; terms: string[] };
 };
+type AssistantResponse = {
+  answer: string;
+  references: Array<{ id: string; label: string; href: string; type: string }>;
+};
 
 const emptyResults: SearchResponse = {
   query: '', category: 'all', businesses: [], events: [], posts: [], people: [], groups: [], jobs: [], interests: [],
@@ -58,6 +62,14 @@ const buildAssistantSummary = (results: SearchResponse) => {
   return `Encontrei ${parts.slice(0, 3).join(', ')} relacionados ao seu pedido. Estas sugestões vêm dos dados publicados no Gringoou.`;
 };
 
+const buildAssistantContext = (results: SearchResponse) => [
+  ...results.businesses.map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: item.description || item.category, location: item.locationLabel, href: `/negocios/${item.slug}` })),
+  ...results.events.map((item) => ({ id: `event:${item.id}`, type: 'event', title: item.title, description: item.description, location: item.locationLabel, href: `/eventos/${item.slug}` })),
+  ...results.jobs.map((item) => ({ id: `job:${item.id}`, type: 'job', title: item.title, description: `${item.company} · ${item.employmentType}${item.salary ? ` · ${item.salary}` : ''}`, location: item.locationLabel, href: `/vagas/${item.id}` })),
+  ...results.groups.map((item) => ({ id: `group:${item.id}`, type: 'group', title: item.name, description: item.description || item.category || 'Grupo da comunidade', location: item.region?.label || item.countryCode, href: `/grupos/${item.slug}` })),
+  ...results.posts.map((item) => ({ id: `post:${item.id}`, type: 'post', title: item.author.name || 'Publicação da comunidade', description: item.content, location: item.locationLabel, href: `/community?post=${item.id}` })),
+].slice(0, 30).map((item) => ({ ...item, description: item.description.slice(0, 320) }));
+
 const SearchResults: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,6 +81,9 @@ const SearchResults: React.FC = () => {
   const assistantEnabled = params.get('assistant') === '1';
   const [results, setResults] = useState<SearchResponse>(emptyResults);
   const [loading, setLoading] = useState(false);
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  const [assistantResponse, setAssistantResponse] = useState<AssistantResponse | null>(null);
+  const [assistantError, setAssistantError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '' });
 
@@ -93,6 +108,34 @@ const SearchResults: React.FC = () => {
       .finally(() => { if (!ignore) setLoading(false); });
     return () => { ignore = true; };
   }, [paramsKey, queryFromUrl, showToast]);
+
+  useEffect(() => {
+    let ignore = false;
+    if (!assistantEnabled || !queryFromUrl || results.query !== queryFromUrl || loading) {
+      if (!assistantEnabled) setAssistantResponse(null);
+      return;
+    }
+
+    const context = buildAssistantContext(results);
+    setAssistantLoading(true);
+    setAssistantError(null);
+    fetch('/api/search/assistant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: queryFromUrl, context }),
+    })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.answer) throw new Error(payload?.error || 'O assistente não conseguiu responder.');
+        if (!ignore) setAssistantResponse(payload);
+      })
+      .catch((error) => {
+        if (!ignore) setAssistantError(error instanceof Error ? error.message : 'O assistente não conseguiu responder.');
+      })
+      .finally(() => { if (!ignore) setAssistantLoading(false); });
+
+    return () => { ignore = true; };
+  }, [assistantEnabled, loading, queryFromUrl, results]);
 
   const navigateWith = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
@@ -132,8 +175,12 @@ const SearchResults: React.FC = () => {
       {!loading && assistantEnabled && hasCriteria ? (
         <section className="rounded-[24px] border border-brand-100 bg-brand-50/70 p-4" aria-live="polite">
           <div className="flex items-center gap-2 text-sm font-bold text-brand-700"><Sparkles size={17} /> Assistente da comunidade</div>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{buildAssistantSummary(results)}</p>
-          <p className="mt-2 text-xs text-slate-500">O Gemini interpretou sua pergunta; os resultados e recomendações são obtidos diretamente da plataforma.</p>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+            {assistantLoading ? 'Analisando os resultados públicos da comunidade...' : assistantResponse?.answer || buildAssistantSummary(results)}
+          </p>
+          {assistantResponse?.references.length ? <div className="mt-3 flex flex-wrap gap-2">{assistantResponse.references.map((reference) => <Link key={reference.id} href={reference.href} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50">{reference.label}</Link>)}</div> : null}
+          {assistantError ? <p className="mt-2 text-xs text-amber-700">{assistantError} Exibindo o resumo local.</p> : null}
+          <p className="mt-2 text-xs text-slate-500">Resposta gerada pelo Gemini a partir de resultados públicos do Gringoou. Confirme informações importantes diretamente na página indicada.</p>
         </section>
       ) : null}
       {!loading && results.intelligence.used ? <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 p-4 text-sm text-violet-800"><p className="font-bold">Busca inteligente local</p><p className="mt-1">{results.intelligence.summary}</p></div> : null}
