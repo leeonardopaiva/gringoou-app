@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Briefcase,
   Calendar,
@@ -37,6 +38,8 @@ import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, 
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
+import RegionSelector from './RegionSelector';
+import { Modal } from './ui/Modal';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -312,6 +315,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   onSignOut,
 }) => {
   const { showToast } = useToast();
+  const { update: updateSession } = useSession();
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -321,6 +325,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [voiceAssistantRequest, setVoiceAssistantRequest] = useState<{ id: string; query: string } | null>(null);
+  const [isRegionSelectorOpen, setIsRegionSelectorOpen] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState({ key: user.regionKey || '', label: user.location });
+  const [activeRegion, setActiveRegion] = useState({ key: user.regionKey || '', label: user.location });
+  const [savingRegion, setSavingRegion] = useState(false);
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -335,7 +343,30 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const activeName = isProfessionalTheme && professionalIdentity ? professionalIdentity.name : user.name;
   const activeAvatar =
     isProfessionalTheme && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : user.avatar;
-  const shortRegionLabel = user.location?.split(',')[0]?.trim() || 'Região';
+  const shortRegionLabel = activeRegion.label?.split(',')[0]?.trim() || 'Região';
+
+  React.useEffect(() => {
+    setActiveRegion({ key: user.regionKey || '', label: user.location });
+  }, [user.location, user.regionKey]);
+
+  React.useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (connection?.saveData) return;
+
+    const prefetchCoreRoutes = () => {
+      ['/inicio', '/community', '/negocios', '/eventos', '/vagas', '/moradia'].forEach((href) => router.prefetch(href));
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(prefetchCoreRoutes, { timeout: 2500 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+    const timer = window.setTimeout(prefetchCoreRoutes, 1200);
+    return () => window.clearTimeout(timer);
+  }, [router]);
 
   React.useEffect(() => {
     if (pathname === '/buscar') {
@@ -355,6 +386,46 @@ const Layout: React.FC<LayoutWithUserProps> = ({
     const query = headerSearch.trim();
     setVoiceAssistantRequest(query ? { id: crypto.randomUUID(), query } : null);
     setIsAssistantOpen(true);
+  };
+
+  const openRegionSelector = () => {
+    setSelectedRegion(activeRegion);
+    setIsRegionSelectorOpen(true);
+  };
+
+  const saveRegion = async () => {
+    if (!selectedRegion.key || savingRegion) return;
+    if (selectedRegion.key === activeRegion.key) {
+      setIsRegionSelectorOpen(false);
+      return;
+    }
+
+    setSavingRegion(true);
+    try {
+      const response = await fetch('/api/profile/region', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regionKey: selectedRegion.key }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua região.');
+
+      const confirmedRegion = {
+        key: payload?.user?.regionKey || selectedRegion.key,
+        label: payload?.user?.locationLabel || selectedRegion.label,
+      };
+      setActiveRegion(confirmedRegion);
+      setSelectedRegion(confirmedRegion);
+      setIsRegionSelectorOpen(false);
+      showToast('Região atualizada. Carregando o conteúdo local...', 'success');
+
+      await updateSession();
+      router.refresh();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua região.', 'error');
+    } finally {
+      setSavingRegion(false);
+    }
   };
 
   return (
@@ -430,9 +501,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => router.push('/profile?edit=region')}
-                  aria-label={`Região da comunidade: ${user.location}`}
-                  title={`Alterar região: ${user.location}`}
+                  onClick={openRegionSelector}
+                  aria-label={`Região da comunidade: ${activeRegion.label}`}
+                  title={`Alterar região: ${activeRegion.label}`}
                   className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
@@ -443,9 +514,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               <div className="flex h-10 items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
-                  onClick={() => router.push('/profile?edit=region')}
-                  aria-label={`Alterar região da comunidade: ${user.location}`}
-                  title={`Alterar região: ${user.location}`}
+                  onClick={openRegionSelector}
+                  aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
+                  title={`Alterar região: ${activeRegion.label}`}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
@@ -539,6 +610,34 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             regionLabel={shortRegionLabel}
             onClose={() => setIsAssistantOpen(false)}
           />
+          <Modal
+            open={isRegionSelectorOpen}
+            onClose={() => {
+              if (!savingRegion) setIsRegionSelectorOpen(false);
+            }}
+            title="Alterar região"
+            description="Escolha a comunidade local que deseja acompanhar."
+            footer={
+              <>
+                <Button variant="ghost" onClick={() => setIsRegionSelectorOpen(false)} disabled={savingRegion}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => void saveRegion()} loading={savingRegion} disabled={!selectedRegion.key}>
+                  Confirmar região
+                </Button>
+              </>
+            }
+          >
+            <RegionSelector
+              value={selectedRegion.key}
+              onChange={(region) => setSelectedRegion({ key: region.key, label: region.label })}
+              autoDetect
+              inlineMenu
+              disabled={savingRegion}
+              label="Sua região"
+              hint="Pesquise pela cidade ou use sua localização atual."
+            />
+          </Modal>
         </div>
       </div>
     </div>

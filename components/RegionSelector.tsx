@@ -19,7 +19,29 @@ interface RegionSelectorProps {
   emptyLabel?: string;
   label?: string;
   hint?: string;
+  inlineMenu?: boolean;
 }
+
+let cachedRegions: RegionOption[] | null = null;
+let regionsRequest: Promise<RegionOption[]> | null = null;
+
+const loadRegions = async () => {
+  if (cachedRegions) return cachedRegions;
+  if (!regionsRequest) {
+    regionsRequest = fetch('/api/regions')
+      .then(async (response) => {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar regiões.');
+        const nextRegions = Array.isArray(payload?.regions) ? payload.regions : DEFAULT_REGION_OPTIONS;
+        cachedRegions = nextRegions;
+        return nextRegions;
+      })
+      .finally(() => {
+        regionsRequest = null;
+      });
+  }
+  return regionsRequest;
+};
 
 const RegionSelector: React.FC<RegionSelectorProps> = ({
   value,
@@ -31,9 +53,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   emptyLabel = 'Todas as regioes',
   label = 'Regiao',
   hint,
+  inlineMenu = false,
 }) => {
-  const [regions, setRegions] = useState<RegionOption[]>([]);
-  const [regionsLoaded, setRegionsLoaded] = useState(false);
+  const [regions, setRegions] = useState<RegionOption[]>(cachedRegions ?? []);
+  const [regionsLoaded, setRegionsLoaded] = useState(Boolean(cachedRegions));
   const [search, setSearch] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [locationNotice, setLocationNotice] = useState<string | null>(null);
@@ -44,17 +67,17 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   useEffect(() => {
     if (!open) return;
 
-    const handlePointerDown = (event: MouseEvent) => {
+    const handlePointerDown = (event: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
     };
 
-    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [open]);
@@ -64,16 +87,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
     const fetchRegions = async () => {
       try {
-        const response = await fetch('/api/regions', { cache: 'no-store' });
-        const payload = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar regioes.');
-        }
-
-        if (!ignore) {
-          setRegions(Array.isArray(payload?.regions) ? payload.regions : DEFAULT_REGION_OPTIONS);
-        }
+        const nextRegions = await loadRegions();
+        if (!ignore) setRegions(nextRegions);
       } catch (error) {
         console.error('Failed to load regions:', error);
 
@@ -188,7 +203,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-full z-[140] mt-2 w-full min-w-[280px] overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-lg">
+        <div className={`${inlineMenu ? 'relative' : 'absolute left-0 top-full z-[140]'} mt-2 w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-lg`}>
           <div className="relative">
             <input
               type="search"
