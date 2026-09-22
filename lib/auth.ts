@@ -12,6 +12,7 @@ import {
 } from '@/lib/email-auth';
 import { normalizeAuthEmail, verifyPassword } from '@/lib/password-auth';
 import { prisma } from '@/lib/prisma';
+import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -106,7 +107,16 @@ export const authOptions: NextAuthOptions = {
             server: emailProviderServer,
             from: emailFrom,
             maxAge: 15 * 60,
-            sendVerificationRequest: sendMagicLinkVerification,
+            sendVerificationRequest: async (params) => {
+              if (!isOperationalFeatureEnabled('registration')) {
+                const existingUser = await prisma.user.findUnique({
+                  where: { email: normalizeAuthEmail(params.identifier) },
+                  select: { id: true },
+                });
+                if (!existingUser) throw new Error('REGISTRATION_DISABLED');
+              }
+              await sendMagicLinkVerification(params);
+            },
           }),
         ]
       : []),
@@ -122,6 +132,14 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      if (!isOperationalFeatureEnabled('registration') && ['google', 'email'].includes(account?.provider || '')) {
+        const candidateEmail = normalizeAuthEmail(user.email || '');
+        const existingUser = candidateEmail
+          ? await prisma.user.findUnique({ where: { email: candidateEmail }, select: { id: true } })
+          : null;
+        if (!existingUser) return false;
+      }
+
       if (account?.provider === 'google') {
         const googleProfile = profile as { email?: string; email_verified?: boolean } | undefined;
         const verifiedEmail = googleProfile?.email_verified === true

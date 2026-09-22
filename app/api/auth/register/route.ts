@@ -6,6 +6,7 @@ import { getPasswordValidationIssues } from '@/lib/forms/password';
 import { hashPassword, normalizeAuthEmail } from '@/lib/password-auth';
 import { verifySimpleCaptcha } from '@/lib/simple-captcha';
 import { z } from 'zod';
+import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 const registerSchema = z.object({
   email: z.string().trim().email('Informe um email valido.'),
@@ -15,6 +16,13 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!isOperationalFeatureEnabled('registration')) {
+    return NextResponse.json(
+      { error: 'Novos cadastros estao temporariamente pausados.' },
+      { status: 503, headers: { 'Retry-After': '300' } },
+    );
+  }
+
   const rateLimit = await consumeRateLimit({
     scope: 'auth:register',
     key: getRateLimitKey(request),

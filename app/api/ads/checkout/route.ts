@@ -6,8 +6,16 @@ import { adCheckoutSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { canManageAdBilling } from '@/lib/ads/account';
+import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 export async function POST(request: Request) {
+  if (!isOperationalFeatureEnabled('adsCheckout')) {
+    return NextResponse.json(
+      { error: 'A contratacao de anuncios esta temporariamente pausada.' },
+      { status: 503, headers: { 'Retry-After': '300' } },
+    );
+  }
+
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

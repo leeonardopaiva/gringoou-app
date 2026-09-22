@@ -12,6 +12,8 @@ dist
 dist-ssr
 .next
 out
+playwright-report
+test-results
 *.local
 
 # Editor directories and files

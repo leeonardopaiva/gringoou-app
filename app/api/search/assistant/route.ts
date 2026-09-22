@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { generateCommunityAiJson, isCommunityAiConfigured } from '@/lib/community-ai';
+import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 const contextItemSchema = z.object({
   id: z.string().max(100),
@@ -59,6 +60,13 @@ const normalizeRequestPayload = (value: unknown) => {
 };
 
 export async function POST(request: Request) {
+  if (!isOperationalFeatureEnabled('aiAssistant')) {
+    return NextResponse.json(
+      { error: 'O assistente esta temporariamente pausado.' },
+      { status: 503, headers: { 'Retry-After': '300' } },
+    );
+  }
+
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
 

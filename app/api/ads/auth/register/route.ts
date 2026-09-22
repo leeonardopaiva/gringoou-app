@@ -6,6 +6,7 @@ import { hashPassword, normalizeAuthEmail } from '@/lib/password-auth';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { normalizeInternationalPhone } from '@/lib/phone';
+import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 const registerSchema = z.object({
   firstName: z.string().trim().min(2).max(60),
@@ -16,6 +17,13 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!isOperationalFeatureEnabled('registration')) {
+    return NextResponse.json(
+      { error: 'Novos cadastros estao temporariamente pausados.' },
+      { status: 503, headers: { 'Retry-After': '300' } },
+    );
+  }
+
   const rateLimit = await consumeRateLimit({ scope: 'ads:register', key: getRateLimitKey(request), max: 8, windowMs: 60 * 60 * 1000 });
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: 'Muitas tentativas. Aguarde antes de tentar novamente.' }, { status: 429, headers: buildRateLimitHeaders(rateLimit) });

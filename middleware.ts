@@ -12,6 +12,7 @@ const PUBLIC_ASSET_PREFIXES = [
   '/icon',
   '/apple-icon',
   '/manifest.webmanifest',
+  '/api/health',
 ];
 const PUBLIC_AUTH_PATHS = [
   '/api/auth',
@@ -24,6 +25,9 @@ const PUBLIC_AUTH_PATHS = [
   '/ads/register',
   '/api/ads/auth/register',
   '/api/dev/email-preview',
+  '/api/dev/magic-link',
+  '/api/dev/email-preview',
+  '/api/dev/magic-link',
 ];
 
 const isTruthyEnv = (value?: string | null) =>
@@ -81,6 +85,10 @@ const buildDeletedAccountResponse = (request: NextRequest) => {
 };
 
 export async function middleware(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production' && request.nextUrl.pathname.startsWith('/api/dev/')) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();
 
   if (!host || !REDIRECT_HOSTS.has(host)) {

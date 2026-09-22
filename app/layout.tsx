@@ -3,6 +3,7 @@ import { Sora } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
+import { Analytics } from '@vercel/analytics/next';
 
 const sora = Sora({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default async function RootLayout({
     <html lang="pt-BR">
       <body className={`${sora.className} ${sora.variable} bg-bg text-foreground`}>
         <Providers session={session}>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
