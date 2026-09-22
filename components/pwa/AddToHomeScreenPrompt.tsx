@@ -9,7 +9,10 @@ type InstallPromptEvent = Event & {
 };
 
 const DISMISSED_AT_KEY = 'gringoou:a2hs-dismissed-at';
+const ACCESS_COUNT_KEY = 'gringoou:a2hs-access-count';
+const SESSION_RECORDED_KEY = 'gringoou:a2hs-session-recorded';
 const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
+const SHOW_DELAY_MS = 6000;
 
 export default function AddToHomeScreenPrompt() {
   const [visible, setVisible] = useState(false);
@@ -24,15 +27,22 @@ export default function AddToHomeScreenPrompt() {
     const wasRecentlyDismissed = dismissedAt > 0 && Date.now() - dismissedAt < DISMISS_DURATION_MS;
     if (isStandalone || !isMobile || wasRecentlyDismissed) return;
 
+    let accessCount = Number(window.localStorage.getItem(ACCESS_COUNT_KEY) || 0);
+    if (!window.sessionStorage.getItem(SESSION_RECORDED_KEY)) {
+      accessCount += 1;
+      window.localStorage.setItem(ACCESS_COUNT_KEY, String(accessCount));
+      window.sessionStorage.setItem(SESSION_RECORDED_KEY, '1');
+    }
+    if (accessCount < 2) return;
+
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIos(ios);
 
-    const showTimer = window.setTimeout(() => setVisible(true), 1800);
+    const showTimer = window.setTimeout(() => setVisible(true), SHOW_DELAY_MS);
     const handleInstallPrompt = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as InstallPromptEvent);
-      setVisible(true);
     };
     const handleInstalled = () => {
       setVisible(false);

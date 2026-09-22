@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRef } from 'react';
 import { flushSync } from 'react-dom';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Copy, ExternalLink, Share2, UserPlus } from 'lucide-react';
+import { Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
 import CommunityComposer from '@/components/community/CommunityComposer';
 import FeedPostCard from '@/components/community/FeedPostCard';
 import type { ComposerMode } from '@/components/community/utils';
@@ -36,6 +37,7 @@ const Community: React.FC<{
   const [postContent, setPostContent] = useState('');
   const [postImageUrl, setPostImageUrl] = useState('');
   const [postExternalUrl, setPostExternalUrl] = useState('');
+  const [isComposerExpanded, setIsComposerExpanded] = useState(false);
   const [postPersonaMode, setPostPersonaMode] = useState<PersonaMode>(
     personaMode === 'professional' ? 'professional' : 'personal',
   );
@@ -230,6 +232,7 @@ const Community: React.FC<{
     setPostContent('');
     setPostImageUrl('');
     setPostExternalUrl('');
+    setIsComposerExpanded(false);
   };
 
   const handleComposerModeChange = (mode: ComposerMode) => {
@@ -795,74 +798,141 @@ const Community: React.FC<{
 
   return (
     <ContentColumn className="animate-in space-y-3 px-5 pb-20 pt-4 fade-in duration-500">
-      <div>
-        <CommunityComposer.Root>
-          <CommunityComposer.AuthorSwitch
-            value={postPersonaMode}
-            onChange={setPostPersonaMode}
-            personalName={user.name}
-            professionalName={professionalIdentity?.name}
-            professionalDisabled={!canPostAsProfessional}
-          />
-          <CommunityComposer.Editor
-            avatar={composerAvatar}
-            avatarHref={composerHref}
-            value={postContent}
-            onChange={setPostContent}
-            onKeyDown={handleComposerKeyDown}
-            placeholder={
-              composerMode === 'link'
-                ? 'Adicione uma descricao para o link...'
-                : composerMode === 'video'
-                  ? 'Adicione um contexto para o video...'
-                  : isProfessionalMode
-                    ? `Publique como ${composerName}...`
-                    : 'No que voce esta pensando?'
-            }
-          />
-          {isProfessionalMode ? (
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700">
-              Publicando como pagina profissional: {composerName}
+      <div className="flex flex-col gap-3">
+      <div className="order-2">
+        {isComposerExpanded ? (
+          <div
+            className="animate-in fade-in slide-in-from-top-1 duration-200"
+            onBlur={(event) => {
+              const nextFocusedElement = event.relatedTarget as Node | null;
+              if (!nextFocusedElement || !event.currentTarget.contains(nextFocusedElement)) {
+                setIsComposerExpanded(false);
+              }
+            }}
+          >
+            <CommunityComposer.Root>
+              <CommunityComposer.AuthorSwitch
+                value={postPersonaMode}
+                onChange={setPostPersonaMode}
+                personalName={user.name}
+                professionalName={professionalIdentity?.name}
+                professionalDisabled={!canPostAsProfessional}
+              />
+              <CommunityComposer.Editor
+                avatar={composerAvatar}
+                avatarHref={composerHref}
+                value={postContent}
+                onChange={setPostContent}
+                onKeyDown={handleComposerKeyDown}
+                autoFocus
+                placeholder={
+                  composerMode === 'link'
+                    ? 'Adicione uma descricao para o link...'
+                    : composerMode === 'video'
+                      ? 'Adicione um contexto para o video...'
+                      : isProfessionalMode
+                        ? `Publique como ${composerName}...`
+                        : 'No que voce esta pensando?'
+                }
+              />
+              {isProfessionalMode ? (
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700">
+                  Publicando como pagina profissional: {composerName}
+                </div>
+              ) : canPostAsProfessional ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-500">
+                  Publicando como pessoa. Troque para negocio quando a publicacao for comercial ou institucional.
+                </div>
+              ) : null}
+              <CommunityComposer.MediaField
+                mode={composerMode}
+                imageUrl={postImageUrl}
+                externalUrl={postExternalUrl}
+                onImageChange={setPostImageUrl}
+                onExternalChange={setPostExternalUrl}
+              />
+              <CommunityComposer.Actions
+                mode={composerMode}
+                onModeChange={handleComposerModeChange}
+                onPublish={handlePublish}
+              />
+            </CommunityComposer.Root>
+          </div>
+        ) : (
+          <div className="animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+              {composerHref ? (
+                <Link href={composerHref} aria-label={`Abrir perfil de ${composerName}`} className="shrink-0">
+                  <img src={composerAvatar} alt="" className="h-9 w-9 rounded-full object-cover" onError={handleAvatarError} />
+                </Link>
+              ) : (
+                <img src={composerAvatar} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" onError={handleAvatarError} />
+              )}
+              <button
+                type="button"
+                onClick={() => setIsComposerExpanded(true)}
+                className="h-10 min-w-0 flex-1 truncate rounded-full bg-slate-100 px-4 text-left text-sm text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+                aria-label={`Criar publicação como ${composerName}`}
+              >
+                {postContent.trim() || `Publique como ${composerName}...`}
+              </button>
+              <Button
+                iconOnly
+                size="sm"
+                aria-label="Escrever e publicar"
+                title="Publicar"
+                onClick={() => setIsComposerExpanded(true)}
+                className="shrink-0"
+              >
+                <Send size={16} aria-hidden="true" />
+              </Button>
             </div>
-          ) : canPostAsProfessional ? (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-500">
-              Publicando como pessoa. Troque para negocio quando a publicacao for comercial ou institucional.
-            </div>
-          ) : null}
-          <CommunityComposer.MediaField
-            mode={composerMode}
-            imageUrl={postImageUrl}
-            externalUrl={postExternalUrl}
-            onImageChange={setPostImageUrl}
-            onExternalChange={setPostExternalUrl}
-          />
-          <CommunityComposer.Actions
-            mode={composerMode}
-            onModeChange={handleComposerModeChange}
-            onPublish={handlePublish}
-          />
-        </CommunityComposer.Root>
+          </div>
+        )}
       </div>
 
-      <div>
-        <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-foreground">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
-            <UserPlus size={19} aria-hidden="true" />
+      <div className="order-1">
+        <div className="hidden" aria-hidden="true">
+          <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-foreground">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
+              <UserPlus size={19} aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-caption font-bold uppercase tracking-wide text-brand-600">Faça parte do Gringoou!</p>
+              <p className="mt-0.5 text-body-sm font-semibold leading-snug">Convide amigos para fortalecer a comunidade.</p>
+              <p className="mt-1 text-caption text-muted-foreground">{referralSummary.registrationCount} indicações confirmadas</p>
+            </div>
+            <div className="flex shrink-0 gap-1">
+              <Button iconOnly size="xs" variant="ghost" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
+                <Copy size={15} aria-hidden="true" />
+              </Button>
+              <Button iconOnly size="xs" variant="primary" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
+                <Share2 size={15} aria-hidden="true" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
+            <UserPlus size={16} aria-hidden="true" />
+          </span>
+          <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${referralSummary.registrationCount} indicações confirmadas`}>
+            {referralSummary.registrationCount}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-caption font-bold uppercase tracking-wide text-brand-600">Faça parte do Gringoou!</p>
-            <p className="mt-0.5 text-body-sm font-semibold leading-snug">Convide amigos para fortalecer a comunidade.</p>
-            <p className="mt-1 text-caption text-muted-foreground">{referralSummary.registrationCount} indicações confirmadas</p>
+            <p className="truncate text-xs font-bold text-white">Convide amigos para o Gringoou</p>
           </div>
-          <div className="flex shrink-0 gap-1">
-            <Button iconOnly size="xs" variant="ghost" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
-              <Copy size={15} aria-hidden="true" />
+          <div className="flex shrink-0 items-center gap-0.5">
+            <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
+              <Copy size={14} aria-hidden="true" />
             </Button>
-            <Button iconOnly size="xs" variant="primary" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
-              <Share2 size={15} aria-hidden="true" />
+            <Button iconOnly size="xs" variant="primary" className="!bg-white !text-brand-600" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
+              <Share2 size={14} aria-hidden="true" />
             </Button>
           </div>
         </div>
+      </div>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">

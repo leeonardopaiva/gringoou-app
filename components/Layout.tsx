@@ -40,7 +40,7 @@ import CommunityAssistantModal from './search/CommunityAssistantModal';
 import { buildSearchPath } from '../lib/search-navigation';
 
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   professional?: boolean;
   href?: string;
@@ -48,6 +48,7 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', professional = false, href = '/' }) => {
   const sizePx = {
+    xs: 24,
     sm: 28,
     md: 38,
     lg: 48,
@@ -389,48 +390,61 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
         <div className={`relative flex min-h-screen flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
           <header className="sticky top-0 z-40 border-b border-border/70 bg-bg/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-3 px-5 pb-3 pt-4 md:flex-nowrap md:py-4">
-            <div className="flex items-center gap-4 md:hidden">
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(true)}
-                className={`p-1 ${accentColorClass}`}
-              >
-                <Menu size={28} />
-              </button>
-              <Logo size="md" professional={isProfessionalTheme} href="/inicio" />
-            </div>
+            <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:flex-nowrap md:gap-y-2 md:px-5 md:py-4">
+              <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(true)}
+                  aria-label="Abrir menu de navegação"
+                  className={`shrink-0 rounded-full p-1.5 transition hover:bg-slate-100 ${accentColorClass}`}
+                >
+                  <Menu size={24} />
+                </button>
+                <div className="flex min-w-0 flex-col items-start">
+                  <Logo size="xs" professional={isProfessionalTheme} href="/inicio" />
+                  <button
+                    type="button"
+                    onClick={() => router.push('/profile?edit=region')}
+                    aria-label={`Alterar região da comunidade: ${user.location}`}
+                    title={`Alterar região: ${user.location}`}
+                    className="mt-1.5 flex max-w-[150px] items-center gap-1 text-[10px] font-medium leading-none text-slate-500 transition hover:text-brand-600 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                  >
+                    <MapPin size={11} className="shrink-0 text-brand-500" aria-hidden="true" />
+                    <span className="truncate">{shortRegionLabel}</span>
+                  </button>
+                </div>
+              </div>
 
-            <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
-              <div className="min-w-0 flex-1">
-                <UnifiedSearchInput
-                  value={headerSearch}
-                  onChange={setHeaderSearch}
-                  onSubmit={handleHeaderSearch}
-                  onFilterClick={() => setIsAssistantOpen(true)}
-                  staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
-                  className="h-11 shadow-none"
+              <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
+                <div className="min-w-0 flex-1">
+                  <UnifiedSearchInput
+                    value={headerSearch}
+                    onChange={setHeaderSearch}
+                    onSubmit={handleHeaderSearch}
+                    onFilterClick={() => setIsAssistantOpen(true)}
+                    staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
+                    className="h-10 shadow-none md:h-11"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push('/profile?edit=region')}
+                  aria-label={`Região da comunidade: ${user.location}`}
+                  title={`Alterar região: ${user.location}`}
+                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
+                >
+                  <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
+                  <span className="truncate">{shortRegionLabel}</span>
+                </button>
+              </div>
+
+              <div className="flex h-10 items-center gap-1.5 sm:gap-2">
+                <FriendRequestBell />
+                <CommunityAccountMenu
+                  user={{ name: user.name, avatar: user.avatar, email: user.email }}
+                  profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => router.push('/profile?edit=region')}
-                aria-label={`Região da comunidade: ${user.location}`}
-                title={`Alterar região: ${user.location}`}
-                className="flex h-10 max-w-[104px] shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:max-w-36"
-              >
-                <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
-                <span className="truncate">{shortRegionLabel}</span>
-              </button>
-            </div>
-
-            <div className="flex h-10 items-center gap-2">
-              <FriendRequestBell />
-              <CommunityAccountMenu
-                user={{ name: user.name, avatar: user.avatar, email: user.email }}
-                profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
-              />
-            </div>
             </div>
           </header>
 
@@ -444,10 +458,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             <div className="fixed inset-0 z-[55] md:hidden" onClick={() => setIsQuickMenuOpen(false)} />
           ) : null}
 
-          <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6 md:hidden">
-            <div className="relative flex w-full max-w-[360px] justify-center">
+          <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:hidden">
+            <div className="relative flex w-full max-w-[300px] justify-center">
               {isQuickMenuOpen ? (
-                <div className="absolute bottom-[72px] flex w-full flex-col items-stretch gap-2 rounded-3xl bg-white p-3 shadow-xl">
+                <div className="absolute bottom-[58px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -483,20 +497,20 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </div>
               ) : null}
 
-              <nav className="flex w-full items-center justify-between rounded-full bg-white px-2 py-2 shadow-xl">
-                <NavItem label="Home" icon={<HomeIcon size={20} />} active={isActive('/inicio')} onNavigate={() => handleNavigate('/inicio')} />
-                <NavItem label="Buscar" icon={<SearchIcon size={20} />} active={isActive('/buscar')} onNavigate={() => handleNavigate('/buscar')} />
+              <nav className="flex h-[52px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
+                <NavItem label="Home" icon={<HomeIcon size={18} />} active={isActive('/inicio')} onNavigate={() => handleNavigate('/inicio')} />
+                <NavItem label="Buscar" icon={<SearchIcon size={18} />} active={isActive('/buscar')} onNavigate={() => handleNavigate('/buscar')} />
 
                 <button
                   type="button"
                   onClick={() => setIsQuickMenuOpen((value) => !value)}
                   aria-label={isQuickMenuOpen ? 'Fechar menu de criacao' : 'Abrir menu de criacao'}
-                  className="-mt-9 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg ring-4 ring-white transition-transform hover:brightness-105 active:scale-95"
+                  className="-mt-6 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-md ring-[3px] ring-white transition-transform hover:brightness-105 active:scale-95"
                 >
-                  {isQuickMenuOpen ? <X size={22} /> : <Plus size={24} />}
+                  {isQuickMenuOpen ? <X size={19} /> : <Plus size={21} />}
                 </button>
 
-                <NavItem label="Comunidade" icon={<MessageCircle size={20} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
+                <NavItem label="Comunidade" icon={<MessageCircle size={18} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
                 <NavItem
                   label="Perfil"
                   icon={<Avatar src={activeAvatar} name={activeName} size="xs" />}
@@ -524,15 +538,15 @@ const NavItem: React.FC<{
   active: boolean;
   onNavigate: () => void;
 }> = ({ label, icon, active, onNavigate }) => (
-  <button type="button" onClick={onNavigate} className="flex w-12 flex-col items-center gap-1">
+  <button type="button" onClick={onNavigate} className="flex w-12 flex-col items-center gap-0.5 py-1">
     <span
-      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
         active ? 'bg-brand-100 text-brand-500' : 'text-slate-400'
       }`}
     >
       {icon}
     </span>
-    <span className={`text-[10px] leading-none ${active ? 'font-bold text-brand-500' : 'font-medium text-slate-400'}`}>
+    <span className={`text-[9px] leading-none ${active ? 'font-bold text-brand-500' : 'font-medium text-slate-400'}`}>
       {label}
     </span>
   </button>

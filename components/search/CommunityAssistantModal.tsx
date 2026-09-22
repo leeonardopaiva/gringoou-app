@@ -12,6 +12,7 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   text: string;
   references?: AssistantReference[];
+  suggestions?: string[];
   error?: boolean;
 };
 
@@ -31,14 +32,8 @@ const suggestions = [
   { title: 'Eventos para este fim de semana', category: 'Agenda local' },
 ];
 
-const followUpSuggestions = [
-  'Mostre as opções mais próximas',
-  'Quais têm melhores avaliações?',
-  'Existem outras opções na região?',
-];
-
 const looksLikeFollowUp = (query: string) =>
-  query.length < 90 && /^(mostre|quais|qual|onde|e |e as|e os|existem|tem |há |perto|mais |outras|outros|dessas|desses)/i.test(query.trim());
+  query.length < 150 && /^(mostre|quais|qual|onde|como|compare|detalhe|pode|conte|o que|e |e as|e os|existem|tem |há |perto|mais |outras|outros|dessas|desses)/i.test(query.trim());
 
 const buildContext = (results: SearchPayload) => [
   ...(results.businesses || []).slice(0, 5).map((item) => ({ id: `business:${item.id}`, type: 'business', title: item.name, description: `${item.description || item.category}${item.ratingCount ? ` · avaliação ${item.ratingAverage?.toFixed(1)}/5 (${item.ratingCount})` : ''}`, location: item.locationLabel, href: `/negocios/${item.slug}` })),
@@ -143,6 +138,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
         role: 'assistant',
         text: assistantPayload.answer,
         references: assistantPayload.references || [],
+        suggestions: assistantPayload.followUps || [],
       }]);
     } catch (error) {
       setMessages((current) => [...current, {
@@ -183,6 +179,8 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
   };
 
   if (!open) return null;
+  const latestAssistantSuggestions = [...messages].reverse()
+    .find((message) => message.role === 'assistant' && !message.error)?.suggestions || [];
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-white text-slate-900" role="dialog" aria-modal="true" aria-label="Assistente da comunidade">
@@ -233,7 +231,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
                   )}
                 </div>
               ))}
-              {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">O que mais você gostaria de saber? <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{followUpSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
+              {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error && latestAssistantSuggestions.length ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">Continue explorando <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{latestAssistantSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
               {loading ? <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-4 text-sm font-semibold text-slate-600"><LoaderCircle size={18} className="animate-spin text-brand-500" /> Consultando a comunidade...</div> : null}
               <div ref={endRef} />
             </div>

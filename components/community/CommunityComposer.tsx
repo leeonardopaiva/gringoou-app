@@ -21,6 +21,7 @@ type EditorProps = {
   onChange: (value: string) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   placeholder: string;
+  autoFocus?: boolean;
 };
 
 type AuthorSwitchProps = {
@@ -58,7 +59,7 @@ const Root: React.FC<RootProps> = ({ children }) => (
   </div>
 );
 
-const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, onKeyDown, placeholder }) => (
+const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, onKeyDown, placeholder, autoFocus }) => (
   <div className="flex items-center gap-3">
     {avatarHref ? (
       <Link href={avatarHref} className="transition hover:opacity-90">
@@ -69,6 +70,7 @@ const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, on
     )}
     <div className="min-w-0 flex-1">
       <textarea
+        autoFocus={autoFocus}
         rows={1}
         value={value}
         maxLength={COMMUNITY_POST_MAX_LENGTH}
