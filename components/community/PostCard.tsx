@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
   <div className="flex items-center justify-between">
     {authorHref ? (
       <Link href={authorHref} className="flex items-center gap-3 transition hover:opacity-90">
-        <img src={authorImage} className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+        <img src={authorImage} loading="lazy" decoding="async" className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-[13px] font-bold text-foreground">{authorName}</h5>
@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({
       </Link>
     ) : (
       <div className="flex items-center gap-3">
-        <img src={authorImage} className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+        <img src={authorImage} loading="lazy" decoding="async" className="h-9 w-9 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-[13px] font-bold text-foreground">{authorName}</h5>
@@ -361,10 +361,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
     <div className="flex gap-3">
       {authorHref ? (
         <Link href={authorHref} className="block transition hover:opacity-90">
-          <img src={authorImage} className="h-8 w-8 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+          <img src={authorImage} loading="lazy" decoding="async" className="h-8 w-8 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
         </Link>
       ) : (
-        <img src={authorImage} className="h-8 w-8 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
+        <img src={authorImage} loading="lazy" decoding="async" className="h-8 w-8 rounded-full object-cover" alt={authorName} onError={handleAvatarError} />
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">

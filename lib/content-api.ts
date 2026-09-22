@@ -7,6 +7,8 @@ type JsonResponse<T> = {
   error?: string;
 } & T;
 
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
 const fetchJson = async <T,>(url: string): Promise<JsonResponse<T>> => {
   const response = await fetch(url, { cache: 'no-store' });
   const payload = await response.json().catch(() => null);
@@ -16,6 +18,15 @@ const fetchJson = async <T,>(url: string): Promise<JsonResponse<T>> => {
   }
 
   return payload as JsonResponse<T>;
+};
+
+const fetchJsonDeduped = <T,>(url: string): Promise<JsonResponse<T>> => {
+  const existing = inFlightRequests.get(url) as Promise<JsonResponse<T>> | undefined;
+  if (existing) return existing;
+
+  const request = fetchJson<T>(url).finally(() => inFlightRequests.delete(url));
+  inFlightRequests.set(url, request);
+  return request;
 };
 
 export const loadRegionBanners = async (placement: 'home' | 'feed', regionKey?: string | null) => {
@@ -33,27 +44,32 @@ export const loadRegionCommunityPosts = async ({
   regionKey,
   limit = 5,
   offset = 0,
+  cursor,
 }: {
   regionKey?: string | null;
   limit?: number;
   offset?: number;
+  cursor?: string | null;
 }) => {
   if (!regionKey) {
-    return { posts: [] as Post[], hasMore: false, nextOffset: 0 };
+    return { posts: [] as Post[], hasMore: false, nextOffset: 0, nextCursor: null as string | null };
   }
 
   const query = new URLSearchParams({ region: regionKey, limit: String(limit), offset: String(offset) });
+  if (cursor) query.set('cursor', cursor);
 
-  const payload = await fetchJson<{
+  const payload = await fetchJsonDeduped<{
     posts?: Post[];
     hasMore?: boolean;
     nextOffset?: number;
+    nextCursor?: string | null;
   }>(`/api/community/posts?${query.toString()}`);
 
   return {
     posts: Array.isArray(payload.posts) ? payload.posts : [],
     hasMore: Boolean(payload.hasMore),
     nextOffset: Number(payload.nextOffset ?? offset),
+    nextCursor: payload.nextCursor ?? null,
   };
 };
 

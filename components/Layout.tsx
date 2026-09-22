@@ -329,6 +329,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const [selectedRegion, setSelectedRegion] = useState({ key: user.regionKey || '', label: user.location });
   const [activeRegion, setActiveRegion] = useState({ key: user.regionKey || '', label: user.location });
   const [savingRegion, setSavingRegion] = useState(false);
+  const [isNavigating, startNavigation] = React.useTransition();
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -379,7 +380,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
   const handleNavigate = (href: string) => {
     setIsMenuOpen(false);
-    router.push(href);
+    startNavigation(() => router.push(href));
   };
 
   const handleHeaderSearch = () => {
@@ -464,6 +465,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
         <div className={`relative flex min-h-screen flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
           <header className="sticky top-0 z-40 border-b border-border/70 bg-bg/95 backdrop-blur">
+            {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
             <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:flex-nowrap md:gap-y-2 md:px-5 md:py-4">
               <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">
                 <button

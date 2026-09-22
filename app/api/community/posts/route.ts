@@ -47,6 +47,7 @@ export async function GET(request: Request) {
     canManageGroup,
     limit: Number(searchParams.get('limit') ?? 20),
     offset: Number(searchParams.get('offset') ?? 0),
+    cursor: searchParams.get('cursor'),
   });
 
   return NextResponse.json(page);

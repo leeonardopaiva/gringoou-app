@@ -48,6 +48,7 @@ const Community: React.FC<{
   const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   const [postsHasMore, setPostsHasMore] = useState(initialData?.hasMore ?? true);
   const [postsNextOffset, setPostsNextOffset] = useState(initialData?.nextOffset ?? 0);
+  const [postsNextCursor, setPostsNextCursor] = useState<string | null>(initialData?.nextCursor ?? null);
   const [feedFilter, setFeedFilter] = useState<'recent' | 'mine' | 'saved'>('recent');
   const initialPageConsumedRef = useRef(false);
   const composerRef = useRef<HTMLDivElement>(null);
@@ -114,13 +115,14 @@ const Community: React.FC<{
 
 
   const loadPostsPage = useCallback(
-    async ({ offset, replace }: { offset: number; replace: boolean }) => {
+    async ({ offset, cursor, replace }: { offset: number; cursor?: string | null; replace: boolean }) => {
       if (!feedRegionKey) {
         setPosts([]);
         setPostsLoading(false);
         setLoadingMorePosts(false);
         setPostsHasMore(false);
         setPostsNextOffset(0);
+        setPostsNextCursor(null);
         return;
       }
 
@@ -135,17 +137,20 @@ const Community: React.FC<{
           regionKey: feedRegionKey,
           limit: 5,
           offset,
+          cursor: replace ? null : cursor,
         });
 
         setPosts((current) => (replace ? payload.posts : [...current, ...payload.posts]));
         setPostsHasMore(payload.hasMore);
         setPostsNextOffset(payload.nextOffset);
+        setPostsNextCursor(payload.nextCursor);
       } catch (error) {
         console.error('Failed to load community posts:', error);
         if (replace) {
           setPosts([]);
           setPostsHasMore(false);
           setPostsNextOffset(0);
+          setPostsNextCursor(null);
         }
       } finally {
         setPostsLoading(false);
@@ -161,7 +166,7 @@ const Community: React.FC<{
     setPosts([]);
     setPostsHasMore(true);
     setPostsNextOffset(0);
-    await loadPostsPage({ offset: 0, replace: true });
+    await loadPostsPage({ offset: 0, cursor: null, replace: true });
   }, [loadPostsPage]);
 
   const loadMorePosts = useCallback(async () => {
@@ -169,8 +174,8 @@ const Community: React.FC<{
       return;
     }
 
-    await loadPostsPage({ offset: postsNextOffset, replace: false });
-  }, [loadPostsPage, loadingMorePosts, postsHasMore, postsLoading, postsNextOffset]);
+    await loadPostsPage({ offset: postsNextOffset, cursor: postsNextCursor, replace: false });
+  }, [loadPostsPage, loadingMorePosts, postsHasMore, postsLoading, postsNextCursor, postsNextOffset]);
   useEffect(() => {
     if (!targetPostId) {
       return;
@@ -1022,20 +1027,37 @@ const Community: React.FC<{
           );
         })}
         {postsLoading ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-6 text-center text-sm font-medium text-slate-500">
-            Carregando publicacoes...
+          <div className="space-y-3" aria-label="Carregando publicações">
+            <CommunityFeedSkeleton />
+            <CommunityFeedSkeleton />
+            <CommunityFeedSkeleton />
           </div>
         ) : null}
         {loadingMorePosts ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-5 text-center text-xs font-semibold text-slate-500">
-            Carregando mais publicacoes...
-          </div>
+          <CommunityFeedSkeleton compact />
         ) : null}
         {postsHasMore ? <div ref={sentinelRef} className="h-1" aria-hidden="true" /> : null}
       </div>
     </ContentColumn>
   );
 };
+
+const CommunityFeedSkeleton: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
+  <div className="animate-pulse overflow-hidden rounded-card border border-slate-200/80 bg-white p-4" aria-hidden="true">
+    <div className="flex items-center gap-3">
+      <div className="h-10 w-10 rounded-full bg-slate-200" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 w-2/5 rounded-full bg-slate-200" />
+        <div className="h-2.5 w-1/4 rounded-full bg-slate-100" />
+      </div>
+    </div>
+    <div className="mt-4 space-y-2">
+      <div className="h-3 w-full rounded-full bg-slate-100" />
+      <div className="h-3 w-4/5 rounded-full bg-slate-100" />
+    </div>
+    {!compact ? <div className="mt-4 aspect-[16/8] rounded-2xl bg-slate-100" /> : null}
+  </div>
+);
 
 const ReferralInviteCard: React.FC<{
   registrationCount: number;

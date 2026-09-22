@@ -64,6 +64,8 @@ const Header: React.FC<HeaderProps> = ({
       <img
         src={avatarUrl}
         alt={avatarAlt}
+        loading="lazy"
+        decoding="async"
         onError={onAvatarError}
         className="h-10 w-10 shrink-0 rounded-full border border-slate-100 object-cover"
       />
@@ -110,7 +112,7 @@ const Content: React.FC<ContentProps> = ({ text, clampAt = 280, children, classN
 
 const Media: React.FC<MediaProps> = ({ src, alt, aspect = 'landscape', className, ...props }) => (
   <div className={cn('w-full overflow-hidden bg-bg', aspect === 'square' ? 'aspect-square' : 'aspect-[4/3]', className)} {...props}>
-    <img src={src} alt={alt} className="h-full w-full object-cover" />
+    <img src={src} alt={alt} loading="lazy" decoding="async" className="h-full w-full object-cover transition-opacity duration-300" />
   </div>
 );
 

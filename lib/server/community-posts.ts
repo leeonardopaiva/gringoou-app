@@ -13,6 +13,7 @@ export type CommunityPostsPage = {
   posts: Post[];
   hasMore: boolean;
   nextOffset: number;
+  nextCursor: string | null;
 };
 
 export function normalizeCommunityPagination(limit = DEFAULT_LIMIT, offset = 0) {
@@ -32,6 +33,7 @@ export async function getCommunityPostsPage({
   canManageGroup = false,
   limit = DEFAULT_LIMIT,
   offset = 0,
+  cursor,
 }: {
   session: Session | null;
   regionKey?: string | null;
@@ -41,6 +43,7 @@ export async function getCommunityPostsPage({
   canManageGroup?: boolean;
   limit?: number;
   offset?: number;
+  cursor?: string | null;
 }): Promise<CommunityPostsPage> {
   const pagination = normalizeCommunityPagination(limit, offset);
   const isAdmin = session?.user?.role === 'ADMIN';
@@ -72,9 +75,10 @@ export async function getCommunityPostsPage({
           }
         : {}),
     },
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take: pagination.limit + 1,
-    skip: pagination.offset,
+    skip: cursor ? 1 : pagination.offset,
+    ...(cursor ? { cursor: { id: cursor } } : {}),
     include: {
       author: { select: { id: true, name: true, username: true, image: true, locationLabel: true } },
       businessAuthor: { select: { id: true, name: true, slug: true, imageUrl: true, locationLabel: true } },
@@ -151,5 +155,6 @@ export async function getCommunityPostsPage({
     }),
     hasMore,
     nextOffset: pagination.offset + pagePosts.length,
+    nextCursor: hasMore ? pagePosts.at(-1)?.id ?? null : null,
   };
 }

@@ -10,6 +10,7 @@ export interface CommunityInitialData {
   posts: Post[];
   hasMore: boolean;
   nextOffset: number;
+  nextCursor?: string | null;
   regionKey: string;
 }
 
