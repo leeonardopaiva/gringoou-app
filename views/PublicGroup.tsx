@@ -280,20 +280,20 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
-            <div className={`relative h-60 sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+          <section className="rounded-[24px] border border-slate-200 bg-white shadow-sm">
+            <div className={`relative h-60 rounded-t-[23px] sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.coverImageUrl || group.imageUrl ? (
-                <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
+                <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full rounded-t-[23px] object-cover object-center" />
               ) : null}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-slate-950/10 to-transparent" />
-              {viewer ? <Dropdown
-                className="absolute right-4 top-4 z-20"
-                trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm" aria-label="Mais opções"><MoreHorizontal size={20} /></span>}
+              <div className="absolute inset-0 rounded-t-[23px] bg-gradient-to-t from-slate-950/50 via-slate-950/10 to-transparent" />
+              {viewer ? <div className="absolute right-5 top-5 z-30"><Dropdown
+                align="right"
+                trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm transition hover:bg-white" aria-label="Mais opções"><MoreHorizontal size={20} /></span>}
                 sections={[{ items: group.canManage
                   ? [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }]
                   : [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }]
                 }]}
-              /> : null}
+              /></div> : null}
               <div className="absolute bottom-5 left-5 right-5 text-white">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-card bg-surface text-xl font-bold text-brand-500">
                   {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
