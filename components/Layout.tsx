@@ -423,7 +423,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     onSubmit={handleHeaderSearch}
                     onFilterClick={() => setIsAssistantOpen(true)}
                     staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
-                    className="h-10 shadow-none md:h-11"
+                    className="h-12 shadow-none md:h-11"
                   />
                 </div>
                 <button

@@ -49,6 +49,7 @@ const Community: React.FC<{
   const [postsNextOffset, setPostsNextOffset] = useState(initialData?.nextOffset ?? 0);
   const [feedFilter, setFeedFilter] = useState<'recent' | 'mine' | 'saved'>('recent');
   const initialPageConsumedRef = useRef(false);
+  const composerRef = useRef<HTMLDivElement>(null);
   const pendingLikeIdsRef = useRef(new Set<string>());
   const targetPostAutoLoadAttemptsRef = useRef(0);
   const targetPostScrollIdRef = useRef<string | null>(null);
@@ -86,6 +87,19 @@ const Community: React.FC<{
   useEffect(() => {
     setPostPersonaMode(personaMode === 'professional' ? 'professional' : 'personal');
   }, [personaMode]);
+
+  useEffect(() => {
+    if (!isComposerExpanded) return;
+
+    const handleOutsideInteraction = (event: PointerEvent) => {
+      if (composerRef.current && !composerRef.current.contains(event.target as Node)) {
+        setIsComposerExpanded(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsideInteraction, true);
+    return () => document.removeEventListener('pointerdown', handleOutsideInteraction, true);
+  }, [isComposerExpanded]);
 
 
   const loadPostsPage = useCallback(
@@ -799,17 +813,9 @@ const Community: React.FC<{
   return (
     <ContentColumn className="animate-in space-y-3 px-5 pb-20 pt-4 fade-in duration-500">
       <div className="flex flex-col gap-3">
-      <div className="order-2">
+      <div ref={composerRef} className="order-2">
         {isComposerExpanded ? (
-          <div
-            className="animate-in fade-in slide-in-from-top-1 duration-200"
-            onBlur={(event) => {
-              const nextFocusedElement = event.relatedTarget as Node | null;
-              if (!nextFocusedElement || !event.currentTarget.contains(nextFocusedElement)) {
-                setIsComposerExpanded(false);
-              }
-            }}
-          >
+          <div className="animate-in fade-in slide-in-from-top-1 duration-200">
             <CommunityComposer.Root>
               <CommunityComposer.AuthorSwitch
                 value={postPersonaMode}
@@ -871,7 +877,7 @@ const Community: React.FC<{
               <button
                 type="button"
                 onClick={() => setIsComposerExpanded(true)}
-                className="h-10 min-w-0 flex-1 truncate rounded-full bg-slate-100 px-4 text-left text-sm text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+                className="h-11 min-w-0 flex-1 truncate rounded-full bg-slate-100 px-4 text-left text-sm text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
                 aria-label={`Criar publicação como ${composerName}`}
               >
                 {postContent.trim() || `Publique como ${composerName}...`}
@@ -879,9 +885,15 @@ const Community: React.FC<{
               <Button
                 iconOnly
                 size="sm"
-                aria-label="Escrever e publicar"
+                aria-label={postContent.trim() || postImageUrl || postExternalUrl ? 'Publicar rascunho' : 'Escrever publicação'}
                 title="Publicar"
-                onClick={() => setIsComposerExpanded(true)}
+                onClick={() => {
+                  if (postContent.trim() || postImageUrl || postExternalUrl) {
+                    void handlePublish();
+                    return;
+                  }
+                  setIsComposerExpanded(true);
+                }}
                 className="shrink-0"
               >
                 <Send size={16} aria-hidden="true" />
