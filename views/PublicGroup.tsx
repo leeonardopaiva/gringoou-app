@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Check, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UsersRound } from 'lucide-react';
+import { Ban, Check, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UserCog, UsersRound } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
 import type { User } from '../types';
 import { Modal } from '../components/ui/Modal';
+import { Dropdown } from '../components/ui/Dropdown';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
 import GroupFeed from '../components/groups/GroupFeed';
@@ -20,6 +21,7 @@ type GroupMember = {
     username?: string | null;
     image?: string | null;
     locationLabel?: string | null;
+    verified?: boolean;
   };
 };
 
@@ -105,6 +107,8 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reporting, setReporting] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
   const [moderatingMemberId, setModeratingMemberId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ name: '', description: '', category: '', imageUrl: '', coverImageUrl: '', regionKey: '', countryCode: 'US', isPublic: true });
 
@@ -211,6 +215,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível moderar este membro.');
       showToast(payload?.message || 'Participação atualizada.', 'success');
+      setSelectedMember(null);
       setRefreshKey((current) => current + 1);
     } catch (moderationError) { showToast(moderationError instanceof Error ? moderationError.message : 'Não foi possível moderar este membro.', 'error'); }
     finally { setModeratingMemberId(null); }
@@ -239,6 +244,8 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
   const wrapperClass = embedded
     ? 'mx-auto w-full max-w-[600px]'
     : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
+  const approvedMembers = group.members.filter((member) => member.status === 'APPROVED');
+  const previewMembers = approvedMembers.slice(0, 3);
 
   if (loading) {
     return (
@@ -274,15 +281,22 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
           <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
-            <div className={`relative h-44 sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+            <div className={`relative h-60 sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.coverImageUrl || group.imageUrl ? (
                 <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-slate-950/10 to-transparent" />
-              {viewer && !group.canManage ? <button type="button" onClick={() => setReportOpen(true)} className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm" aria-label="Mais opções"><MoreHorizontal size={20} /></button> : null}
+              {viewer ? <Dropdown
+                className="absolute right-4 top-4 z-20"
+                trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm" aria-label="Mais opções"><MoreHorizontal size={20} /></span>}
+                sections={[{ items: group.canManage
+                  ? [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }]
+                  : [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }]
+                }]}
+              /> : null}
               <div className="absolute bottom-5 left-5 right-5 text-white">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-card bg-surface text-xl font-bold text-brand-500">
-                  {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover" /> : getInitials(group.name)}
+                  {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{group.name}</h1>
                 <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
@@ -323,7 +337,6 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                     <UserCheck size={20} />
                     {membershipLoading ? 'Aguarde...' : group.viewerMembership?.status === 'APPROVED' ? 'Participando' : group.viewerMembership?.status === 'PENDING' ? 'Solicitação pendente' : group.viewerMembership?.status === 'BLOCKED' ? 'Participação bloqueada' : 'Participar'}
                   </button>
-                  {group.canManage ? <button type="button" onClick={openSettings} className="inline-flex min-h-12 items-center gap-2 rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-700"><Settings size={18} /> Configurações</button> : null}
                 </div>
               ) : (
                 <Link
@@ -339,51 +352,38 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
 
           {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">Conteúdo restrito</h2><p className="mt-2 text-sm text-amber-800">Sua solicitação precisa ser aprovada para acessar membros e publicações.</p></section> : null}
 
-          {group.canViewContent ? <section className="mt-5 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-bold text-slate-900">Membros</h2>
-              <span className="text-sm font-semibold text-slate-400">
-                {group.memberCount} pessoa{group.memberCount === 1 ? '' : 's'}
-              </span>
+          {group.canViewContent ? <section className="mt-5 rounded-[24px] border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div><h2 className="text-lg font-bold text-slate-900">Quem participa</h2><p className="mt-1 text-xs text-slate-500">{group.memberCount} membro{group.memberCount === 1 ? '' : 's'}</p></div>
+              {previewMembers.length ? <div className="flex items-start -space-x-2">{previewMembers.map((member) => <div key={member.id} className="relative z-10 w-14 text-center first:z-30 [&:nth-child(2)]:z-20"><Link href={member.user.username ? `/${member.user.username}` : '/'} className="block">{member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="mx-auto h-10 w-10 rounded-full border-2 border-white object-cover object-top shadow-sm" /> : <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-brand-100 text-xs font-bold text-brand-600 shadow-sm">{getInitials(member.user.name || 'Membro')}</span>}<span className="mt-1 block truncate text-[10px] font-semibold text-slate-600">{member.user.name?.split(' ')[0] || 'Membro'}</span></Link></div>)}<button type="button" onClick={() => setMembersOpen(true)} className="relative z-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-slate-600 shadow-sm" aria-label="Ver todos os membros"><MoreHorizontal size={18} /></button></div> : <button type="button" onClick={() => setMembersOpen(true)} className="text-xs font-bold text-brand-600">Ver membros</button>}
             </div>
-
-            {group.members.length === 0 ? (
-              <div className="mt-5 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-                Ainda nao ha membros visiveis neste grupo.
-              </div>
-            ) : (
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {group.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="rounded-[28px] border border-slate-100 bg-slate-50 p-4"
-                  >
-                    <Link href={member.user.username ? `/${member.user.username}` : '/'} className="flex items-center gap-4">
-                      {member.user.image ? (
-                        <img src={member.user.image} alt={member.user.name || 'Membro'} className="h-14 w-14 rounded-full object-cover" />
-                      ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-base font-bold text-brand-500">{getInitials(member.user.name || 'Membro')}</div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2"><p className="truncate text-base font-bold text-slate-900">{member.user.name || 'Membro'}</p>{member.role !== 'MEMBER' ? <ShieldCheck size={15} className="text-brand-500" /> : null}</div>
-                        <p className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">@{member.user.username || 'perfil'} · {member.status === 'PENDING' ? 'Pendente' : member.role}</p>
-                        {member.user.locationLabel ? <p className="mt-1 truncate text-sm text-slate-500">{member.user.locationLabel}</p> : null}
-                      </div>
-                    </Link>
-                    {group.canManage && member.role !== 'OWNER' ? <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-200 pt-3">
-                      {member.status === 'PENDING' ? <button type="button" disabled={moderatingMemberId === member.id} onClick={() => void moderateMember(member.id, 'approve')} className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700"><Check size={13} /> Aprovar</button> : null}
-                      {group.canManageAdmins && member.status === 'APPROVED' && member.role === 'MEMBER' ? <button type="button" disabled={moderatingMemberId === member.id} onClick={() => void moderateMember(member.id, 'promote')} className="rounded-full bg-brand-100 px-3 py-1.5 text-xs font-bold text-brand-700">Tornar admin</button> : null}
-                      {group.canManageAdmins && member.status === 'APPROVED' && member.role === 'ADMIN' ? <button type="button" disabled={moderatingMemberId === member.id} onClick={() => void moderateMember(member.id, 'demote')} className="rounded-full bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700">Remover admin</button> : null}
-                      <button type="button" disabled={moderatingMemberId === member.id} onClick={() => void moderateMember(member.id, 'block')} className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">Bloquear</button>
-                      <button type="button" disabled={moderatingMemberId === member.id} onClick={() => void moderateMember(member.id, 'remove')} className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700"><Trash2 size={13} /> Remover</button>
-                    </div> : null}
-                  </div>
-                ))}
-              </div>
-            )}
           </section> : null}
 
           {group.canViewContent ? <section className="mt-5 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm"><GroupFeed groupId={group.id} groupSlug={group.slug} user={viewer} canPost={Boolean(viewer && group.viewerMembership?.status === 'APPROVED')} /></section> : null}
+
+          <Modal open={membersOpen} onClose={() => setMembersOpen(false)} title="Membros do grupo" description={`${group.memberCount} pessoa${group.memberCount === 1 ? '' : 's'} participando.`} className="max-w-lg">
+            <div className="divide-y divide-slate-100">
+              {group.members.map((member) => <div key={member.id} className="flex items-center gap-3 py-3">
+                <Link href={member.user.username ? `/${member.user.username}` : '/'} onClick={() => setMembersOpen(false)} className="flex min-w-0 flex-1 items-center gap-3">
+                  {member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="h-11 w-11 shrink-0 rounded-full object-cover object-top" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-600">{getInitials(member.user.name || 'Membro')}</span>}
+                  <span className="min-w-0"><span className="flex items-center gap-1.5"><strong className="truncate text-sm text-slate-900">{member.user.name || 'Membro'}</strong>{member.user.verified ? <ShieldCheck size={15} className="shrink-0 fill-brand-500 text-white" aria-label="Perfil verificado" /> : null}</span><span className="mt-0.5 block truncate text-xs text-slate-500">{member.user.locationLabel || group.regionLabel || 'Região não informada'}</span></span>
+                </Link>
+                {member.status === 'PENDING' ? <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">Pendente</span> : null}
+                {group.canManage && member.role !== 'OWNER' ? <button type="button" onClick={() => setSelectedMember(member)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100" aria-label={`Ações para ${member.user.name || 'membro'}`}><MoreHorizontal size={19} /></button> : null}
+              </div>)}
+              {group.members.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Ainda não há membros visíveis neste grupo.</p> : null}
+            </div>
+          </Modal>
+
+          <Modal open={Boolean(selectedMember)} onClose={() => setSelectedMember(null)} title="Gerenciar membro" description={selectedMember?.user.name || 'Membro do grupo'} className="max-w-sm">
+            {selectedMember ? <div className="space-y-2">
+              {selectedMember.status === 'PENDING' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'approve')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"><Check size={17} /> Aprovar participação</button> : null}
+              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'MEMBER' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'promote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-brand-700 transition hover:bg-brand-50"><UserCog size={17} /> Tornar administrador</button> : null}
+              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'ADMIN' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'demote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-100"><UserCog size={17} /> Remover permissão de administrador</button> : null}
+              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'block')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-amber-700 transition hover:bg-amber-50"><Ban size={17} /> Bloquear membro</button>
+              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'remove')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-red-700 transition hover:bg-red-50"><Trash2 size={17} /> Remover do grupo</button>
+            </div> : null}
+          </Modal>
 
           <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Configurações do grupo" description="Edite identidade, localização e acesso.">
             <div className="space-y-4">

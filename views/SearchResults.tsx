@@ -83,7 +83,8 @@ const SearchResults: React.FC = () => {
   const paramsKey = searchParams?.toString() ?? '';
   const params = useMemo(() => new URLSearchParams(paramsKey), [paramsKey]);
   const queryFromUrl = params.get('q')?.trim() ?? '';
-  const activeTab = (params.get('category') || 'all') as SearchCategory;
+  const browseMode = params.get('browse') === '1';
+  const activeTab = (params.get(browseMode ? 'view' : 'category') || 'all') as SearchCategory;
   const assistantEnabled = params.get('assistant') === '1';
   const [results, setResults] = useState<SearchResponse>(emptyResults);
   const [loading, setLoading] = useState(false);
@@ -103,7 +104,7 @@ const SearchResults: React.FC = () => {
   }), [paramsKey]);
   useEffect(() => {
     let ignore = false;
-    const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
+    const hasCriteria = Boolean(params.get('browse') === '1' || queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
     if (!hasCriteria) { setResults(emptyResults); return; }
     setLoading(true);
     fetch(`/api/search?${paramsKey}`, { cache: 'no-store' })
@@ -156,7 +157,7 @@ const SearchResults: React.FC = () => {
     navigateWith({ region: null, country: null, city: null, businessType: null, propertyType: null, dateScope: null, page: null });
   };
   const visible = (category: Exclude<SearchCategory, 'all'>) => activeTab === 'all' || activeTab === category;
-  const hasCriteria = Boolean(queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
+  const hasCriteria = Boolean(params.get('browse') === '1' || queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
 
   return (
     <ContentColumn className="animate-in space-y-6 px-5 py-4 pb-24 fade-in duration-500">
@@ -176,7 +177,7 @@ const SearchResults: React.FC = () => {
       </section> : null}
 
       <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Categorias da busca">
-        {tabs.map((tab) => <button key={tab.id} type="button" onClick={() => navigateWith({ category: tab.id === 'all' ? null : tab.id, page: null })} className={`whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold ${activeTab === tab.id ? 'border-brand-500 bg-brand-500 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>{tab.label}{activeTab === tab.id && tab.id !== 'all' ? ` (${results.counts[tab.id]})` : ''}</button>)}
+        {tabs.map((tab) => <button key={tab.id} type="button" onClick={() => navigateWith(browseMode ? { view: tab.id === 'all' ? null : tab.id, category: null, page: null } : { category: tab.id === 'all' ? null : tab.id, page: null })} className={`whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold ${activeTab === tab.id ? 'border-brand-500 bg-brand-500 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>{tab.label} ({tab.id === 'all' ? results.counts.total : results.counts[tab.id]})</button>)}
       </nav>
 
       {!hasCriteria ? <EmptyState text="Digite um termo ou selecione filtros para buscar no app." /> : null}

@@ -144,7 +144,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     <ContentColumn className="animate-in space-y-5 px-5 pb-28 pt-4 fade-in slide-in-from-bottom-4 duration-500 md:pb-8">
       <div className="flex items-center justify-between">
         <h3 className="text-body-sm font-bold text-text">Categorias</h3>
-        <button type="button" onClick={() => router.push('/buscar')} className="text-body-sm font-semibold text-brand-500">
+        <button type="button" onClick={() => router.push('/buscar?browse=1')} className="text-body-sm font-semibold text-brand-500">
           Ver todas
         </button>
       </div>

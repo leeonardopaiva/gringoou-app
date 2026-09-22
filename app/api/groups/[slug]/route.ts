@@ -18,7 +18,7 @@ export async function GET(_request: Request, context: RouteContext) {
       region: { select: { label: true } },
       members: {
         orderBy: [{ createdAt: 'asc' }], take: 100,
-        select: { id: true, role: true, status: true, createdAt: true, user: { select: { id: true, name: true, username: true, image: true, locationLabel: true } } },
+        select: { id: true, role: true, status: true, createdAt: true, user: { select: { id: true, name: true, username: true, image: true, locationLabel: true, emailVerified: true, recruiterVerified: true } } },
       },
       _count: { select: { members: { where: { status: CommunityGroupMembershipStatus.APPROVED } }, posts: { where: { status: 'PUBLISHED' } } } },
     },
@@ -44,7 +44,7 @@ export async function GET(_request: Request, context: RouteContext) {
       createdAt: group.createdAt, memberCount: group._count.members, postCount: group._count.posts,
       publicPath: `/grupos/${group.slug}`, canViewContent, canManage, canManageAdmins,
       viewerMembership: viewerMembership ? { id: viewerMembership.id, role: viewerMembership.role, status: viewerMembership.status } : null,
-      members: canViewContent ? group.members.filter((member) => canManage || member.status === CommunityGroupMembershipStatus.APPROVED).map((member) => ({ id: member.id, role: member.role, status: member.status, joinedAt: member.createdAt, user: member.user })) : [],
+      members: canViewContent ? group.members.filter((member) => canManage || member.status === CommunityGroupMembershipStatus.APPROVED).map((member) => ({ id: member.id, role: member.role, status: member.status, joinedAt: member.createdAt, user: { id: member.user.id, name: member.user.name, username: member.user.username, image: member.user.image, locationLabel: member.user.locationLabel, verified: Boolean(member.user.emailVerified || member.user.recruiterVerified) } })) : [],
     },
   });
 }
