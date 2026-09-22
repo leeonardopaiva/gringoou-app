@@ -313,7 +313,15 @@ const App: React.FC<{
     session?.user,
   ]);
 
-  const requestMagicLink = async (email: string, isLocalTest = false) => {
+  const getMagicLinkErrorMessage = (error?: string | null) => {
+    if (error === 'EmailSignin') {
+      return 'Sua conta foi criada, mas não conseguimos enviar o e-mail de confirmação agora. Aguarde alguns minutos e tente entrar com e-mail novamente.';
+    }
+
+    return 'Não foi possível enviar o link de acesso. Tente novamente em alguns minutos.';
+  };
+
+  const requestMagicLink = async (email: string, isLocalTest = false, preserveNotice = false) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
@@ -322,7 +330,7 @@ const App: React.FC<{
     }
 
     setRegistrationError(null);
-    setRegistrationNotice(null);
+    if (!preserveNotice) setRegistrationNotice(null);
     setAuthSubmitting(true);
 
     try {
@@ -333,7 +341,7 @@ const App: React.FC<{
       });
 
       if (!result || result.error) {
-        setRegistrationError(result?.error || 'Nao foi possivel enviar o link de acesso.');
+        setRegistrationError(getMagicLinkErrorMessage(result?.error));
         return;
       }
 
@@ -351,7 +359,7 @@ const App: React.FC<{
       );
     } catch (error) {
       console.error('Email sign-in failed:', error);
-      setRegistrationError('Nao foi possivel enviar o link de acesso.');
+      setRegistrationError(getMagicLinkErrorMessage());
     } finally {
       setAuthSubmitting(false);
     }
@@ -425,12 +433,20 @@ const App: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setRegistrationError(payload?.error ?? 'Nao foi possivel criar a conta.');
+        if (response.status === 409) {
+          setRegistrationError('Já existe uma conta com este e-mail. Entre com a sua conta ou use "Esqueci minha senha" para definir uma nova senha.');
+        } else if (response.status === 429) {
+          setRegistrationError('Você fez muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.');
+        } else if (response.status === 503) {
+          setRegistrationError('Os novos cadastros estão temporariamente indisponíveis. Tente novamente mais tarde.');
+        } else {
+          setRegistrationError(payload?.error ?? 'Não foi possível criar a conta.');
+        }
         return;
       }
 
       setRegistrationNotice(payload?.message ?? 'Conta criada. Enviando confirmação...');
-      await requestMagicLink(values.email);
+      await requestMagicLink(values.email, false, true);
     } catch (error) {
       console.error('Password registration failed:', error);
       setRegistrationError('Nao foi possivel criar a conta.');
