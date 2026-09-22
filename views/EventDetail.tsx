@@ -3,10 +3,12 @@ import {
   CalendarDays,
   Clock3,
   Copy,
+  ExternalLink,
   Globe2,
   Heart,
   Images,
   MapPin,
+  MoreHorizontal,
   PencilLine,
   Share2,
   X,
@@ -20,6 +22,8 @@ import { User } from '../types';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
+import { notifyContentUpdated } from '../lib/content-refresh';
+import { Dropdown } from '../components/ui/Dropdown';
 
 interface EventDetailProps {
   eventId?: string;
@@ -286,6 +290,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
       setCoverDraft(nextImageUrl);
       setGalleryDraft(nextGalleryUrls);
       setEditingMedia(false);
+      notifyContentUpdated();
       showToast('Capa e galeria do evento atualizadas.', 'success');
     } catch (error) {
       console.error('Failed to save event media:', error);
@@ -319,22 +324,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        {event.canEdit ? (
-          <button
-            type="button"
-            onClick={() => {
-              setCoverDraft(event.imageUrl);
-              setGalleryDraft(event.galleryUrls);
-              setEditingMedia(true);
-            }}
-            className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
-            aria-label="Editar capa e galeria"
-          >
-            <PencilLine size={18} />
-          </button>
-        ) : null}
+        {event.canEdit ? <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
 
         <div className="absolute right-4 top-4 flex gap-2">
+          {event.canEdit ? <Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações do evento', items: [
+            { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
+            { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
+          ] }]} /> : null}
           <button
             type="button"
             onClick={() => void handleFavoriteToggle()}
@@ -361,20 +357,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
               Evento
             </div>
 
-            {event.canEdit ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setCoverDraft(event.imageUrl);
-                  setGalleryDraft(event.galleryUrls);
-                  setEditingMedia(true);
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                aria-label="Editar imagens"
-              >
-                <PencilLine size={15} />
-              </button>
-            ) : null}
           </div>
 
           <h1 className="mt-3 text-3xl font-bold leading-tight text-white">{event.title}</h1>
@@ -495,20 +477,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
               Galeria
             </div>
 
-            {event.canEdit ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setCoverDraft(event.imageUrl);
-                  setGalleryDraft(event.galleryUrls);
-                  setEditingMedia(true);
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-                aria-label="Editar galeria"
-              >
-                <PencilLine size={17} />
-              </button>
-            ) : null}
           </div>
 
           {galleryImages.length === 0 ? (

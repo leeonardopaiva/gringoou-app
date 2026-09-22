@@ -40,6 +40,7 @@ import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
 import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
+import { onContentUpdated } from '@/lib/content-refresh';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -349,6 +350,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   React.useEffect(() => {
     setActiveRegion({ key: user.regionKey || '', label: user.location });
   }, [user.location, user.regionKey]);
+
+  React.useEffect(() => onContentUpdated((detail) => {
+    if (detail.refreshSession) void updateSession();
+    router.refresh();
+  }), [router, updateSession]);
 
   React.useEffect(() => {
     const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;

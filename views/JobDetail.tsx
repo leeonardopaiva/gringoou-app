@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, ExternalLink, MapPin, PencilLine, Phone, WalletCards } from 'lucide-react';
+import { ArrowLeft, Briefcase, ExternalLink, MapPin, MoreHorizontal, PencilLine, Phone, WalletCards } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import ImageGalleryField from '@/components/forms/ImageGalleryField';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
+import { notifyContentUpdated } from '@/lib/content-refresh';
+import { Dropdown } from '@/components/ui/Dropdown';
 
 type Job = {
   id: string;
@@ -92,6 +94,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar a vaga.');
       setJob((current) => (current ? { ...current, ...payload.job, canEdit: current.canEdit } : current));
       setEditing(false);
+      notifyContentUpdated();
       showToast('Vaga atualizada.', 'success');
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a vaga.', 'error');
@@ -123,11 +126,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <Link href="/vagas" className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur"><ArrowLeft size={18} /></Link>
-        {job.canEdit ? (
-          <button type="button" onClick={openEditor} className="absolute right-4 top-4 z-10 inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-xs font-bold backdrop-blur transition hover:bg-white/25">
-            <PencilLine size={15} /> Editar
-          </button>
-        ) : null}
+        {job.canEdit ? <Dropdown align="right" className="absolute right-4 top-4 z-10" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /> : null}
         <div className="relative">
           <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>
           <h1 className="mt-4 text-3xl font-bold">{job.title}</h1>
@@ -143,7 +142,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         <section className="border-t border-border pt-6">
           <h2 className="text-h3 font-bold">Sobre a vaga</h2>
           <p className="mt-3 whitespace-pre-wrap text-body-sm leading-7 text-muted-foreground">{job.description}</p>
-          <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>
+          <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>{job.canEdit ? <span className="mt-3 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">Você é proprietário</span> : null}
         </section>
         {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
         {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}

@@ -17,6 +17,7 @@ import { PersonaMode, ProfessionalProfileSummary, ReferralSummary, User } from '
 import type { ProfileInitialData } from '../lib/content-contracts';
 import { Modal } from '../components/ui/Modal';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import { notifyContentUpdated } from '../lib/content-refresh';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-foreground';
@@ -343,6 +344,7 @@ const Profile: React.FC<{
       setInterestDrafts(persistedProfile.interests || []);
       setGalleryDraft(persistedProfile.galleryUrls || []);
       await update();
+      notifyContentUpdated({ refreshSession: true });
       if (editKey) setEditing((current) => ({ ...current, [editKey]: false }));
       showToast(message, 'success');
     } catch (error) {
@@ -367,6 +369,7 @@ const Profile: React.FC<{
       setProfile((current) => ({ ...current, image: nextImage }));
       setAvatarDraft(nextImage);
       await update();
+      notifyContentUpdated({ refreshSession: true });
       setEditing((current) => ({ ...current, avatar: false }));
       showToast('Foto do perfil atualizada.', 'success');
     } catch (error) {

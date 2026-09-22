@@ -11,6 +11,7 @@ import {
   MapPin,
   Megaphone,
   MessageCircle,
+  MoreHorizontal,
   PencilLine,
   Phone,
   Share2,
@@ -28,6 +29,8 @@ import { CharacterCounter } from '../components/ui/CharacterCounter';
 import { PublicLinksBlock } from '../components/profile/PublicLinksBlock';
 import { BusinessPostsPanel } from '../components/business/BusinessPostsPanel';
 import { ImageLightbox } from '../components/community/ImageLightbox';
+import { notifyContentUpdated } from '../lib/content-refresh';
+import { Dropdown } from '../components/ui/Dropdown';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -294,6 +297,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       setBusiness(updatedBusiness);
       syncDrafts(updatedBusiness);
       setIsEditModalOpen(false);
+      notifyContentUpdated();
       showToast('Negócio atualizado com sucesso.', 'success');
     } catch (error) {
       console.error('Failed to save business:', error);
@@ -412,22 +416,23 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
     <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card sm:border sm:border-slate-200">
       {managementMode ? (
         <div className="space-y-4 border-b border-slate-200 bg-slate-50 p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-500">Centro do Negócio</p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900">Gerenciar {business.name}</h1>
-              <p className="mt-1 text-sm text-slate-500">Edite sua página, acompanhe publicações e promova o negócio.</p>
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-700"><BadgeCheck size={14} /> Você é proprietário</div>
+              <h1 className="mt-3 text-2xl font-bold text-slate-900">{business.name}</h1>
+              <p className="mt-1 text-sm text-slate-500">Gerencie sua página e acompanhe suas publicações.</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Link href={business.publicPath} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700">
-                <ExternalLink size={15} />
-                Ver página pública
-              </Link>
-              <button type="button" onClick={() => handleOpenEditModal('info')} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-4 text-xs font-bold text-white">
-                <PencilLine size={15} />
-                Editar perfil
-              </button>
-            </div>
+            <Dropdown
+              align="right"
+              trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100"><MoreHorizontal size={20} /></span>}
+              sections={[{ heading: 'Ações do negócio', items: [
+                { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(business.publicPath) },
+                { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => handleOpenEditModal('info') },
+                { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => handleOpenEditModal('media') },
+                { label: 'Editar contato', icon: <Phone size={16} />, onClick: () => handleOpenEditModal('contact') },
+                ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => window.location.assign(`/ads/promover/${business.id}`) }] : []),
+              ] }]}
+            />
           </div>
           <PublicLinksBlock links={[{ id: business.id, label: business.name, path: business.publicPath }]} />
         </div>
@@ -435,17 +440,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-        {business.canEdit && managementMode ? (
-          <button
-            type="button"
-            onClick={() => handleOpenEditModal('media')}
-            className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
-            aria-label="Editar capa e galeria"
-          >
-            <PencilLine size={18} />
-          </button>
-        ) : null}
 
         <div className="absolute right-4 top-4 flex gap-2">
           <button
@@ -475,16 +469,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               {business.category}
             </div>
 
-            {business.canEdit && managementMode ? (
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal('info')}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
-                aria-label="Editar informações"
-              >
-                <PencilLine size={15} />
-              </button>
-            ) : null}
           </div>
 
           <h1 className="mt-3 text-3xl font-bold leading-tight text-white">{business.name}</h1>
@@ -515,16 +499,11 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Share2 size={14} />Compartilhar</button>
             <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
           </div>
-          {business.canEdit && managementMode && business.status === 'PUBLISHED' ? (
-            <Link href={`/ads/promover/${business.id}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-sm">
-              <Megaphone size={17} />
-              Promover este negócio com Ads
-            </Link>
-          ) : business.canEdit && !managementMode ? (
-            <Link href={`/negocios/${business.slug || business.id}/gerenciar`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-sm">
-              <PencilLine size={17} />
-              Gerenciar página do negócio
-            </Link>
+          {business.canEdit && !managementMode ? (
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-brand-100 bg-white px-4 py-3">
+              <span className="inline-flex items-center gap-2 text-xs font-bold text-brand-700"><BadgeCheck size={16} /> Você é proprietário</span>
+              <Dropdown align="right" trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do negócio', items: [{ label: 'Gerenciar página', icon: <PencilLine size={16} />, onClick: () => window.location.assign(`/negocios/${business.slug || business.id}/gerenciar`) }] }]} />
+            </div>
           ) : null}
         </div>
 
@@ -582,16 +561,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               Contato
             </div>
 
-            {business.canEdit && managementMode ? (
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal('contact')}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-                aria-label="Editar contato"
-              >
-                <PencilLine size={17} />
-              </button>
-            ) : null}
           </div>
 
           {business.phone ? (
@@ -631,16 +600,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               Endereço
             </div>
 
-            {business.canEdit && managementMode ? (
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal('info')}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-                aria-label="Editar informações"
-              >
-                <PencilLine size={17} />
-              </button>
-            ) : null}
           </div>
 
           <p className="theme-text text-base font-bold">{business.address}</p>
@@ -687,16 +646,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               Galeria
             </div>
 
-            {business.canEdit && managementMode ? (
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal('media')}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
-                aria-label="Editar galeria"
-              >
-                <PencilLine size={17} />
-              </button>
-            ) : null}
           </div>
 
           {galleryImages.length === 0 ? (

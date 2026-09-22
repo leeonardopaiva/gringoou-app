@@ -9,6 +9,7 @@ import { Dropdown } from '../components/ui/Dropdown';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
 import GroupFeed from '../components/groups/GroupFeed';
+import { notifyContentUpdated } from '../lib/content-refresh';
 
 type GroupMember = {
   id: string;
@@ -202,6 +203,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       showToast(payload?.message || 'Grupo atualizado.', 'success');
       setSettingsOpen(false);
       setRefreshKey((current) => current + 1);
+      notifyContentUpdated();
     } catch (settingsError) { showToast(settingsError instanceof Error ? settingsError.message : 'Não foi possível atualizar o grupo.', 'error'); }
     finally { setSavingSettings(false); }
   };
