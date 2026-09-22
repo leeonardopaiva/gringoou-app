@@ -203,8 +203,8 @@ const SidebarContent: React.FC<{
                     value={personaMode}
                     onChange={onPersonaModeChange}
                     personalSubtitle={user.username ? `@${user.username}` : 'Membro da comunidade'}
-                    professionalSubtitle={professionalIdentity?.name || 'Cadastre um negocio'}
-                    professionalDisabled={!professionalIdentity}
+                    professionalSubtitle={professionalIdentity?.name || professionalBusinesses[0]?.name || 'Cadastre um negócio'}
+                    professionalDisabled={professionalBusinesses.length === 0}
                     businesses={professionalBusinesses}
                     selectedBusinessId={professionalIdentity?.id}
                     onBusinessChange={onProfessionalBusinessChange}

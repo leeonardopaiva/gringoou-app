@@ -106,10 +106,12 @@ const App: React.FC<{
   const autoGoogleSelectTriggeredRef = useRef(false);
   const sessionRole = mapUserRole(session?.user?.role);
   const accountDeleted = Boolean(session?.user?.accountDeleted);
+  const hasProfessionalBusinesses = professionalBusinesses.length > 0;
   const canUseProfessionalMode =
     sessionRole === UserRole.BUSINESS_OWNER ||
     sessionRole === UserRole.COMPANY ||
-    sessionRole === UserRole.ADMIN;
+    sessionRole === UserRole.ADMIN ||
+    hasProfessionalBusinesses;
   const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
 
   useEffect(() => {
@@ -162,13 +164,15 @@ const App: React.FC<{
         const selectedBusiness = businesses.find((business) => business.id === storedBusinessId) ?? businesses[0];
         setProfessionalBusinesses(businesses);
         setProfessionalIdentity(selectedBusiness ? toProfessionalIdentity(selectedBusiness) : null);
-        setProfessionalProfileLoaded(true);
-        return;
+        if (businesses.length > 0) {
+          setProfessionalProfileLoaded(true);
+          return;
+        }
       }
 
       setProfessionalProfileLoaded(false);
 
-      if (!session?.user?.id || !canUseProfessionalMode) {
+      if (!session?.user?.id) {
         setProfessionalBusinesses([]);
         setProfessionalIdentity(null);
         setProfessionalProfileLoaded(true);
