@@ -55,11 +55,12 @@ const buildContext = (results: SearchPayload) => [
 type CommunityAssistantModalProps = {
   open: boolean;
   initialQuery?: string;
+  autoSubmitRequest?: { id: string; query: string } | null;
   regionLabel: string;
   onClose: () => void;
 };
 
-export default function CommunityAssistantModal({ open, initialQuery = '', regionLabel, onClose }: CommunityAssistantModalProps) {
+export default function CommunityAssistantModal({ open, initialQuery = '', autoSubmitRequest, regionLabel, onClose }: CommunityAssistantModalProps) {
   const router = useRouter();
   const [draft, setDraft] = useState(initialQuery);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -68,6 +69,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const handledAutoSubmitRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -87,15 +89,23 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [onClose, open]);
 
-  const ask = async (question: string) => {
+  const ask = async (question: string, options?: { resetConversation?: boolean }) => {
     const query = question.trim();
     if (!query || loading) return;
-    const previousUserQuery = [...messages].reverse().find((message) => message.role === 'user')?.text;
+    const resetConversation = Boolean(options?.resetConversation);
+    const previousUserQuery = resetConversation
+      ? undefined
+      : [...messages].reverse().find((message) => message.role === 'user')?.text;
     const retrievalQuery = previousUserQuery && looksLikeFollowUp(query)
       ? `${previousUserQuery}. Pergunta complementar: ${query}`.slice(0, 300)
       : query;
 
-    setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'user', text: query }]);
+    const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', text: query };
+    setMessages((current) => resetConversation ? [userMessage] : [...current, userMessage]);
+    if (resetConversation) {
+      setLastSearchPath(null);
+      setFeedback({});
+    }
     setDraft('');
     setLoading(true);
 
@@ -127,7 +137,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
         body: JSON.stringify({
           query,
           context: buildContext(searchPayload),
-          history: messages.slice(-6).map(({ role, text }) => ({ role, text: text.trim().slice(0, 600) })),
+          history: resetConversation ? [] : messages.slice(-6).map(({ role, text }) => ({ role, text: text.trim().slice(0, 600) })),
         }),
       });
       const assistantPayload = await assistantResponse.json().catch(() => null);
@@ -151,6 +161,12 @@ export default function CommunityAssistantModal({ open, initialQuery = '', regio
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!open || !autoSubmitRequest || handledAutoSubmitRef.current === autoSubmitRequest.id) return;
+    handledAutoSubmitRef.current = autoSubmitRequest.id;
+    void ask(autoSubmitRequest.query, { resetConversation: true });
+  }, [autoSubmitRequest, open]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();

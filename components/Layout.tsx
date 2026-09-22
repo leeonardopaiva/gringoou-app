@@ -312,6 +312,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   onPersonaModeChange,
   onSignOut,
 }) => {
+  const { showToast } = useToast();
   const pathname = usePathname() || '/';
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -320,6 +321,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [voiceAssistantRequest, setVoiceAssistantRequest] = useState<{ id: string; query: string } | null>(null);
   const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
@@ -421,7 +423,16 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     value={headerSearch}
                     onChange={setHeaderSearch}
                     onSubmit={handleHeaderSearch}
-                    onFilterClick={() => setIsAssistantOpen(true)}
+                    onFilterClick={() => {
+                      setVoiceAssistantRequest(null);
+                      setIsAssistantOpen(true);
+                    }}
+                    onVoiceResult={(query) => {
+                      setHeaderSearch(query);
+                      setVoiceAssistantRequest({ id: crypto.randomUUID(), query });
+                      setIsAssistantOpen(true);
+                    }}
+                    onVoiceError={(message) => showToast(message, 'error')}
                     staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
                     className="h-12 shadow-none md:h-11"
                   />
@@ -523,6 +534,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           <CommunityAssistantModal
             open={isAssistantOpen}
             initialQuery={headerSearch}
+            autoSubmitRequest={voiceAssistantRequest}
             regionLabel={shortRegionLabel}
             onClose={() => setIsAssistantOpen(false)}
           />

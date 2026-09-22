@@ -16,7 +16,7 @@ type SpeechRecognitionInstance = {
   stop: () => void;
   onstart: (() => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
   onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
 };
 
@@ -32,6 +32,8 @@ type UnifiedSearchInputProps = {
   onChange: (value: string) => void;
   onSubmit?: () => void;
   onFilterClick?: () => void;
+  onVoiceResult?: (transcript: string) => void;
+  onVoiceError?: (message: string) => void;
   filterLoading?: boolean;
   animatedTerms?: string[];
   animatedIndex?: number;
@@ -44,6 +46,8 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
   onChange,
   onSubmit,
   onFilterClick,
+  onVoiceResult,
+  onVoiceError,
   filterLoading = false,
   animatedTerms,
   animatedIndex = 0,
@@ -78,15 +82,32 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = (event) => {
+      setListening(false);
+      const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? 'Permita o acesso ao microfone para usar a pesquisa por voz.'
+        : event.error === 'no-speech'
+          ? 'Não conseguimos ouvir sua pergunta. Tente novamente.'
+          : 'A pesquisa por voz não está disponível agora.';
+      onVoiceError?.(message);
+    };
     recognition.onresult = (event) => {
       const transcript = event.results[0]?.[0]?.transcript?.trim();
       if (!transcript) return;
       onChange(transcript);
-      window.setTimeout(() => onFilterClick?.(), 0);
+      if (onVoiceResult) {
+        onVoiceResult(transcript);
+      } else {
+        window.setTimeout(() => onFilterClick?.(), 0);
+      }
     };
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      setListening(false);
+      onVoiceError?.('Não foi possível iniciar o microfone. Tente novamente.');
+    }
   };
 
   return (
@@ -109,7 +130,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={!animatedTerms ? staticPlaceholder : ''}
+        placeholder={listening ? 'Ouvindo... fale agora' : !animatedTerms ? staticPlaceholder : ''}
         className={`w-full bg-transparent py-4 pl-12 text-sm text-slate-700 outline-none ${onFilterClick ? (voiceSupported ? 'pr-24' : 'pr-14') : 'pr-4'}`}
       />
       <button
