@@ -33,6 +33,7 @@ const Community: React.FC<{
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const targetPostId = searchParams?.get('post');
+  const shouldOpenComposer = searchParams?.get('compose') === '1';
   const [composerMode, setComposerMode] = useState<ComposerMode>('text');
   const [postContent, setPostContent] = useState('');
   const [postImageUrl, setPostImageUrl] = useState('');
@@ -87,6 +88,16 @@ const Community: React.FC<{
   useEffect(() => {
     setPostPersonaMode(personaMode === 'professional' ? 'professional' : 'personal');
   }, [personaMode]);
+
+  useEffect(() => {
+    if (shouldOpenComposer) setIsComposerExpanded(true);
+  }, [shouldOpenComposer]);
+
+  useEffect(() => {
+    const openComposer = () => setIsComposerExpanded(true);
+    window.addEventListener('gringoou:open-community-composer', openComposer);
+    return () => window.removeEventListener('gringoou:open-community-composer', openComposer);
+  }, []);
 
   useEffect(() => {
     if (!isComposerExpanded) return;
@@ -903,7 +914,7 @@ const Community: React.FC<{
         )}
       </div>
 
-      <div className="order-1">
+      <div className="hidden" aria-hidden="true">
         <div className="hidden" aria-hidden="true">
           <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-foreground">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
@@ -992,6 +1003,13 @@ const Community: React.FC<{
                   onPostPreference={(action) => void handlePostPreference(post.id, action)}
                 />
               </div>
+              {index === 4 ? (
+                <ReferralInviteCard
+                  registrationCount={referralSummary.registrationCount}
+                  onCopy={() => void handleCopyReferralLink()}
+                  onShare={() => void handleShareReferralLink()}
+                />
+              ) : null}
               {banner ? (
                 <FeedBannerCard
                   banner={banner}
@@ -1018,6 +1036,32 @@ const Community: React.FC<{
     </ContentColumn>
   );
 };
+
+const ReferralInviteCard: React.FC<{
+  registrationCount: number;
+  onCopy: () => void;
+  onShare: () => void;
+}> = ({ registrationCount, onCopy, onShare }) => (
+  <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
+      <UserPlus size={16} aria-hidden="true" />
+    </span>
+    <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${registrationCount} indicações confirmadas`}>
+      {registrationCount}
+    </span>
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-xs font-bold text-white">Convide amigos para o Gringoou</p>
+    </div>
+    <div className="flex shrink-0 items-center gap-0.5">
+      <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={onCopy}>
+        <Copy size={14} aria-hidden="true" />
+      </Button>
+      <Button iconOnly size="xs" variant="primary" className="!bg-white !text-brand-600" aria-label="Compartilhar indicação" onClick={onShare}>
+        <Share2 size={14} aria-hidden="true" />
+      </Button>
+    </div>
+  </div>
+);
 
 const FeedBannerCard: React.FC<{
   banner: BannerAd;

@@ -37,7 +37,6 @@ import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, 
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
-import { buildSearchPath } from '../lib/search-navigation';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -353,7 +352,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   };
 
   const handleHeaderSearch = () => {
-    router.push(buildSearchPath(headerSearch));
+    const query = headerSearch.trim();
+    setVoiceAssistantRequest(query ? { id: crypto.randomUUID(), query } : null);
+    setIsAssistantOpen(true);
   };
 
   return (
@@ -402,19 +403,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 >
                   <Menu size={24} />
                 </button>
-                <div className="flex min-w-0 flex-col items-start">
-                  <Logo size="xs" professional={isProfessionalTheme} href="/inicio" />
-                  <button
-                    type="button"
-                    onClick={() => router.push('/profile?edit=region')}
-                    aria-label={`Alterar região da comunidade: ${user.location}`}
-                    title={`Alterar região: ${user.location}`}
-                    className="mt-1.5 flex max-w-[150px] items-center gap-1 text-[10px] font-medium leading-none text-slate-500 transition hover:text-brand-600 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
-                  >
-                    <MapPin size={11} className="shrink-0 text-brand-500" aria-hidden="true" />
-                    <span className="truncate">{shortRegionLabel}</span>
-                  </button>
-                </div>
+                <span className="flex h-9 items-center">
+                  <Logo size="sm" professional={isProfessionalTheme} href="/inicio" />
+                </span>
               </div>
 
               <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
@@ -450,6 +441,15 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               </div>
 
               <div className="flex h-10 items-center gap-1.5 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => router.push('/profile?edit=region')}
+                  aria-label={`Alterar região da comunidade: ${user.location}`}
+                  title={`Alterar região: ${user.location}`}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
+                >
+                  <MapPin size={19} aria-hidden="true" />
+                </button>
                 <FriendRequestBell />
                 <CommunityAccountMenu
                   user={{ name: user.name, avatar: user.avatar, email: user.email }}
@@ -474,24 +474,16 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               {isQuickMenuOpen ? (
                 <div className="absolute bottom-[58px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     size="sm"
+                    iconLeft={<MessageSquarePlus size={16} />}
                     onClick={() => {
                       setIsQuickMenuOpen(false);
-                      handleNavigate(professionalIdentity ? `/ads/promover/${professionalIdentity.id}` : '/negocios?create=1');
+                      window.dispatchEvent(new CustomEvent('gringoou:open-community-composer'));
+                      handleNavigate('/community?compose=1');
                     }}
                   >
-                    {professionalIdentity ? 'Promover com Ads' : 'Divulgar meu negócio'}
-                  </Button>
-                  <Button
-                    variant="yellow"
-                    size="sm"
-                    onClick={() => {
-                      setIsQuickMenuOpen(false);
-                      handleNavigate('/eventos?create=1');
-                    }}
-                  >
-                    Cadastrar meu evento
+                    Publicar
                   </Button>
                   <Button
                     variant="ghost"
@@ -503,7 +495,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       window.dispatchEvent(new CustomEvent('gringoou:open-suggestion-modal'));
                     }}
                   >
-                    Enviar sugestao
+                    Enviar sugestão
                   </Button>
                 </div>
               ) : null}

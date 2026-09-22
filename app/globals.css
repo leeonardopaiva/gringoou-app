@@ -79,13 +79,40 @@
 html,
 body {
   margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   padding: 0;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   -webkit-tap-highlight-color: transparent;
   background: var(--color-bg);
   color: var(--color-foreground);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select {
+  min-width: 0;
+}
+
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    max-width: 100%;
+    font-size: 16px !important;
+    line-height: 1.25;
+  }
 }
 
 .app-shell {
