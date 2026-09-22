@@ -204,7 +204,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
         <div className="mx-auto flex min-h-16 w-full max-w-3xl items-center gap-3 px-4 py-2 sm:px-6">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm"><Sparkles size={20} /></span>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-lg font-bold text-slate-900">Pergunte ao Gringoo!</h2>
+            <h2 className="truncate text-lg font-bold text-slate-900">Fale com o Gringo</h2>
             <p className="flex items-center gap-1 truncate text-xs text-slate-500"><MapPin size={12} /> Respostas da comunidade em {regionLabel}</p>
           </div>
           {messages.length ? <button type="button" onClick={startNewQuestion} className="hidden h-9 items-center gap-2 rounded-full bg-slate-100 px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-200 sm:inline-flex"><PencilLine size={14} /> Nova pergunta</button> : null}

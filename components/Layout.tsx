@@ -502,7 +502,16 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
               <nav className="flex h-[52px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
                 <NavItem label="Home" icon={<HomeIcon size={18} />} active={isActive('/inicio')} onNavigate={() => handleNavigate('/inicio')} />
-                <NavItem label="Buscar" icon={<SearchIcon size={18} />} active={isActive('/buscar')} onNavigate={() => handleNavigate('/buscar')} />
+                <NavItem
+                  label="Buscar"
+                  icon={<SearchIcon size={18} />}
+                  active={isAssistantOpen}
+                  onNavigate={() => {
+                    setIsQuickMenuOpen(false);
+                    setVoiceAssistantRequest(null);
+                    setIsAssistantOpen(true);
+                  }}
+                />
 
                 <button
                   type="button"
