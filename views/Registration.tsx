@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Globe, MailCheck, RefreshCcw, Shield } from 'lucide-react';
+import { ArrowLeft, Globe, MailCheck, RefreshCcw, Shield } from 'lucide-react';
 import { Button, Card, Input } from '@heroui/react';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import RegionSelector from '../components/RegionSelector';
@@ -133,6 +133,7 @@ const Registration: React.FC<RegistrationProps> = ({
   });
   const [passwordReset, setPasswordReset] = useState({ email: '', password: '', confirmPassword: '', token: '' });
   const [passwordResetMessage, setPasswordResetMessage] = useState<string | null>(null);
+  const [passwordResetHasError, setPasswordResetHasError] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [captchaPrompt, setCaptchaPrompt] = useState('');
@@ -144,6 +145,7 @@ const Registration: React.FC<RegistrationProps> = ({
   const selectedCountry = findCountryByIso2(selectedCountryIso2);
   const passwordIssues = getPasswordValidationIssues(passwordSignUp.password);
   const showGoogleOnlyAuth = googleEnabled && !emailEnabled && !passwordEnabled;
+  const isPasswordRecoveryView = passwordAuthView === 'forgot' || passwordAuthView === 'reset';
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -352,13 +354,13 @@ const Registration: React.FC<RegistrationProps> = ({
 
   const requestPasswordReset = async () => {
     if (!isValidEmail(passwordReset.email)) { setFieldErrors((current) => ({ ...current, email: 'Informe um email válido.' })); return; }
-    setPasswordResetLoading(true); setPasswordResetMessage(null);
+    setPasswordResetLoading(true); setPasswordResetMessage(null); setPasswordResetHasError(false);
     try {
       const response = await fetch('/api/auth/password-reset/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: passwordReset.email }) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível solicitar a redefinição.');
       setPasswordResetMessage(payload.message);
-    } catch (resetError) { setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível solicitar a redefinição.'); }
+    } catch (resetError) { setPasswordResetHasError(true); setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível solicitar a redefinição.'); }
     finally { setPasswordResetLoading(false); }
   };
 
@@ -366,14 +368,14 @@ const Registration: React.FC<RegistrationProps> = ({
     const issues = getPasswordValidationIssues(passwordReset.password);
     if (issues.length) { setFieldErrors((current) => ({ ...current, password: issues[0] })); return; }
     if (passwordReset.password !== passwordReset.confirmPassword) { setFieldErrors((current) => ({ ...current, confirmPassword: 'As senhas precisam ser iguais.' })); return; }
-    setPasswordResetLoading(true); setPasswordResetMessage(null);
+    setPasswordResetLoading(true); setPasswordResetMessage(null); setPasswordResetHasError(false);
     try {
       const response = await fetch('/api/auth/password-reset/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: passwordReset.token, password: passwordReset.password }) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível redefinir a senha.');
       setPasswordResetMessage(payload.message); setPasswordAuthView('signin'); setPasswordSignIn((current) => ({ ...current, email: passwordReset.email }));
       window.history.replaceState({}, '', '/login');
-    } catch (resetError) { setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível redefinir a senha.'); }
+    } catch (resetError) { setPasswordResetHasError(true); setPasswordResetMessage(resetError instanceof Error ? resetError.message : 'Não foi possível redefinir a senha.'); }
     finally { setPasswordResetLoading(false); }
   };
 
@@ -539,7 +541,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           className={inputClass}
                         />
                         <FieldErrorMessage message={fieldErrors.password} />
-                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
                       </>
                     ) : null}
 
@@ -580,13 +582,12 @@ const Registration: React.FC<RegistrationProps> = ({
                   </form>
                 ) : null}
 
-                {passwordAuthView === 'forgot' || passwordAuthView === 'reset' ? (
-                  <div className="w-full max-w-[360px] space-y-3 pt-2">
-                    <div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div>
+                {isPasswordRecoveryView ? (
+                  <div className="w-full max-w-[360px] space-y-4 pt-2">
+                    <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
                     {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                    {passwordResetMessage ? <div className="rounded-2xl bg-brand-50 p-3 text-sm font-medium text-brand-700">{passwordResetMessage}</div> : null}
-                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="rounded-full bg-brand-500 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
-                    <Button type="button" fullWidth variant="ghost" onPress={() => setPasswordAuthView('signin')} className="text-slate-500">Voltar ao login</Button>
+                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                    {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                   </div>
                 ) : null}
 
@@ -758,7 +759,7 @@ const Registration: React.FC<RegistrationProps> = ({
                 </a>
               </div>
 
-              {error ? <p className="mt-6 text-center text-sm text-red-600">{error}</p> : null}
+              {error && !isPasswordRecoveryView ? <p className="mt-6 text-center text-sm text-red-600">{error}</p> : null}
               {notice ? (
                 <div className="mx-auto mt-6 flex w-full max-w-[360px] items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-100">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600"><MailCheck size={18} /></span>
@@ -1039,7 +1040,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           <FieldErrorMessage message={fieldErrors.password} />
                         </div>
 
-                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
 
                         <Button
                           type="submit"
@@ -1057,12 +1058,12 @@ const Registration: React.FC<RegistrationProps> = ({
                       </form>
                     ) : null}
 
-                    {passwordAuthView === 'forgot' || passwordAuthView === 'reset' ? (
+                    {isPasswordRecoveryView ? (
                       <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" size="sm" variant="ghost" onPress={() => setPasswordAuthView('signin')} className="text-slate-500">Voltar</Button></div>
+                        <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
                         {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                        {passwordResetMessage ? <div className="rounded-2xl bg-brand-50 p-3 text-sm font-medium text-brand-700">{passwordResetMessage}</div> : null}
-                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="rounded-full bg-brand-500 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                        {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                       </div>
                     ) : null}
 
@@ -1565,7 +1566,7 @@ const Registration: React.FC<RegistrationProps> = ({
               </form>
             )}
 
-            {error ? (
+            {error && !isPasswordRecoveryView ? (
               <Card variant="secondary" className="border border-red-100 bg-red-50 shadow-none">
                 <Card.Content className="p-4 text-sm font-medium text-red-600">{error}</Card.Content>
               </Card>
