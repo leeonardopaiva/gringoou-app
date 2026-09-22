@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-const circularLabel = 'REDE SOCIAL IMIGRANTE BRASILEIRA • ';
+const circularLabel = 'REDE SOCIAL • IMIGRANTE • BRASILEIRO • ';
 
 function CommunitySeal() {
   return (
@@ -28,14 +28,14 @@ export function CommunityMetrics() {
     <aside className="flex items-end justify-between gap-8 lg:h-[720px] lg:flex-col lg:items-start lg:py-8">
       <div className="flex gap-8 lg:flex-col lg:gap-16">
         <div>
-          <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">+12k</strong>
-          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-[0.08em] text-[#6b7a9e]">Brasileiros<br />conectados</span>
+          <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">+5 M</strong>
+          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-[0.08em] text-[#6b7a9e]">Brasileiros<br />pelo mundo</span>
         </div>
         <div>
           <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">
-            15<span className="ml-1 text-[0.6em] text-[#0086ff]">+</span>
+            <span className="ml-1 text-[0.6em] text-[#0086ff]"> +</span> 130
           </strong>
-          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-[0.08em] text-[#6b7a9e]">Países com<br />comunidades ativas</span>
+          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-[0.08em] text-[#6b7a9e]">Países com <br />brasileiros conectados</span>
         </div>
       </div>
       <a href="/login" aria-label="Fazer parte da rede social Gringoou" className="group hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0086ff] lg:block">

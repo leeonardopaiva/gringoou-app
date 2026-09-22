@@ -15,8 +15,8 @@ export function SocialProof() {
         <span className="size-2 rounded-full bg-[#e4eaf6]" />
         <span className="size-2 rounded-full bg-[#e4eaf6]" />
         <span className="size-2 rounded-full bg-[#0086ff]" />
-        <Image src="/landing/arrow.svg" alt="" width={18} height={18} className="ml-2" />
-      </div>
+{/*         <Image src="/landing/arrow.svg" alt="" width={18} height={18} className="ml-2" />
+ */}      </div>
     </div>
   );
 }
