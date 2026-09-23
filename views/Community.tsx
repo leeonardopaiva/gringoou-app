@@ -877,15 +877,6 @@ const Community: React.FC<{
                         : 'No que voce esta pensando?'
                 }
               />
-              {isProfessionalMode ? (
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-700">
-                  Publicando como pagina profissional: {composerName}
-                </div>
-              ) : canPostAsProfessional ? (
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-500">
-                  Publicando como pessoa. Troque para negocio quando a publicacao for comercial ou institucional.
-                </div>
-              ) : null}
               <CommunityComposer.MediaField
                 mode={composerMode}
                 imageUrl={postImageUrl}

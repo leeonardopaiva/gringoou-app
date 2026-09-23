@@ -416,9 +416,9 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   }
 
   return (
-    <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card sm:border sm:border-slate-200">
+    <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card">
       {managementMode ? (
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
+        <div className="border-b border-slate-100 bg-white px-5 py-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-700"><BadgeCheck size={14} /> Você é proprietário</div>
@@ -485,9 +485,9 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           </div>
         ) : null}
 
-        <div className="rounded-[24px] border border-brand-100 bg-brand-50/60 p-4">
+        <div className="border-b border-slate-100 pb-7">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500">
               <BadgeCheck size={20} />
             </div>
             <div className="min-w-0 flex-1">
@@ -502,7 +502,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
           </div>
           {business.canEdit && !managementMode ? (
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-brand-100 bg-white px-4 py-3">
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
               <span className="inline-flex items-center gap-2 text-xs font-bold text-brand-700"><BadgeCheck size={16} /> Você é proprietário</span>
               <Dropdown align="right" trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do negócio', items: [{ label: 'Gerenciar página', icon: <PencilLine size={16} />, onClick: () => window.location.assign(`/negocios/${business.slug || business.id}/gerenciar`) }] }]} />
             </div>

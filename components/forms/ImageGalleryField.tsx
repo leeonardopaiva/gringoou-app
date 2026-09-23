@@ -45,7 +45,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
   };
 
   return (
-    <div className="space-y-3 rounded-3xl border border-slate-100 bg-white/70 p-4">
+    <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-sm font-bold text-brand-500">
@@ -63,7 +63,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
 
       <div className="space-y-4">
         {gallery.map((imageUrl, index) => (
-          <div key={`${folder}-${index}`} className="space-y-2 rounded-3xl border border-slate-100 bg-slate-50 p-3">
+          <div key={`${folder}-${index}`} className="space-y-2 border-b border-slate-100 pb-4 last:border-b-0">
             <CloudinaryImageField
               value={imageUrl}
               onChange={(nextValue) => updateItem(index, nextValue)}

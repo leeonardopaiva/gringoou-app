@@ -23,6 +23,7 @@ import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
+import ImageGalleryField from '../components/forms/ImageGalleryField';
 
 type PublicProfileProps = {
   username: string;
@@ -122,7 +123,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [editModal, setEditModal] = useState<'details' | 'avatar' | 'cover' | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '' });
+  const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '', galleryUrls: [] as string[] });
   const [mediaDraft, setMediaDraft] = useState('');
   const [groupDraft, setGroupDraft] = useState({
     name: '',
@@ -212,7 +213,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const refreshProfile = () => setRefreshKey((current) => current + 1);
 
   const openProfileEditor = (section: 'details' | 'avatar' | 'cover') => {
-    setDetailsDraft({ name: profile.name, bio: profile.bio || '' });
+    setDetailsDraft({ name: profile.name, bio: profile.bio || '', galleryUrls: profile.galleryUrls || [] });
     setMediaDraft(section === 'avatar' ? profile.image || '' : profile.coverImageUrl || '');
     setEditModal(section);
   };
@@ -225,7 +226,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         body: JSON.stringify({
           name: detailsDraft.name.trim(), username: profile.username, email: viewer?.email || undefined,
           phone: viewer?.phone || undefined, bio: detailsDraft.bio.trim() || undefined,
-          coverImageUrl: profile.coverImageUrl || undefined, interests: profile.interests, galleryUrls: profile.galleryUrls,
+          coverImageUrl: profile.coverImageUrl || undefined, interests: profile.interests, galleryUrls: detailsDraft.galleryUrls.filter(Boolean),
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -516,7 +517,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </div>
 
             {activeTab === 'about' ? (
-              <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+              <section className="mt-6 px-1 py-3">
                 <h2 className="text-2xl font-bold text-slate-900">Sobre</h2>
                 {profile.bio ? (
                   <p className="mt-4 text-base leading-7 text-slate-700">{profile.bio}</p>
@@ -553,7 +554,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             ) : null}
 
             {activeTab === 'friends' ? (
-              <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+              <section className="mt-6 px-1 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-bold text-slate-900">Amigos</h2>
                   <span className="text-sm font-semibold text-slate-400">
@@ -569,7 +570,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       <Link
                         key={friend.id}
                         href={friend.publicPath || '/'}
-                        className="flex items-center gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4"
+                        className="flex items-center gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                       >
                         {friend.image ? (
                           <img src={friend.image || DEFAULT_AVATAR_URL} alt={friend.name} className="h-14 w-14 rounded-full object-cover" onError={handleAvatarError} />
@@ -597,7 +598,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             {activeTab === 'groups' ? (
               <section className="mt-6 space-y-4">
                 {isOwnProfile ? (
-                  <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+                  <div className="px-1 py-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-md bg-brand-100 text-brand-500">
                         <Plus size={20} />
@@ -610,7 +611,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     <button
                       type="button"
                       onClick={() => setGroupModalOpen(true)}
-                      className="theme-bg theme-shadow mt-5 w-full rounded-2xl px-4 py-3 text-sm font-bold"
+                      className="theme-bg theme-shadow mt-4 inline-flex rounded-full px-5 py-2.5 text-sm font-bold"
                     >
                       Criar novo grupo
                     </button>
@@ -664,7 +665,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   </div>
                 ) : null}
 
-                <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+                <div className="border-t border-slate-100 px-1 pt-6">
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-2xl font-bold text-slate-900">Grupos</h2>
                     <span className="text-sm font-semibold text-slate-400">
@@ -675,12 +676,12 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   {profile.groups.length === 0 ? (
                     <EmptyPublicState text="Ainda nao ha grupos publicos neste perfil." />
                   ) : (
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-x-5 sm:grid-cols-2">
                       {profile.groups.map((group) => (
                         <Link
                           key={group.id}
                           href={group.publicPath}
-                          className="rounded-[28px] border border-slate-100 bg-slate-50 p-4"
+                          className="border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <div className="flex items-center gap-3">
                             {group.imageUrl ? (
@@ -701,8 +702,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                             <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{group.description}</p>
                           ) : null}
                           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-500">
-                            {group.regionLabel ? <span className="rounded-full bg-white px-3 py-1">{group.regionLabel}</span> : null}
-                            <span className="rounded-full bg-white px-3 py-1">
+                            {group.regionLabel ? <span>{group.regionLabel}</span> : null}
+                            <span>
                               {group.memberCount} membro{group.memberCount === 1 ? '' : 's'}
                             </span>
                           </div>
@@ -715,7 +716,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             ) : null}
 
             {activeTab === 'interests' ? (
-              <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+              <section className="mt-6 px-1 py-3">
                 <h2 className="text-2xl font-bold text-slate-900">Interesses</h2>
                 {interests.length === 0 ? (
                   <EmptyPublicState text="Ainda nao ha interesses publicos suficientes para este perfil." />
@@ -735,7 +736,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             ) : null}
 
             {activeTab === 'photos' ? (
-              <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+              <section className="mt-6 px-1 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-bold text-slate-900">Fotos</h2>
                   <span className="text-sm font-semibold text-slate-400">
@@ -770,14 +771,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             {activeTab === 'recommendations' ? (
               <section className="mt-6 space-y-4">
                 {profile.businesses.length > 0 ? (
-                  <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+                  <div className="border-b border-slate-100 px-1 pb-6">
                     <h2 className="text-2xl font-bold text-slate-900">Negócios em destaque</h2>
                     <div className="mt-5 space-y-3">
                       {profile.businesses.slice(0, 3).map((business) => (
                         <Link
                           key={business.id}
                           href={`/negocios/${business.slug}`}
-                          className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4"
+                          className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
                             src={business.imageUrl || `https://picsum.photos/seed/${business.id}/320`}
@@ -803,14 +804,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 ) : null}
 
                 {profile.events.length > 0 ? (
-                  <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+                  <div className="px-1 py-3">
                     <h2 className="text-2xl font-bold text-slate-900">Agenda recomendada</h2>
                     <div className="mt-5 space-y-3">
                       {profile.events.slice(0, 3).map((event) => (
                         <Link
                           key={event.id}
                           href={`/eventos/${event.slug}`}
-                          className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4"
+                          className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
                             src={event.imageUrl || `https://picsum.photos/seed/${event.id}/320`}
@@ -850,6 +851,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <div className="space-y-4">
                 <label className="block text-sm font-bold text-slate-700">Nome<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
                 <label className="block text-sm font-bold text-slate-700">Sobre você<textarea value={detailsDraft.bio} onChange={(event) => setDetailsDraft((current) => ({ ...current, bio: event.target.value }))} rows={4} className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400" /></label>
+                <ImageGalleryField value={detailsDraft.galleryUrls} onChange={(galleryUrls) => setDetailsDraft((current) => ({ ...current, galleryUrls }))} folder="profiles" maxItems={8} hint="Adicione imagens que serão exibidas na aba Fotos do seu perfil público." />
                 <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar alterações'}</button>
               </div>
             ) : (

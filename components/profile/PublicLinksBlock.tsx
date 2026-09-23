@@ -42,7 +42,7 @@ export function PublicLinksBlock({ links }: { links: PublicLinkItem[] }) {
   if (!links.length) return null;
 
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="py-2">
       <div className="flex items-center gap-2">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600">
           <Link2 size={17} />
