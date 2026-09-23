@@ -31,7 +31,7 @@ export async function GET() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
 
-  const [memberships, selected] = await Promise.all([
+  const [memberships, selected, businesses] = await Promise.all([
     prisma.adAccountUser.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'asc' },
@@ -52,6 +52,31 @@ export async function GET() {
       },
     }),
     getAdAccountMembership(session.user.id),
+    prisma.business.findMany({
+      where: {
+        OR: [
+          { createdById: session.user.id },
+          { members: { some: { userId: session.user.id } } },
+        ],
+      },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        imageUrl: true,
+        adAccount: {
+          select: {
+            id: true,
+            users: {
+              where: { userId: session.user.id },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+      },
+    }),
   ]);
 
   return NextResponse.json({
@@ -63,6 +88,14 @@ export async function GET() {
     selectedAccountId: selected?.adAccountId ?? null,
     maxAccounts: MAX_AD_ACCOUNTS_PER_USER,
     canCreateAccount: memberships.length < MAX_AD_ACCOUNTS_PER_USER,
+    businesses: businesses.map((business) => ({
+      id: business.id,
+      name: business.name,
+      imageUrl: business.imageUrl,
+      publicPath: `/negocios/${business.slug || business.id}`,
+      managementPath: `/negocios/${business.slug || business.id}/gerenciar`,
+      adAccountId: business.adAccount?.users.length ? business.adAccount.id : null,
+    })),
   });
 }
 

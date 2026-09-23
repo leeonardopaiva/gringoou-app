@@ -260,6 +260,15 @@ const Profile: React.FC<{
   }, [loading, profile.coverImageUrl, profile.regionKey, router, searchParams]);
 
   useEffect(() => {
+    if (loading || searchParams?.get('mode') !== 'professional' || !canUseProfessionalMode || !professionalProfile.identity) {
+      return;
+    }
+
+    onPersonaModeChange('professional');
+    router.replace('/profile', { scroll: false });
+  }, [canUseProfessionalMode, loading, onPersonaModeChange, professionalProfile.identity, router, searchParams]);
+
+  useEffect(() => {
     let ignore = false;
 
     const loadReferralSummary = async () => {
@@ -453,16 +462,10 @@ const Profile: React.FC<{
   const professionalIdentity = professionalProfile.identity;
   const isProfessionalView =
     canUseProfessionalMode && personaMode === 'professional' && Boolean(professionalIdentity);
-  const activeHeaderName = isProfessionalView && professionalIdentity ? professionalIdentity.name : profile.name;
-  const activeHeaderHandle = isProfessionalView && professionalIdentity
-    ? `@${professionalIdentity.slug}`
-    : `@${profile.username || 'defina-seu-nome'}`;
-  const activeHeaderLocation =
-    isProfessionalView && professionalIdentity?.locationLabel
-      ? professionalIdentity.locationLabel
-      : profile.locationLabel;
-  const activeHeaderImage =
-    isProfessionalView && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : avatarImage;
+  const activeHeaderName = profile.name;
+  const activeHeaderHandle = `@${profile.username || 'defina-seu-nome'}`;
+  const activeHeaderLocation = profile.locationLabel;
+  const activeHeaderImage = avatarImage;
   const activeHeaderGradientClass = isProfessionalView
     ? PROFESSIONAL_PROFILE_GRADIENT_CLASS
     : PROFILE_GRADIENT_CLASS;
@@ -487,20 +490,16 @@ const Profile: React.FC<{
   return (
     <ContentColumn className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
-        <div className={`relative h-56 ${
-          !isProfessionalView && profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass
-        }`}>
-          {!isProfessionalView && profile.coverImageUrl ? (
+        <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
+          {profile.coverImageUrl ? (
             <img src={profile.coverImageUrl} alt="Capa do perfil" className="h-full w-full object-cover object-center" />
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-slate-950/5 to-transparent" />
-          {!isProfessionalView ? (
-            <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="absolute right-4 top-4 rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600">
-              <PencilLine size={16} />
-            </button>
-          ) : null}
+          <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="absolute right-4 top-4 rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600" aria-label="Editar capa">
+            <PencilLine size={16} />
+          </button>
         </div>
         <div className="-mt-12 px-5 pb-5">
           <div className="flex flex-col items-center text-center">
@@ -512,11 +511,9 @@ const Profile: React.FC<{
                   {getInitials(activeHeaderName)}
                 </div>
               )}
-              {!isProfessionalView ? (
-                <button type="button" onClick={() => { setEditing((c) => ({ ...c, avatar: !c.avatar })); setAvatarDraft(profile.image); }} className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-white p-2 text-brand-500">
-                  <PencilLine size={14} />
-                </button>
-              ) : null}
+              <button type="button" onClick={() => { setEditing((c) => ({ ...c, avatar: !c.avatar })); setAvatarDraft(profile.image); }} className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-white p-2 text-brand-500" aria-label="Editar foto do perfil">
+                <PencilLine size={14} />
+              </button>
             </div>
             <div className="relative mt-4">
               {canUseProfessionalMode ? (
@@ -541,7 +538,7 @@ const Profile: React.FC<{
             </p>
           </div>
 
-          <Modal open={!isProfessionalView && editing.cover} onClose={() => setEditing((c) => ({ ...c, cover: false }))} title="Editar capa" description="Selecione uma imagem horizontal para o seu perfil.">
+          <Modal open={editing.cover} onClose={() => setEditing((c) => ({ ...c, cover: false }))} title="Editar capa" description="Selecione uma imagem horizontal para o seu perfil profissional.">
             <EditorCard>
               <CloudinaryImageField value={coverDraft} onChange={setCoverDraft} folder="profiles" placeholder="Link da capa do perfil" hint="Use uma imagem horizontal para destacar seu perfil publico." />
               <ActionRow>
@@ -551,7 +548,7 @@ const Profile: React.FC<{
             </EditorCard>
           </Modal>
 
-          <Modal open={!isProfessionalView && editing.avatar} onClose={() => setEditing((c) => ({ ...c, avatar: false }))} title="Editar foto" description="Selecione uma nova foto para o seu perfil.">
+          <Modal open={editing.avatar} onClose={() => setEditing((c) => ({ ...c, avatar: false }))} title="Editar foto" description="Selecione uma nova foto para o seu perfil profissional.">
             <EditorCard>
               <CloudinaryImageField value={avatarDraft} onChange={setAvatarDraft} folder="profiles" placeholder="Link da foto do perfil" hint="Envie sua foto pela Cloudinary ou cole uma URL publica." />
               <ActionRow>
@@ -567,6 +564,8 @@ const Profile: React.FC<{
         <ProfessionalModePanel
           professionalProfile={professionalProfile}
           username={profile.username}
+          onEditAvatar={() => { setAvatarDraft(profile.image); setEditing((current) => ({ ...current, avatar: true })); }}
+          onEditCover={() => { setCoverDraft(profile.coverImageUrl); setEditing((current) => ({ ...current, cover: true })); }}
         />
       ) : (
         <>

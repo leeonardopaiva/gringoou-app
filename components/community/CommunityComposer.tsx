@@ -184,7 +184,7 @@ const MediaField: React.FC<MediaFieldProps> = ({
         onChange={onImageChange}
         folder="community"
         placeholder="Link da imagem do post"
-        hint="Envie uma imagem pela Cloudinary ou cole uma URL publica."
+        /* hint="Envie uma imagem pela Cloudinary ou cole uma URL publica." */
       />
     );
   }

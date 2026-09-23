@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Layout from './components/Layout';
 import AppContent from './components/app/AppContent';
@@ -75,20 +75,13 @@ const App: React.FC<{
   initialProfileData?: ProfileInitialData;
 }> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialProfileData }) => {
   const pathname = usePathname() || '/';
+  const router = useRouter();
   const { data: session, status, update } = useSession();
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [registrationNotice, setRegistrationNotice] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [authSubmitting, setAuthSubmitting] = useState(false);
-  const [personaMode, setPersonaMode] = useState<PersonaMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'personal';
-    }
-
-    return window.localStorage.getItem(PERSONA_MODE_STORAGE_KEY) === 'professional'
-      ? 'professional'
-      : 'personal';
-  });
+  const [personaMode, setPersonaMode] = useState<PersonaMode>('personal');
   const [personaModeReady, setPersonaModeReady] = useState(false);
   const [professionalIdentity, setProfessionalIdentity] = useState<ProfessionalProfileIdentity | null>(
     initialProfileData?.professionalProfile.identity ?? null,
@@ -115,6 +108,12 @@ const App: React.FC<{
   const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
 
   useEffect(() => {
+    if (pathname === '/profile' && session?.user?.username) {
+      router.replace(`/perfil/${encodeURIComponent(session.user.username)}`);
+    }
+  }, [pathname, router, session?.user?.username]);
+
+  useEffect(() => {
     if (accountDeleted) void signOut({ callbackUrl: '/login' });
   }, [accountDeleted]);
 
@@ -123,36 +122,10 @@ const App: React.FC<{
       return;
     }
 
-    if (!session?.user?.id) {
-      setPersonaMode('personal');
-      setPersonaModeReady(true);
-      return;
-    }
-
-    if (!canUseProfessionalMode) {
-      window.localStorage.removeItem(PERSONA_MODE_STORAGE_KEY);
-      setPersonaMode('personal');
-      setPersonaModeReady(true);
-      return;
-    }
-
-    const storedMode = window.localStorage.getItem(PERSONA_MODE_STORAGE_KEY);
-    setPersonaMode(storedMode === 'professional' ? 'professional' : 'personal');
+    window.localStorage.removeItem(PERSONA_MODE_STORAGE_KEY);
+    setPersonaMode('personal');
     setPersonaModeReady(true);
-  }, [canUseProfessionalMode, session?.user?.id]);
-
-  useEffect(() => {
-    if (
-      typeof window === 'undefined' ||
-      !session?.user?.id ||
-      !canUseProfessionalMode ||
-      !personaModeReady
-    ) {
-      return;
-    }
-
-    window.localStorage.setItem(PERSONA_MODE_STORAGE_KEY, personaMode);
-  }, [canUseProfessionalMode, personaMode, personaModeReady, session?.user?.id]);
+  }, [session?.user?.id]);
 
   useEffect(() => {
     let ignore = false;
@@ -514,6 +487,10 @@ const App: React.FC<{
   }
 
   const currentUser = session?.user ? buildCurrentUser(session.user) : null;
+
+  if (pathname === '/profile' && session?.user?.username) {
+    return null;
+  }
 
   if (pathname === '/login') {
     return (

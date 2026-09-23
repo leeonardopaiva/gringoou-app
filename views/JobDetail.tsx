@@ -126,7 +126,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <Link href="/vagas" className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur"><ArrowLeft size={18} /></Link>
-        {job.canEdit ? <Dropdown align="right" className="absolute right-4 top-4 z-10" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /> : null}
+        {job.canEdit ? <div className="absolute right-4 top-4 z-20"><Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /></div> : null}
         <div className="relative">
           <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>
           <h1 className="mt-4 text-3xl font-bold">{job.title}</h1>

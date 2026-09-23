@@ -6,7 +6,14 @@ import { signOut } from 'next-auth/react';
 import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, UserRound } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 
-type BusinessAccount = { id: string; name: string; logoUrl: string | null; publicPath?: string | null };
+type ManagedBusiness = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  publicPath: string;
+  managementPath: string;
+  adAccountId: string | null;
+};
 
 type CommunityAccountMenuProps = {
   user: { name: string; avatar: string; email?: string | null };
@@ -17,17 +24,17 @@ export function CommunityAccountMenu({ user, profileHref }: CommunityAccountMenu
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const [accounts, setAccounts] = useState<BusinessAccount[]>([]);
-  const [maxAccounts, setMaxAccounts] = useState(3);
+  const [businesses, setBusinesses] = useState<ManagedBusiness[]>([]);
+  const [hasAdAccounts, setHasAdAccounts] = useState(false);
 
   useEffect(() => {
     void fetch('/api/ads/accounts', { cache: 'no-store' })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
-        setAccounts(payload?.accounts ?? []);
-        setMaxAccounts(payload?.maxAccounts ?? 3);
+        setBusinesses(payload?.businesses ?? []);
+        setHasAdAccounts(Array.isArray(payload?.accounts) && payload.accounts.length > 0);
       })
-      .catch(() => setAccounts([]));
+      .catch(() => { setBusinesses([]); setHasAdAccounts(false); });
   }, []);
 
   useEffect(() => {
@@ -70,21 +77,20 @@ export function CommunityAccountMenu({ user, profileHref }: CommunityAccountMenu
             </div>
           </div>
           <div className="border-t border-slate-100 p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Negócios</p>
-            {accounts.length ? <>
-              {accounts.map((account) => (
-                <div key={account.id} className="mt-2 flex w-full items-center gap-2 rounded-xl p-2 hover:bg-brand-50">
-                  <Avatar src={account.logoUrl} name={account.name} size="md" />
-                  <button type="button" onClick={() => { setOpen(false); router.push(account.publicPath ? `${account.publicPath}/gerenciar` : '/negocios'); }} className="min-w-0 flex-1 text-left">
-                    <strong className="block truncate text-sm text-slate-900">{account.name}</strong>
-                    <span className="block truncate text-xs text-slate-500">Gerenciar página</span>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Meus negócios</p>
+            {businesses.length ? <>
+              {businesses.map((business) => (
+                <div key={business.id} className="mt-2 flex w-full items-center gap-2 rounded-xl p-2 hover:bg-brand-50">
+                  <Avatar src={business.imageUrl} name={business.name} size="md" />
+                  <button type="button" onClick={() => { setOpen(false); router.push(business.managementPath); }} className="min-w-0 flex-1 text-left">
+                    <strong className="block truncate text-sm text-slate-900">{business.name}</strong>
+                    <span className="block truncate text-xs text-slate-500">Gerenciar negócio</span>
                   </button>
-                  <button type="button" onClick={() => void openBusiness(account.id)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm" aria-label={`Abrir anúncios de ${account.name}`} title="Abrir anúncios">
-                    <Megaphone size={17} />
-                  </button>
+                  <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath); }} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-brand-500" aria-label={`Abrir página pública de ${business.name}`} title="Abrir página pública"><ExternalLink size={16} /></button>
+                  {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm" aria-label={`Abrir campanhas de ${business.name}`} title="Abrir campanhas"><Megaphone size={17} /></button> : null}
                 </div>
               ))}
-              {accounts.length < maxAccounts ? <button type="button" onClick={() => { setOpen(false); router.push('/ads/accounts/new'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />Adicionar outro negócio</button> : null}
+              <button type="button" onClick={() => { setOpen(false); router.push('/negocios?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />Cadastrar negócio</button>
             </> : (
               <button type="button" onClick={() => { setOpen(false); router.push('/negocios?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50">
                 <BriefcaseBusiness size={18} /> Cadastrar negócio gratuitamente
@@ -92,7 +98,7 @@ export function CommunityAccountMenu({ user, profileHref }: CommunityAccountMenu
             )}
           </div>
           <div className="border-t border-slate-100 p-2">
-            <button type="button" onClick={() => { setOpen(false); router.push(accounts.length ? '/ads/overview' : '/negocios?create=1'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Megaphone size={17} />{accounts.length ? 'Gerenciar anúncios' : 'Como anunciar'}</button>
+            <button type="button" onClick={() => { setOpen(false); router.push(hasAdAccounts ? '/ads/overview' : businesses.length ? '/ads/accounts/new' : '/negocios?create=1'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Megaphone size={17} />{hasAdAccounts ? 'Gerenciar anúncios' : businesses.length ? 'Criar campanha' : 'Como anunciar'}</button>
             <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={17} />Sair</button>
           </div>
         </div>

@@ -1,192 +1,145 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { BriefcaseBusiness, CalendarDays, ExternalLink, Megaphone } from 'lucide-react';
-import { PublicLinksBlock } from './PublicLinksBlock';
+import { BriefcaseBusiness, CalendarDays, ExternalLink, ImagePlus, Megaphone, MoreHorizontal, Plus } from 'lucide-react';
+import { Dropdown } from '../ui/Dropdown';
 import type { ProfessionalProfileSummary } from '../../types';
 
-const formatBusinessStatus = (status: string) => {
-  switch (status) {
-    case 'PUBLISHED':
-      return 'Publicado';
-    case 'PENDING_REVIEW':
-      return 'Em revisão';
-    case 'REJECTED':
-      return 'Rejeitado';
-    case 'SUSPENDED':
-      return 'Suspenso';
-    case 'DRAFT':
-      return 'Rascunho';
-    default:
-      return status;
-  }
-};
+const formatBusinessStatus = (status: string) => ({
+  PUBLISHED: 'Publicado',
+  PENDING_REVIEW: 'Em revisão',
+  REJECTED: 'Rejeitado',
+  SUSPENDED: 'Suspenso',
+  DRAFT: 'Rascunho',
+}[status] || status);
 
-const formatEventStatus = (status: string) => {
-  switch (status) {
-    case 'PUBLISHED':
-      return 'Publicado';
-    case 'PENDING_REVIEW':
-      return 'Em revisão';
-    case 'REJECTED':
-      return 'Rejeitado';
-    case 'CANCELED':
-      return 'Cancelado';
-    case 'DRAFT':
-      return 'Rascunho';
-    default:
-      return status;
-  }
-};
+const formatEventStatus = (status: string) => ({
+  PUBLISHED: 'Publicado',
+  PENDING_REVIEW: 'Em revisão',
+  REJECTED: 'Rejeitado',
+  CANCELED: 'Cancelado',
+  DRAFT: 'Rascunho',
+}[status] || status);
 
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 
+const menuTrigger = (label: string) => (
+  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-500" aria-label={label} title={label}>
+    <MoreHorizontal size={18} />
+  </span>
+);
+
 type ProfessionalModePanelProps = {
   professionalProfile: ProfessionalProfileSummary;
-  username?: string | null;
+  username: string;
+  onEditAvatar: () => void;
+  onEditCover: () => void;
 };
 
-const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({
-  professionalProfile,
-}) => {
-  const publicLinks = professionalProfile.businesses.map((business) => ({ id: business.id, label: business.name, path: business.publicPath }));
+const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professionalProfile, username, onEditAvatar, onEditCover }) => {
+  const navigate = (path: string) => window.location.assign(path);
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-[32px] border border-blue-100 bg-[linear-gradient(135deg,rgba(15,76,129,0.08)_0%,rgba(13,110,253,0.04)_100%)] p-5 shadow-sm">
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-[24px] border border-white/80 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Negócios</p>
-            <p className="mt-2 text-h2 font-bold text-foreground">{professionalProfile.businessCount}</p>
+    <div className="space-y-8">
+      <section className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-700">
+              <BriefcaseBusiness size={14} /> Você é proprietário
+            </div>
+            <h2 className="mt-2 text-xl font-bold text-slate-900">Edição do perfil profissional</h2>
+            <p className="mt-0.5 text-sm text-slate-500">Atualize a vitrine pública que reúne seus negócios e eventos.</p>
+            <p className="mt-3 text-sm font-semibold text-slate-700">
+              {professionalProfile.businessCount} {professionalProfile.businessCount === 1 ? 'negócio' : 'negócios'} · {professionalProfile.eventCount} {professionalProfile.eventCount === 1 ? 'evento' : 'eventos'}
+            </p>
           </div>
-          <div className="rounded-[24px] border border-white/80 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Eventos</p>
-            <p className="mt-2 text-h2 font-bold text-foreground">{professionalProfile.eventCount}</p>
+          <div className="shrink-0">
+            <Dropdown
+              trigger={menuTrigger('Ações do perfil profissional')}
+              sections={[
+                {
+                  heading: 'Perfil profissional',
+                  items: [
+                    { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => navigate(`/profissional/${username}`) },
+                    { label: 'Editar foto', icon: <ImagePlus size={16} />, onClick: onEditAvatar },
+                    { label: 'Editar capa', icon: <ImagePlus size={16} />, onClick: onEditCover },
+                  ],
+                },
+                {
+                  heading: 'Publicações',
+                  items: [
+                    { label: 'Cadastrar negócio', icon: <Plus size={16} />, onClick: () => navigate('/negocios?create=1') },
+                    { label: 'Abrir eventos', icon: <CalendarDays size={16} />, onClick: () => navigate('/eventos') },
+                  ],
+                },
+              ]}
+            />
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href="/negocios"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-4 text-sm font-bold text-white shadow-sm"
-          >
-            Cadastrar negócio
-          </Link>
-          <Link
-            href="/eventos"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-100 bg-surface px-4 text-sm font-bold text-brand-500"
-          >
-            Abrir eventos
-          </Link>
         </div>
       </section>
 
-      <PublicLinksBlock links={publicLinks} />
-
-      <section className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+      <section>
         <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
           <BriefcaseBusiness size={16} />
           Negócios
         </div>
         {professionalProfile.businesses.length > 0 ? (
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 divide-y divide-slate-100">
             {professionalProfile.businesses.map((business) => (
-              <div key={business.id} className="flex items-start gap-4 rounded-[24px] border border-blue-100/70 bg-blue-50/40 p-4">
-                <img
-                  src={business.imageUrl || `https://picsum.photos/seed/${business.id}/160`}
-                  alt={business.name}
-                  className="h-20 w-20 rounded-2xl object-cover"
-                />
+              <article key={business.id} className="flex items-start gap-3 py-4 first:pt-1">
+                <img src={business.imageUrl || `https://picsum.photos/seed/${business.id}/160`} alt={business.name} className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base font-bold text-foreground">{business.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">{business.category}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-bold text-foreground">{business.name}</p>
+                      <p className="mt-0.5 truncate text-sm text-slate-500">{business.category} · {business.locationLabel || 'Sem região definida'}</p>
                     </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600 shadow-sm">
-                      {formatBusinessStatus(business.status)}
-                    </span>
+                    <span className="shrink-0 text-xs font-semibold text-slate-500">{formatBusinessStatus(business.status)}</span>
                   </div>
-                  <p className="mt-3 text-sm text-slate-500">{business.locationLabel || 'Sem região definida'}</p>
-                  <p className="mt-1 text-xs text-slate-400">Atualizado em {formatDateTime(business.updatedAt)}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      href={business.publicPath}
-                      className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-surface px-3 py-2 text-xs font-bold text-brand-500"
-                    >
-                      Ver página pública
-                      <ExternalLink size={14} />
-                    </Link>
-                    <Link
-                      href={`/negocios/${business.slug || business.id}/gerenciar`}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700"
-                    >
-                      Gerenciar
-                    </Link>
-                    {business.status === 'PUBLISHED' ? (
-                      <Link
-                        href={`/ads/promover/${business.id}`}
-                        className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-3 py-2 text-xs font-bold text-white"
-                      >
-                        <Megaphone size={14} />
-                        Promover com Ads
-                      </Link>
-                    ) : null}
-                  </div>
+                  <p className="mt-2 text-xs text-slate-400">Atualizado em {formatDateTime(business.updatedAt)}</p>
                 </div>
-              </div>
+                <Dropdown
+                  trigger={menuTrigger(`Ações de ${business.name}`)}
+                  sections={[{ items: [
+                    { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => navigate(business.publicPath) },
+                    { label: 'Gerenciar negócio', icon: <BriefcaseBusiness size={16} />, onClick: () => navigate(`/negocios/${business.slug || business.id}/gerenciar`) },
+                    ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => navigate(`/ads/promover/${business.id}`) }] : []),
+                  ]}]}
+                />
+              </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-4 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Nenhum negócio vinculado ainda. Cadastre o primeiro gratuitamente para criar sua página pública.
-          </div>
-        )}
+        ) : <p className="mt-3 py-5 text-sm text-slate-500">Nenhum negócio vinculado ainda.</p>}
       </section>
 
-      <section className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+      <section>
         <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
           <CalendarDays size={16} />
           Eventos profissionais
         </div>
         {professionalProfile.events.length > 0 ? (
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 divide-y divide-slate-100">
             {professionalProfile.events.map((event) => (
-              <div key={event.id} className="flex items-start gap-4 rounded-[24px] border border-blue-100/70 bg-blue-50/40 p-4">
-                <img
-                  src={event.imageUrl || `https://picsum.photos/seed/${event.id}/160`}
-                  alt={event.title}
-                  className="h-20 w-20 rounded-2xl object-cover"
-                />
+              <article key={event.id} className="flex items-start gap-3 py-4 first:pt-1">
+                <img src={event.imageUrl || `https://picsum.photos/seed/${event.id}/160`} alt={event.title} className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base font-bold text-foreground">{event.title}</p>
-                      <p className="mt-1 text-sm text-slate-500">{event.locationLabel || 'Sem região definida'}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-bold text-foreground">{event.title}</p>
+                      <p className="mt-0.5 truncate text-sm text-slate-500">{event.locationLabel || 'Sem região definida'}</p>
                     </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600 shadow-sm">
-                      {formatEventStatus(event.status)}
-                    </span>
+                    <span className="shrink-0 text-xs font-semibold text-slate-500">{formatEventStatus(event.status)}</span>
                   </div>
-                  <p className="mt-3 text-sm text-slate-500">Começa em {formatDateTime(event.startsAt)}</p>
-                  <Link
-                    href={event.publicPath}
-                    className="mt-4 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-surface px-3 py-2 text-xs font-bold text-brand-500"
-                  >
-                    Abrir evento
-                    <ExternalLink size={14} />
-                  </Link>
+                  <p className="mt-2 text-xs text-slate-400">Começa em {formatDateTime(event.startsAt)}</p>
                 </div>
-              </div>
+                <Dropdown trigger={menuTrigger(`Ações de ${event.title}`)} sections={[{ items: [
+                  { label: 'Abrir evento', icon: <ExternalLink size={16} />, onClick: () => navigate(event.publicPath) },
+                ] }]} />
+              </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-4 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Nenhum evento criado ainda. Use esta área para acompanhar suas próximas publicações profissionais.
-          </div>
-        )}
+        ) : <p className="mt-3 py-5 text-sm text-slate-500">Nenhum evento profissional criado ainda.</p>}
       </section>
     </div>
   );

@@ -206,10 +206,10 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                   </Link>
                   {isOwnProfile ? (
                     <Link
-                      href="/profile"
+                      href="/profile?mode=professional"
                       className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-bold text-white shadow-sm"
                     >
-                      Abrir central profissional
+                      Editar perfil profissional
                     </Link>
                   ) : null}
                 </div>

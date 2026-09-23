@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   Briefcase,
+  BriefcaseBusiness,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -27,7 +28,6 @@ import {
 } from 'lucide-react';
 import SuggestionButton from './feedback/SuggestionButton';
 import FriendRequestBell from './feedback/FriendRequestBell';
-import PersonaModeDropdown from './profile/PersonaModeDropdown';
 import { useToast } from './feedback/ToastProvider';
 import { Button } from './ui/Button';
 import { Avatar } from './ui/Avatar';
@@ -107,15 +107,10 @@ const navigationItems: NavigationItem[] = [
 const SidebarContent: React.FC<{
   user: User;
   sourcePath: string;
-  personaMode: PersonaMode;
-  canUseProfessionalMode: boolean;
-  professionalIdentity?: ProfessionalProfileIdentity | null;
   professionalBusinesses?: ProfessionalProfileBusiness[];
   accentColorClass: string;
   isActive: (path: string) => boolean;
   onNavigate: (href: string) => void;
-  onPersonaModeChange?: (mode: PersonaMode) => void;
-  onProfessionalBusinessChange?: (businessId: string) => void;
   onItemClick?: () => void;
   onSignOut?: () => void;
   collapsed?: boolean;
@@ -123,40 +118,19 @@ const SidebarContent: React.FC<{
 }> = ({
   user,
   sourcePath,
-  personaMode,
-  canUseProfessionalMode,
-  professionalIdentity,
   professionalBusinesses = [],
   accentColorClass,
   isActive,
   onNavigate,
-  onPersonaModeChange,
-  onProfessionalBusinessChange,
   onItemClick,
   onSignOut,
   collapsed = false,
   onToggleCollapsed,
 }) => {
   const { showToast } = useToast();
-  const isProfessionalTheme = personaMode === 'professional';
-  const activeName =
-    isProfessionalTheme && professionalIdentity ? professionalIdentity.name : user.name;
-  const activeAvatar =
-    isProfessionalTheme && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : user.avatar;
-  const activeSubtitle =
-    isProfessionalTheme && professionalIdentity
-      ? 'Perfil profissional'
-      : user.username
-        ? `@${user.username}`
-        : 'Membro da comunidade';
-  const publicProfileHref =
-    isProfessionalTheme && professionalIdentity
-      ? professionalIdentity.publicPath
-      : isProfessionalTheme
-        ? '/negocios'
-      : user.username
-        ? `/perfil/${encodeURIComponent(user.username)}`
-        : '/profile';
+  const activeName = user.name;
+  const activeAvatar = user.avatar;
+  const activeSubtitle = user.username ? `@${user.username}` : 'Membro da comunidade';
 
   const handleDisabledNavigation = (item: NavigationItem) => {
     onItemClick?.();
@@ -182,7 +156,7 @@ const SidebarContent: React.FC<{
               <img src="/assets/logo_simbolo.svg" alt="Gringoou" className="h-8 w-8 object-contain" />
             </Link>
           ) : (
-            <Logo size="lg" professional={isProfessionalTheme} href="/inicio" />
+            <Logo size="lg" href="/inicio" />
           )}
           <button
             type="button"
@@ -196,27 +170,8 @@ const SidebarContent: React.FC<{
           </div>
           {!collapsed ? <div className="px-1">
             <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <h2 className={`truncate text-body-sm font-semibold ${accentColorClass}`}>{activeName}</h2>
-                {canUseProfessionalMode && onPersonaModeChange ? (
-                  <PersonaModeDropdown
-                    value={personaMode}
-                    onChange={onPersonaModeChange}
-                    personalSubtitle={user.username ? `@${user.username}` : 'Membro da comunidade'}
-                    professionalSubtitle={professionalIdentity?.name || professionalBusinesses[0]?.name || 'Cadastre um negócio'}
-                    professionalDisabled={professionalBusinesses.length === 0}
-                    businesses={professionalBusinesses}
-                    selectedBusinessId={professionalIdentity?.id}
-                    onBusinessChange={onProfessionalBusinessChange}
-                    align="left"
-                    trigger="chevron"
-                    menuClassName="z-30"
-                  />
-                ) : null}
-              </div>
-              <p className={`truncate text-[11px] font-medium ${isProfessionalTheme ? 'theme-text-soft' : 'text-slate-500'}`}>
-                {activeSubtitle}
-              </p>
+              <h2 className={`truncate text-body-sm font-semibold ${accentColorClass}`}>{activeName}</h2>
+              <p className="truncate text-[11px] font-medium text-slate-500">{activeSubtitle}</p>
             </div>
           </div> : null}
         </div>
@@ -253,27 +208,23 @@ const SidebarContent: React.FC<{
             </>
           ) : null}
           <SidebarMenuItem
-            label={isProfessionalTheme ? 'Meu negocio' : 'Meu perfil'}
+            label="Meu perfil público"
             icon={<UserIcon size={18} />}
-            active={isActive('/profile')}
+            active={isActive('/perfil')}
             collapsed={collapsed}
-            onClick={() => onNavigate('/profile')}
+            onClick={() => onNavigate(user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile')}
           />
+          {professionalBusinesses.length > 0 ? (
+            <SidebarMenuItem
+              label="Página de negócio"
+              icon={<Store size={18} />}
+              active={isActive('/negocios') && sourcePath.includes('/gerenciar')}
+              collapsed={collapsed}
+              onClick={() => onNavigate(`/negocios/${professionalBusinesses[0].slug || professionalBusinesses[0].id}/gerenciar`)}
+            />
+          ) : null}
         </SidebarMenu>
       </div>
-
-      {!collapsed ? <div className="space-y-2">
-        <Button variant="secondary" fullWidth onClick={() => onNavigate(professionalIdentity ? `/ads/promover/${professionalIdentity.id}` : '/negocios?create=1')}>
-          {professionalIdentity ? 'Promover com Ads' : 'Divulgar meu negócio'}
-        </Button>
-        <button
-          type="button"
-          onClick={() => onNavigate('/eventos?create=1')}
-          className="inline-flex h-11 w-full items-center justify-center rounded-full bg-secondary px-5 text-sm font-semibold text-foreground transition hover:brightness-95"
-        >
-          Cadastrar meu evento
-        </button>
-      </div> : null}
 
       {!collapsed && onSignOut ? (
         <Button
@@ -331,20 +282,17 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const [activeRegion, setActiveRegion] = useState({ key: user.regionKey || '', label: user.location });
   const [savingRegion, setSavingRegion] = useState(false);
   const [isNavigating, startNavigation] = React.useTransition();
-  const isProfessionalTheme = canUseProfessionalMode && personaMode === 'professional';
+  // The professional persona was consolidated into public business pages. Keep
+  // the community shell in its single, personal visual identity even if an old
+  // browser session still has the legacy persona value persisted.
+  const isProfessionalTheme = false;
   const accentColorClass = 'theme-text';
   const panelClass = 'border-slate-200';
-  const publicProfileHref =
-    isProfessionalTheme && professionalIdentity
-      ? professionalIdentity.publicPath
-      : isProfessionalTheme
-        ? '/negocios'
-        : user.username
-          ? `/perfil/${encodeURIComponent(user.username)}`
-          : '/profile';
-  const activeName = isProfessionalTheme && professionalIdentity ? professionalIdentity.name : user.name;
-  const activeAvatar =
-    isProfessionalTheme && professionalIdentity?.imageUrl ? professionalIdentity.imageUrl : user.avatar;
+  const publicProfileHref = user.username
+    ? `/perfil/${encodeURIComponent(user.username)}`
+    : '/profile';
+  const activeName = user.name;
+  const activeAvatar = user.avatar;
   const shortRegionLabel = activeRegion.label?.split(',')[0]?.trim() || 'Região';
 
   React.useEffect(() => {
@@ -453,15 +401,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           <SidebarContent
             user={user}
             sourcePath={pathname}
-            personaMode={personaMode}
-            canUseProfessionalMode={canUseProfessionalMode}
-            professionalIdentity={professionalIdentity}
             professionalBusinesses={professionalBusinesses}
             accentColorClass={accentColorClass}
             isActive={isActive}
             onNavigate={handleNavigate}
-            onPersonaModeChange={onPersonaModeChange}
-            onProfessionalBusinessChange={onProfessionalBusinessChange}
             onItemClick={() => setIsMenuOpen(false)}
             onSignOut={onSignOut}
             collapsed={isSidebarCollapsed}

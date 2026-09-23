@@ -3,7 +3,6 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import PublicProfile from '@/views/PublicProfile';
-import PublicProfessionalProfile from '@/views/PublicProfessionalProfile';
 import PublicGroup from '@/views/PublicGroup';
 import type { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
@@ -38,7 +37,7 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
   }
 
   if (professionalProfileUsername && !currentUser) {
-    return <PublicProfessionalProfile username={professionalProfileUsername} />;
+    return <PublicProfile username={professionalProfileUsername} />;
   }
 
   if (publicProfileUsername && !currentUser) {
@@ -81,7 +80,7 @@ const PublicEntry: React.FC<PublicEntryProps> = ({
         onPersonaModeChange={onPersonaModeChange}
         onSignOut={onSignOut}
       >
-        <PublicProfessionalProfile username={professionalProfileUsername} viewer={currentUser} embedded />
+        <PublicProfile username={professionalProfileUsername} viewer={currentUser} embedded />
       </Layout>
     );
   }

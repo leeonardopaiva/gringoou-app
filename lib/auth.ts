@@ -19,6 +19,24 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const passwordAuthEnabled = process.env.NEXT_PUBLIC_PASSWORD_AUTH_ENABLED !== 'false';
 const sessionMaxAgeSeconds = 8 * 60 * 60;
 
+const getAuthRedirectOrigin = (baseUrl: string) => {
+  if (process.env.NODE_ENV !== 'production') return baseUrl.replace(/\/$/, '');
+
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configuredOrigin) {
+    try {
+      const parsed = new URL(configuredOrigin);
+      if (parsed.hostname === 'gringoou.com' || parsed.hostname === 'www.gringoou.com') {
+        return parsed.origin;
+      }
+    } catch {
+      // Usa o dominio canonico abaixo quando a variavel estiver invalida.
+    }
+  }
+
+  return 'https://gringoou.com';
+};
+
 export const isGoogleAuthConfigured = Boolean(
   googleClientId && googleClientSecret && process.env.NEXTAUTH_SECRET,
 );
@@ -131,6 +149,28 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      const targetOrigin = getAuthRedirectOrigin(baseUrl);
+
+      if (url.startsWith('/')) return `${targetOrigin}${url}`;
+
+      try {
+        const target = new URL(url);
+        const currentBase = new URL(baseUrl);
+        if (
+          target.origin === currentBase.origin ||
+          target.hostname === 'emigrei.com' ||
+          target.hostname === 'www.emigrei.com'
+        ) {
+          return `${targetOrigin}${target.pathname}${target.search}${target.hash}`;
+        }
+        if (target.origin === targetOrigin) return target.toString();
+      } catch {
+        return targetOrigin;
+      }
+
+      return targetOrigin;
+    },
     async signIn({ user, account, profile }) {
       if (!isOperationalFeatureEnabled('registration') && ['google', 'email'].includes(account?.provider || '')) {
         const candidateEmail = normalizeAuthEmail(user.email || '');

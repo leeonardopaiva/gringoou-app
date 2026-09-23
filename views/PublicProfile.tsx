@@ -22,6 +22,7 @@ import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
 import { ImageLightbox } from '../components/community/ImageLightbox';
+import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 
 type PublicProfileProps = {
   username: string;
@@ -119,6 +120,10 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [editModal, setEditModal] = useState<'details' | 'avatar' | 'cover' | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '' });
+  const [mediaDraft, setMediaDraft] = useState('');
   const [groupDraft, setGroupDraft] = useState({
     name: '',
     category: '',
@@ -205,6 +210,48 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
+
+  const openProfileEditor = (section: 'details' | 'avatar' | 'cover') => {
+    setDetailsDraft({ name: profile.name, bio: profile.bio || '' });
+    setMediaDraft(section === 'avatar' ? profile.image || '' : profile.coverImageUrl || '');
+    setEditModal(section);
+  };
+
+  const saveDetails = async () => {
+    setSavingProfile(true);
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: detailsDraft.name.trim(), username: profile.username, email: viewer?.email || undefined,
+          phone: viewer?.phone || undefined, bio: detailsDraft.bio.trim() || undefined,
+          coverImageUrl: profile.coverImageUrl || undefined, interests: profile.interests, galleryUrls: profile.galleryUrls,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar o perfil.');
+      showToast('Perfil atualizado.', 'success'); setEditModal(null); refreshProfile();
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível salvar o perfil.', 'error'); }
+    finally { setSavingProfile(false); }
+  };
+
+  const saveMedia = async () => {
+    if (!editModal) return;
+    setSavingProfile(true);
+    try {
+      const isAvatar = editModal === 'avatar';
+      const response = await fetch(isAvatar ? '/api/profile/image' : '/api/profile', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(isAvatar
+          ? { image: mediaDraft || undefined }
+          : { name: profile.name, username: profile.username, email: viewer?.email || undefined, phone: viewer?.phone || undefined, bio: profile.bio || undefined, coverImageUrl: mediaDraft || undefined, interests: profile.interests, galleryUrls: profile.galleryUrls }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar a imagem.');
+      showToast(isAvatar ? 'Foto atualizada.' : 'Capa atualizada.', 'success'); setEditModal(null); refreshProfile();
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a imagem.', 'error'); }
+    finally { setSavingProfile(false); }
+  };
 
   const handleFriendAction = async () => {
     if (!viewer) {
@@ -343,18 +390,17 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-white/10" />
               {isOwnProfile ? (
                 <div className="absolute right-4 top-4">
-                  <Link
-                    href="/profile?edit=cover"
+                  <button type="button" onClick={() => openProfileEditor('cover')}
                     className="inline-flex rounded-[22px] border border-white/70 bg-white/85 p-3 text-slate-600 shadow-sm backdrop-blur"
                     aria-label="Editar capa"
                   >
                     <MoreHorizontal size={18} />
-                  </Link>
+                  </button>
                 </div>
               ) : null}
             </div>
 
-            <div className="absolute left-1/2 top-full z-20 h-32 w-32 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[6px] border-white bg-white shadow-lg sm:h-40 sm:w-40">
+            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-32 w-32 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[6px] border-white bg-white shadow-lg disabled:cursor-default sm:h-40 sm:w-40" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
               {profile.image ? (
                 <img
                   src={profile.image}
@@ -367,7 +413,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   {getInitials(profile.name)}
                 </div>
               )}
-            </div>
+            </button>
           </div>
 
           <div className="rounded-t-[36px] bg-white px-5 pb-8 pt-24 shadow-sm sm:pt-28">
@@ -404,9 +450,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 {isOwnProfile ? (
-                  <div className="inline-flex min-h-12 items-center gap-2 rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-600 shadow-sm">
-                    Perfil público ativo
-                  </div>
+                  <button type="button" onClick={() => openProfileEditor('details')} className="inline-flex min-h-12 items-center gap-2 rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-600 shadow-sm transition hover:border-brand-200 hover:text-brand-600">
+                    Editar perfil
+                  </button>
                 ) : friendStatus === 'signed_out' ? (
                   <Link
                     href="/"
@@ -799,6 +845,20 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             alt={`Foto ampliada de ${profile.name}`}
             onClose={() => setSelectedPhoto(null)}
           />
+          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title={editModal === 'details' ? 'Editar perfil' : editModal === 'avatar' ? 'Editar foto' : 'Editar capa'} description="As alterações serão atualizadas na sua página pública.">
+            {editModal === 'details' ? (
+              <div className="space-y-4">
+                <label className="block text-sm font-bold text-slate-700">Nome<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
+                <label className="block text-sm font-bold text-slate-700">Sobre você<textarea value={detailsDraft.bio} onChange={(event) => setDetailsDraft((current) => ({ ...current, bio: event.target.value }))} rows={4} className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400" /></label>
+                <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar alterações'}</button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <CloudinaryImageField value={mediaDraft} onChange={setMediaDraft} folder="profiles" placeholder={editModal === 'avatar' ? 'Link da foto do perfil' : 'Link da capa do perfil'} hint="Envie pela Cloudinary ou cole uma URL pública." />
+                <button type="button" onClick={() => void saveMedia()} disabled={savingProfile} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar imagem'}</button>
+              </div>
+            )}
+          </Modal>
         </div>
       </div>
     </div>

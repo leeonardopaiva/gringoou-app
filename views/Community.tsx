@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
+import { ArrowLeft, Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
 import CommunityComposer from '@/components/community/CommunityComposer';
 import FeedPostCard from '@/components/community/FeedPostCard';
 import type { ComposerMode } from '@/components/community/utils';
@@ -828,6 +828,12 @@ const Community: React.FC<{
 
   return (
     <ContentColumn className="animate-in space-y-3 px-5 pb-20 pt-4 fade-in duration-500">
+      <header className="flex items-center gap-2 pb-1">
+        <Link href="/inicio" aria-label="Voltar para a home" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100">
+          <ArrowLeft size={19} />
+        </Link>
+        <h1 className="text-xl font-bold text-slate-900">Comunidade</h1>
+      </header>
       <div className="flex flex-col gap-3">
       <div ref={composerRef} className="order-2">
         {isComposerExpanded ? (
