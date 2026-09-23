@@ -208,6 +208,28 @@ export const AdWizard: React.FC = () => {
     return <div className="mx-auto max-w-[1080px] rounded-3xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Carregando conta comercial...</div>;
   }
 
+  if (!account.businessId) {
+    return (
+      <div className="mx-auto max-w-[720px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Antes de promover</p>
+        <h1 className="mt-2 text-2xl font-extrabold text-[#132f40]">Ative a página do seu negócio</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">Revise os dados públicos de <strong>{account.name}</strong>. A página será vinculada a esta conta Ads e enviada para aprovação.</p>
+        <Button className="mt-6" onClick={() => router.push(`/negocios?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>Criar página do negócio</Button>
+      </div>
+    );
+  }
+
+  if (account.businessStatus !== 'PUBLISHED') {
+    return (
+      <div className="mx-auto max-w-[720px] rounded-3xl border border-amber-200 bg-amber-50 p-6 sm:p-8">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-amber-700">Página em análise</p>
+        <h1 className="mt-2 text-2xl font-extrabold text-[#132f40]">A promoção será liberada após a aprovação</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">Você pode revisar a página agora. Assim que ela for aprovada pela moderação, a criação de campanhas será liberada automaticamente.</p>
+        {account.publicPath ? <Button className="mt-6" variant="secondary" onClick={() => router.push(`${account.publicPath}/gerenciar`)}>Ver página do negócio</Button> : null}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-[1160px] pb-28">
       <header className="mb-8">

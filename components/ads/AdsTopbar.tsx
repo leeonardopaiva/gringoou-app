@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, BriefcaseBusiness, Check, ChevronDown, LogOut, Menu, Plus, Settings, Users } from 'lucide-react';
+import { Bell, BriefcaseBusiness, Check, ChevronDown, ExternalLink, LogOut, Menu, Plus, Settings, Users } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import GringoouLogo from '@/components/icons/GringoouLogo';
@@ -55,7 +55,10 @@ export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
                 <div className="border-t border-slate-100 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Contas de negócio ({accounts.length})</p>
                   <div className="mt-2 space-y-1">{accounts.map((item) => (
-                    <button key={item.id} type="button" disabled={accountSwitchLocked} onClick={() => void changeAccount(item.id)} className="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"><Avatar src={item.logoUrl} name={item.name} size="md" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{item.name}</strong><span className="block truncate text-xs text-slate-500">ID: {item.id.slice(0, 12)}...</span></span>{item.id === account?.id ? <Check size={18} className="text-brand-500" /> : <BriefcaseBusiness size={18} className="text-slate-300" />}</button>
+                    <div key={item.id} className="flex items-center gap-1 rounded-xl p-1 hover:bg-brand-50">
+                      <button type="button" disabled={accountSwitchLocked} onClick={() => void changeAccount(item.id)} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 text-left disabled:cursor-not-allowed disabled:opacity-50"><Avatar src={item.logoUrl} name={item.name} size="md" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{item.name}</strong><span className="block truncate text-xs text-slate-500">Conta Ads · ID: {item.id.slice(0, 12)}...</span></span>{item.id === account?.id ? <Check size={18} className="shrink-0 text-brand-500" /> : <BriefcaseBusiness size={18} className="shrink-0 text-slate-300" />}</button>
+                      {item.publicPath ? <Link href={item.publicPath} onClick={() => setOpen(false)} aria-label={`Abrir página pública de ${item.name}`} title="Abrir página pública" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white hover:text-brand-600"><ExternalLink size={16} /></Link> : null}
+                    </div>
                   ))}</div>
                   {accountSwitchLocked ? <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">Confirmando pagamento. A troca de conta foi pausada.</p> : null}
                   {!accountSwitchLocked && canCreateAccount ? (

@@ -5,7 +5,7 @@ import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
 import { adCheckoutSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { canManageAdBilling } from '@/lib/ads/account';
+import { canManageAdBilling, getPromotionEligibilityError } from '@/lib/ads/account';
 import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 
 export async function POST(request: Request) {
@@ -26,11 +26,18 @@ export async function POST(request: Request) {
 
   const membership = await prisma.adAccountUser.findUnique({
     where: { adAccountId_userId: { adAccountId: parsed.data.adAccountId, userId: session.user.id } },
-    select: { role: true },
+    select: {
+      role: true,
+      adAccount: {
+        select: { businessId: true, business: { select: { status: true } } },
+      },
+    },
   });
   if (!membership || !canManageAdBilling(membership.role)) {
     return NextResponse.json({ error: 'Apenas o administrador principal da conta pode contratar e pagar anuncios.' }, { status: 403 });
   }
+  const eligibilityError = getPromotionEligibilityError(membership.adAccount);
+  if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
 
   const banner = await prisma.banner.findFirst({
     where: {

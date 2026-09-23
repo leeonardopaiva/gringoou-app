@@ -13,6 +13,7 @@ export type AdAccountSummary = {
   timezone: string;
   businessId: string | null;
   publicPath: string | null;
+  businessStatus: 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED' | 'SUSPENDED' | null;
   role: 'BUSINESS_ADMIN' | 'ADMIN' | 'EDITOR' | 'VIEWER';
 };
 

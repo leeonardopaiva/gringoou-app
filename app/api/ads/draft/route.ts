@@ -4,7 +4,7 @@ import { getAdDestinationFields } from '@/lib/ads/server';
 import { adDraftSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { canEditAdDraft } from '@/lib/ads/account';
+import { canEditAdDraft, getPromotionEligibilityError } from '@/lib/ads/account';
 
 async function saveDraft(request: Request, requireExisting: boolean) {
   const session = await getServerAuthSession();
@@ -17,11 +17,18 @@ async function saveDraft(request: Request, requireExisting: boolean) {
 
   const membership = await prisma.adAccountUser.findUnique({
     where: { adAccountId_userId: { adAccountId: parsed.data.adAccountId, userId: session.user.id } },
-    select: { role: true },
+    select: {
+      role: true,
+      adAccount: {
+        select: { businessId: true, business: { select: { status: true } } },
+      },
+    },
   });
   if (!membership || !canEditAdDraft(membership.role)) {
     return NextResponse.json({ error: 'Sem permissao para criar anuncios nesta conta.' }, { status: 403 });
   }
+  const eligibilityError = getPromotionEligibilityError(membership.adAccount);
+  if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
 
   if (parsed.data.regionKey) {
     const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });

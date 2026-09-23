@@ -6,6 +6,7 @@ import { CalendarDays, Copy, Download, Edit3, Filter, Plus, Search, SlidersHoriz
 import { Alert, Badge, Button, Card, Input, Modal, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
+import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import {
   formatNumber,
   formatPercent,
@@ -36,6 +37,7 @@ function getStatus(row: AdsOverviewRow, enabled: boolean): StatusView {
 export function OverviewDashboard({ data }: OverviewDashboardProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const { account } = useAdAccount();
   const [query, setQuery] = useState('');
   const [enabledRows, setEnabledRows] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(data.rows.map((row) => [row.id, row.isActive])),
@@ -107,9 +109,15 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
 
   return (
     <div className="mx-auto w-full max-w-[1380px] space-y-7">
-      <Alert tone="atencao" title="Seus anuncios nao serao entregues ate que seu e-mail seja verificado." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
-        <button type="button" className="text-sm font-bold text-brand-500 underline underline-offset-2">Reenviar verificacao</button>
-      </Alert>
+      {!account?.businessId ? (
+        <Alert tone="atencao" title="Crie a página do negócio para começar a promover." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
+          <button type="button" onClick={() => router.push(`/negocios?create=1&adAccountId=${encodeURIComponent(account?.id || '')}`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Criar página</button>
+        </Alert>
+      ) : account.businessStatus !== 'PUBLISHED' ? (
+        <Alert tone="atencao" title="Página em análise. Após a aprovação, você poderá continuar e concluir a campanha." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
+          {account.publicPath ? <button type="button" onClick={() => router.push(`${account.publicPath}/gerenciar`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Ver página</button> : null}
+        </Alert>
+      ) : null}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-[34px] font-extrabold leading-none text-[#132f40]">Overview</h1>

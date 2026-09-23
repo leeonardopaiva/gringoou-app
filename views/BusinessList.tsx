@@ -1,6 +1,6 @@
 ﻿import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useToast } from '../components/feedback/ToastProvider';
 import StarRating from '../components/engagement/StarRating';
@@ -79,18 +79,21 @@ const BusinessList: React.FC<BusinessListProps> = ({
   initialData,
 }) => {
   const { data: session, update } = useSession();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [businesses, setBusinesses] = useState<Business[]>(initialData?.businesses ?? []);
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [resultScope, setResultScope] = useState<'local' | 'global'>(initialData?.scope ?? 'local');
   const initialPageConsumedRef = React.useRef(false);
+  const prefetchedAdAccountRef = React.useRef<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [createForm, setCreateForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<BusinessField>>({});
   const isProfessionalMode = personaMode === 'professional' && Boolean(professionalIdentity);
+  const legacyAdAccountId = searchParams?.get('adAccountId') || '';
   const activeRegionKey = isProfessionalMode
     ? professionalIdentity?.regionKey || session?.user?.regionKey || ''
     : session?.user?.regionKey || '';
@@ -121,6 +124,28 @@ const BusinessList: React.FC<BusinessListProps> = ({
       );
     }
   }, [session?.user?.regionKey]);
+
+  useEffect(() => {
+    if (!legacyAdAccountId || prefetchedAdAccountRef.current === legacyAdAccountId) return;
+    prefetchedAdAccountRef.current = legacyAdAccountId;
+    void fetch('/api/ads/accounts', { cache: 'no-store' })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        const account = Array.isArray(payload?.accounts)
+          ? payload.accounts.find((item: { id: string }) => item.id === legacyAdAccountId)
+          : null;
+        if (!account || account.businessId) return;
+        setCreateForm((current) => ({
+          ...current,
+          name: account.name || current.name,
+          phone: account.phone || current.phone,
+          address: account.businessAddress || current.address,
+          website: account.websiteUrl || current.website,
+          imageUrl: account.logoUrl || current.imageUrl,
+        }));
+      })
+      .catch(() => undefined);
+  }, [legacyAdAccountId]);
 
   useEffect(() => {
     if (
@@ -230,6 +255,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
         },
         body: JSON.stringify({
           ...createForm,
+          adAccountId: legacyAdAccountId || undefined,
           website: normalizeUrlFieldValue(createForm.website),
           imageUrl: normalizeUrlFieldValue(createForm.imageUrl),
         }),
@@ -242,11 +268,17 @@ const BusinessList: React.FC<BusinessListProps> = ({
         return;
       }
 
-      showToast('Seu negocio foi enviado para aprovacao.', 'success');
+      showToast(
+        legacyAdAccountId
+          ? 'Página criada e vinculada. Aguarde a aprovação para promover.'
+          : 'Seu negócio foi enviado para aprovação.',
+        'success',
+      );
       await update();
       setCreateForm(emptyForm);
       setShowCreateForm(false);
       setRefreshKey((current) => current + 1);
+      if (legacyAdAccountId) router.push('/ads/overview');
     } catch (error) {
       console.error('Failed to create business:', error);
       showToast('Nao foi possivel enviar seu negocio.', 'error');

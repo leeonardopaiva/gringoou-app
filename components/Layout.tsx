@@ -476,6 +476,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <CommunityAccountMenu
                   user={{ name: user.name, avatar: user.avatar, email: user.email }}
                   profileHref={user.username ? `/perfil/${encodeURIComponent(user.username)}` : '/profile'}
+                  knownBusinesses={professionalBusinesses}
                 />
               </div>
             </div>

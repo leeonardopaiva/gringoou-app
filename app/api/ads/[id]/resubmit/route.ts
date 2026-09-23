@@ -1,6 +1,6 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { canEditAdDraft } from '@/lib/ads/account';
+import { canEditAdDraft, getPromotionEligibilityError } from '@/lib/ads/account';
 import { getAdDestinationFields } from '@/lib/ads/server';
 import { adCreativeStepSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
@@ -28,7 +28,11 @@ export async function POST(request: Request, context: RouteContext) {
     select: {
       id: true,
       adAccount: {
-        select: { users: { where: { userId: session.user.id }, select: { role: true }, take: 1 } },
+        select: {
+          businessId: true,
+          business: { select: { status: true } },
+          users: { where: { userId: session.user.id }, select: { role: true }, take: 1 },
+        },
       },
     },
   });
@@ -36,6 +40,11 @@ export async function POST(request: Request, context: RouteContext) {
   if (!campaign || !role || !canEditAdDraft(role)) {
     return NextResponse.json({ error: 'Campanha rejeitada nao encontrada ou sem permissao.' }, { status: 403 });
   }
+  if (!campaign.adAccount) {
+    return NextResponse.json({ error: 'Conta Ads não encontrada.' }, { status: 409 });
+  }
+  const eligibilityError = getPromotionEligibilityError(campaign.adAccount);
+  if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
 
   const result = await prisma.banner.updateMany({
     where: { id, paymentStatus: AdPaymentStatus.PAID, moderationStatus: AdModerationStatus.REJECTED },

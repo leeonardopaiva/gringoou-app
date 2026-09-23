@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { AdAccountRole } from '@prisma/client';
+import { AdAccountRole, BusinessStatus } from '@prisma/client';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getServerAuthSession } from '@/lib/auth';
@@ -18,6 +18,27 @@ export const AD_ACCOUNT_CAMPAIGN_ROLES: AdAccountRole[] = [
   AdAccountRole.BUSINESS_ADMIN,
   AdAccountRole.ADMIN,
 ];
+
+type PromotionAccount = {
+  businessId: string | null;
+  business?: { status: BusinessStatus } | null;
+};
+
+export function getPromotionEligibilityError(account: PromotionAccount) {
+  if (!account.businessId || !account.business) {
+    return {
+      code: 'BUSINESS_PAGE_REQUIRED',
+      error: 'Crie e vincule a página do negócio antes de promover.',
+    };
+  }
+  if (account.business.status !== BusinessStatus.PUBLISHED) {
+    return {
+      code: 'BUSINESS_APPROVAL_REQUIRED',
+      error: 'A página do negócio precisa ser aprovada antes de promover.',
+    };
+  }
+  return null;
+}
 
 export async function getAdAccountMembership(userId: string, requestedAccountId?: string | null) {
   const cookieStore = await cookies();

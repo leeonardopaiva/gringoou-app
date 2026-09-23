@@ -1,7 +1,7 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { canManageAdCampaign } from '@/lib/ads/account';
+import { canManageAdCampaign, getPromotionEligibilityError } from '@/lib/ads/account';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -23,11 +23,21 @@ export async function PATCH(request: Request, context: RouteContext) {
       moderationStatus: true,
       startsAt: true,
       endsAt: true,
-      adAccount: { select: { users: { where: { userId: session.user.id }, select: { role: true }, take: 1 } } },
+      adAccount: {
+        select: {
+          businessId: true,
+          business: { select: { status: true } },
+          users: { where: { userId: session.user.id }, select: { role: true }, take: 1 },
+        },
+      },
     },
   });
   const role = banner?.adAccount?.users[0]?.role;
   if (!banner || !role || !canManageAdCampaign(role)) return NextResponse.json({ error: 'Apenas administradores da conta podem ativar ou pausar campanhas.' }, { status: 403 });
+  if (parsed.data.isActive && banner.adAccount) {
+    const eligibilityError = getPromotionEligibilityError(banner.adAccount);
+    if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
+  }
 
   const now = new Date();
   if (parsed.data.isActive && (

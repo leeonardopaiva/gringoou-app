@@ -1,5 +1,6 @@
-import { BusinessStatus, BusinessMemberRole, UserRole, VisibilityScope } from '@prisma/client';
+import { AdAccountRole, BusinessStatus, BusinessMemberRole, UserRole, VisibilityScope } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
@@ -7,6 +8,10 @@ import { findRegionByKey } from '@/lib/region-store';
 import { slugify, uniqueSlug } from '@/lib/slug';
 import { businessSchema } from '@/lib/validators';
 import { getBusinessesPage } from '@/lib/server/businesses';
+
+const createBusinessSchema = businessSchema.extend({
+  adAccountId: z.string().cuid().optional(),
+});
 
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const parsed = businessSchema.safeParse(body);
+  const parsed = createBusinessSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -68,6 +73,30 @@ export async function POST(request: Request) {
 
   if (!region) {
     return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+  }
+
+  if (parsed.data.adAccountId) {
+    const legacyAccount = await prisma.adAccountUser.findUnique({
+      where: {
+        adAccountId_userId: {
+          adAccountId: parsed.data.adAccountId,
+          userId: session.user.id,
+        },
+      },
+      select: {
+        role: true,
+        adAccount: { select: { businessId: true } },
+      },
+    });
+    const canLinkAccount = legacyAccount && (
+      legacyAccount.role === AdAccountRole.BUSINESS_ADMIN || legacyAccount.role === AdAccountRole.ADMIN
+    );
+    if (!canLinkAccount) {
+      return NextResponse.json({ error: 'Você não pode vincular esta conta Ads.' }, { status: 403 });
+    }
+    if (legacyAccount.adAccount.businessId) {
+      return NextResponse.json({ error: 'Esta conta Ads já possui uma página de negócio.' }, { status: 409 });
+    }
   }
 
   const baseSlug = slugify(parsed.data.name);
@@ -108,10 +137,19 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        slug: true,
         name: true,
         status: true,
       },
     });
+
+    if (parsed.data.adAccountId) {
+      const linked = await tx.adAccount.updateMany({
+        where: { id: parsed.data.adAccountId, businessId: null },
+        data: { businessId: created.id },
+      });
+      if (linked.count !== 1) throw new Error('AD_ACCOUNT_ALREADY_LINKED');
+    }
 
     await tx.user.update({
       where: { id: session.user.id },
@@ -121,10 +159,19 @@ export async function POST(request: Request) {
     });
 
     return created;
+  }).catch((error) => {
+    if (error instanceof Error && error.message === 'AD_ACCOUNT_ALREADY_LINKED') return null;
+    throw error;
   });
+
+  if (!business) {
+    return NextResponse.json({ error: 'A conta Ads foi vinculada por outra solicitação. Atualize a página.' }, { status: 409 });
+  }
 
   return NextResponse.json({
     business,
+    publicPath: `/negocios/${business.slug}`,
+    linkedAdAccountId: parsed.data.adAccountId ?? null,
     message: 'Business submitted for review',
   });
 }
