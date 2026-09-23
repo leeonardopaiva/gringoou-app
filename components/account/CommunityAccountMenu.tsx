@@ -28,11 +28,25 @@ export function CommunityAccountMenu({ user, profileHref }: CommunityAccountMenu
   const [hasAdAccounts, setHasAdAccounts] = useState(false);
 
   useEffect(() => {
-    void fetch('/api/ads/accounts', { cache: 'no-store' })
-      .then((response) => response.ok ? response.json() : null)
-      .then((payload) => {
-        setBusinesses(payload?.businesses ?? []);
-        setHasAdAccounts(Array.isArray(payload?.accounts) && payload.accounts.length > 0);
+    void Promise.all([
+      fetch('/api/ads/accounts', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null),
+      fetch('/api/businesses?mine=1', { cache: 'no-store' }).then((response) => response.ok ? response.json() : null),
+    ])
+      .then(([adsPayload, businessesPayload]) => {
+        const accounts = Array.isArray(adsPayload?.accounts) ? adsPayload.accounts : [];
+        const accountsByBusinessId = new Map(accounts.filter((account: { businessId?: string | null }) => account.businessId).map((account: { businessId: string; id: string }) => [account.businessId, account.id]));
+        const managedBusinesses = Array.isArray(businessesPayload?.businesses)
+          ? businessesPayload.businesses.map((business: { id: string; slug?: string | null; name: string; imageUrl?: string | null }) => ({
+              id: business.id,
+              name: business.name,
+              imageUrl: business.imageUrl || null,
+              publicPath: `/negocios/${business.slug || business.id}`,
+              managementPath: `/negocios/${business.slug || business.id}/gerenciar`,
+              adAccountId: accountsByBusinessId.get(business.id) || null,
+            }))
+          : [];
+        setBusinesses(managedBusinesses.length ? managedBusinesses : adsPayload?.businesses ?? []);
+        setHasAdAccounts(accounts.length > 0);
       })
       .catch(() => { setBusinesses([]); setHasAdAccounts(false); });
   }, []);

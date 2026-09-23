@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const businesses = await prisma.business.findMany({
       where: { OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }] },
-      select: { id: true, name: true, status: true },
+      select: { id: true, slug: true, name: true, imageUrl: true, status: true },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json({ businesses });
