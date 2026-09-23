@@ -110,6 +110,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   const [savingBusiness, setSavingBusiness] = useState(false);
 
   const [nameDraft, setNameDraft] = useState('');
+  const [slugDraft, setSlugDraft] = useState('');
   const [categoryDraft, setCategoryDraft] = useState('');
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [addressDraft, setAddressDraft] = useState('');
@@ -189,6 +190,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   const syncDrafts = (source: BusinessDetailState) => {
     setNameDraft(source.name);
+    setSlugDraft(source.slug);
     setCategoryDraft(source.category);
     setDescriptionDraft(source.description);
     setAddressDraft(source.address);
@@ -260,6 +262,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         },
         body: JSON.stringify({
           name: nameDraft.trim(),
+          slug: slugDraft.trim(),
           category: categoryDraft.trim(),
           description: descriptionDraft.trim(),
           address: addressDraft.trim(),
@@ -282,6 +285,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       const updatedBusiness: BusinessDetailState = {
         ...business,
         name: payload.business.name,
+        slug: payload.business.slug,
         category: payload.business.category,
         description: payload.business.description || '',
         address: payload.business.address,
@@ -754,6 +758,15 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
                       placeholder="Nome do negocio"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">URL da página</label>
+                    <div className="flex overflow-hidden rounded-full border border-input bg-surface text-sm">
+                      <span className="shrink-0 px-4 py-3 text-slate-400">/negocios/</span>
+                      <input value={slugDraft} onChange={(event) => setSlugDraft(event.target.value)} className="min-w-0 flex-1 bg-transparent py-3 pr-4 font-medium text-foreground outline-none" placeholder="trustapizzashop" />
+                    </div>
+                    <p className="text-xs text-slate-500">Use letras, números e hífens. Links antigos continuarão funcionando.</p>
                   </div>
 
                   <div className="space-y-2">

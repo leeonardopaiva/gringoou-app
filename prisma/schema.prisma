@@ -390,10 +390,20 @@ model Business {
   events              Event[]            @relation("EventBusiness")
   jobs                Job[]              @relation("JobBusiness")
   adAccount            AdAccount?
+  slugRedirects        BusinessSlugRedirect[]
 
   @@index([status, regionKey])
   @@index([category, regionKey])
   @@index([visibilityScope, visibilityRegionKey])
+}
+
+model BusinessSlugRedirect {
+  slug       String   @id
+  businessId String
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
 }
 
 model BusinessMember {

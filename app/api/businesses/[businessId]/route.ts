@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { isVisibleForRegion } from '@/lib/visibility';
+import { validateBusinessSlug } from '@/lib/business-slug';
 
 type RouteContext = {
   params: Promise<{
@@ -14,9 +15,12 @@ export async function GET(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
   const { businessId } = await context.params;
 
+  const redirected = await prisma.businessSlugRedirect.findUnique({ where: { slug: businessId }, select: { businessId: true } });
+  const resolvedBusinessId = redirected?.businessId || businessId;
+
   const business = await prisma.business.findFirst({
     where: {
-      OR: [{ id: businessId }, { slug: businessId }],
+      OR: [{ id: resolvedBusinessId }, { slug: resolvedBusinessId }],
     },
     select: {
       id: true,
@@ -153,11 +157,24 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  let nextSlug: string | undefined;
+  if (typeof body.slug === 'string' && body.slug.trim() && body.slug.trim() !== existingBusiness.slug) {
+    const validation = validateBusinessSlug(body.slug);
+    if (validation.error) return NextResponse.json({ error: validation.error }, { status: 400 });
+    nextSlug = validation.slug;
+    const [usedBusiness, usedRedirect] = await Promise.all([
+      prisma.business.findUnique({ where: { slug: nextSlug }, select: { id: true } }),
+      prisma.businessSlugRedirect.findUnique({ where: { slug: nextSlug }, select: { slug: true } }),
+    ]);
+    if (usedBusiness || usedRedirect) return NextResponse.json({ error: 'Esta URL já está em uso.' }, { status: 409 });
+  }
+
   const normalizedImageUrl = typeof body.imageUrl === 'string' ? body.imageUrl.trim() || null : undefined;
   const business = await prisma.$transaction(async (tx) => {
     const updatedBusiness = await tx.business.update({
       where: { id: existingBusiness.id },
       data: {
+        slug: nextSlug,
         name: typeof body.name === 'string' ? body.name.trim() : undefined,
         category: typeof body.category === 'string' ? body.category.trim() : undefined,
         description:
@@ -191,6 +208,14 @@ export async function PUT(request: Request, context: RouteContext) {
       await tx.adAccount.updateMany({
         where: { businessId: existingBusiness.id },
         data: { logoUrl: normalizedImageUrl },
+      });
+    }
+
+    if (nextSlug) {
+      await tx.businessSlugRedirect.upsert({
+        where: { slug: existingBusiness.slug },
+        create: { slug: existingBusiness.slug, businessId: existingBusiness.id },
+        update: { businessId: existingBusiness.id },
       });
     }
 
