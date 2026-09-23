@@ -4,7 +4,71 @@ import { getAdDestinationFields } from '@/lib/ads/server';
 import { adDraftSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { canEditAdDraft, getPromotionEligibilityError } from '@/lib/ads/account';
+import { canEditAdDraft, getCampaignDraftEligibilityError } from '@/lib/ads/account';
+
+export async function GET(request: Request) {
+  const session = await getServerAuthSession();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const adAccountId = new URL(request.url).searchParams.get('adAccountId');
+  if (!adAccountId) return NextResponse.json({ error: 'Informe a conta Ads.' }, { status: 400 });
+
+  const membership = await prisma.adAccountUser.findUnique({
+    where: { adAccountId_userId: { adAccountId, userId: session.user.id } },
+    select: { role: true },
+  });
+  if (!membership || !canEditAdDraft(membership.role)) {
+    return NextResponse.json({ error: 'Sem permissão para acessar rascunhos nesta conta.' }, { status: 403 });
+  }
+
+  const draft = await prisma.banner.findFirst({
+    where: {
+      adAccountId,
+      moderationStatus: AdModerationStatus.DRAFT,
+      paymentStatus: AdPaymentStatus.PENDING,
+      payments: { none: {} },
+    },
+    orderBy: { updatedAt: 'desc' },
+    select: {
+      id: true,
+      goal: true,
+      headline: true,
+      description: true,
+      imageUrl: true,
+      ctaLabel: true,
+      targetUrl: true,
+      whatsappNumber: true,
+      marketplaceItemId: true,
+      regionKey: true,
+      plan: true,
+      durationMonths: true,
+    },
+  });
+
+  if (!draft?.goal) return NextResponse.json({ draft: null });
+
+  const destination = draft.goal === 'WHATSAPP'
+    ? draft.whatsappNumber || ''
+    : draft.goal === 'MARKETPLACE'
+      ? draft.marketplaceItemId || ''
+      : draft.targetUrl || '';
+
+  return NextResponse.json({
+    draft: {
+      draftId: draft.id,
+      step: 3,
+      goal: draft.goal,
+      headline: draft.headline || '',
+      description: draft.description || '',
+      imageUrl: draft.imageUrl,
+      ctaLabel: draft.ctaLabel || 'Saiba mais',
+      destination,
+      regionKey: draft.regionKey || '',
+      plan: draft.plan || undefined,
+      durationMonths: draft.durationMonths || undefined,
+    },
+  });
+}
 
 async function saveDraft(request: Request, requireExisting: boolean) {
   const session = await getServerAuthSession();
@@ -27,7 +91,7 @@ async function saveDraft(request: Request, requireExisting: boolean) {
   if (!membership || !canEditAdDraft(membership.role)) {
     return NextResponse.json({ error: 'Sem permissao para criar anuncios nesta conta.' }, { status: 403 });
   }
-  const eligibilityError = getPromotionEligibilityError(membership.adAccount);
+  const eligibilityError = getCampaignDraftEligibilityError(membership.adAccount);
   if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
 
   if (parsed.data.regionKey) {

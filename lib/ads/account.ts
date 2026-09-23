@@ -40,6 +40,16 @@ export function getPromotionEligibilityError(account: PromotionAccount) {
   return null;
 }
 
+export function getCampaignDraftEligibilityError(account: PromotionAccount) {
+  if (!account.businessId || !account.business) {
+    return {
+      code: 'BUSINESS_PAGE_REQUIRED',
+      error: 'Crie e vincule a página do negócio antes de montar a campanha.',
+    };
+  }
+  return null;
+}
+
 export async function getAdAccountMembership(userId: string, requestedAccountId?: string | null) {
   const cookieStore = await cookies();
   const selectedId = requestedAccountId || cookieStore.get(AD_ACCOUNT_COOKIE)?.value;

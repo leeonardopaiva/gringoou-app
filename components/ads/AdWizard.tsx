@@ -66,6 +66,7 @@ export const AdWizard: React.FC = () => {
     : 0;
   const smokeTestMode = isAdsSmokeTestModeEnabled();
   const canPay = account?.role === 'BUSINESS_ADMIN';
+  const businessApproved = account?.businessStatus === 'PUBLISHED';
   const storageKey = account?.id ? `${STORAGE_KEY_PREFIX}:${account.id}` : null;
   const hydrated = Boolean(account?.id && hydratedAccountId === account.id);
 
@@ -74,28 +75,53 @@ export const AdWizard: React.FC = () => {
       setHydratedAccountId(null);
       return;
     }
-    setHydratedAccountId(null);
-    dispatch({ type: 'RESET' });
-    setErrors({});
-    setRequestError(null);
-    setClientSecret(null);
-    setPaymentSubmitted(false);
-    setPaymentProcessing(false);
-    checkoutKeyRef.current = null;
-    const nextStorageKey = `${STORAGE_KEY_PREFIX}:${account.id}`;
-    try {
-      sessionStorage.removeItem(LEGACY_STORAGE_KEY);
-      const stored = sessionStorage.getItem(nextStorageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored) as AdWizardData & { bannerId?: string };
-        dispatch({ type: 'HYDRATE', payload: { ...parsed, draftId: parsed.draftId ?? parsed.bannerId } });
+    let cancelled = false;
+    const accountId = account.id;
+    const nextStorageKey = `${STORAGE_KEY_PREFIX}:${accountId}`;
+
+    const hydrateDraft = async () => {
+      setHydratedAccountId(null);
+      dispatch({ type: 'RESET' });
+      setErrors({});
+      setRequestError(null);
+      setClientSecret(null);
+      setPaymentSubmitted(false);
+      setPaymentProcessing(false);
+      checkoutKeyRef.current = null;
+
+      let localDraft: (AdWizardData & { bannerId?: string }) | null = null;
+      try {
+        sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+        const stored = sessionStorage.getItem(nextStorageKey);
+        if (stored) localDraft = JSON.parse(stored) as AdWizardData & { bannerId?: string };
+      } catch {
+        sessionStorage.removeItem(nextStorageKey);
       }
-    } catch {
-      sessionStorage.removeItem(nextStorageKey);
-    } finally {
-      setHydratedAccountId(account.id);
-    }
-  }, [account?.id]);
+
+      try {
+        const response = await fetch(`/api/banners/draft?adAccountId=${encodeURIComponent(accountId)}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => null);
+        if (!cancelled && response.ok && payload?.draft) {
+          const serverDraft = payload.draft as AdWizardData;
+          const readyForCheckout = businessApproved && canPay && Boolean(serverDraft.plan && serverDraft.durationMonths && serverDraft.regionKey);
+          dispatch({ type: 'HYDRATE', payload: { ...serverDraft, step: readyForCheckout ? 4 : 3 } });
+          return;
+        }
+        if (!cancelled && localDraft) {
+          dispatch({ type: 'HYDRATE', payload: { ...localDraft, draftId: localDraft.draftId ?? localDraft.bannerId } });
+        }
+      } catch {
+        if (!cancelled && localDraft) {
+          dispatch({ type: 'HYDRATE', payload: { ...localDraft, draftId: localDraft.draftId ?? localDraft.bannerId } });
+        }
+      } finally {
+        if (!cancelled) setHydratedAccountId(accountId);
+      }
+    };
+
+    void hydrateDraft();
+    return () => { cancelled = true; };
+  }, [account?.id, businessApproved, canPay]);
 
   useEffect(() => {
     if (hydrated && storageKey) sessionStorage.setItem(storageKey, JSON.stringify(state));
@@ -148,7 +174,7 @@ export const AdWizard: React.FC = () => {
   }, [account?.id, showToast, state]);
 
   const preparePayment = useCallback(async (draftId: string) => {
-    if (!state.plan || !state.durationMonths) return false;
+    if (!state.plan || !state.durationMonths || !businessApproved) return false;
     setSaving(true);
     setRequestError(null);
     checkoutKeyRef.current ??= `ad-payment-${draftId}-${crypto.randomUUID()}`;
@@ -169,13 +195,13 @@ export const AdWizard: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  }, [account?.id, state]);
+  }, [account?.id, businessApproved, state]);
 
   useEffect(() => {
-    if (hydrated && canPay && state.step === 4 && state.draftId && !clientSecret && !paymentSubmitted) {
+    if (hydrated && canPay && businessApproved && state.step === 4 && state.draftId && !clientSecret && !paymentSubmitted) {
       void preparePayment(state.draftId);
     }
-  }, [canPay, clientSecret, hydrated, paymentSubmitted, preparePayment, state.draftId, state.step]);
+  }, [businessApproved, canPay, clientSecret, hydrated, paymentSubmitted, preparePayment, state.draftId, state.step]);
 
   const nextStep = async () => {
     if (state.step === 1) {
@@ -195,6 +221,10 @@ export const AdWizard: React.FC = () => {
       if (!parsed.success) return setErrors(getErrors(parsed.error.issues));
       const draftId = await saveDraft();
       if (!draftId) return;
+      if (!businessApproved) {
+        showToast('Rascunho salvo. Após a aprovação da página, você continuará pelo checkout.', 'success');
+        return;
+      }
       if (!canPay) {
         setRequestError('Rascunho salvo. Apenas o administrador principal da conta pode concluir o pagamento.');
         return;
@@ -204,7 +234,7 @@ export const AdWizard: React.FC = () => {
     }
   };
 
-  if (accountLoading || !account) {
+  if (accountLoading || !account || !hydrated) {
     return <div className="mx-auto max-w-[1080px] rounded-3xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Carregando conta comercial...</div>;
   }
 
@@ -219,19 +249,9 @@ export const AdWizard: React.FC = () => {
     );
   }
 
-  if (account.businessStatus !== 'PUBLISHED') {
-    return (
-      <div className="mx-auto max-w-[720px] rounded-3xl border border-amber-200 bg-amber-50 p-6 sm:p-8">
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-amber-700">Página em análise</p>
-        <h1 className="mt-2 text-2xl font-extrabold text-[#132f40]">A promoção será liberada após a aprovação</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">Você pode revisar a página agora. Assim que ela for aprovada pela moderação, a criação de campanhas será liberada automaticamente.</p>
-        {account.publicPath ? <Button className="mt-6" variant="secondary" onClick={() => router.push(`${account.publicPath}/gerenciar`)}>Ver página do negócio</Button> : null}
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto w-full max-w-[1160px] pb-28">
+      {!businessApproved ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">Página em análise. Você pode montar e salvar o rascunho agora; checkout e publicação serão liberados após a aprovação.</div> : null}
       <header className="mb-8">
         <p className="text-[10px] font-bold text-slate-400">Criar Anuncio</p>
         <div className="mt-1 flex items-end justify-between gap-4">
@@ -259,7 +279,7 @@ export const AdWizard: React.FC = () => {
         <div className="mx-auto grid max-w-[1080px] grid-cols-3 items-center gap-3">
           <div><Button variant="ghost" disabled={state.step === 1 || saving || paymentProcessing} onClick={() => dispatch({ type: 'STEP', payload: Math.max(1, state.step - 1) as AdWizardData['step'] })}>Voltar</Button></div>
           <div className="flex justify-center">{state.step >= 2 && state.step < 4 ? <Button variant="ghost" loading={saving} onClick={() => void saveDraft(true)}>Salvar rascunho</Button> : null}</div>
-          <div className="flex justify-end">{state.step < 4 ? <Button loading={saving} disabled={state.step === 1 && !state.goal} onClick={() => void nextStep()}>Continuar</Button> : <Button type="submit" form={AD_PAYMENT_FORM_ID} loading={paymentProcessing || saving} disabled={!clientSecret || paymentSubmitted}>Pagar {formatAdCurrency(checkoutAmount)} e Enviar para Analise</Button>}</div>
+          <div className="flex justify-end">{state.step < 4 ? <Button loading={saving} disabled={state.step === 1 && !state.goal} onClick={() => void nextStep()}>{state.step === 3 && !businessApproved ? 'Salvar rascunho' : 'Continuar'}</Button> : <Button type="submit" form={AD_PAYMENT_FORM_ID} loading={paymentProcessing || saving} disabled={!clientSecret || paymentSubmitted}>Pagar {formatAdCurrency(checkoutAmount)} e Enviar para Analise</Button>}</div>
         </div>
       </footer>
     </div>

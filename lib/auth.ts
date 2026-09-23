@@ -46,6 +46,9 @@ export const isPasswordAuthConfigured = Boolean(passwordAuthEnabled && process.e
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
+  // Enable only on demand in local development with NEXTAUTH_DEBUG=true.
+  // Never enable this variable in production because OAuth diagnostics can be verbose.
+  debug: process.env.NODE_ENV !== 'production' && process.env.NEXTAUTH_DEBUG === 'true',
   session: {
     strategy: 'jwt',
     maxAge: sessionMaxAgeSeconds,
