@@ -24,6 +24,7 @@ export async function GET(_request: Request, context: RouteContext) {
       id: true,
       slug: true,
       title: true,
+      category: true,
       description: true,
       venueName: true,
       startsAt: true,
@@ -143,6 +144,7 @@ export async function PUT(request: Request, context: RouteContext) {
       id: true,
       slug: true,
       createdById: true,
+      regionKey: true,
     },
   });
 
@@ -170,21 +172,39 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const region = parsed.data.regionKey
+    ? await findRegionByKey(parsed.data.regionKey, { activeOnly: true })
+    : null;
+  if (parsed.data.regionKey && !region) {
+    return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+  }
+
   const event = await prisma.event.update({
     where: { id: existingEvent.id },
     data: {
       ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
       ...(parsed.data.description !== undefined ? { description: parsed.data.description } : {}),
       ...(parsed.data.venueName !== undefined ? { venueName: parsed.data.venueName } : {}),
+      ...(parsed.data.category !== undefined ? { category: parsed.data.category } : {}),
       ...(parsed.data.startsAt !== undefined ? { startsAt: new Date(parsed.data.startsAt) } : {}),
       ...(parsed.data.endsAt !== undefined ? { endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null } : {}),
       ...(parsed.data.externalUrl !== undefined ? { externalUrl: parsed.data.externalUrl ?? null } : {}),
       ...(parsed.data.imageUrl !== undefined ? { imageUrl: parsed.data.imageUrl ?? null } : {}),
       ...(parsed.data.galleryUrls !== undefined ? { galleryUrls: parsed.data.galleryUrls } : {}),
+      ...(region ? { regionKey: region.key, locationLabel: region.label } : {}),
     },
     select: {
       id: true,
       slug: true,
+      title: true,
+      description: true,
+      venueName: true,
+      category: true,
+      startsAt: true,
+      endsAt: true,
+      locationLabel: true,
+      regionKey: true,
+      externalUrl: true,
       imageUrl: true,
       galleryUrls: true,
       updatedAt: true,

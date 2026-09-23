@@ -391,7 +391,11 @@ export const communityGroupSchema = z.object({
   isPublic: z.boolean().default(true),
 });
 
-export const eventUpdateSchema = eventSchema.partial();
+export const eventUpdateSchema = eventSchema.partial().extend({
+  endsAt: z.string().datetime().nullable().optional(),
+  externalUrl: optionalUrl.nullable(),
+  imageUrl: optionalUrl.nullable(),
+});
 
 export const communityGroupMemberActionSchema = z.object({
   action: z.enum(['approve', 'block', 'remove', 'promote', 'demote']),

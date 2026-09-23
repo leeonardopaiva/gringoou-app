@@ -16,7 +16,9 @@ const hasIntersection = (left: string[], right: string[]) => {
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
-  const regionKey = session?.user?.regionKey ?? searchParams.get('region');
+  // The UI can switch regions before the refreshed session reaches every
+  // client component. An explicit region must therefore win over the session.
+  const regionKey = searchParams.get('region') ?? session?.user?.regionKey;
   const placementParam = searchParams.get('placement');
   const now = new Date();
 

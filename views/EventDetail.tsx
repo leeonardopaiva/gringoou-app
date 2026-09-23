@@ -24,6 +24,7 @@ import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
+import RegionSelector from '../components/RegionSelector';
 
 interface EventDetailProps {
   eventId?: string;
@@ -34,11 +35,13 @@ type EventDetailState = {
   id: string;
   slug: string;
   title: string;
+  category: string;
   description: string;
   venueName: string;
   startsAt: string;
   endsAt: string | null;
   locationLabel: string;
+  regionKey: string;
   city: string;
   state: string;
   externalUrl: string;
@@ -59,11 +62,13 @@ const defaultEvent: EventDetailState = {
   id: '',
   slug: '',
   title: 'Evento da comunidade',
+  category: 'Outros',
   description: 'Os detalhes deste evento ainda nao foram carregados.',
   venueName: 'Local a definir',
   startsAt: new Date().toISOString(),
   endsAt: null,
   locationLabel: '',
+  regionKey: '',
   city: '',
   state: '',
   externalUrl: '',
@@ -86,11 +91,28 @@ const formatEventDateTime = (value: string) =>
     timeStyle: 'short',
   }).format(new Date(value));
 
+const toDateTimeLocal = (value: string | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};
+
+type EventDetailsDraft = Pick<EventDetailState, 'title' | 'description' | 'venueName' | 'category' | 'regionKey' | 'externalUrl'> & {
+  startsAt: string;
+  endsAt: string;
+};
+
 const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
   const { showToast } = useToast();
   const [event, setEvent] = useState<EventDetailState>(defaultEvent);
   const [loading, setLoading] = useState(true);
   const [editingMedia, setEditingMedia] = useState(false);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [detailsDraft, setDetailsDraft] = useState<EventDetailsDraft>({
+    title: '', description: '', venueName: '', category: 'Outros', regionKey: '', externalUrl: '', startsAt: '', endsAt: '',
+  });
   const [savingMedia, setSavingMedia] = useState(false);
   const [coverDraft, setCoverDraft] = useState('');
   const [galleryDraft, setGalleryDraft] = useState<string[]>([]);
@@ -120,11 +142,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
             id: payload.event.id,
             slug: payload.event.slug,
             title: payload.event.title,
+            category: payload.event.category || 'Outros',
             description: payload.event.description || defaultEvent.description,
             venueName: payload.event.venueName,
             startsAt: payload.event.startsAt,
             endsAt: payload.event.endsAt || null,
             locationLabel: payload.event.locationLabel || '',
+            regionKey: payload.event.regionKey || '',
             city: payload.event.city || '',
             state: payload.event.state || '',
             externalUrl: payload.event.externalUrl || '',
@@ -193,6 +217,63 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
     }
 
     await handleCopyUrl();
+  };
+
+  const openDetailsEditor = () => {
+    setDetailsDraft({
+      title: event.title,
+      description: event.description,
+      venueName: event.venueName,
+      category: event.category,
+      regionKey: event.regionKey,
+      externalUrl: event.externalUrl,
+      startsAt: toDateTimeLocal(event.startsAt),
+      endsAt: toDateTimeLocal(event.endsAt),
+    });
+    setEditingDetails(true);
+  };
+
+  const handleSaveDetails = async () => {
+    if (!detailsDraft.title.trim() || !detailsDraft.description.trim() || !detailsDraft.venueName.trim() || !detailsDraft.regionKey || !detailsDraft.startsAt) {
+      showToast('Preencha os campos obrigatorios do evento.', 'error');
+      return;
+    }
+
+    setSavingDetails(true);
+    try {
+      const response = await fetch(`/api/events/${event.slug || event.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...detailsDraft,
+          startsAt: new Date(detailsDraft.startsAt).toISOString(),
+          endsAt: detailsDraft.endsAt ? new Date(detailsDraft.endsAt).toISOString() : null,
+          externalUrl: normalizeUrlFieldValue(detailsDraft.externalUrl) || null,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar o evento.');
+
+      setEvent((current) => ({
+        ...current,
+        title: payload.event?.title ?? detailsDraft.title.trim(),
+        description: payload.event?.description ?? detailsDraft.description.trim(),
+        venueName: payload.event?.venueName ?? detailsDraft.venueName.trim(),
+        category: payload.event?.category ?? detailsDraft.category,
+        regionKey: payload.event?.regionKey ?? detailsDraft.regionKey,
+        locationLabel: payload.event?.locationLabel ?? current.locationLabel,
+        startsAt: payload.event?.startsAt ?? new Date(detailsDraft.startsAt).toISOString(),
+        endsAt: payload.event?.endsAt ?? (detailsDraft.endsAt ? new Date(detailsDraft.endsAt).toISOString() : null),
+        externalUrl: payload.event?.externalUrl ?? normalizeUrlFieldValue(detailsDraft.externalUrl) ?? '',
+      }));
+      setEditingDetails(false);
+      notifyContentUpdated();
+      showToast('Informacoes do evento atualizadas.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar o evento.', 'error');
+    } finally {
+      setSavingDetails(false);
+    }
   };
 
   const handleFavoriteToggle = async () => {
@@ -329,6 +410,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
         <div className="absolute right-4 top-4 flex gap-2">
           {event.canEdit ? <Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações do evento', items: [
             { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
+            { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: openDetailsEditor },
             { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
           ] }]} /> : null}
           <button
@@ -498,6 +580,37 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
           )}
         </section>
       </div>
+
+      {editingDetails ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center sm:p-6" onClick={(clickEvent) => {
+          if (clickEvent.target === clickEvent.currentTarget && !savingDetails) setEditingDetails(false);
+        }}>
+          <div className="animate-in max-h-[92vh] w-full max-w-xl overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+              <div><p className="theme-text text-sm font-bold">Editar evento</p><p className="mt-1 text-xs text-slate-500">Atualize as informações exibidas na página pública.</p></div>
+              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500" aria-label="Fechar modal"><X size={18} /></button>
+            </div>
+            <div className="max-h-[70vh] space-y-3 overflow-y-auto px-5 py-5">
+              <input value={detailsDraft.title} onChange={(input) => setDetailsDraft((current) => ({ ...current, title: input.target.value }))} placeholder="Título do evento" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <textarea rows={4} value={detailsDraft.description} onChange={(input) => setDetailsDraft((current) => ({ ...current, description: input.target.value }))} placeholder="Descrição" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <input value={detailsDraft.venueName} onChange={(input) => setDetailsDraft((current) => ({ ...current, venueName: input.target.value }))} placeholder="Local" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <select value={detailsDraft.category} onChange={(input) => setDetailsDraft((current) => ({ ...current, category: input.target.value }))} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
+                {['Cultural', 'Networking', 'Esporte', 'Gastronomia', 'Família', 'Outros'].map((category) => <option key={category}>{category}</option>)}
+              </select>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="space-y-1 text-xs font-bold text-slate-500">Início<input type="datetime-local" value={detailsDraft.startsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, startsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
+                <label className="space-y-1 text-xs font-bold text-slate-500">Encerramento<input type="datetime-local" value={detailsDraft.endsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, endsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
+              </div>
+              <RegionSelector value={detailsDraft.regionKey} onChange={(region) => setDetailsDraft((current) => ({ ...current, regionKey: region.key }))} label="Região" hint="A página será atualizada para a região selecionada." />
+              <input value={detailsDraft.externalUrl} onChange={(input) => setDetailsDraft((current) => ({ ...current, externalUrl: input.target.value }))} placeholder="Link externo (opcional)" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+            </div>
+            <div className="flex gap-2 border-t border-slate-100 px-5 py-4">
+              <button type="button" disabled={savingDetails} onClick={() => void handleSaveDetails()} className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60">{savingDetails ? 'Salvando...' : 'Salvar alterações'}</button>
+              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="rounded-full bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600 disabled:opacity-60">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {editingMedia ? (
         <div

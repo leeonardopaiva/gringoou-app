@@ -2,6 +2,8 @@
 
 type ContentRefreshDetail = {
   refreshSession?: boolean;
+  regionKey?: string;
+  locationLabel?: string;
 };
 
 const CONTENT_REFRESH_EVENT = 'gringoou:content-updated';

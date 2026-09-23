@@ -138,6 +138,19 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
     router.push('/ads/overview');
   }
 
+  async function openBusinessManagement(business: ManagedBusiness) {
+    if (business.adAccountId) {
+      await fetch('/api/ads/accounts/select', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adAccountId: business.adAccountId }),
+      });
+    }
+
+    setOpen(false);
+    router.push(business.managementPath);
+  }
+
   return (
     <div ref={rootRef} className="relative">
       <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-1 rounded-full p-0.5 transition hover:bg-slate-100">
@@ -166,14 +179,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
               {businesses.map((business) => (
                 <div key={business.id} className="mt-2 flex w-full items-center gap-2 rounded-xl p-2 hover:bg-brand-50">
                   <Avatar src={business.imageUrl} name={business.name} size="md" />
-                  <button type="button" onClick={() => {
-                    if (business.adsOnly && business.adAccountId) {
-                      void openBusiness(business.adAccountId);
-                      return;
-                    }
-                    setOpen(false);
-                    router.push(business.managementPath);
-                  }} className="min-w-0 flex-1 text-left">
+                  <button type="button" onClick={() => void openBusinessManagement(business)} className="min-w-0 flex-1 text-left">
                     <strong className="block truncate text-sm text-slate-900">{business.name}</strong>
                     <span className="block truncate text-xs text-slate-500">{business.adsOnly ? 'Gerenciar anúncios' : 'Gerenciar negócio'}</span>
                   </button>

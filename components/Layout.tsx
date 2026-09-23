@@ -40,7 +40,7 @@ import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
 import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
-import { onContentUpdated } from '@/lib/content-refresh';
+import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -299,8 +299,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
     setActiveRegion({ key: user.regionKey || '', label: user.location });
   }, [user.location, user.regionKey]);
 
-  React.useEffect(() => onContentUpdated((detail) => {
-    if (detail.refreshSession) void updateSession();
+  React.useEffect(() => onContentUpdated(async (detail) => {
+    if (detail.refreshSession) await updateSession();
     router.refresh();
   }), [router, updateSession]);
 
@@ -374,8 +374,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
       setIsRegionSelectorOpen(false);
       showToast('Região atualizada. Carregando o conteúdo local...', 'success');
 
-      await updateSession();
-      router.refresh();
+      notifyContentUpdated({
+        refreshSession: true,
+        regionKey: confirmedRegion.key,
+        locationLabel: confirmedRegion.label,
+      });
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua região.', 'error');
     } finally {

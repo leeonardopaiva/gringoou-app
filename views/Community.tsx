@@ -21,6 +21,7 @@ import { ViewableAdSlot } from '@/components/ads/ViewableAdSlot';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { FeedCard } from '@/components/ui/FeedCard';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
+import { onContentUpdated } from '@/lib/content-refresh';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
 
@@ -73,7 +74,8 @@ const Community: React.FC<{
   const activeRegionKey = isProfessionalMode
     ? professionalIdentity?.regionKey || user.regionKey || ''
     : user.regionKey || '';
-  const feedRegionKey = activeRegionKey || user.regionKey || null;
+  const [selectedFeedRegionKey, setSelectedFeedRegionKey] = useState<string | null>(activeRegionKey || null);
+  const feedRegionKey = selectedFeedRegionKey || activeRegionKey || user.regionKey || null;
   const { data: banners } = useRegionBanners('feed', feedRegionKey);
   const sentinelRef = useIntersectionTrigger(
     () => {
@@ -89,6 +91,14 @@ const Community: React.FC<{
   useEffect(() => {
     setPostPersonaMode(personaMode === 'professional' ? 'professional' : 'personal');
   }, [personaMode]);
+
+  useEffect(() => {
+    setSelectedFeedRegionKey(activeRegionKey || null);
+  }, [activeRegionKey]);
+
+  useEffect(() => onContentUpdated((detail) => {
+    if (detail.regionKey) setSelectedFeedRegionKey(detail.regionKey);
+  }), []);
 
   useEffect(() => {
     if (shouldOpenComposer) setIsComposerExpanded(true);
@@ -809,17 +819,21 @@ const Community: React.FC<{
   const displayedPosts = [...posts].sort(
     (left, right) => getPostTimestamp(right) - getPostTimestamp(left),
   );
-  const feedBanners = banners.slice(0, 2);
+  const filteredPosts = displayedPosts.filter(
+    (post) =>
+      feedFilter === 'recent' ||
+      (feedFilter === 'mine' && post.author.id === user.id) ||
+      (feedFilter === 'saved' && post.viewerHasSaved),
+  );
+  const feedBanners = feedFilter === 'recent' ? banners.slice(0, 2) : [];
+  const firstBannerIndex = Math.min(2, Math.max(filteredPosts.length - 1, 0));
+  const secondBannerIndex = Math.min(9, Math.max(filteredPosts.length - 1, 0));
   const getBannerAfterPost = (postIndex: number) => {
-    if (displayedPosts.length < 5) {
-      return null;
-    }
-
-    if (postIndex === 4) {
+    if (postIndex === firstBannerIndex) {
       return feedBanners[0] ?? null;
     }
 
-    if (postIndex === 12) {
+    if (postIndex === secondBannerIndex && secondBannerIndex !== firstBannerIndex) {
       return feedBanners[1] ?? null;
     }
 
@@ -992,7 +1006,7 @@ const Community: React.FC<{
             Ninguem publicou por aqui ainda. Seja o primeiro da sua regiao.
           </div>
         ) : null}
-        {displayedPosts.filter((post) => feedFilter === 'recent' || (feedFilter === 'mine' && post.author.id === user.id) || (feedFilter === 'saved' && post.viewerHasSaved)).map((post, index) => {
+        {filteredPosts.map((post, index) => {
           const banner = getBannerAfterPost(index);
 
           return (
