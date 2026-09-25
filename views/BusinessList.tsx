@@ -324,9 +324,9 @@ const BusinessList: React.FC<BusinessListProps> = ({
             <Plus size={16} /> Criar negócio
           </button>
         } />
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-1">
           <CompactActionCard icon={<Plus size={16} />} eyebrow="Página gratuita" title="Crie a página do seu negócio" description="Publique após a aprovação da equipe" onClick={() => setShowCreateForm(true)} />
-          <CompactActionCard icon={<Megaphone size={16} />} eyebrow="Gringoou Ads" title="Alcance mais pessoas" description="Promova um negócio aprovado" href="/ads" />
+          {/* <CompactActionCard icon={<Megaphone size={16} />} eyebrow="Gringoou Ads" title="Alcance mais pessoas" description="Promova um negócio aprovado" href="/ads" /> */}
         </div>
 
       </div>
