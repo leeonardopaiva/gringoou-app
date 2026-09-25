@@ -36,6 +36,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
   const [hasMore, setHasMore] = useState(true);
   const [nextOffset, setNextOffset] = useState(0);
   const [country, setCountry] = useState('US');
+  const [myGroups, setMyGroups] = useState<RegionalGroupCard[]>([]);
 
   const loadGroupsPage = useCallback(
     async ({ offset, replace }: { offset: number; replace: boolean }) => {
@@ -110,8 +111,14 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
     void reloadGroups();
   }, [country, reloadGroups, user.regionKey]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch('/api/groups?mine=1&limit=8', { signal: controller.signal }).then((response) => response.ok ? response.json() : null).then((payload) => setMyGroups(Array.isArray(payload?.groups) ? payload.groups : [])).catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
   return (
-    <ContentColumn className="animate-in space-y-5 px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
+    <ContentColumn size="wide" className="animate-in space-y-5 px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
@@ -140,6 +147,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
         </div>
       </section>
 
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -243,6 +251,12 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
           </>
         )}
       </section>
+      <aside className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+        <h2 className="text-sm font-extrabold text-slate-900">Seus grupos</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-500">Acesse rapidamente as comunidades das quais você participa.</p>
+        <div className="mt-4 space-y-2">{myGroups.length ? myGroups.map((group) => <Link key={group.id} href={group.publicPath} className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-brand-50"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-100 text-xs font-bold text-brand-600">{group.imageUrl ? <img src={group.imageUrl} alt="" className="h-full w-full object-cover" /> : getInitials(group.name)}</div><div className="min-w-0"><p className="truncate text-xs font-bold text-slate-800">{group.name}</p><p className="truncate text-[10px] text-slate-400">{group.memberCount} membros</p></div></Link>) : <p className="rounded-2xl bg-slate-50 px-3 py-5 text-center text-xs text-slate-500">Você ainda não participa de grupos.</p>}</div>
+      </aside>
+      </div>
     </ContentColumn>
   );
 };

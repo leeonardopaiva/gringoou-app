@@ -135,8 +135,7 @@ export default function JobList({ user }: { user: User }) {
 
   return (
     <ContentColumn className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
-      <PageHeader title="Vagas" />
-      <div className="flex justify-end">
+      <PageHeader title="Vagas" action={
         <Button
           size="sm"
           iconLeft={<Plus size={16} />}
@@ -146,7 +145,7 @@ export default function JobList({ user }: { user: User }) {
         >
           Criar vaga
         </Button>
-      </div>
+      } />
       <div className="grid gap-3 sm:grid-cols-3">
         <Select
           value={employmentType}

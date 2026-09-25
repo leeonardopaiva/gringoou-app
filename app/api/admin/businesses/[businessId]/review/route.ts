@@ -37,11 +37,12 @@ export async function POST(request: Request, context: RouteContext) {
 
   const business = await prisma.business.update({
     where: { id: businessId },
-    data: { status: nextStatus },
+    data: { status: nextStatus, ownershipVerifiedAt: parsed.data.action === 'approve' ? new Date() : null },
     select: {
       id: true,
       name: true,
       status: true,
+      ownershipVerifiedAt: true,
     },
   });
 

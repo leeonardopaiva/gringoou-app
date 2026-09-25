@@ -83,9 +83,10 @@ export async function getCommunityPostsPage({
       author: { select: { id: true, name: true, username: true, image: true, locationLabel: true } },
       businessAuthor: { select: { id: true, name: true, slug: true, imageUrl: true, locationLabel: true } },
       comments: {
+        where: { parentId: null },
         orderBy: [{ createdAt: 'desc' }],
         take: 3,
-        include: { author: { select: { id: true, name: true, username: true, image: true } } },
+        include: { author: { select: { id: true, name: true, username: true, image: true } }, replies: { orderBy: { createdAt: 'asc' }, take: 20, include: { author: { select: { id: true, name: true, username: true, image: true } } } } },
       },
       reactions: {
         orderBy: [{ createdAt: 'desc' }],
@@ -134,6 +135,7 @@ export async function getCommunityPostsPage({
             content: comment.content,
             createdAt: comment.createdAt.toISOString(),
             author: { ...comment.author, name: comment.author.name || 'Usuario da comunidade' },
+            replies: comment.replies.map((reply) => ({ id: reply.id, parentId: comment.id, content: reply.content, createdAt: reply.createdAt.toISOString(), author: { ...reply.author, name: reply.author.name || 'Usuario da comunidade' }, canEdit: isAdmin || canManageGroup || session?.user?.id === reply.authorId, canDelete: isAdmin || canManageGroup || session?.user?.id === reply.authorId })),
             canEdit: canManageComment,
             canDelete: canManageComment,
           };

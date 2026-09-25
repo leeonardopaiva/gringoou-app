@@ -39,6 +39,7 @@ export async function GET(_request: Request, context: RouteContext) {
       ratingAverage: true,
       ratingCount: true,
       status: true,
+      ownershipVerifiedAt: true,
       createdById: true,
       createdBy: {
         select: {

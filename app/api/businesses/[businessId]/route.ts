@@ -42,6 +42,7 @@ export async function GET(_request: Request, context: RouteContext) {
       visibilityScope: true,
       visibilityRegionKey: true,
       status: true,
+      ownershipVerifiedAt: true,
       createdById: true,
       createdAt: true,
       createdBy: {

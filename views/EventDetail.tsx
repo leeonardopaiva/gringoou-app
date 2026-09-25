@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   PencilLine,
   Share2,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import StarRating from '../components/engagement/StarRating';
@@ -56,6 +57,7 @@ type EventDetailState = {
   canEdit: boolean;
   publicPath: string;
   status: string;
+  ownershipVerifiedAt?: string | null;
 };
 
 const defaultEvent: EventDetailState = {
@@ -163,6 +165,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
             canEdit: Boolean(payload.event.canEdit),
             publicPath: payload.event.publicPath || `/eventos/${payload.event.slug || payload.event.id}`,
             status: payload.event.status || 'PUBLISHED',
+            ownershipVerifiedAt: payload.event.ownershipVerifiedAt || null,
           };
 
           setEvent(nextEvent);
@@ -441,7 +444,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
 
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-white">{event.title}</h1>
+          <h1 className="mt-3 flex items-center gap-2 text-3xl font-bold leading-tight text-white">{event.title}{event.ownershipVerifiedAt ? <ShieldCheck size={22} aria-label="Evento verificado pela equipe" /> : null}</h1>
           <p className="mt-2 text-sm text-white/85">{event.locationLabel}</p>
         </div>
       </div>

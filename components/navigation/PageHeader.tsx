@@ -7,10 +7,11 @@ import { ArrowLeft } from 'lucide-react';
 type PageHeaderProps = {
   title: string;
   backHref?: string;
+  action?: React.ReactNode;
 };
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inicio' }) => (
-  <header className="flex h-12 items-center gap-2">
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inicio', action }) => (
+  <header className="flex min-h-12 items-center gap-2">
     <Link
       href={backHref}
       aria-label="Voltar"
@@ -20,6 +21,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inic
       <ArrowLeft size={19} aria-hidden="true" />
     </Link>
     <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
+    {action ? <div className="ml-auto shrink-0">{action}</div> : null}
   </header>
 );
 

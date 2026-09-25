@@ -91,6 +91,7 @@ const navigationItems: NavigationItem[] = [
   { href: '/inicio', label: 'Home', icon: <HomeIcon size={22} /> },
   { href: '/negocios', label: 'Negócios', icon: <Store size={18} /> },
   { href: '/community', label: 'Comunidade', icon: <Users size={18} /> },
+  { href: '/grupos', label: 'Grupos', icon: <MessageCircle size={18} /> },
   { href: '/eventos', label: 'Eventos', icon: <Calendar size={18} /> },
   { href: '/vagas', label: 'Vagas', icon: <Briefcase size={18} /> },
   { href: '/moradia', label: 'Moradia', icon: <House size={18} /> },

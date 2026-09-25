@@ -46,11 +46,16 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
+  const parentId = typeof body.parentId === 'string' ? body.parentId : null;
+  if (parentId && !await prisma.postComment.findFirst({ where: { id: parentId, postId, parentId: null }, select: { id: true } })) {
+    return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
+  }
   const comment = await prisma.postComment.create({
     data: {
       postId,
       authorId: session.user.id,
       content: parsed.data.content,
+      parentId,
     },
     include: {
       author: {

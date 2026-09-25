@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Mic, Search, Sparkles } from 'lucide-react';
 
 type SpeechRecognitionResultEvent = Event & {
@@ -57,6 +58,10 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{ id: string; label: string; meta: string; href: string }>>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const cacheRef = useRef(new Map<string, { expiresAt: number; items: typeof suggestions }>());
 
   useEffect(() => {
     const voiceWindow = window as VoiceWindow;
@@ -64,6 +69,27 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
 
     return () => recognitionRef.current?.stop();
   }, []);
+
+  useEffect(() => {
+    if (!focused || (value.trim().length > 0 && value.trim().length < 2)) { setSuggestions([]); return; }
+    const key = value.trim().toLocaleLowerCase('pt-BR');
+    const cached = cacheRef.current.get(key);
+    if (cached && cached.expiresAt > Date.now()) { setSuggestions(cached.items); return; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSuggestionsLoading(true);
+      try {
+        const response = await fetch(`/api/search/suggestions${key ? `?q=${encodeURIComponent(key)}` : ''}`, { signal: controller.signal });
+        const payload = await response.json().catch(() => null);
+        const items = response.ok && Array.isArray(payload?.suggestions) ? payload.suggestions : [];
+        cacheRef.current.set(key, { expiresAt: Date.now() + 60_000, items });
+        setSuggestions(items);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') setSuggestions([]);
+      } finally { if (!controller.signal.aborted) setSuggestionsLoading(false); }
+    }, key ? 350 : 0);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [focused, value]);
 
   const handleVoiceSearch = () => {
     if (listening) {
@@ -130,6 +156,8 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => window.setTimeout(() => setFocused(false), 150)}
         placeholder={listening ? 'Ouvindo... fale agora' : !animatedTerms ? staticPlaceholder : ''}
         className={`w-full bg-transparent py-4 pl-12 text-sm text-slate-700 outline-none ${onFilterClick ? (voiceSupported ? 'pr-24' : 'pr-14') : 'pr-4'}`}
       />
@@ -163,6 +191,17 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
           >
             <Sparkles size={16} aria-hidden="true" className={filterLoading ? 'animate-pulse' : ''} />
           </button>
+        </div>
+      ) : null}
+      {focused && (suggestionsLoading || suggestions.length > 0) ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+          {suggestionsLoading && suggestions.length === 0 ? <p className="px-3 py-3 text-xs text-slate-500">Buscando sugestões...</p> : null}
+          {suggestions.map((suggestion) => (
+            <Link key={suggestion.id} href={suggestion.href} className="block rounded-xl px-3 py-2.5 transition hover:bg-brand-50" onMouseDown={(event) => event.preventDefault()}>
+              <span className="block truncate text-sm font-semibold text-slate-800">{suggestion.label}</span>
+              <span className="block truncate text-[11px] text-slate-500">{suggestion.meta}</span>
+            </Link>
+          ))}
         </div>
       ) : null}
     </form>

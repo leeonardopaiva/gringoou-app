@@ -6,7 +6,8 @@ import { Button, Card } from '@/components/ui';
 type Section = 'ads' | 'moderation' | 'businesses' | 'events' | 'users' | 'regions' | 'imports' | 'banners' | 'analytics';
 type Actor = { name: string | null; email: string | null };
 type Dashboard = {
-  stats: { totalUsers: number; publishedBusinesses: number; publishedEvents: number; publishedPosts: number; pendingBusinesses: number; pendingEvents: number; pendingPosts: number; newSuggestions: number; activeRegions: number };
+  stats: { totalUsers: number; publishedBusinesses: number; publishedEvents: number; publishedPosts: number; pendingBusinesses: number; pendingEvents: number; pendingPosts: number; newSuggestions: number; activeRegions: number; totalReferrals: number; convertedReferrals: number };
+  referrals: { total: number; converted: number; conversionRate: number; topReferrer: { name: string | null; username: string | null; locationLabel: string | null; interests: string[]; count: number } | null };
   pendingBusinesses: Array<{ id: string; name: string; createdAt: string; createdBy: Actor }>;
   pendingEvents: Array<{ id: string; title: string; createdAt: string; createdBy: Actor }>;
   pendingPosts: Array<{ id: string; content: string; createdAt: string; author: Actor }>;
@@ -65,6 +66,10 @@ export default function AdminOverview({ dashboard, loading, refreshing, onRefres
           <Card className="rounded-2xl border border-slate-200 shadow-none"><h2 className="text-sm font-extrabold">Acoes rapidas</h2><div className="mt-4 grid grid-cols-2 gap-3">{[['Usuarios','users'],['Banners','banners'],['Importar','imports'],['Denuncias','moderation']].map(([label, section]) => <button key={label} type="button" onClick={() => onNavigate(section as Section)} className="rounded-2xl border border-slate-200 px-3 py-5 text-xs font-bold transition hover:border-blue-300 hover:bg-blue-50">{label}</button>)}</div></Card>
         </div>
       </div>
+      <Card className="rounded-2xl border border-slate-200 shadow-none">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#2B5DF5]">Indicações</p><h2 className="mt-1 text-lg font-extrabold text-[#132F40]">Crescimento por convite</h2><p className="mt-1 text-xs text-slate-400">Dados reais dos vínculos de indicação já registrados.</p></div><div className="flex gap-6"><div><strong className="text-2xl text-[#132F40]">{dashboard?.referrals.total ?? 0}</strong><p className="text-xs text-slate-400">indicações</p></div><div><strong className="text-2xl text-emerald-600">{dashboard?.referrals.converted ?? 0}</strong><p className="text-xs text-slate-400">cadastros concluídos</p></div><div><strong className="text-2xl text-[#2B5DF5]">{dashboard?.referrals.conversionRate ?? 0}%</strong><p className="text-xs text-slate-400">conversão</p></div></div></div>
+        {dashboard?.referrals.topReferrer ? <div className="mt-5 rounded-2xl bg-[#F8FAFC] p-4"><p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Maior indicador</p><p className="mt-1 font-bold text-[#132F40]">{dashboard.referrals.topReferrer.name || `@${dashboard.referrals.topReferrer.username}`}</p><p className="mt-1 text-xs text-slate-500">{dashboard.referrals.topReferrer.count} cadastros · {dashboard.referrals.topReferrer.locationLabel || 'Localidade não informada'}</p>{dashboard.referrals.topReferrer.interests.length ? <div className="mt-3 flex flex-wrap gap-2">{dashboard.referrals.topReferrer.interests.slice(0, 5).map((interest) => <span key={interest} className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold text-slate-600">{interest}</span>)}</div> : null}</div> : <p className="mt-5 text-sm text-slate-400">Ainda não há indicações convertidas.</p>}
+      </Card>
     </div>
   );
 }

@@ -234,6 +234,8 @@ export interface PostComment {
   content: string;
   createdAt: string;
   author: CommunityAuthor;
+  parentId?: string | null;
+  replies?: PostComment[];
   canEdit?: boolean;
   canDelete?: boolean;
   viewerHasSaved?: boolean;

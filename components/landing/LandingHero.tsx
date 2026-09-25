@@ -21,9 +21,9 @@ export function LandingHero() {
     <main id="comunidade" className="mx-auto grid w-full max-w-[1440px] gap-10 px-5 pb-12 pt-5 sm:px-8 lg:grid-cols-[minmax(280px,1fr)_minmax(400px,1.15fr)_minmax(170px,.65fr)] lg:gap-0 lg:px-16 lg:pt-10">
       <section className="flex flex-col justify-between gap-12 lg:min-h-[720px] lg:pb-12 lg:pt-5">
         <h1 className="font-extrabold tracking-[-0.045em] text-[#0f2b63]">
-          <span className="block text-[clamp(4rem,8vw,5.625rem)] leading-[0.9]">Conecte</span>
-          <span className="block text-[clamp(4.5rem,10vw,8rem)] leading-[0.77]">com a<br />sua</span>
-          <span className="mt-4 block w-fit border-t-[10px] border-[#f5f6b0] pt-1 text-[clamp(2.5rem,5vw,3.75rem)] leading-tight tracking-[-0.04em]">Comunidade</span>
+          <span className="block text-[clamp(4rem,8vw,2.625rem)] leading-[0.9] text-[12px]">Comunidade</span>
+          <span className="block text-[clamp(4.5rem,10vw,5rem)] leading-[0.77]">brasileira <br />pelo</span>
+          <span className="mt-4 block w-fit border-t-[10px] border-[#f5f6b0] pt-1 text-[clamp(2.5rem,5vw,5.75rem)] leading-tight tracking-[-0.04em]">mundo.</span>
         </h1>
         <SocialProof />
       </section>

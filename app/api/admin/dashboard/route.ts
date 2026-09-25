@@ -285,6 +285,14 @@ export async function GET() {
     }),
   ]);
 
+  const [totalReferrals, convertedReferrals, topReferrers] = await Promise.all([
+    prisma.user.count({ where: { referredById: { not: null } } }),
+    prisma.user.count({ where: { referredById: { not: null }, onboardingCompleted: true } }),
+    prisma.user.groupBy({ by: ['referredById'], where: { referredById: { not: null }, onboardingCompleted: true }, _count: { _all: true }, orderBy: { _count: { referredById: 'desc' } }, take: 1 }),
+  ]);
+  const topReferrerId = topReferrers[0]?.referredById;
+  const topReferrer = topReferrerId ? await prisma.user.findUnique({ where: { id: topReferrerId }, select: { id: true, name: true, username: true, locationLabel: true, regionKey: true, interests: true } }) : null;
+
   return NextResponse.json({
     stats: {
       totalUsers,
@@ -298,6 +306,8 @@ export async function GET() {
       totalRegions,
       activeRegions,
       newSuggestions,
+      totalReferrals,
+      convertedReferrals,
     },
     pendingBusinesses,
     pendingEvents,
@@ -308,5 +318,6 @@ export async function GET() {
     users,
     regions,
     suggestions,
+    referrals: { total: totalReferrals, converted: convertedReferrals, conversionRate: totalReferrals ? Math.round((convertedReferrals / totalReferrals) * 100) : 0, topReferrer: topReferrer ? { ...topReferrer, count: topReferrers[0]._count._all } : null },
   });
 }

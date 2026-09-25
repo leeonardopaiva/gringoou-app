@@ -23,6 +23,6 @@ export async function getGroupPostPermissions(postId: string, userId?: string | 
     post,
     canView: !post.groupId || Boolean(post.group?.isPublic || platformAdmin || approved),
     canInteract: !post.groupId || Boolean(platformAdmin || approved),
-    canManage: platformAdmin || userId === post.authorId || Boolean(approved && membership && (membership.role === CommunityGroupMemberRole.OWNER || membership.role === CommunityGroupMemberRole.ADMIN)),
+    canManage: platformAdmin || userId === post.authorId || Boolean(approved && membership && (membership.role === CommunityGroupMemberRole.OWNER || membership.role === CommunityGroupMemberRole.ADMIN || membership.role === CommunityGroupMemberRole.MODERATOR)),
   };
 }

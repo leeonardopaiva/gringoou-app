@@ -195,6 +195,8 @@ type AdminDashboardData = {
     totalRegions: number;
     activeRegions: number;
     newSuggestions: number;
+    totalReferrals: number;
+    convertedReferrals: number;
   };
   pendingBusinesses: PendingBusiness[];
   pendingEvents: PendingEvent[];
@@ -205,6 +207,7 @@ type AdminDashboardData = {
   users: ManagedUser[];
   regions: ManagedRegion[];
   suggestions: ManagedSuggestion[];
+  referrals: { total: number; converted: number; conversionRate: number; topReferrer: { name: string | null; username: string | null; locationLabel: string | null; interests: string[]; count: number } | null };
 };
 
 type AnalyticsSummary = {

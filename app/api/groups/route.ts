@@ -12,6 +12,7 @@ export async function GET(request: Request) {
   const search = searchParams.get('search')?.trim();
   const region = searchParams.get('region')?.trim();
   const country = searchParams.get('country')?.trim().toUpperCase();
+  const mine = searchParams.get('mine') === '1';
   const rawLimit = Number(searchParams.get('limit') ?? 24);
   const rawOffset = Number(searchParams.get('offset') ?? 0);
   const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 24) : 24;
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
             ],
           }]
         : []),
+      ...(mine && session?.user?.id ? [{ members: { some: { userId: session.user.id, status: CommunityGroupMembershipStatus.APPROVED } } }] : []),
     ],
   };
 

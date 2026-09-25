@@ -11,6 +11,7 @@ import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { notifyContentUpdated } from '@/lib/content-refresh';
 import { Dropdown } from '@/components/ui/Dropdown';
+import CommentWall from '@/components/community/CommentWall';
 
 type Job = {
   id: string;
@@ -145,6 +146,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>{job.canEdit ? <span className="mt-3 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">Você é proprietário</span> : null}
         </section>
         {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
+        <CommentWall endpoint={`/api/jobs/${jobId}/comments`} title="Comentários sobre a vaga" />
         {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
       </div>
 

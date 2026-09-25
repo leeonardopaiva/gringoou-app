@@ -564,7 +564,7 @@ const Community: React.FC<{
     }
   };
 
-  const handleAddComment = async (postId: string, content: string) => {
+  const handleAddComment = async (postId: string, content: string, parentId?: string) => {
     const normalizedContent = content.trim();
     const temporaryCommentId = `optimistic-${crypto.randomUUID()}`;
 
@@ -575,7 +575,7 @@ const Community: React.FC<{
           ? {
               ...post,
               commentCount: post.commentCount + 1,
-              comments: [
+              comments: parentId ? post.comments.map((comment) => comment.id === parentId ? { ...comment, replies: [...(comment.replies || []), { id: temporaryCommentId, parentId, content: normalizedContent, createdAt: new Date().toISOString(), author: { id: user.id, name: user.name, username: user.username, image: user.avatar } }] } : comment) : [
                 ...post.comments,
                 {
                   id: temporaryCommentId,
@@ -599,7 +599,7 @@ const Community: React.FC<{
       const response = await fetch(`/api/community/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: normalizedContent }),
+        body: JSON.stringify({ content: normalizedContent, parentId }),
       });
       const payload = await response.json().catch(() => null);
 
@@ -613,7 +613,7 @@ const Community: React.FC<{
             ? {
                 ...post,
                 comments: post.comments.map((comment) =>
-                  comment.id === temporaryCommentId
+                  parentId && comment.id === parentId ? { ...comment, replies: (comment.replies || []).map((reply) => reply.id === temporaryCommentId ? { ...payload.comment, author: { ...payload.comment.author, name: payload.comment.author.name || 'Usuario da comunidade' } } : reply) } : comment.id === temporaryCommentId
                     ? {
                         ...payload.comment,
                         author: {
@@ -630,14 +630,15 @@ const Community: React.FC<{
     } catch (error) {
       setPosts((current) =>
         current.map((post) => {
-          if (post.id !== postId || !post.comments.some((comment) => comment.id === temporaryCommentId)) {
+          const hasOptimistic = post.comments.some((comment) => comment.id === temporaryCommentId || comment.replies?.some((reply) => reply.id === temporaryCommentId));
+          if (post.id !== postId || !hasOptimistic) {
             return post;
           }
 
           return {
             ...post,
             commentCount: Math.max(0, post.commentCount - 1),
-            comments: post.comments.filter((comment) => comment.id !== temporaryCommentId),
+            comments: post.comments.filter((comment) => comment.id !== temporaryCommentId).map((comment) => ({ ...comment, replies: comment.replies?.filter((reply) => reply.id !== temporaryCommentId) })),
           };
         }),
       );
@@ -1006,7 +1007,7 @@ const Community: React.FC<{
                 <FeedPostCard
                   post={post}
                   onToggleLike={() => handleToggleLike(post.id)}
-                  onAddComment={(content) => handleAddComment(post.id, content)}
+                  onAddComment={(content, parentId) => handleAddComment(post.id, content, parentId)}
                   onUpdatePost={(content, imageUrl, externalUrl) =>
                     handleUpdatePost(post.id, content, imageUrl, externalUrl)
                   }

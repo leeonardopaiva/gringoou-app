@@ -7,7 +7,7 @@ import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 type FeedPostCardProps = {
   post: Post;
   onToggleLike: () => void;
-  onAddComment: (content: string) => Promise<void>;
+  onAddComment: (content: string, parentId?: string) => Promise<void>;
   onUpdatePost: (content: string, imageUrl: string, externalUrl: string) => Promise<void>;
   onDeletePost: () => Promise<void>;
   onUpdateComment: (commentId: string, content: string) => Promise<void>;
@@ -29,6 +29,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
 }) => {
   const authorHref = post.authorHref || (post.author.username ? `/${post.author.username}` : undefined);
   const [commentText, setCommentText] = useState('');
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
   const [editingPost, setEditingPost] = useState(false);
   const [editingPostContent, setEditingPostContent] = useState(post.content);
   const [editingPostImageUrl, setEditingPostImageUrl] = useState(post.imageUrl || '');
@@ -86,7 +87,9 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
     }
 
     setCommentText('');
-    void onAddComment(submittedComment).catch(() => {
+    const parentId = replyingTo?.id;
+    setReplyingTo(null);
+    void onAddComment(submittedComment, parentId).catch(() => {
       setCommentText((current) => current || submittedComment);
     });
   };
@@ -330,8 +333,8 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
       ) : null}
 
       {visibleComments.map((comment) => (
+        <React.Fragment key={comment.id}>
         <PostCard.CommentItem
-          key={comment.id}
           authorImage={comment.author.image || DEFAULT_AVATAR_URL}
           authorName={comment.author.name}
           authorHref={comment.author.username ? `/${comment.author.username}` : undefined}
@@ -399,11 +402,14 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   Cancelar
                 </button>
               </div>
-            ) : null
+            ) : <button type="button" onClick={() => setReplyingTo({ id: comment.id, name: comment.author.name })} className="mt-2 text-[11px] font-bold text-brand-600">Responder</button>
           }
         />
+        {comment.replies?.map((reply) => <div key={reply.id} className="ml-10 border-l-2 border-brand-100 pl-3"><PostCard.CommentItem authorImage={reply.author.image || DEFAULT_AVATAR_URL} authorName={reply.author.name} authorHref={reply.author.username ? `/${reply.author.username}` : undefined} content={<p className="text-[11px] leading-tight text-slate-600">{reply.content}</p>} /></div>)}
+        </React.Fragment>
       ))}
 
+      {replyingTo ? <div className="flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-[11px] text-brand-700"><span>Respondendo a <strong>{replyingTo.name}</strong></span><button type="button" onClick={() => setReplyingTo(null)} className="font-bold">Cancelar</button></div> : null}
       <PostCard.CommentComposer
         value={commentText}
         onChange={setCommentText}

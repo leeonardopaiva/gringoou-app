@@ -62,6 +62,7 @@ type BusinessDetailState = {
   canEdit: boolean;
   publicPath: string;
   status: string;
+  ownershipVerifiedAt?: string | null;
 };
 
 const defaultBusiness: BusinessDetailState = {
@@ -164,6 +165,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             canEdit: Boolean(payload.business.canEdit),
             publicPath: payload.business.publicPath || `/negocios/${payload.business.slug || payload.business.id}`,
             status: payload.business.status || 'PUBLISHED',
+            ownershipVerifiedAt: payload.business.ownershipVerifiedAt || null,
           };
 
           setBusiness(nextBusiness);
@@ -473,7 +475,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-white">{business.name}</h1>
+          <h1 className="mt-3 flex items-center gap-2 text-3xl font-bold leading-tight text-white">{business.name}{business.ownershipVerifiedAt ? <BadgeCheck size={22} aria-label="Propriedade verificada pela equipe" /> : null}</h1>
           <p className="mt-2 text-sm text-white/85">{business.locationLabel}</p>
         </div>
       </div>

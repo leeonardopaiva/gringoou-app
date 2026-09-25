@@ -358,7 +358,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   return (
     <ContentColumn className="space-y-6 px-5 pb-20 animate-in fade-in duration-500">
       <div className="mt-4 space-y-4">
-        <PageHeader title="Eventos" />
+        <PageHeader title="Eventos" action={
+          <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
+            <Plus size={16} /> Criar evento
+          </button>
+        } />
         <button
           type="button"
           onClick={() => setShowCreateForm((current) => !current)}

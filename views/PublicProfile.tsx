@@ -65,11 +65,6 @@ const defaultProfile: PublicUserProfile = {
   posts: [],
 };
 
-const formatJoinedDate = (value: string) =>
-  new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'long',
-  }).format(new Date(value));
-
 const formatEventDate = (value: string) =>
   new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'medium',
@@ -523,7 +518,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <p className="mt-4 text-base leading-7 text-slate-700">{profile.bio}</p>
                 ) : null}
                 <p className="mt-4 text-sm leading-7 text-slate-600">
-                  Membro da comunidade desde {formatJoinedDate(profile.joinedAt)}. Hoje este perfil tem{' '}
+                  Gringo desde {new Date(profile.joinedAt).getFullYear()}. Hoje este perfil tem{' '}
                   {profile.stats.businessCount} negócio{profile.stats.businessCount === 1 ? '' : 's'} público{profile.stats.businessCount === 1 ? '' : 's'},{' '}
                   {profile.stats.eventCount} evento{profile.stats.eventCount === 1 ? '' : 's'} e{' '}
                   {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.

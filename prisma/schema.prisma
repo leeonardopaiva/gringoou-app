@@ -102,6 +102,7 @@ enum FriendRequestStatus {
 enum CommunityGroupMemberRole {
   OWNER
   ADMIN
+  MODERATOR
   MEMBER
 }
 
@@ -220,6 +221,8 @@ model User {
   createdHousing            Housing[]              @relation("HousingCreator")
   communityPosts            CommunityPost[]        @relation("CommunityPostAuthor")
   postComments              PostComment[]          @relation("PostCommentAuthor")
+  jobComments               JobComment[]
+  housingComments           HousingComment[]
   postReactions             PostReaction[]         @relation("PostReactionAuthor")
   postReports               PostReport[]           @relation("PostReportAuthor")
   postPreferences           CommunityPostPreference[]
@@ -265,6 +268,7 @@ model Job {
   updatedAt      DateTime @updatedAt
   createdBy      User     @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
   business       Business? @relation("JobBusiness", fields: [businessId], references: [id], onDelete: SetNull)
+  comments       JobComment[]
 
   @@index([isActive, createdAt])
   @@index([createdById, createdAt])
@@ -286,6 +290,7 @@ model Housing {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   createdBy     User     @relation("HousingCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  comments      HousingComment[]
 
   @@index([isActive, createdAt])
   @@index([createdById, createdAt])
@@ -378,6 +383,7 @@ model Business {
   ratingAverage       Float              @default(0)
   ratingCount         Int                @default(0)
   status              BusinessStatus     @default(PENDING_REVIEW)
+  ownershipVerifiedAt DateTime?
   createdById         String
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -437,6 +443,7 @@ model Event {
   ratingAverage       Float           @default(0)
   ratingCount         Int             @default(0)
   status              EventStatus     @default(PENDING_REVIEW)
+  ownershipVerifiedAt DateTime?
   businessId          String?
   createdById         String
   createdAt           DateTime        @default(now())
@@ -483,13 +490,51 @@ model PostComment {
   id        String        @id @default(cuid())
   postId    String
   authorId  String
+  parentId  String?
   content   String        @db.Text
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   author    User          @relation("PostCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent    PostComment?  @relation("PostCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   PostComment[] @relation("PostCommentReplies")
 
   @@index([postId, createdAt])
+  @@index([parentId, createdAt])
+}
+
+model JobComment {
+  id        String   @id @default(cuid())
+  jobId     String
+  authorId  String
+  content   String   @db.Text
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    JobComment? @relation("JobCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   JobComment[] @relation("JobCommentReplies")
+
+  @@index([jobId, createdAt])
+  @@index([parentId, createdAt])
+}
+
+model HousingComment {
+  id        String   @id @default(cuid())
+  housingId String
+  authorId  String
+  content   String   @db.Text
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  housing   Housing  @relation(fields: [housingId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    HousingComment? @relation("HousingCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   HousingComment[] @relation("HousingCommentReplies")
+
+  @@index([housingId, createdAt])
+  @@index([parentId, createdAt])
 }
 
 model PostReaction {
