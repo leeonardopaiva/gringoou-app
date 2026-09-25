@@ -492,6 +492,8 @@ model PostComment {
   authorId  String
   parentId  String?
   content   String        @db.Text
+  isHidden  Boolean       @default(false)
+  hiddenAt  DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -509,6 +511,8 @@ model JobComment {
   authorId  String
   content   String   @db.Text
   parentId  String?
+  isHidden  Boolean  @default(false)
+  hiddenAt  DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
@@ -526,6 +530,8 @@ model HousingComment {
   authorId  String
   content   String   @db.Text
   parentId  String?
+  isHidden  Boolean  @default(false)
+  hiddenAt  DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   housing   Housing  @relation(fields: [housingId], references: [id], onDelete: Cascade)
