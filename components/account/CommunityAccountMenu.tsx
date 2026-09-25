@@ -153,7 +153,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
 
   return (
     <div ref={rootRef} className="relative">
-      <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-1 rounded-full p-0.5 transition hover:bg-slate-100">
+      <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-14 items-center gap-1 rounded-full p-0 transition hover:bg-slate-100">
         <Avatar src={user.avatar} name={user.name} size="md" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>

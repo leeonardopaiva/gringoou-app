@@ -32,6 +32,13 @@ const suggestions = [
   { title: 'Eventos para este fim de semana', category: 'Agenda local' },
 ];
 
+const loadingSteps = [
+  'Entendendo sua pergunta',
+  'Buscando em negocios, eventos e publicacoes',
+  'Cruzando recomendacoes da comunidade',
+  'Organizando a resposta',
+];
+
 const looksLikeFollowUp = (query: string) =>
   query.length < 150 && /^(mostre|quais|qual|onde|como|compare|detalhe|pode|conte|o que|e |e as|e os|existem|tem |há |perto|mais |outras|outros|dessas|desses)/i.test(query.trim());
 
@@ -68,6 +75,8 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
   const [lastSearchPath, setLastSearchPath] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [loadingPreview, setLoadingPreview] = useState<AssistantReference[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const handledAutoSubmitRef = useRef<string | null>(null);
 
@@ -81,6 +90,19 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [loading, messages]);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStepIndex(0);
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setLoadingStepIndex((current) => (current + 1) % loadingSteps.length);
+    }, 1200);
+
+    return () => window.clearInterval(intervalId);
+  }, [loading]);
 
   useEffect(() => {
     if (!open) return;
@@ -108,6 +130,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
     }
     setDraft('');
     setLoading(true);
+    setLoadingPreview([]);
 
     try {
       let filters: Record<string, string> = { q: retrievalQuery, category: 'all', city: '', country: '', businessType: '' };
@@ -130,13 +153,20 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
       const searchResponse = await fetch(`/api/search?${params.toString()}`, { cache: 'no-store' });
       const searchPayload = await searchResponse.json().catch(() => null);
       if (!searchResponse.ok || !searchPayload) throw new Error(searchPayload?.error || 'Não foi possível consultar a comunidade.');
+      const context = buildContext(searchPayload);
+      setLoadingPreview(context.slice(0, 5).map((item) => ({
+        id: item.id,
+        label: item.title,
+        href: item.href,
+        type: item.type,
+      })));
 
       const assistantResponse = await fetch('/api/search/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query,
-          context: buildContext(searchPayload),
+          context,
           history: resetConversation ? [] : messages.slice(-6).map(({ role, text }) => ({ role, text: text.trim().slice(0, 600) })),
         }),
       });
@@ -159,6 +189,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
       }]);
     } finally {
       setLoading(false);
+      setLoadingPreview([]);
     }
   };
 
@@ -248,7 +279,38 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                 </div>
               ))}
               {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error && latestAssistantSuggestions.length ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">Continue explorando <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{latestAssistantSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
-              {loading ? <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-4 text-sm font-semibold text-slate-600"><LoaderCircle size={18} className="animate-spin text-brand-500" /> Consultando a comunidade...</div> : null}
+              {loading ? (
+                <div className="space-y-4 rounded-[26px] border border-brand-100 bg-brand-50/70 px-4 py-4 text-sm text-slate-700 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-white">
+                      <LoaderCircle size={18} className="animate-spin" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-slate-900">{loadingSteps[loadingStepIndex]}</p>
+                      <p className="mt-0.5 text-xs font-medium text-slate-500">Resumo gerado a partir do que a comunidade ja publicou.</p>
+                    </div>
+                  </div>
+                  {loadingPreview.length ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Encontrado na comunidade</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {loadingPreview.map((reference) => (
+                          <Link key={reference.id} href={reference.href} onClick={onClose} className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:text-brand-700">
+                            <span className="truncate">{reference.label}</span>
+                            <ExternalLink size={13} className="shrink-0 text-brand-500" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <span key={index} className="h-2 w-2 animate-pulse rounded-full bg-brand-300" style={{ animationDelay: `${index * 160}ms` }} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : null}
               <div ref={endRef} />
             </div>
           )}

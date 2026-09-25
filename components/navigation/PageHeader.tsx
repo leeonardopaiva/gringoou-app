@@ -3,15 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/cn';
 
 type PageHeaderProps = {
   title: string;
   backHref?: string;
   action?: React.ReactNode;
+  className?: string;
 };
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inicio', action }) => (
-  <header className="flex min-h-12 items-center gap-2">
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inicio', action, className }) => (
+  <header className={cn('flex min-h-12 items-center gap-2 pt-5', className)}>
     <Link
       href={backHref}
       aria-label="Voltar"

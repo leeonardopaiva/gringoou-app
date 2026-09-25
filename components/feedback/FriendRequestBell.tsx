@@ -132,7 +132,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
+        className="relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
         aria-label={adminMode ? 'Notificacoes administrativas' : 'Solicitacoes de amizade'}
       >
         <Bell size={18} />

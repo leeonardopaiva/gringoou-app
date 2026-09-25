@@ -19,6 +19,7 @@ import type { BannerAd, PersonaMode, Post, ProfessionalProfileIdentity, Referral
 import type { CommunityInitialData } from '@/lib/content-contracts';
 import { ViewableAdSlot } from '@/components/ads/ViewableAdSlot';
 import { ContentColumn } from '@/components/ui/ContentColumn';
+import { CompactActionCard } from '@/components/ui/CompactActionCard';
 import { FeedCard } from '@/components/ui/FeedCard';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
@@ -1076,25 +1077,14 @@ const ReferralInviteCard: React.FC<{
   onCopy: () => void;
   onShare: () => void;
 }> = ({ registrationCount, onCopy, onShare }) => (
-  <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
-      <UserPlus size={16} aria-hidden="true" />
-    </span>
-    <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${registrationCount} indicações confirmadas`}>
-      {registrationCount}
-    </span>
-    <div className="min-w-0 flex-1">
-      <p className="truncate text-xs font-bold text-white">Convide amigos para o Gringoou</p>
-    </div>
-    <div className="flex shrink-0 items-center gap-0.5">
+  <CompactActionCard icon={<UserPlus size={16} aria-hidden="true" />} eyebrow={`${registrationCount} indicações confirmadas`} title="Convide amigos para o Gringoou" trailing={<>
       <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={onCopy}>
         <Copy size={14} aria-hidden="true" />
       </Button>
       <Button iconOnly size="xs" variant="primary" className="!bg-white !text-brand-600" aria-label="Compartilhar indicação" onClick={onShare}>
         <Share2 size={14} aria-hidden="true" />
       </Button>
-    </div>
-  </div>
+    </>} />
 );
 
 const FeedBannerCard: React.FC<{

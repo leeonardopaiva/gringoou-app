@@ -10,7 +10,7 @@ export type AvatarStatus = 'online' | 'ausente' | 'offline';
 const sizeClasses: Record<AvatarSize, string> = {
   xs: 'h-6 w-6 text-[10px]',
   sm: 'h-8 w-8 text-xs',
-  md: 'h-10 w-10 text-sm',
+  md: 'h-14 w-14 text-sm',
   lg: 'h-14 w-14 text-base',
   xl: 'h-20 w-20 text-xl',
 };

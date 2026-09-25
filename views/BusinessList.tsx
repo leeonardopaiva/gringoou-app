@@ -25,6 +25,7 @@ import { FeedCard } from '../components/ui/FeedCard';
 import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
+import { CompactActionCard } from '../components/ui/CompactActionCard';
 
 const SAMPLE_BUSINESSES: Business[] = [
   {
@@ -323,38 +324,9 @@ const BusinessList: React.FC<BusinessListProps> = ({
             <Plus size={16} /> Criar negócio
           </button>
         } />
-        <button
-          type="button"
-          onClick={() => setShowCreateForm((current) => !current)}
-          className="w-full rounded-card bg-secondary p-4 text-left text-foreground transition hover:brightness-95"
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
-              <Plus size={20} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
-                Página gratuita do negócio
-              </p>
-              <p className="mt-1 text-sm font-bold text-foreground">
-                Tem uma empresa? Crie sua página sem custo.
-              </p>
-              <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">
-                {showCreateForm ? 'Toque para fechar o cadastro.' : 'Após a aprovação, ela aparecerá para a comunidade.'}
-              </p>
-            </div>
-          </div>
-        </button>
-
-        <div className="flex items-start gap-4 rounded-card border border-brand-100 bg-brand-50/60 p-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm">
-            <Megaphone size={20} />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">Gringoou Ads</p>
-            <p className="mt-1 text-sm font-bold text-foreground">Quer alcançar mais pessoas?</p>
-            <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">Você paga apenas para promover um negócio aprovado no feed da comunidade.</p>
-          </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <CompactActionCard icon={<Plus size={16} />} eyebrow="Página gratuita" title="Crie a página do seu negócio" description="Publique após a aprovação da equipe" onClick={() => setShowCreateForm(true)} />
+          <CompactActionCard icon={<Megaphone size={16} />} eyebrow="Gringoou Ads" title="Alcance mais pessoas" description="Promova um negócio aprovado" href="/ads" />
         </div>
 
       </div>

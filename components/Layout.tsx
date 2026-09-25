@@ -276,6 +276,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState(() => searchParams?.get('q') ?? '');
+  const [searchTermIndex, setSearchTermIndex] = useState(0);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [voiceAssistantRequest, setVoiceAssistantRequest] = useState<{ id: string; query: string } | null>(null);
   const [isRegionSelectorOpen, setIsRegionSelectorOpen] = useState(false);
@@ -299,6 +300,12 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   React.useEffect(() => {
     setActiveRegion({ key: user.regionKey || '', label: user.location });
   }, [user.location, user.regionKey]);
+
+  React.useEffect(() => {
+    if (headerSearch) return;
+    const timer = window.setInterval(() => setSearchTermIndex((current) => (current + 1) % 3), 2400);
+    return () => window.clearInterval(timer);
+  }, [headerSearch]);
 
   React.useEffect(() => onContentUpdated(async (detail) => {
     if (detail.refreshSession) await updateSession();
@@ -340,8 +347,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
   const handleHeaderSearch = () => {
     const query = headerSearch.trim();
-    setVoiceAssistantRequest(query ? { id: crypto.randomUUID(), query } : null);
-    setIsAssistantOpen(true);
+    if (!query) return;
+    startNavigation(() => router.push(`/buscar?q=${encodeURIComponent(query)}`));
   };
 
   const openRegionSelector = () => {
@@ -444,14 +451,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       setVoiceAssistantRequest(null);
                       setIsAssistantOpen(true);
                     }}
-                    onVoiceResult={(query) => {
-                      setHeaderSearch(query);
-                      setVoiceAssistantRequest({ id: crypto.randomUUID(), query });
-                      setIsAssistantOpen(true);
-                    }}
-                    onVoiceError={(message) => showToast(message, 'error')}
-                    staticPlaceholder="Buscar pessoas, grupos, negócios e vagas"
-                    className="h-12 shadow-none md:h-11"
+                    animatedTerms={['Negócios', 'Eventos', 'Vagas']}
+                    animatedIndex={searchTermIndex}
+                    className="h-14 shadow-none"
                   />
                 </div>
                 <button
@@ -459,20 +461,20 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
+                  className="hidden h-14 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
                   <span className="truncate">{shortRegionLabel}</span>
                 </button>
               </div>
 
-              <div className="flex h-10 items-center gap-1.5 sm:gap-2">
+              <div className="flex h-14 items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={openRegionSelector}
                   aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
                 </button>
