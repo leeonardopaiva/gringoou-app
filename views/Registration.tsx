@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, Globe, MailCheck, RefreshCcw, Shield } from 'lucide-react';
 import { Button, Card, Input } from '@heroui/react';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
@@ -409,7 +410,9 @@ const Registration: React.FC<RegistrationProps> = ({
           >
             <Card.Content className="px-6 py-12 sm:px-12 sm:py-14 lg:px-14 lg:py-16">
               <div className="flex flex-col items-center text-center">
-                <GringoouLogo size={48} />
+                <Link href="/" aria-label="Ir para a página inicial do Gringoou" className="transition hover:opacity-80">
+                  <GringoouLogo size={48} />
+                </Link>
                 <p className="mt-5 max-w-sm text-sm leading-6 text-slate-500 sm:text-base">
                   A rede social do imigrante brasileiro.
                 </p>
@@ -511,6 +514,21 @@ const Registration: React.FC<RegistrationProps> = ({
                       await submitEmailLogin(passwordSignIn.email);
                     }}
                   >
+                    <div className="flex items-center justify-between gap-3 pb-1">
+                      <p className="text-sm font-bold text-slate-900">
+                        {passwordEnabled ? 'Entrar com senha' : 'Entrar com email'}
+                      </p>
+                      <Button
+                        type="button"
+                        isIconOnly
+                        variant="ghost"
+                        onPress={() => setPasswordAuthView('none')}
+                        aria-label="Voltar ao login"
+                        className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      >
+                        <ArrowLeft size={17} />
+                      </Button>
+                    </div>
                     <Input
                       type="email"
                       placeholder="Seu email"
@@ -559,8 +577,8 @@ const Registration: React.FC<RegistrationProps> = ({
                       Ao se cadastrar, voce concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Politica de Privacidade</a>.
                     </p>
 
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      {passwordEnabled ? (
+                    {passwordEnabled ? (
+                      <div className="flex items-center justify-center pt-2">
                         <Button
                           type="button"
                           variant="ghost"
@@ -569,16 +587,8 @@ const Registration: React.FC<RegistrationProps> = ({
                         >
                           Criar conta
                         </Button>
-                      ) : null}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onPress={() => setPasswordAuthView('none')}
-                        className="px-0 text-sm font-semibold text-slate-500"
-                      >
-                        Voltar
-                      </Button>
-                    </div>
+                      </div>
+                    ) : null}
                   </form>
                 ) : null}
 
@@ -636,6 +646,19 @@ const Registration: React.FC<RegistrationProps> = ({
                       });
                     }}
                   >
+                    <div className="flex items-center justify-between gap-3 pb-1">
+                      <p className="text-sm font-bold text-slate-900">Criar minha conta</p>
+                      <Button
+                        type="button"
+                        isIconOnly
+                        variant="ghost"
+                        onPress={() => setPasswordAuthView('none')}
+                        aria-label="Voltar ao login"
+                        className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      >
+                        <ArrowLeft size={17} />
+                      </Button>
+                    </div>
                     <Input
                       type="email"
                       placeholder="Seu email"
@@ -727,7 +750,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       {submitting ? 'Criando conta...' : 'Criar conta'}
                     </Button>
 
-                    <div className="flex items-center justify-center gap-3 pt-2">
+                    <div className="flex items-center justify-center pt-2">
                       <Button
                         type="button"
                         variant="ghost"
@@ -735,14 +758,6 @@ const Registration: React.FC<RegistrationProps> = ({
                         className="px-0 text-sm font-semibold text-brand-500"
                       >
                         Entrar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onPress={() => setPasswordAuthView('none')}
-                        className="px-0 text-sm font-semibold text-slate-500"
-                      >
-                        Voltar
                       </Button>
                     </div>
                   </form>
