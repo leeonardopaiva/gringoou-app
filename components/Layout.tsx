@@ -500,7 +500,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           <SuggestionButton />
 
           {isQuickMenuOpen ? (
-            <div className="fixed inset-0 z-[55] md:hidden" onClick={() => setIsQuickMenuOpen(false)} />
+            <div className="fixed inset-0 z-45 md:hidden" onClick={() => setIsQuickMenuOpen(false)} />
           ) : null}
 
           <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:hidden">
@@ -513,7 +513,6 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     iconLeft={<MessageSquarePlus size={16} />}
                     onClick={() => {
                       setIsQuickMenuOpen(false);
-                      window.dispatchEvent(new CustomEvent('gringoou:open-community-composer'));
                       handleNavigate('/community?compose=1');
                     }}
                   >

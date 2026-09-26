@@ -120,11 +120,6 @@ const Community: React.FC<{
   }, [focusComposer, shouldOpenComposer]);
 
   useEffect(() => {
-    window.addEventListener('gringoou:open-community-composer', focusComposer);
-    return () => window.removeEventListener('gringoou:open-community-composer', focusComposer);
-  }, [focusComposer]);
-
-  useEffect(() => {
     if (!isComposerExpanded) return;
 
     const handleOutsideInteraction = (event: PointerEvent) => {
