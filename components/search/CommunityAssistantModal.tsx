@@ -3,8 +3,9 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUp, Check, ExternalLink, LoaderCircle, MapPin, PencilLine, RotateCcw, Share2, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react';
+import { ArrowUp, Check, ExternalLink, LoaderCircle, MapPin, Mic, PencilLine, RotateCcw, Share2, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react';
 import { buildSearchPath } from '@/lib/search-navigation';
+import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 
 type AssistantReference = { id: string; label: string; href: string; type: string };
 type ChatMessage = {
@@ -79,6 +80,10 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
   const [loadingPreview, setLoadingPreview] = useState<AssistantReference[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const handledAutoSubmitRef = useRef<string | null>(null);
+  const { supported: voiceSupported, listening: voiceListening, toggle: toggleVoice } = useVoiceRecognition({
+    onResult: (transcript) => void ask(transcript),
+    onError: (message) => setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'assistant', text: message, error: true }]),
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -321,7 +326,19 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
         <div className="mx-auto w-full max-w-2xl">
           {messages.length ? <button type="button" onClick={startNewQuestion} className="mb-2 inline-flex h-8 items-center gap-1.5 text-xs font-bold text-brand-600 sm:hidden"><RotateCcw size={14} /> Nova pergunta</button> : null}
           <form onSubmit={submit} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 pl-5 shadow-inner focus-within:border-brand-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-100">
-            <input autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={messages.length ? 'Faça outra pergunta...' : 'Pergunte sobre sua comunidade'} maxLength={300} className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-slate-400" />
+            <input autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={voiceListening ? 'Ouvindo... fale agora' : messages.length ? 'Faça outra pergunta...' : 'Pergunte sobre sua comunidade'} maxLength={300} className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-slate-400" />
+            {voiceSupported ? (
+              <button
+                type="button"
+                onClick={toggleVoice}
+                disabled={loading}
+                aria-label={voiceListening ? 'Parar pesquisa por voz' : 'Perguntar por voz'}
+                title={voiceListening ? 'Ouvindo...' : 'Perguntar por voz'}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${voiceListening ? 'animate-pulse bg-red-50 text-red-500' : 'text-slate-500 hover:bg-white hover:text-brand-500'}`}
+              >
+                <Mic size={17} aria-hidden="true" />
+              </button>
+            ) : null}
             <button type="submit" disabled={!draft.trim() || loading} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-40" aria-label="Enviar pergunta"><ArrowUp size={20} /></button>
           </form>
           <div className="mt-2 flex items-center justify-between px-3 text-[11px] text-slate-400">

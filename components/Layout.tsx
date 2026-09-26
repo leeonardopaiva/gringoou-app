@@ -451,6 +451,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       setVoiceAssistantRequest(null);
                       setIsAssistantOpen(true);
                     }}
+                    onVoiceResult={(query) => {
+                      setHeaderSearch(query);
+                      startNavigation(() => router.push(`/buscar?q=${encodeURIComponent(query)}`));
+                    }}
+                    onVoiceError={(message) => showToast(message, 'error')}
                     animatedTerms={['Negócios', 'Eventos', 'Vagas']}
                     animatedIndex={searchTermIndex}
                     className="h-14 shadow-none"

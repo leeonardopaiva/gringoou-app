@@ -3,30 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Mic, Search, Sparkles } from 'lucide-react';
-
-type SpeechRecognitionResultEvent = Event & {
-  results: ArrayLike<{ 0: { transcript: string } }>;
-};
-
-type SpeechRecognitionInstance = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  maxAlternatives: number;
-  start: () => void;
-  stop: () => void;
-  onstart: (() => void) | null;
-  onend: (() => void) | null;
-  onerror: ((event: { error?: string }) => void) | null;
-  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
-};
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
-
-type VoiceWindow = Window & {
-  SpeechRecognition?: SpeechRecognitionConstructor;
-  webkitSpeechRecognition?: SpeechRecognitionConstructor;
-};
+import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 
 type UnifiedSearchInputProps = {
   value: string;
@@ -55,20 +32,21 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
   staticPlaceholder,
   className = '',
 }) => {
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const [voiceSupported, setVoiceSupported] = useState(false);
-  const [listening, setListening] = useState(false);
   const [focused, setFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ id: string; label: string; meta: string; href: string }>>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const cacheRef = useRef(new Map<string, { expiresAt: number; items: typeof suggestions }>());
-
-  useEffect(() => {
-    const voiceWindow = window as VoiceWindow;
-    setVoiceSupported(Boolean(voiceWindow.SpeechRecognition || voiceWindow.webkitSpeechRecognition));
-
-    return () => recognitionRef.current?.stop();
-  }, []);
+  const { supported: voiceSupported, listening, toggle: handleVoiceSearch } = useVoiceRecognition({
+    onResult: (transcript) => {
+      onChange(transcript);
+      if (onVoiceResult) {
+        onVoiceResult(transcript);
+      } else {
+        window.setTimeout(() => onFilterClick?.(), 0);
+      }
+    },
+    onError: (message) => onVoiceError?.(message),
+  });
 
   useEffect(() => {
     if (!focused || (value.trim().length > 0 && value.trim().length < 2)) { setSuggestions([]); return; }
@@ -90,51 +68,6 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
     }, key ? 350 : 0);
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [focused, value]);
-
-  const handleVoiceSearch = () => {
-    if (listening) {
-      recognitionRef.current?.stop();
-      return;
-    }
-
-    const voiceWindow = window as VoiceWindow;
-    const Recognition = voiceWindow.SpeechRecognition || voiceWindow.webkitSpeechRecognition;
-    if (!Recognition) return;
-
-    const recognition = new Recognition();
-    recognition.lang = 'pt-BR';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onstart = () => setListening(true);
-    recognition.onend = () => setListening(false);
-    recognition.onerror = (event) => {
-      setListening(false);
-      const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
-        ? 'Permita o acesso ao microfone para usar a pesquisa por voz.'
-        : event.error === 'no-speech'
-          ? 'Não conseguimos ouvir sua pergunta. Tente novamente.'
-          : 'A pesquisa por voz não está disponível agora.';
-      onVoiceError?.(message);
-    };
-    recognition.onresult = (event) => {
-      const transcript = event.results[0]?.[0]?.transcript?.trim();
-      if (!transcript) return;
-      onChange(transcript);
-      if (onVoiceResult) {
-        onVoiceResult(transcript);
-      } else {
-        window.setTimeout(() => onFilterClick?.(), 0);
-      }
-    };
-    recognitionRef.current = recognition;
-    try {
-      recognition.start();
-    } catch {
-      setListening(false);
-      onVoiceError?.('Não foi possível iniciar o microfone. Tente novamente.');
-    }
-  };
 
   return (
     <form
