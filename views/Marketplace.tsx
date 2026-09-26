@@ -14,6 +14,7 @@ import { CompactActionCard } from '../components/ui/CompactActionCard';
 import { FilterPopover } from '../components/ui/FilterPopover';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { SectionTabs } from '../components/ui/SectionTabs';
+import { Modal } from '../components/ui/Modal';
 import {
   type FieldErrors,
   hasFieldErrors,
@@ -47,6 +48,12 @@ const SAMPLE_EVENTS: EventItem[] = [
 
 const EVENT_TABS = ['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros'];
 const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
+
+const composeLocalDateTime = (datePart: string, timePart: string) => (datePart ? `${datePart}T${timePart || '00:00'}` : '');
+const splitLocalDateTime = (value: string): [string, string] => {
+  const [datePart = '', timePart = ''] = value.split('T');
+  return [datePart, timePart];
+};
 
 const isSameLocalDay = (left: Date, right: Date) =>
   left.getFullYear() === right.getFullYear() &&
@@ -380,13 +387,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
           />
         </div>
 
-        {showCreateForm ? (
-          <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/45 p-3 sm:items-center sm:p-6">
-            <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-lg font-bold theme-text">Cadastrar evento</h3>
-                <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Fechar</button>
-              </div>
+        <Modal open={showCreateForm} onClose={() => setShowCreateForm(false)} title="Cadastrar evento" className="max-w-2xl">
               <form
                 onSubmit={handleCreateEvent}
                 className="space-y-3"
@@ -431,33 +432,61 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             <select value={createForm.category} onChange={(event) => setCreateForm((current) => ({ ...current, category: event.target.value }))} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
               {['Cultural', 'Networking', 'Esporte', 'Gastronomia', 'Família', 'Outros'].map((category) => <option key={category}>{category}</option>)}
             </select>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                required
-                type="datetime-local"
-                value={createForm.startsAt}
-                onChange={(event) =>
-                  setCreateForm((current) => ({ ...current, startsAt: event.target.value }))
-                }
-                onInput={() => clearFieldError('startsAt')}
-                aria-invalid={Boolean(fieldErrors.startsAt)}
-                placeholder="Data e hora de inicio"
-                className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
-              />
-              <input
-                type="datetime-local"
-                value={createForm.endsAt}
-                onChange={(event) =>
-                  setCreateForm((current) => ({ ...current, endsAt: event.target.value }))
-                }
-                placeholder="Data e hora de fim"
-                className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
-              />
+            <div className="space-y-3">
+              <div>
+                <p className="mb-1.5 px-1 text-xs font-bold text-slate-500">Data e hora de início</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    required
+                    type="date"
+                    value={splitLocalDateTime(createForm.startsAt)[0]}
+                    onChange={(event) => {
+                      const [, time] = splitLocalDateTime(createForm.startsAt);
+                      setCreateForm((current) => ({ ...current, startsAt: composeLocalDateTime(event.target.value, time) }));
+                      clearFieldError('startsAt');
+                    }}
+                    aria-invalid={Boolean(fieldErrors.startsAt)}
+                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
+                  />
+                  <input
+                    required
+                    type="time"
+                    value={splitLocalDateTime(createForm.startsAt)[1]}
+                    onChange={(event) => {
+                      const [date] = splitLocalDateTime(createForm.startsAt);
+                      setCreateForm((current) => ({ ...current, startsAt: composeLocalDateTime(date, event.target.value) }));
+                      clearFieldError('startsAt');
+                    }}
+                    aria-invalid={Boolean(fieldErrors.startsAt)}
+                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
+                  />
+                </div>
+              </div>
+              <FieldErrorMessage message={fieldErrors.startsAt} />
+              <div>
+                <p className="mb-1.5 px-1 text-xs font-bold text-slate-500">Data e hora de término (opcional)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    value={splitLocalDateTime(createForm.endsAt)[0]}
+                    onChange={(event) => {
+                      const [, time] = splitLocalDateTime(createForm.endsAt);
+                      setCreateForm((current) => ({ ...current, endsAt: composeLocalDateTime(event.target.value, time) }));
+                    }}
+                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
+                  />
+                  <input
+                    type="time"
+                    value={splitLocalDateTime(createForm.endsAt)[1]}
+                    onChange={(event) => {
+                      const [date] = splitLocalDateTime(createForm.endsAt);
+                      setCreateForm((current) => ({ ...current, endsAt: composeLocalDateTime(date, event.target.value) }));
+                    }}
+                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
+                  />
+                </div>
+              </div>
             </div>
-            <FieldErrorMessage message={fieldErrors.startsAt} />
-            <p className="px-2 text-[11px] font-medium text-slate-400">
-              Use o seletor para escolher data e horario do evento.
-            </p>
             <RegionSelector
               value={createForm.regionKey}
               onChange={(region) => {
@@ -505,10 +534,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                   {submitting ? 'Enviando...' : 'Enviar para aprovacao'}
                 </button>
               </form>
-            </div>
-          </div>
-        ) : null}
-
+        </Modal>
       </div>
 
       <div className="space-y-4">

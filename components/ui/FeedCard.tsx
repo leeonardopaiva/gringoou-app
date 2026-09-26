@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 
 type RootProps = React.HTMLAttributes<HTMLElement> & {
   variant?: 'community' | 'business' | 'sponsored';
+  flat?: boolean;
 };
 
 type HeaderProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -32,13 +33,13 @@ type ContentProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const Root = React.forwardRef<HTMLElement, RootProps>(
-  ({ variant = 'community', className, ...props }, ref) => (
+  ({ variant = 'community', flat = false, className, ...props }, ref) => (
     <article
       ref={ref}
       data-variant={variant}
       className={cn(
-        'overflow-hidden rounded-card border border-slate-200/80 bg-surface shadow-sm',
-        variant === 'sponsored' && 'border-brand-100',
+        flat ? 'overflow-hidden' : 'overflow-hidden rounded-card border border-slate-200/80 bg-surface shadow-sm',
+        variant === 'sponsored' && !flat && 'border-brand-100',
         className,
       )}
       {...props}

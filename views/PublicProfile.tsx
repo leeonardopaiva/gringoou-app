@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Globe2,
   Images,
+  Link2,
   MapPin,
   MessageSquareText,
   MoreHorizontal,
@@ -18,13 +19,13 @@ import {
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
-import RegionSelector from '../components/RegionSelector';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
+import CreateGroupModal from '../components/groups/CreateGroupModal';
 
 type PublicProfileProps = {
   username: string;
@@ -115,21 +116,12 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [activeTab, setActiveTab] = useState<PublicTab>('about');
   const [refreshKey, setRefreshKey] = useState(0);
   const [friendActionLoading, setFriendActionLoading] = useState(false);
-  const [creatingGroup, setCreatingGroup] = useState(false);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [editModal, setEditModal] = useState<'details' | 'avatar' | 'cover' | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '', galleryUrls: [] as string[] });
   const [mediaDraft, setMediaDraft] = useState('');
-  const [groupDraft, setGroupDraft] = useState({
-    name: '',
-    category: '',
-    description: '',
-    regionKey: '',
-    countryCode: 'US',
-    isPublic: true,
-  });
 
   useEffect(() => {
     let ignore = false;
@@ -291,32 +283,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     }
   };
 
-  const handleCreateGroup = async () => {
-    setCreatingGroup(true);
-
-    try {
-      const response = await fetch('/api/groups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(groupDraft),
-      });
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel criar o grupo.');
-      }
-
-      showToast('Grupo criado.', 'success');
-      setGroupDraft({ name: '', category: '', description: '', regionKey: '', countryCode: 'US', isPublic: true });
-      setGroupModalOpen(false);
-      router.push(payload?.group?.publicPath || '/grupos');
-    } catch (createError) {
-      showToast(createError instanceof Error ? createError.message : 'Nao foi possivel criar o grupo.', 'error');
-    } finally {
-      setCreatingGroup(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className={pageContainerClass}>
@@ -397,7 +363,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               ) : null}
             </div>
 
-            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-24 w-24 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-md disabled:cursor-default sm:h-28 sm:w-28" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
+            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-28 w-28 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[5px] border-white bg-white shadow-md disabled:cursor-default sm:h-32 sm:w-32" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
               {profile.image ? (
                 <img
                   src={profile.image}
@@ -413,7 +379,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </button>
           </div>
 
-          <div className="rounded-t-[28px] bg-white px-5 pb-8 pt-16 sm:pt-[4.75rem]">
+          <div className="rounded-t-[28px] bg-white px-5 pb-8 pt-16 sm:pt-20">
             <div className="flex flex-col items-center text-center">
               <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -428,19 +394,28 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <span>@{profile.username}</span>
                 <span aria-hidden className="text-slate-300">•</span>
                 <span>{formatMembershipDuration(profile.joinedAt)}</span>
+              </p>
+
+              {profileQuote ? (
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+                  {profileQuote}
+                </p>
+              ) : null}
+
+              <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-400">
+                <span className="inline-flex items-center gap-1">
+                  <Link2 size={13} />
+                  {profile.username}
+                </span>
                 {profile.locationLabel ? (
                   <>
-                    <span aria-hidden className="text-slate-300">•</span>
+                    <span aria-hidden className="text-slate-300">|</span>
                     <span className="inline-flex items-center gap-1">
-                      <MapPin size={14} />
+                      <MapPin size={13} />
                       {profile.locationLabel}
                     </span>
                   </>
                 ) : null}
-              </p>
-
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
-                "{profileQuote}"
               </p>
 
               <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -522,22 +497,22 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
                 </p>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100 pt-4">
                   {profile.locationLabel ? (
-                    <div className="rounded-[18px] border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-bold text-slate-400">Região atual</p>
-                      <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><MapPin size={16} className="text-brand-500" /> {profile.locationLabel}</p>
+                    <div className="px-2">
+                      <p className="flex items-center gap-1.5 text-xs font-bold text-slate-400"><MapPin size={13} className="text-brand-500" /> Região atual</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-700">{profile.locationLabel}</p>
                     </div>
                   ) : null}
                   {profile.birthCity ? (
-                    <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-bold text-slate-400">Cidade natal</p>
-                      <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><Globe2 size={16} className="text-brand-500" /> {profile.birthCity}</p>
+                    <div className="px-2">
+                      <p className="flex items-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> Cidade natal</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-700">{profile.birthCity}</p>
                     </div>
                   ) : null}
                 </div>
 
-                <div className="mt-5 flex items-stretch divide-x divide-slate-100 border-t border-slate-100 pt-4">
+                <div className="mt-5 flex items-stretch divide-x divide-slate-100">
                   <ProfileMetric icon={<Users size={15} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
                   <ProfileMetric icon={<Images size={15} />} value={profile.stats.businessCount} label="Negócios" onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
                   <ProfileMetric icon={<CalendarDays size={15} />} value={profile.stats.eventCount} label="Eventos" onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
@@ -608,53 +583,11 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     >
                       Criar novo grupo
                     </button>
-                    <Modal
+                    <CreateGroupModal
                       open={groupModalOpen}
                       onClose={() => setGroupModalOpen(false)}
-                      title="Criar grupo"
-                      description="Organize pessoas por cidade, bairro ou interesse."
-                    >
-                    <div className="space-y-3">
-                      <input
-                        value={groupDraft.name}
-                        onChange={(event) => setGroupDraft((current) => ({ ...current, name: event.target.value }))}
-                        placeholder="Nome do grupo"
-                        className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-                      />
-                      <input
-                        value={groupDraft.category}
-                        onChange={(event) => setGroupDraft((current) => ({ ...current, category: event.target.value }))}
-                        placeholder="Categoria, ex: Bairro, Musica, Cidade"
-                        className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-                      />
-                      <textarea
-                        value={groupDraft.description}
-                        onChange={(event) => setGroupDraft((current) => ({ ...current, description: event.target.value }))}
-                        placeholder="Descricao curta"
-                        rows={3}
-                        className="theme-outline-ring w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-                      />
-                      <RegionSelector
-                        value={groupDraft.regionKey}
-                        onChange={(region) => setGroupDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))}
-                        onClear={() => setGroupDraft((current) => ({ ...current, regionKey: '' }))}
-                        allowEmpty
-                        emptyLabel="Sem regiao especifica"
-                        label="Regiao opcional"
-                        hint="Use apenas quando o grupo for local."
-                      />
-                      <label className="space-y-2"><span className="text-sm font-bold text-slate-800">País de descoberta</span><select value={groupDraft.countryCode} onChange={(event) => setGroupDraft((current) => ({ ...current, countryCode: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
-                      <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={groupDraft.isPublic} onChange={(event) => setGroupDraft((current) => ({ ...current, isPublic: event.target.checked }))} className="mt-1" /><span><strong className="block text-sm">Grupo público</strong><span className="text-xs text-slate-500">Grupos restritos exigem aprovação para acessar o mural.</span></span></label>
-                      <button
-                        type="button"
-                        onClick={() => void handleCreateGroup()}
-                        disabled={creatingGroup || groupDraft.name.trim().length < 2}
-                        className="theme-bg theme-shadow w-full rounded-2xl px-4 py-3 text-sm font-bold disabled:opacity-60"
-                      >
-                        {creatingGroup ? 'Criando...' : 'Criar grupo'}
-                      </button>
-                    </div>
-                    </Modal>
+                      onCreated={(group) => router.push(group?.publicPath || '/grupos')}
+                    />
                   </div>
                 ) : null}
 

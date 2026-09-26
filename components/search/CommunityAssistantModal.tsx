@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUp, Check, ExternalLink, LoaderCircle, MapPin, Mic, PencilLine, RotateCcw, Share2, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react';
+import { ArrowUp, BriefcaseBusiness, CalendarDays, Check, ChevronRight, ExternalLink, Home, LoaderCircle, MapPin, Mic, PencilLine, RotateCcw, Share2, Sparkles, ThumbsDown, ThumbsUp, Users, Utensils, X } from 'lucide-react';
 import { buildSearchPath } from '@/lib/search-navigation';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 
@@ -28,10 +28,13 @@ type SearchPayload = {
 };
 
 const suggestions = [
-  { title: 'Restaurantes brasileiros perto de mim', category: 'Sabores locais' },
-  { title: 'Profissionais recomendados pela comunidade', category: 'Serviços' },
-  { title: 'Eventos para este fim de semana', category: 'Agenda local' },
+  { title: 'Restaurantes brasileiros perto de mim', category: 'Sabores locais', icon: <Utensils size={18} /> },
+  { title: 'Profissionais recomendados pela comunidade', category: 'Serviços', icon: <Users size={18} /> },
+  { title: 'Eventos para este fim de semana', category: 'Agenda local', icon: <CalendarDays size={18} /> },
+  { title: 'Vagas de emprego publicadas essa semana', category: 'Trabalho', icon: <BriefcaseBusiness size={18} /> },
+  { title: 'Moradias disponíveis na sua região', category: 'Moradia', icon: <Home size={18} /> },
 ];
+const VISIBLE_SUGGESTIONS_COUNT = 3;
 
 const loadingSteps = [
   'Entendendo sua pergunta',
@@ -78,6 +81,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [loadingPreview, setLoadingPreview] = useState<AssistantReference[]>([]);
+  const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const handledAutoSubmitRef = useRef<string | null>(null);
   const { supported: voiceSupported, listening: voiceListening, toggle: toggleVoice } = useVoiceRecognition({
@@ -238,13 +242,13 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
     <div className="fixed inset-0 z-[100] flex flex-col bg-white text-slate-900" role="dialog" aria-modal="true" aria-label="Assistente da comunidade">
       <header className="border-b border-slate-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 w-full max-w-3xl items-center gap-3 px-4 py-2 sm:px-6">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm"><Sparkles size={20} /></span>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-sm"><Sparkles size={20} /></span>
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-lg font-bold text-slate-900">Fale com o Gringo</h2>
             <p className="flex items-center gap-1 truncate text-xs text-slate-500"><MapPin size={12} /> Respostas da comunidade em {regionLabel}</p>
           </div>
           {messages.length ? <button type="button" onClick={startNewQuestion} className="hidden h-9 items-center gap-2 rounded-full bg-slate-100 px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-200 sm:inline-flex"><PencilLine size={14} /> Nova pergunta</button> : null}
-          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100" aria-label="Fechar assistente"><X size={22} /></button>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200" aria-label="Fechar assistente"><X size={20} /></button>
         </div>
       </header>
 
@@ -252,19 +256,54 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col px-4 pb-40 pt-7 sm:px-6 sm:pt-12">
           {messages.length === 0 ? (
             <div className="flex flex-1 flex-col justify-center py-6 sm:py-12">
-              <div className="rounded-[28px] border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-white p-6 shadow-sm sm:p-8">
-                <span className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1.5 text-xs font-bold text-brand-700"><Sparkles size={14} /> Assistente da comunidade</span>
-                <p className="mt-5 max-w-xl text-xl font-bold leading-7 text-slate-900 sm:text-2xl sm:leading-8">Descubra recomendações e informações da sua região.</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">Pesquise negócios, vagas, moradias, eventos e publicações reais da comunidade.</p>
+              <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
+                <span aria-hidden className="absolute inset-0 rounded-full bg-brand-50" />
+                <span aria-hidden className="absolute inset-5 rounded-full bg-brand-100" />
+                <span aria-hidden className="absolute left-2 top-3 h-1.5 w-1.5 rounded-full bg-brand-200" />
+                <span aria-hidden className="absolute right-2 top-8 h-1.5 w-1.5 rounded-full bg-brand-200" />
+                <span aria-hidden className="absolute bottom-3 left-5 h-1.5 w-1.5 rounded-full bg-brand-200" />
+                <span aria-hidden className="absolute bottom-5 right-3 h-1.5 w-1.5 rounded-full bg-brand-200" />
+                <Sparkles size={36} className="relative text-brand-500" />
               </div>
-              <p className="mb-3 mt-7 text-sm font-bold text-slate-800">Sugestões para começar</p>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {suggestions.map((suggestion) => (
-                  <button key={suggestion.title} type="button" onClick={() => void ask(suggestion.title)} className="group flex min-h-32 flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md">
-                    <span className="font-bold leading-5 text-slate-800 group-hover:text-brand-700">{suggestion.title}</span>
-                    <span className="mt-6 inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 group-hover:bg-brand-50 group-hover:text-brand-600">{suggestion.category}</span>
-                  </button>
-                ))}
+              <h3 className="mx-auto mt-6 max-w-sm text-center text-2xl font-extrabold leading-8 text-slate-900 sm:text-[28px]">
+                Descubra recomendações e informações da sua região.
+              </h3>
+              <p className="mx-auto mt-3 max-w-sm text-center text-sm leading-6 text-slate-500">
+                Pesquise negócios, vagas, moradias, eventos e publicações reais da comunidade.
+              </p>
+
+              <div className="mt-9">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-bold text-slate-800">Sugestões para começar</p>
+                  {!showAllSuggestions && suggestions.length > VISIBLE_SUGGESTIONS_COUNT ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllSuggestions(true)}
+                      className="flex items-center gap-0.5 text-xs font-bold text-brand-600 transition hover:text-brand-700"
+                    >
+                      Ver mais <ChevronRight size={14} />
+                    </button>
+                  ) : null}
+                </div>
+                <div className="divide-y divide-slate-100">
+                  {(showAllSuggestions ? suggestions : suggestions.slice(0, VISIBLE_SUGGESTIONS_COUNT)).map((suggestion) => (
+                    <button
+                      key={suggestion.title}
+                      type="button"
+                      onClick={() => void ask(suggestion.title)}
+                      className="group flex w-full items-center gap-3 py-3 text-left transition hover:bg-slate-50"
+                    >
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500">
+                        {suggestion.icon}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-bold leading-5 text-slate-800 group-hover:text-brand-700">{suggestion.title}</span>
+                        <span className="mt-1 inline-block text-xs font-semibold text-slate-400">{suggestion.category}</span>
+                      </span>
+                      <ChevronRight size={16} className="shrink-0 text-slate-300 group-hover:text-brand-400" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

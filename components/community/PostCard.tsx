@@ -26,6 +26,7 @@ const POST_CONTENT_MAX_LENGTH = 600;
 type RootProps = {
   children: React.ReactNode;
   className?: string;
+  flat?: boolean;
 };
 
 type HeaderProps = {
@@ -94,8 +95,8 @@ type CommentComposerProps = {
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
-const Root: React.FC<RootProps> = ({ children, className = '' }) => (
-  <FeedCard.Root className={`space-y-3 rounded-[18px] p-4 ${className}`.trim()}>
+const Root: React.FC<RootProps> = ({ children, className = '', flat = false }) => (
+  <FeedCard.Root flat={flat} className={`space-y-3 ${flat ? '' : 'rounded-[18px] p-4'} ${className}`.trim()}>
     {children}
   </FeedCard.Root>
 );

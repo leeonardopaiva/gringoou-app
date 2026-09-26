@@ -12,6 +12,7 @@ export const COMMUNITY_POST_MAX_LENGTH = 600;
 
 type RootProps = {
   children: React.ReactNode;
+  variant?: 'card' | 'bare';
 };
 
 type EditorProps = {
@@ -44,17 +45,19 @@ type ActionsProps = {
   mode: ComposerMode;
   onModeChange: (mode: ComposerMode) => void;
   onPublish: () => void;
+  showLabels?: boolean;
 };
 
 type ModeButtonProps = {
   active: boolean;
   icon: React.ReactNode;
   label: string;
+  showLabel?: boolean;
   onClick: () => void;
 };
 
-const Root: React.FC<RootProps> = ({ children }) => (
-  <div className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-3 shadow-sm">
+const Root: React.FC<RootProps> = ({ children, variant = 'card' }) => (
+  <div className={variant === 'bare' ? 'space-y-3' : 'space-y-3 rounded-[20px] border border-slate-200 bg-white p-3 shadow-sm'}>
     {children}
   </div>
 );
@@ -204,39 +207,43 @@ const MediaField: React.FC<MediaFieldProps> = ({
   return null;
 };
 
-const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, onClick }) => (
+const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, showLabel, onClick }) => (
   <button
     type="button"
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
+    className={`flex h-9 items-center justify-center gap-1.5 rounded-full transition ${showLabel ? 'px-3' : 'w-9'} ${
       active ? 'bg-brand-50 text-brand-600' : 'text-muted-foreground hover:bg-slate-100 hover:text-brand-600'
     }`}
   >
     {icon}
+    {showLabel ? <span className="text-xs font-bold">{label}</span> : null}
   </button>
 );
 
-const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish }) => (
+const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish, showLabels = false }) => (
   <div className="flex items-center justify-between border-t border-slate-100 pt-2">
     <div className="flex items-center gap-1">
       <ModeButton
         active={mode === 'photo'}
         icon={<Camera size={16} />}
         label="Foto"
+        showLabel={showLabels}
         onClick={() => onModeChange(mode === 'photo' ? 'text' : 'photo')}
       />
       <ModeButton
         active={mode === 'video'}
         icon={<Play size={16} />}
-        label="Video"
+        label="Vídeo"
+        showLabel={showLabels}
         onClick={() => onModeChange(mode === 'video' ? 'text' : 'video')}
       />
       <ModeButton
         active={mode === 'link'}
         icon={<LinkIcon size={16} />}
         label="Link"
+        showLabel={showLabels}
         onClick={() => onModeChange(mode === 'link' ? 'text' : 'link')}
       />
     </div>

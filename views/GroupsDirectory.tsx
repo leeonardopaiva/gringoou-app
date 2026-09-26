@@ -2,9 +2,11 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MapPin, Plus, Search, UsersRound } from 'lucide-react';
 import PageHeader from '@/components/navigation/PageHeader';
 import { ContentColumn } from '@/components/ui/ContentColumn';
+import CreateGroupModal from '@/components/groups/CreateGroupModal';
 import { useIntersectionTrigger } from '@/hooks/useIntersectionTrigger';
 import { loadRegionGroups } from '@/lib/content-api';
 import type { RegionalGroupCard } from '@/lib/content-contracts';
@@ -71,6 +73,8 @@ const GroupRow = ({ group }: { group: RegionalGroupCard }) => (
 );
 
 const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
+  const router = useRouter();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [groups, setGroups] = useState<RegionalGroupCard[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -146,125 +150,140 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
     void reloadGroups();
   }, [country, reloadGroups, user.regionKey]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetch('/api/groups?mine=1&limit=8', { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => setMyGroups(Array.isArray(payload?.groups) ? payload.groups : []))
-      .catch(() => undefined);
-    return () => controller.abort();
+  const reloadMyGroups = useCallback(async () => {
+    try {
+      const response = await fetch('/api/groups?mine=1&limit=8');
+      const payload = response.ok ? await response.json() : null;
+      setMyGroups(Array.isArray(payload?.groups) ? payload.groups : []);
+    } catch {
+      // silencioso: a lista "Seus grupos" e apenas complementar
+    }
   }, []);
 
+  useEffect(() => {
+    void reloadMyGroups();
+  }, [reloadMyGroups]);
+
+  const handleGroupCreated = useCallback(
+    (group: { publicPath?: string } | null) => {
+      if (group?.publicPath) {
+        router.push(group.publicPath);
+        return;
+      }
+      void reloadGroups();
+      void reloadMyGroups();
+    },
+    [reloadGroups, reloadMyGroups, router],
+  );
+
   return (
-    <ContentColumn size="wide" className="animate-in px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
+    <ContentColumn className="animate-in px-5 pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <PageHeader
         title="Grupos"
         action={
-          <Link
-            href="/profile?tab=groups"
-            aria-label="Criar ou gerenciar grupos"
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            aria-label="Criar grupo"
             className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-900 transition hover:bg-brand-50 hover:text-brand-700"
           >
             <Plus size={22} />
-          </Link>
+          </button>
         }
       />
 
-      <div className="mt-4 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <main className="min-w-0 space-y-6">
-          <div className="space-y-3">
-            <label className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-slate-500 shadow-sm focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
-              <Search size={20} className="shrink-0 text-slate-600" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar em todos os grupos"
-                className="min-w-0 flex-1 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-500"
-              />
-            </label>
+      <div className="mt-4 space-y-6">
+        <div className="space-y-3">
+          <label className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-slate-500 shadow-sm focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
+            <Search size={20} className="shrink-0 text-slate-600" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar em todos os grupos"
+              className="min-w-0 flex-1 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-500"
+            />
+          </label>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {countries.map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCountry(value)}
-                  className={`h-9 shrink-0 rounded-full px-4 text-xs font-bold transition ${
-                    country === value
-                      ? 'bg-brand-500 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-700'
-                  }`}
-                >
-                  {label}
-                </button>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {countries.map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setCountry(value)}
+                className={`h-9 shrink-0 rounded-full px-4 text-xs font-bold transition ${
+                  country === value
+                    ? 'bg-brand-500 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-700'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {user.regionKey ? (
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
+            <MapPin size={15} className="text-brand-500" />
+            {user.location}
+          </div>
+        ) : null}
+
+        {myGroups.length ? (
+          <section className="space-y-2">
+            <div className="flex items-center gap-2">
+              <UsersRound size={16} className="text-brand-500" />
+              <h2 className="text-sm font-extrabold text-slate-900">Seus grupos</h2>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {myGroups.map((group) => (
+                <Link key={group.id} href={group.publicPath} className="flex w-20 shrink-0 flex-col items-center gap-1.5 text-center">
+                  <GroupAvatar group={group} />
+                  <p className="line-clamp-2 text-[11px] font-bold leading-tight text-slate-700">{group.name}</p>
+                </Link>
               ))}
             </div>
-          </div>
-
-          {user.regionKey ? (
-            <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
-              <MapPin size={15} className="text-brand-500" />
-              {user.location}
-            </div>
-          ) : null}
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Grupos perto de voce</h2>
-              <span className="text-xs font-bold text-slate-400">{filteredGroups.length}</span>
-            </div>
-
-            {loadingInitial ? (
-              <div className="space-y-3">
-                {Array.from({ length: 7 }).map((_, index) => (
-                  <div key={index} className="flex animate-pulse items-center gap-3 rounded-2xl py-2">
-                    <div className="h-14 w-14 rounded-full bg-slate-100" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-2/3 rounded-full bg-slate-100" />
-                      <div className="h-3 w-1/3 rounded-full bg-slate-100" />
-                    </div>
-                    <div className="h-10 w-20 rounded-full bg-slate-100" />
-                  </div>
-                ))}
-              </div>
-            ) : filteredGroups.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm text-slate-500">
-                Nenhum grupo encontrado agora.
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredGroups.map((group) => <GroupRow key={group.id} group={group} />)}
-                {loadingMore ? <div className="h-16 animate-pulse rounded-2xl bg-slate-100" /> : null}
-                {hasMore ? <div ref={sentinelRef} className="h-1" aria-hidden="true" /> : null}
-              </div>
-            )}
           </section>
-        </main>
+        ) : null}
 
-        <aside className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-24">
-          <div className="flex items-center gap-2">
-            <UsersRound size={17} className="text-brand-500" />
-            <h2 className="text-sm font-extrabold text-slate-900">Seus grupos</h2>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Grupos perto de voce</h2>
+            <span className="text-xs font-bold text-slate-400">{filteredGroups.length}</span>
           </div>
-          <div className="mt-4 space-y-2">
-            {myGroups.length ? (
-              myGroups.map((group) => (
-                <Link key={group.id} href={group.publicPath} className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-brand-50">
-                  <GroupAvatar group={group} />
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-bold text-slate-800">{group.name}</p>
-                    <p className="truncate text-[10px] text-slate-400">{formatCompactMemberCount(group.memberCount)} membros</p>
+
+          {loadingInitial ? (
+            <div className="space-y-3">
+              {Array.from({ length: 7 }).map((_, index) => (
+                <div key={index} className="flex animate-pulse items-center gap-3 rounded-2xl py-2">
+                  <div className="h-14 w-14 rounded-full bg-slate-100" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-2/3 rounded-full bg-slate-100" />
+                    <div className="h-3 w-1/3 rounded-full bg-slate-100" />
                   </div>
-                </Link>
-              ))
-            ) : (
-              <p className="rounded-2xl bg-slate-50 px-3 py-5 text-center text-xs text-slate-500">
-                Voce ainda nao participa de grupos.
-              </p>
-            )}
-          </div>
-        </aside>
+                  <div className="h-10 w-20 rounded-full bg-slate-100" />
+                </div>
+              ))}
+            </div>
+          ) : filteredGroups.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm text-slate-500">
+              Nenhum grupo encontrado agora.
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {filteredGroups.map((group) => <GroupRow key={group.id} group={group} />)}
+              {loadingMore ? <div className="h-16 animate-pulse rounded-2xl bg-slate-100" /> : null}
+              {hasMore ? <div ref={sentinelRef} className="h-1" aria-hidden="true" /> : null}
+            </div>
+          )}
+        </section>
       </div>
+
+      <CreateGroupModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={handleGroupCreated}
+      />
     </ContentColumn>
   );
 };

@@ -395,8 +395,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   };
 
   return (
-    <div className="app-shell min-h-screen bg-bg" data-persona={isProfessionalTheme ? 'professional' : 'personal'}>
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden bg-bg font-sans md:max-w-none md:bg-transparent">
+    <div className="app-shell min-h-dvh bg-bg" data-persona={isProfessionalTheme ? 'professional' : 'personal'}>
+      <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-bg font-sans md:max-w-none md:bg-transparent">
         {isMenuOpen ? (
           <div
             className="fixed inset-0 z-50 animate-in bg-overlay fade-in duration-300 md:hidden"
@@ -423,7 +423,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           />
         </div>
 
-        <div className={`relative flex min-h-screen flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
+        <div className={`relative flex h-full flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
           <header className="sticky top-0 z-40 border-b border-border/70 bg-bg/95 backdrop-blur">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
             <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:flex-nowrap md:gap-y-2 md:px-5 md:py-4">

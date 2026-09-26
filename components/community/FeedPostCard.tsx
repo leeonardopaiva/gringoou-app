@@ -15,6 +15,7 @@ type FeedPostCardProps = {
   onDeleteComment: (commentId: string) => Promise<void>;
   onSharePost: () => void;
   onPostPreference?: (action: 'save' | 'interest' | 'hide' | 'report' | 'mute') => void;
+  flat?: boolean;
 };
 
 const FeedPostCard: React.FC<FeedPostCardProps> = ({
@@ -27,6 +28,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onDeleteComment,
   onSharePost,
   onPostPreference = () => undefined,
+  flat = false,
 }) => {
   const authorHref = post.authorHref || (post.author.username ? `/${post.author.username}` : undefined);
   const [commentText, setCommentText] = useState('');
@@ -209,7 +211,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   const isPendingReview = post.status === 'PENDING_REVIEW';
 
   return (
-    <PostCard.Root className={isPendingReview ? 'opacity-65' : ''}>
+    <PostCard.Root flat={flat} className={isPendingReview ? 'opacity-65' : ''}>
       {isPendingReview ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
           Aguardando aprovacao da administracao. Esta publicacao esta visivel apenas para voce e administradores.

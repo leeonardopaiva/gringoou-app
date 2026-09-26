@@ -71,24 +71,27 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         className={cn(
+          'relative',
           fullscreen
             ? 'flex h-full min-h-0 w-full flex-col bg-surface p-5 sm:p-8'
             : 'flex max-h-[92dvh] min-h-0 w-full max-w-md flex-col rounded-t-sheet bg-surface p-5 shadow-xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-card sm:p-6',
           className,
         )}
       >
-        <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
-          {title && <h2 id={titleId} className="text-h3 font-bold text-text">{title}</h2>}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar"
-            className="ml-auto rounded-full p-1 text-slate-400 transition hover:bg-black/5 hover:text-text"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        {description && <p id={descriptionId} className="mb-4 shrink-0 text-body-sm text-slate-500">{description}</p>}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar"
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-black/5 hover:text-text"
+        >
+          <X size={18} />
+        </button>
+        {title ? (
+          <div className="mb-3 shrink-0 pr-10">
+            <h2 id={titleId} className="text-h3 font-bold text-text">{title}</h2>
+          </div>
+        ) : null}
+        {description && <p id={descriptionId} className="mb-4 shrink-0 pr-10 text-body-sm text-slate-500">{description}</p>}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{children}</div>
         {footer && <div className="mt-5 flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-4">{footer}</div>}
       </div>

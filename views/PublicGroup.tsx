@@ -112,6 +112,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
   const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
   const [moderatingMemberId, setModeratingMemberId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ name: '', description: '', category: '', imageUrl: '', coverImageUrl: '', regionKey: '', countryCode: 'US', isPublic: true });
+  const [groupTab, setGroupTab] = useState<'mural' | 'sobre' | 'eventos' | 'midia'>('mural');
 
   useEffect(() => {
     let ignore = false;
@@ -354,20 +355,36 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           </section>
 
           {group.canViewContent ? (
-            <div className="mt-4 flex items-center gap-5 border-b border-slate-100 px-1">
-              <span className="relative pb-3 text-sm font-bold text-brand-500">
-                Mural
-                <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-brand-500" />
-              </span>
-              <button type="button" onClick={() => setMembersOpen(true)} className="pb-3 text-sm font-semibold text-slate-400 transition hover:text-slate-600">
-                Membros · {group.memberCount}
-              </button>
+            <div className="mt-4 flex items-center gap-5 overflow-x-auto border-b border-slate-100 px-1 scrollbar-hide">
+              {(
+                [
+                  ['mural', 'Mural'],
+                  ['sobre', 'Sobre'],
+                  ['eventos', 'Eventos'],
+                  ['membros', `Membros`],
+                  ['midia', 'Mídia'],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => (key === 'membros' ? setMembersOpen(true) : setGroupTab(key))}
+                  className={`relative shrink-0 whitespace-nowrap pb-3 text-sm font-semibold transition ${
+                    groupTab === key ? 'text-brand-500' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  {key === 'membros' ? `Membros · ${group.memberCount}` : label}
+                  {groupTab === key ? (
+                    <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-brand-500" />
+                  ) : null}
+                </button>
+              ))}
             </div>
           ) : null}
 
           {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">Conteúdo restrito</h2><p className="mt-2 text-sm text-amber-800">Sua solicitação precisa ser aprovada para acessar membros e publicações.</p></section> : null}
 
-          {group.canViewContent ? (
+          {group.canViewContent && groupTab === 'mural' ? (
             <div className="mt-4 px-1">
               {previewMembers.length ? (
                 <div className="mb-4 flex items-center justify-between gap-4">
@@ -383,6 +400,18 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                 </div>
               ) : null}
               <GroupFeed groupId={group.id} groupSlug={group.slug} user={viewer} canPost={Boolean(viewer && group.viewerMembership?.status === 'APPROVED')} />
+            </div>
+          ) : null}
+
+          {group.canViewContent && groupTab !== 'mural' ? (
+            <div className="mt-10 px-1 py-10 text-center">
+              <p className="text-sm font-semibold text-slate-400">
+                {groupTab === 'sobre'
+                  ? 'Em breve: mais detalhes sobre este grupo.'
+                  : groupTab === 'eventos'
+                    ? 'Em breve: eventos organizados por este grupo.'
+                    : 'Em breve: fotos e vídeos compartilhados pelo grupo.'}
+              </p>
             </div>
           ) : null}
 
