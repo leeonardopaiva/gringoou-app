@@ -21,10 +21,17 @@ import { ViewableAdSlot } from '@/components/ads/ViewableAdSlot';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { CompactActionCard } from '@/components/ui/CompactActionCard';
 import { FeedCard } from '@/components/ui/FeedCard';
+import { SectionTabs } from '@/components/ui/SectionTabs';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
+
+const FEED_FILTER_OPTIONS = [
+  { id: 'recent', label: 'Recentes' },
+  { id: 'mine', label: 'Meus posts' },
+  { id: 'saved', label: 'Salvos' },
+] as const;
 
 const Community: React.FC<{
   user: User;
@@ -101,15 +108,21 @@ const Community: React.FC<{
     if (detail.regionKey) setSelectedFeedRegionKey(detail.regionKey);
   }), []);
 
-  useEffect(() => {
-    if (shouldOpenComposer) setIsComposerExpanded(true);
-  }, [shouldOpenComposer]);
+  const focusComposer = useCallback(() => {
+    setIsComposerExpanded(true);
+    window.requestAnimationFrame(() => {
+      composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, []);
 
   useEffect(() => {
-    const openComposer = () => setIsComposerExpanded(true);
-    window.addEventListener('gringoou:open-community-composer', openComposer);
-    return () => window.removeEventListener('gringoou:open-community-composer', openComposer);
-  }, []);
+    if (shouldOpenComposer) focusComposer();
+  }, [focusComposer, shouldOpenComposer]);
+
+  useEffect(() => {
+    window.addEventListener('gringoou:open-community-composer', focusComposer);
+    return () => window.removeEventListener('gringoou:open-community-composer', focusComposer);
+  }, [focusComposer]);
 
   useEffect(() => {
     if (!isComposerExpanded) return;
@@ -976,22 +989,12 @@ const Community: React.FC<{
       </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {([
-          ['recent', 'Recentes'],
-          ['mine', 'Meus posts'],
-          ['saved', 'Salvos'],
-        ] as const).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setFeedFilter(value)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition ${feedFilter === value ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-600'}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <SectionTabs
+        options={FEED_FILTER_OPTIONS}
+        value={feedFilter}
+        onChange={(value) => setFeedFilter(value as typeof feedFilter)}
+        ariaLabel="Filtrar publicações"
+      />
 
       <div className="space-y-3">
         {displayedPosts.length === 0 && !postsLoading ? (
