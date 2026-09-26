@@ -12,6 +12,7 @@ import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
 import { CompactActionCard } from '../components/ui/CompactActionCard';
 import { FilterPopover } from '../components/ui/FilterPopover';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { SectionTabs } from '../components/ui/SectionTabs';
 import {
   type FieldErrors,
@@ -511,17 +512,17 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-bold theme-text">{sectionTitle}</h2>
-          <div className="flex items-center gap-2">
-            <SectionTabs options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
+        <div className="space-y-3">
+          <SectionHeader title={sectionTitle}>
+            <SectionTabs.Mobile options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
             <FilterPopover>
               <div className="relative">
                 <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar eventos" className="w-full rounded-full border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
               </div>
             </FilterPopover>
-          </div>
+          </SectionHeader>
+          <SectionTabs.Desktop options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
         </div>
         {resultScope === 'global' && events.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">

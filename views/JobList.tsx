@@ -14,6 +14,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { FilterPopover } from "@/components/ui/FilterPopover";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
@@ -148,10 +149,7 @@ export default function JobList({ user }: { user: User }) {
         </Button>
       } />
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-body-sm font-bold text-foreground">
-            Vagas disponiveis
-          </h2>
+        <SectionHeader title="Vagas disponiveis">
           <FilterPopover>
             <Select
               value={employmentType}
@@ -182,7 +180,7 @@ export default function JobList({ user }: { user: User }) {
               placeholder="Faixa salarial"
             />
           </FilterPopover>
-        </div>
+        </SectionHeader>
         {loading ? (
           <p className="text-sm text-muted-foreground">
             Atualizando resultados...

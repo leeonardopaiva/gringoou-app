@@ -14,6 +14,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { FilterPopover } from "@/components/ui/FilterPopover";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
@@ -128,8 +129,7 @@ export default function HousingList({ user: _user }: { user: User }) {
         </Button>
       } />
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-body-sm font-bold">Imoveis disponiveis</h2>
+        <SectionHeader title="Imoveis disponiveis">
           <FilterPopover>
             <Select
               value={propertyType}
@@ -161,7 +161,7 @@ export default function HousingList({ user: _user }: { user: User }) {
               placeholder="Preco"
             />
           </FilterPopover>
-        </div>
+        </SectionHeader>
         {loading ? (
           <p className="text-sm text-muted-foreground">
             Atualizando resultados...

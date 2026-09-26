@@ -19,41 +19,47 @@ export interface SectionTabsProps {
 }
 
 /**
- * Same value/onChange drives both variants: desktop keeps the existing
- * pill-tab row, mobile collapses it into a single dropdown so it can sit
- * next to a section subtitle without competing for width.
+ * Desktop keeps the existing pill-tab row, its own line below the section
+ * header. Mobile collapses the same options/value/onChange into a single
+ * dropdown so it can sit inline next to the subtitle and Filtros button.
+ * Exposed separately (SectionTabs.Desktop / .Mobile) so pages that pair
+ * tabs with a Filtros button can place each variant on the right row;
+ * the default SectionTabs renders both stacked for simpler pages.
  */
-export const SectionTabs: React.FC<SectionTabsProps> = ({ options, value, onChange, ariaLabel, className }) => {
+const Desktop: React.FC<SectionTabsProps> = ({ options, value, onChange, ariaLabel, className }) => (
+  <div className={cn('hidden items-center gap-2 overflow-x-auto pb-1 md:flex', className)} aria-label={ariaLabel}>
+    {options.map((option) => (
+      <button
+        key={option.id}
+        type="button"
+        onClick={() => onChange(option.id)}
+        className={cn(
+          'shrink-0 whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold shadow-sm transition',
+          value === option.id
+            ? 'border-transparent bg-brand-500 text-white'
+            : 'border-slate-100 bg-white text-slate-700 hover:bg-brand-50 hover:text-brand-600',
+        )}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+);
+
+const Mobile: React.FC<SectionTabsProps> = ({ options, value, onChange, ariaLabel, className }) => {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeLabel = options.find((option) => option.id === value)?.label ?? options[0]?.label ?? '';
 
   return (
-    <>
-      <div className={cn('hidden items-center gap-2 overflow-x-auto pb-1 md:flex', className)} aria-label={ariaLabel}>
-        {options.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onChange(option.id)}
-            className={cn(
-              'shrink-0 whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold shadow-sm transition',
-              value === option.id
-                ? 'border-transparent bg-brand-500 text-white'
-                : 'border-slate-100 bg-white text-slate-700 hover:bg-brand-50 hover:text-brand-600',
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+    <div className="md:hidden">
       <button
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-label={ariaLabel}
         className={cn(
-          'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 md:hidden',
+          'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700',
           className,
         )}
       >
@@ -79,6 +85,15 @@ export const SectionTabs: React.FC<SectionTabsProps> = ({ options, value, onChan
           </button>
         ))}
       </Popover>
-    </>
+    </div>
   );
 };
+
+const Root: React.FC<SectionTabsProps> = (props) => (
+  <>
+    <Desktop {...props} />
+    <Mobile {...props} />
+  </>
+);
+
+export const SectionTabs = Object.assign(Root, { Desktop, Mobile });
