@@ -490,23 +490,23 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 {profile.bio ? (
                   <p className="mt-4 text-base leading-7 text-slate-700">{profile.bio}</p>
                 ) : null}
-                <p className="mt-4 text-sm leading-7 text-slate-600">
-                  Gringo desde {new Date(profile.joinedAt).getFullYear()}. Hoje este perfil tem{' '}
-                  {profile.stats.businessCount} negócio{profile.stats.businessCount === 1 ? '' : 's'} público{profile.stats.businessCount === 1 ? '' : 's'},{' '}
-                  {profile.stats.eventCount} evento{profile.stats.eventCount === 1 ? '' : 's'} e{' '}
+                {/* <p className="mt-4 text-sm leading-7 text-slate-600">
+                  Gringo desde {new Date(profile.joinedAt).getFullYear()}. Hoje este perfil tem{' '} <br />
+                  {profile.stats.businessCount} negócio{profile.stats.businessCount === 1 ? '' : 's'} público{profile.stats.businessCount === 1 ? '' : 's'},{' '}<br />
+                  {profile.stats.eventCount} evento{profile.stats.eventCount === 1 ? '' : 's'} e{' '}<br />
                   {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
-                </p>
+                </p> */}
 
                 <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100 pt-4">
                   {profile.locationLabel ? (
-                    <div className="px-2">
-                      <p className="flex items-center gap-1.5 text-xs font-bold text-slate-400"><MapPin size={13} className="text-brand-500" /> Região atual</p>
+                    <div className="px-2 text-center">
+                      <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><MapPin size={13} className="text-brand-500" /> Região atual</p>
                       <p className="mt-1 text-sm font-semibold text-slate-700">{profile.locationLabel}</p>
                     </div>
                   ) : null}
                   {profile.birthCity ? (
-                    <div className="px-2">
-                      <p className="flex items-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> Cidade natal</p>
+                    <div className="px-2 text-center">
+                      <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> Cidade natal</p>
                       <p className="mt-1 text-sm font-semibold text-slate-700">{profile.birthCity}</p>
                     </div>
                   ) : null}
@@ -526,7 +526,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-bold text-slate-900">Amigos</h2>
                   <span className="text-sm font-semibold text-slate-400">
-                    {profile.friends.length} conexao{profile.friends.length === 1 ? '' : 'es'}
+                    {profile.friends.length} {profile.friends.length === 1 ? '' : 'conexões'}
                   </span>
                 </div>
 
@@ -595,7 +595,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-2xl font-bold text-slate-900">Grupos</h2>
                     <span className="text-sm font-semibold text-slate-400">
-                      {profile.groups.length} grupo{profile.groups.length === 1 ? '' : 's'}
+                      {profile.groups.length} {profile.groups.length === 1 ? '' : 'grupos'}
                     </span>
                   </div>
 
@@ -630,7 +630,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-500">
                             {group.regionLabel ? <span>{group.regionLabel}</span> : null}
                             <span>
-                              {group.memberCount} membro{group.memberCount === 1 ? '' : 's'}
+                              {group.memberCount} membro{group.memberCount === 1 ? '' : 'membros'}
                             </span>
                           </div>
                         </Link>
@@ -666,7 +666,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-bold text-slate-900">Fotos</h2>
                   <span className="text-sm font-semibold text-slate-400">
-                    {photoItems.length} imagem{photoItems.length === 1 ? '' : 'ns'}
+                    {photoItems.length} {photoItems.length === 1 ? '' : 'imagens'}
                   </span>
                 </div>
 
