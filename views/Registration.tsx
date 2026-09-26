@@ -47,6 +47,8 @@ interface RegistrationProps {
   passwordEnabled: boolean;
   onGoogleLogin: () => void;
   onGoogleSelectAccount?: () => void;
+  mockLoginEnabled?: boolean;
+  onMockLogin?: () => void;
   onEmailLogin?: (email: string) => Promise<void>;
   onPasswordLogin?: (values: { email: string; password: string }) => Promise<void>;
   onPasswordRegister?: (values: {
@@ -97,6 +99,8 @@ const Registration: React.FC<RegistrationProps> = ({
   passwordEnabled,
   onGoogleLogin,
   onGoogleSelectAccount,
+  mockLoginEnabled = false,
+  onMockLogin,
   onEmailLogin,
   onPasswordLogin,
   onPasswordRegister,
@@ -454,6 +458,20 @@ const Registration: React.FC<RegistrationProps> = ({
                   <span className="text-xs font-medium text-slate-400">ou</span>
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
                 </div>
+
+                {mockLoginEnabled ? (
+                  <Button
+                    type="button"
+                    fullWidth
+                    size="lg"
+                    variant="ghost"
+                    isDisabled={submitting}
+                    onPress={onMockLogin}
+                    className="h-11 w-full max-w-[360px] rounded-full border border-dashed border-slate-300 bg-white px-6 text-xs font-semibold text-slate-500 shadow-none hover:bg-slate-50"
+                  >
+                    Entrar com usuário de teste
+                  </Button>
+                ) : null}
 
                 <Button
                   type="button"

@@ -13,7 +13,9 @@ import {
 import { normalizeAuthEmail, verifyPassword } from '@/lib/password-auth';
 import { prisma } from '@/lib/prisma';
 import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
+import { isDevAuthEnabled } from '@/lib/dev-magic-links';
 import { USE_MOCKS } from '@/lib/server/mocks/config';
+import { getMockDevUser } from '@/lib/server/mocks/profiles.mock';
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -43,6 +45,11 @@ export const isGoogleAuthConfigured = Boolean(
 );
 
 export const isPasswordAuthConfigured = Boolean(passwordAuthEnabled && process.env.NEXTAUTH_SECRET);
+
+// Local-dev-only bypass: lets a developer sign in without Google/DB when
+// mocked content is being used, reusing the same flags as the dev magic-link
+// shortcut (never true in production).
+export const isMockDevAuthConfigured = USE_MOCKS && isDevAuthEnabled;
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -150,6 +157,18 @@ export const authOptions: NextAuthOptions = {
           allowDangerousEmailAccountLinking: true,
         }),
       ]
+      : []),
+    ...(isMockDevAuthConfigured
+      ? [
+          CredentialsProvider({
+            id: 'mock-dev',
+            name: 'Usuário de teste',
+            credentials: {},
+            async authorize() {
+              return getMockDevUser();
+            },
+          }),
+        ]
       : []),
   ],
   callbacks: {

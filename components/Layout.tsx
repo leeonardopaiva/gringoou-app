@@ -494,7 +494,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           </header>
 
           <main className="w-full">
-            <div className="w-full px-0 pt-4 sm:pt-5 md:px-6 lg:px-8 xl:px-10 2xl:px-12">{children}</div>
+            <div className="w-full px-0 pt-4 sm:pt-0 md:px-6 lg:px-8 xl:px-10 2xl:px-12">{children}</div>
           </main>
 
           <SuggestionButton />

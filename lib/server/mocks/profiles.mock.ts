@@ -1,8 +1,32 @@
 import 'server-only';
 
+import { UserRole } from '@prisma/client';
 import { avatarFor } from './shared';
 import { MOCK_BUSINESSES } from './businesses.mock';
 import { MOCK_EVENTS } from './events.mock';
+
+/**
+ * Identity used by the local-dev "test user" login (see lib/auth.ts). Matches
+ * mock-user-1 / camila.souza, the same author already used across the
+ * community/group fixtures, so the logged-in viewer and their public profile
+ * stay coherent.
+ */
+export function getMockDevUser() {
+  return {
+    id: 'mock-user-1',
+    name: 'Camila Souza',
+    email: 'camila.souza@mock.gringoou.dev',
+    image: avatarFor('camila.souza'),
+    role: UserRole.USER,
+    username: 'camila.souza',
+    phone: null,
+    locationLabel: 'Boston, MA',
+    regionKey: 'boston-ma',
+    onboardingCompleted: true,
+    recruiterVerified: false,
+    isAdvertiser: false,
+  };
+}
 
 /** Mutable in-memory friend-request status per mock profile (dev-server lifetime). */
 const mockFriendStatuses = new Map<string, 'pending_sent' | 'accepted'>();

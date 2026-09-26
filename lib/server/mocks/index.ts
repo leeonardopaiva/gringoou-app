@@ -15,4 +15,4 @@ export { getMockBusinessesPage, getMockBusinessDetail, setMockBusinessFavorite, 
 export { getMockEventsPage, getMockEventDetail, setMockEventFavorite, addMockEventRating } from './events.mock';
 export { getMockJobsResponse, getMockJobDetail, getMockJobComments, addMockJobComment } from './jobs.mock';
 export { getMockHousingResponse, getMockHousingDetail, getMockHousingComments, addMockHousingComment } from './housing.mock';
-export { getMockPublicProfile, sendMockFriendRequest, decideMockFriendRequest } from './profiles.mock';
+export { getMockPublicProfile, sendMockFriendRequest, decideMockFriendRequest, getMockDevUser } from './profiles.mock';

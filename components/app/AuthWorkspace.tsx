@@ -29,6 +29,8 @@ type AuthWorkspaceProps = {
   defaultValues?: RegistrationValues;
   onGoogleLogin: () => void;
   onGoogleSelectAccount: () => void;
+  mockLoginEnabled?: boolean;
+  onMockLogin?: () => void;
   onEmailLogin?: (email: string) => Promise<void>;
   onPasswordLogin?: (values: { email: string; password: string }) => Promise<void>;
   onPasswordRegister?: (values: {
@@ -52,6 +54,8 @@ const AuthWorkspace: React.FC<AuthWorkspaceProps> = ({
   defaultValues,
   onGoogleLogin,
   onGoogleSelectAccount,
+  mockLoginEnabled,
+  onMockLogin,
   onEmailLogin,
   onPasswordLogin,
   onPasswordRegister,
@@ -64,6 +68,8 @@ const AuthWorkspace: React.FC<AuthWorkspaceProps> = ({
     passwordEnabled={passwordEnabled}
     onGoogleLogin={onGoogleLogin}
     onGoogleSelectAccount={onGoogleSelectAccount}
+    mockLoginEnabled={mockLoginEnabled}
+    onMockLogin={onMockLogin}
     onEmailLogin={onEmailLogin}
     onPasswordLogin={onPasswordLogin}
     onPasswordRegister={onPasswordRegister}

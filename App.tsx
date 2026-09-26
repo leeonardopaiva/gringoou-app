@@ -17,6 +17,7 @@ const EMAIL_AUTH_ENABLED = process.env.NEXT_PUBLIC_EMAIL_AUTH_ENABLED === 'true'
 const PASSWORD_AUTH_ENABLED = true;
 const DEV_AUTH_ENABLED =
   process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_AUTH_ENABLED === 'true';
+const MOCK_LOGIN_ENABLED = DEV_AUTH_ENABLED && process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
 const PERSONA_MODE_STORAGE_KEY = 'gringoou:persona-mode';
 const BUSINESS_PROFILE_STORAGE_KEY = 'gringoou:business-profile-id';
 const toProfessionalIdentity = (business: ProfessionalProfileBusiness): ProfessionalProfileIdentity => ({
@@ -259,6 +260,22 @@ const App: React.FC<{
     } catch (error) {
       console.error('Google sign-in failed:', error);
       setRegistrationError('Nao foi possivel entrar com Google agora.');
+    }
+  };
+
+  const handleMockLogin = async () => {
+    if (!MOCK_LOGIN_ENABLED) {
+      return;
+    }
+
+    setRegistrationError(null);
+    setRegistrationNotice(null);
+
+    try {
+      await signIn('mock-dev', { callbackUrl: authCallbackUrl });
+    } catch (error) {
+      console.error('Mock sign-in failed:', error);
+      setRegistrationError('Nao foi possivel entrar com o usuario de teste agora.');
     }
   };
 
@@ -509,6 +526,8 @@ const App: React.FC<{
         onEmailLogin={handleEmailLogin}
         onPasswordLogin={handlePasswordLogin}
         onPasswordRegister={handlePasswordRegister}
+        mockLoginEnabled={MOCK_LOGIN_ENABLED}
+        onMockLogin={handleMockLogin}
         submitting={authSubmitting}
         error={registrationError}
         notice={registrationNotice}
