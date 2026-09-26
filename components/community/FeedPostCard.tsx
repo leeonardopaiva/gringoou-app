@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { Post } from '@/types';
 import PostCard from '@/components/community/PostCard';
+import { Popover } from '@/components/ui/Popover';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 
 type FeedPostCardProps = {
@@ -43,6 +44,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   const [supportsHover, setSupportsHover] = useState(false);
   const [likesOpen, setLikesOpen] = useState(false);
   const [commentsExpanded, setCommentsExpanded] = useState(post.commentCount <= 1);
+  const likesAnchorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditingPostContent(post.content);
@@ -312,11 +314,20 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
             setLikesOpen(false);
           }
         }}
+        likesAnchorRef={likesAnchorRef}
         likesPreview={
-          supportsHover && likesOpen && likesPreviewContent ? (
-            <div className="absolute left-0 top-8 z-20 w-[260px] rounded-card border border-border bg-surface p-4 shadow-md">
+          supportsHover && likesPreviewContent ? (
+            <Popover
+              open={likesOpen}
+              onClose={() => setLikesOpen(false)}
+              anchorRef={likesAnchorRef}
+              align="start"
+              className="w-[260px] p-4"
+              onMouseEnter={() => setLikesOpen(true)}
+              onMouseLeave={() => setLikesOpen(false)}
+            >
               {likesPreviewContent}
-            </div>
+            </Popover>
           ) : null
         }
         onShare={onSharePost}

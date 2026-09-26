@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { CharacterCounter } from '@/components/ui/CharacterCounter';
 import { FeedCard } from '@/components/ui/FeedCard';
+import { Popover } from '@/components/ui/Popover';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
 
 const POST_CONTENT_MAX_LENGTH = 600;
@@ -72,6 +73,7 @@ type ActionsProps = {
   onOpenLikes?: () => void;
   onLikesHoverStart?: () => void;
   onLikesHoverEnd?: () => void;
+  likesAnchorRef?: React.Ref<HTMLDivElement>;
   likesPreview?: React.ReactNode;
   onShare?: () => void;
 };
@@ -146,22 +148,25 @@ const BusinessBadge = () => (
   </span>
 );
 
-const Menu: React.FC<MenuProps> = ({ open, onToggle, children }) => (
-  <div className="relative">
-    <button
-      type="button"
-      onClick={onToggle}
-      className="rounded-full p-2 text-slate-400 transition hover:bg-slate-50"
-    >
-      <MoreHorizontal size={20} />
-    </button>
-    {open ? (
-      <div className="absolute right-0 top-10 z-10 min-w-[160px] rounded-md border border-border bg-surface p-2 shadow-md">
+const Menu: React.FC<MenuProps> = ({ open, onToggle, children }) => {
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={onToggle}
+        className="rounded-full p-2 text-slate-400 transition hover:bg-slate-50"
+      >
+        <MoreHorizontal size={20} />
+      </button>
+      <Popover open={open} onClose={onToggle} anchorRef={triggerRef} align="end" className="min-w-[160px] p-2">
         {children}
-      </div>
-    ) : null}
-  </div>
-);
+      </Popover>
+    </div>
+  );
+};
 
 const MenuItem: React.FC<{
   tone?: 'default' | 'danger';
@@ -297,12 +302,14 @@ const Actions: React.FC<ActionsProps> = ({
   onOpenLikes,
   onLikesHoverStart,
   onLikesHoverEnd,
+  likesAnchorRef,
   likesPreview,
   onShare,
 }) => (
   <div className="flex items-center justify-between border-t border-slate-100 pt-2">
     <div className="flex items-center gap-2">
       <div
+        ref={likesAnchorRef}
         className="relative flex items-center gap-1.5"
         onMouseEnter={onLikesHoverStart}
         onMouseLeave={onLikesHoverEnd}
