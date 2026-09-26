@@ -4,6 +4,7 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { getGroupPostPermissions } from '@/lib/server/group-permissions';
+import { toggleMockPostReaction, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -74,6 +75,18 @@ export async function POST(_request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
+
+  if (USE_MOCKS) {
+    const result = toggleMockPostReaction(postId, {
+      id: session.user.id,
+      name: session.user.name || 'Usuario da comunidade',
+      username: session.user.username,
+      image: session.user.image,
+    });
+    if (!result) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+    return NextResponse.json(result);
+  }
+
   const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
   if (!permissions) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
   if (!permissions.canInteract) return NextResponse.json({ error: 'Apenas membros aprovados podem reagir.' }, { status: 403 });

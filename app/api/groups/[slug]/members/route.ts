@@ -2,6 +2,7 @@ import { CommunityGroupMemberRole, CommunityGroupMembershipStatus } from '@prism
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { joinMockGroup, leaveMockGroup, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = { params: Promise<{ slug: string }> };
 
@@ -9,6 +10,11 @@ export async function POST(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { slug } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(joinMockGroup(slug));
+  }
+
   const group = await prisma.communityGroup.findUnique({ where: { slug }, select: { id: true, isPublic: true } });
   if (!group) return NextResponse.json({ error: 'Grupo não encontrado.' }, { status: 404 });
 
@@ -28,6 +34,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { slug } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(leaveMockGroup(slug));
+  }
+
   const group = await prisma.communityGroup.findUnique({ where: { slug }, select: { id: true, createdById: true } });
   if (!group) return NextResponse.json({ error: 'Grupo não encontrado.' }, { status: 404 });
   if (group.createdById === session.user.id) return NextResponse.json({ error: 'O dono do grupo não pode sair.' }, { status: 400 });

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { commentSchema } from '@/lib/validators';
 import { getGroupPostPermissions } from '@/lib/server/group-permissions';
+import { addMockPostComment, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -33,9 +34,7 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { postId } = await context.params;
-  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
-  if (!permissions) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
-  if (!permissions.canInteract) return NextResponse.json({ error: 'Apenas membros aprovados podem comentar.' }, { status: 403 });
+
   const body = await request.json();
   const parsed = commentSchema.safeParse(body);
 
@@ -47,6 +46,21 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const parentId = typeof body.parentId === 'string' ? body.parentId : null;
+
+  if (USE_MOCKS) {
+    const comment = addMockPostComment(postId, parsed.data.content, parentId, {
+      id: session.user.id,
+      name: session.user.name || 'Usuario da comunidade',
+      username: session.user.username,
+      image: session.user.image,
+    });
+    if (!comment) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+    return NextResponse.json({ comment });
+  }
+
+  const permissions = await getGroupPostPermissions(postId, session.user.id, session.user.role === 'ADMIN');
+  if (!permissions) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+  if (!permissions.canInteract) return NextResponse.json({ error: 'Apenas membros aprovados podem comentar.' }, { status: 403 });
   if (parentId && !await prisma.postComment.findFirst({ where: { id: parentId, postId, parentId: null }, select: { id: true } })) {
     return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
   }

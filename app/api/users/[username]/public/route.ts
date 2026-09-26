@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getVisibilityFilter } from '@/lib/visibility';
+import { getMockPublicProfile, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -11,8 +12,13 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { username } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockPublicProfile(username));
+  }
+
+  const session = await getServerAuthSession();
   const normalizedUsername = username.trim().toLowerCase();
 
   const user = await prisma.user.findFirst({

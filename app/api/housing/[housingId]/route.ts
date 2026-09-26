@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { housingSchema } from '@/lib/validators';
+import { getMockHousingDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = { params: Promise<{ housingId: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { housingId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockHousingDetail(housingId));
+  }
+
+  const session = await getServerAuthSession();
   const housing = await prisma.housing.findUnique({
     where: { id: housingId },
     include: { createdBy: { select: { id: true, name: true, username: true } } },

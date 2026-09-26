@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gringoou — Arquitetura funcional de perfis e acessos</title>
+  <style>
+    :root { --navy:#12344a; --blue:#0787f9; --blue-dark:#2161e8; --soft:#eef5ff; --line:#dbe4ec; --muted:#64788a; --green:#18a566; --amber:#f3a712; --red:#dc4353; }
+    * { box-sizing: border-box; }
+    @page { size: A4; margin: 15mm 14mm 16mm; }
+    body { margin:0; background:#eef2f6; color:var(--navy); font-family:Arial, Helvetica, sans-serif; font-size:10.5pt; line-height:1.48; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .document { width:210mm; margin:0 auto; background:#fff; }
+    .page { min-height:264mm; padding:4mm 2mm; break-after:page; position:relative; }
+    .page:last-child { break-after:auto; }
+    .cover { min-height:264mm; padding:20mm 16mm; color:#fff; background:linear-gradient(145deg,#102f43 0%,#125487 53%,#0787f9 100%); overflow:hidden; }
+    .cover:after { content:""; position:absolute; width:150mm; height:150mm; border-radius:50%; right:-75mm; bottom:-45mm; border:28mm solid rgba(255,255,255,.08); }
+    .logo-box { display:inline-flex; align-items:center; border-radius:14px; background:#fff; padding:10px 15px; }
+    .logo-box img { width:42mm; height:auto; display:block; }
+    .eyebrow { margin:28mm 0 3mm; color:#bde2ff; font-size:10pt; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    .cover h1 { max-width:145mm; margin:0; font-size:31pt; line-height:1.08; letter-spacing:-.035em; }
+    .cover .lead { max-width:145mm; margin-top:8mm; font-size:14pt; color:#e2f2ff; }
+    .cover-meta { position:absolute; bottom:16mm; left:16mm; display:flex; gap:20mm; color:#d7edff; font-size:9.5pt; }
+    h2 { margin:0 0 4mm; font-size:22pt; line-height:1.15; letter-spacing:-.025em; }
+    h3 { margin:0 0 2mm; font-size:13pt; }
+    p { margin:0 0 3mm; }
+    .section-kicker { margin-bottom:2mm; color:var(--blue-dark); font-size:8.5pt; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    .intro { max-width:175mm; color:var(--muted); font-size:11.5pt; }
+    .rule { height:2px; margin:5mm 0 7mm; background:linear-gradient(90deg,var(--blue),#a7d8ff 45%,transparent); }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:5mm; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; }
+    .card { border:1px solid var(--line); border-radius:14px; padding:5mm; background:#fff; break-inside:avoid; }
+    .card.soft { background:var(--soft); border-color:#cfe2ff; }
+    .card h3 { display:flex; align-items:center; gap:2.5mm; }
+    .number { display:inline-grid; place-items:center; width:8mm; height:8mm; flex:0 0 8mm; border-radius:50%; color:#fff; background:var(--blue); font-size:9pt; }
+    .pill { display:inline-block; border-radius:999px; padding:1.2mm 3mm; color:var(--blue-dark); background:#e6f2ff; font-size:8.5pt; font-weight:700; }
+    .callout { margin:5mm 0; padding:4mm 5mm; border-left:4px solid var(--blue); border-radius:0 12px 12px 0; background:#f2f8ff; }
+    .callout.warning { border-color:var(--amber); background:#fff8e8; }
+    .callout strong { display:block; margin-bottom:1mm; }
+    ul { margin:2mm 0 0; padding-left:5mm; }
+    li { margin:1.4mm 0; }
+    table { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:12px; font-size:9.2pt; }
+    th { padding:3mm; color:#fff; background:var(--navy); text-align:left; }
+    td { padding:3mm; border-top:1px solid var(--line); vertical-align:top; }
+    tr:first-child td { border-top:0; }
+    tbody tr:nth-child(even) td { background:#f8fafc; }
+    .yes { color:var(--green); font-weight:800; } .no { color:#9aa8b4; }
+    .flow { display:flex; align-items:stretch; gap:2mm; margin:5mm 0; }
+    .flow-step { flex:1; min-width:0; padding:4mm 2.5mm; border-radius:11px; background:var(--soft); text-align:center; font-size:8.6pt; font-weight:700; }
+    .arrow { align-self:center; color:var(--blue); font-size:15pt; }
+    .status { display:flex; gap:2mm; flex-wrap:wrap; margin-top:3mm; }
+    .status span { border:1px solid var(--line); border-radius:999px; padding:1.5mm 3mm; font-size:8.5pt; font-weight:700; }
+    .status .pending { color:#986400; background:#fff6d7; } .status .approved { color:#087a47; background:#e6f8ef; } .status .rejected { color:#b22c3d; background:#ffedf0; }
+    .footer { position:absolute; left:2mm; right:2mm; bottom:0; display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:2mm; color:#8a9aa8; font-size:8pt; }
+    .small { color:var(--muted); font-size:9pt; }
+    .summary-line { display:grid; grid-template-columns:35mm 1fr; gap:4mm; padding:3mm 0; border-bottom:1px solid var(--line); }
+    .summary-line:last-child { border:0; }
+    .summary-line strong { color:var(--blue-dark); }
+    @media print { body { background:#fff; } .document { width:auto; margin:0; } }
+  </style>
+</head>
+<body>
+<main class="document">
+  <section class="page cover">
+    <div class="logo-box"><img src="../public/assets/gringoou-logo.png" alt="Gringoou" /></div>
+    <p class="eyebrow">Documento de visão funcional</p>
+    <h1>Perfis, acessos e responsabilidades na plataforma</h1>
+    <p class="lead">Um guia simples para entender quem pode fazer o quê no Gringoou — da comunidade às campanhas comerciais.</p>
+    <div class="cover-meta"><span>Versão 1.0</span><span>Setembro de 2026</span><span>Uso interno e parceiros</span></div>
+  </section>
+
+  <section class="page">
+    <p class="section-kicker">Visão geral</p>
+    <h2>Como as permissões estão organizadas</h2>
+    <p class="intro">O sistema não trata todas as responsabilidades como uma única permissão. Uma mesma pessoa pode usar a comunidade, representar um negócio e administrar anúncios, sempre dentro do limite de cada vínculo.</p>
+    <div class="rule"></div>
+    <div class="grid-3">
+      <div class="card soft"><h3><span class="number">1</span>Conta pessoal</h3><p>É a identidade de entrada. Controla perfil, comunidade, região, amizades e interações.</p></div>
+      <div class="card soft"><h3><span class="number">2</span>Vínculo com negócio</h3><p>Autoriza a pessoa a representar e administrar um negócio específico.</p></div>
+      <div class="card soft"><h3><span class="number">3</span>Vínculo com Ads</h3><p>Autoriza ações em uma conta comercial, como criar campanhas, pagar ou consultar relatórios.</p></div>
+    </div>
+    <div class="callout"><strong>Regra principal</strong>Uma pessoa pode acumular vínculos, mas cada vínculo concede acesso somente ao seu próprio contexto. Administrar uma conta de anúncios não significa administrar o Gringoou.</div>
+    <h3 style="margin-top:7mm">Jornada mais comum</h3>
+    <div class="flow">
+      <div class="flow-step">Cadastro<br>ou login</div><div class="arrow">›</div>
+      <div class="flow-step">Conclusão<br>do perfil</div><div class="arrow">›</div>
+      <div class="flow-step">Uso da<br>comunidade</div><div class="arrow">›</div>
+      <div class="flow-step">Negócio<br>opcional</div><div class="arrow">›</div>
+      <div class="flow-step">Conta Ads<br>opcional</div>
+    </div>
+    <h3 style="margin-top:8mm">Resumo dos públicos</h3>
+    <table>
+      <thead><tr><th>Perfil</th><th>Objetivo principal</th><th>Área de atuação</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Usuário</strong></td><td>Participar e consumir conteúdos</td><td>Comunidade e serviços</td></tr>
+        <tr><td><strong>Proprietário de negócio</strong></td><td>Representar sua empresa</td><td>Perfil profissional e conteúdos comerciais</td></tr>
+        <tr><td><strong>Equipe Ads</strong></td><td>Criar e acompanhar publicidade</td><td>Conta comercial específica</td></tr>
+        <tr><td><strong>Moderador</strong></td><td>Revisar conteúdos e campanhas</td><td>Função exercida pelo administrador</td></tr>
+        <tr><td><strong>Administrador</strong></td><td>Operar e governar a plataforma</td><td>Painel administrativo completo</td></tr>
+      </tbody>
+    </table>
+    <div class="footer"><span>Gringoou · Arquitetura funcional</span><span>2</span></div>
+  </section>
+
+  <section class="page">
+    <p class="section-kicker">Comunidade e negócios</p>
+    <h2>Usuário e proprietário de negócio</h2>
+    <div class="rule"></div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Usuário da comunidade</h3>
+        <p class="small">Depois de concluir o perfil e escolher um username, pode:</p>
+        <ul><li>Acessar Home e feed da comunidade;</li><li>Publicar, comentar e reagir;</li><li>Pesquisar e participar de grupos;</li><li>Consultar negócios, eventos, vagas e moradias;</li><li>Favoritar, avaliar e fazer conexões;</li><li>Editar seu perfil e enviar sugestões.</li></ul>
+      </div>
+      <div class="card">
+        <h3>Regras de publicação</h3>
+        <ul><li>Publicação comum entra diretamente no feed.</li><li>Publicação com link externo aguarda revisão.</li><li>Novo negócio aguarda aprovação.</li><li>Novo evento aguarda aprovação.</li><li>A região ajuda a definir conteúdos e resultados locais.</li></ul>
+        <div class="status"><span class="pending">Em análise</span><span class="approved">Publicado</span><span class="rejected">Recusado ou removido</span></div>
+      </div>
+    </div>
+    <h3 style="margin-top:8mm">O que acontece ao cadastrar um negócio</h3>
+    <div class="flow">
+      <div class="flow-step">Usuário envia<br>o cadastro</div><div class="arrow">›</div>
+      <div class="flow-step">Negócio fica<br>em análise</div><div class="arrow">›</div>
+      <div class="flow-step">Usuário se torna<br>proprietário</div><div class="arrow">›</div>
+      <div class="flow-step">Admin revisa<br>o conteúdo</div><div class="arrow">›</div>
+      <div class="flow-step">Negócio é<br>publicado</div>
+    </div>
+    <div class="grid-2" style="margin-top:7mm">
+      <div class="card soft"><h3>Modo pessoal</h3><p>A pessoa participa da comunidade com seu próprio nome, foto e perfil.</p></div>
+      <div class="card soft"><h3>Modo profissional</h3><p>A pessoa pode publicar representando um negócio autorizado, usando a identidade da empresa.</p></div>
+    </div>
+    <div class="callout"><strong>Negócio não é conta Ads</strong>O cadastro exibido no diretório e a conta usada para comprar anúncios são estruturas diferentes. Uma empresa pode ter somente o perfil profissional, somente a conta Ads ou utilizar os dois.</div>
+    <h3 style="margin-top:6mm">Responsabilidades dentro do negócio</h3>
+    <table>
+      <thead><tr><th>Papel</th><th>Responsabilidade</th></tr></thead>
+      <tbody><tr><td><strong>Proprietário</strong></td><td>Responsável principal pelo cadastro e representação do negócio.</td></tr><tr><td><strong>Gerente</strong></td><td>Colaborador autorizado a administrar conteúdos daquele negócio.</td></tr></tbody>
+    </table>
+    <div class="footer"><span>Gringoou · Arquitetura funcional</span><span>3</span></div>
+  </section>
+
+  <section class="page">
+    <p class="section-kicker">Publicidade</p>
+    <h2>Contas comerciais e campanhas Ads</h2>
+    <p class="intro">Uma conta Ads reúne empresa, equipe, campanhas, pagamentos e relatórios. Cada usuário pode participar de mais de uma conta e selecionar qual está administrando.</p>
+    <div class="rule"></div>
+    <table>
+      <thead><tr><th>Papel na conta Ads</th><th>Rascunhos</th><th>Campanhas</th><th>Pagamento</th><th>Membros</th><th>Relatórios</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Administrador principal</strong><br><span class="small">BUSINESS_ADMIN</span></td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+        <tr><td><strong>Administrador Ads</strong><br><span class="small">ADMIN</span></td><td class="yes">Sim</td><td class="yes">Sim</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
+        <tr><td><strong>Editor</strong></td><td class="yes">Sim</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
+        <tr><td><strong>Visualizador</strong></td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><strong>Limite atual</strong>Cada usuário pode gerenciar até três contas comerciais. A conta selecionada define quais campanhas e relatórios serão exibidos.</div>
+    <h3 style="margin-top:7mm">Ciclo comercial da campanha</h3>
+    <div class="flow">
+      <div class="flow-step">Criação do<br>rascunho</div><div class="arrow">›</div>
+      <div class="flow-step">Criativo e<br>segmentação</div><div class="arrow">›</div>
+      <div class="flow-step">Plano e<br>pagamento</div><div class="arrow">›</div>
+      <div class="flow-step">Revisão<br>administrativa</div><div class="arrow">›</div>
+      <div class="flow-step">Campanha<br>ativa</div>
+    </div>
+    <div class="grid-2" style="margin-top:7mm">
+      <div class="card"><h3 style="color:var(--green)">Quando aprovada</h3><ul><li>Inicia a vigência contratada;</li><li>A campanha pode ser ativada ou pausada;</li><li>O responsável recebe comunicação;</li><li>Impressões e cliques passam a ser medidos.</li></ul></div>
+      <div class="card"><h3 style="color:var(--red)">Quando rejeitada</h3><ul><li>Fica pausada e fora do feed;</li><li>O motivo é enviado ao anunciante;</li><li>O criativo pode ser corrigido;</li><li>É possível reenviar sem novo pagamento.</li></ul></div>
+    </div>
+    <h3 style="margin-top:8mm">Regra de exibição</h3>
+    <div class="summary-line"><strong>Home</strong><span>Banners manuais cadastrados pela equipe administrativa.</span></div>
+    <div class="summary-line"><strong>Comunidade</strong><span>Campanhas pagas de contas Ads, respeitando região, vigência, orçamento, interesses e frequência.</span></div>
+    <div class="footer"><span>Gringoou · Arquitetura funcional</span><span>4</span></div>
+  </section>
+
+  <section class="page">
+    <p class="section-kicker">Operação da plataforma</p>
+    <h2>Moderador e administrador</h2>
+    <div class="rule"></div>
+    <div class="callout warning"><strong>Como funciona hoje</strong>“Moderador” não é um perfil independente. A moderação é uma função do administrador da plataforma. Portanto, quem modera possui também as demais permissões administrativas.</div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Atuação de moderação</h3>
+        <ul><li>Aprovar, rejeitar ou suspender negócios;</li><li>Aprovar, rejeitar ou cancelar eventos;</li><li>Aprovar ou remover posts pendentes;</li><li>Aprovar campanhas pagas;</li><li>Rejeitar campanhas com justificativa;</li><li>Consultar anunciante, contrato e pagamento.</li></ul>
+      </div>
+      <div class="card">
+        <h3>Atuação administrativa</h3>
+        <ul><li>Gerenciar usuários e acessos;</li><li>Gerenciar regiões e importações;</li><li>Cadastrar banners manuais da Home;</li><li>Consultar Analytics e eventos reais;</li><li>Administrar negócios e eventos;</li><li>Acessar a plataforma durante manutenção.</li></ul>
+      </div>
+    </div>
+    <h3 style="margin-top:8mm">Proteção do acesso</h3>
+    <div class="grid-3">
+      <div class="card soft"><h3><span class="number">1</span>Login</h3><p>A sessão identifica o usuário e seu papel atual.</p></div>
+      <div class="card soft"><h3><span class="number">2</span>Interface</h3><p>Áreas restritas não são exibidas para quem não tem acesso.</p></div>
+      <div class="card soft"><h3><span class="number">3</span>Servidor</h3><p>Cada ação sensível valida novamente a permissão no banco.</p></div>
+    </div>
+    <div class="callout"><strong>Segurança importante</strong>A proteção não depende apenas de esconder botões. Mesmo uma chamada direta à API é recusada quando a conta não possui a permissão necessária.</div>
+    <h3 style="margin-top:8mm">Decisão futura recomendada</h3>
+    <p>Se o Gringoou precisar de pessoas dedicadas somente à revisão, deve ser criado um papel específico de moderador. Assim, esse profissional poderá revisar conteúdos sem ter acesso a usuários, regiões, importações, banners e indicadores estratégicos.</p>
+    <div class="footer"><span>Gringoou · Arquitetura funcional</span><span>5</span></div>
+  </section>
+
+  <section class="page">
+    <p class="section-kicker">Consulta rápida</p>
+    <h2>Quem pode fazer o quê</h2>
+    <div class="rule"></div>
+    <table>
+      <thead><tr><th>Responsabilidade</th><th>Escopo</th><th>O que não concede</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Usuário</strong></td><td>Perfil pessoal e comunidade</td><td>Gestão de negócios, Ads ou plataforma</td></tr>
+        <tr><td><strong>Proprietário de negócio</strong></td><td>Negócios aos quais está vinculado</td><td>Pagamento de Ads ou painel administrativo</td></tr>
+        <tr><td><strong>Administrador principal Ads</strong></td><td>Conta Ads, equipe, cobrança e campanhas</td><td>Administração geral do Gringoou</td></tr>
+        <tr><td><strong>Administrador Ads</strong></td><td>Operação de campanhas da conta Ads</td><td>Cobrança principal ou administração global</td></tr>
+        <tr><td><strong>Editor Ads</strong></td><td>Preparação de rascunhos</td><td>Pagamento, ativação e gestão da equipe</td></tr>
+        <tr><td><strong>Visualizador Ads</strong></td><td>Consulta de relatórios</td><td>Alteração de campanha ou conta</td></tr>
+        <tr><td><strong>Moderador atual</strong></td><td>Revisão dentro do painel de Admin</td><td>Não existe como papel isolado atualmente</td></tr>
+        <tr><td><strong>Administrador da plataforma</strong></td><td>Operação completa do Gringoou</td><td>Não entra automaticamente nas contas Ads dos clientes</td></tr>
+      </tbody>
+    </table>
+    <h3 style="margin-top:9mm">Pontos que evitam confusão</h3>
+    <div class="grid-2">
+      <div class="card soft"><h3>Admin Ads ≠ Admin Gringoou</h3><p>Os nomes são parecidos, mas as permissões são totalmente diferentes.</p></div>
+      <div class="card soft"><h3>Negócio ≠ Conta Ads</h3><p>Perfil profissional e publicidade podem existir de forma independente.</p></div>
+      <div class="card soft"><h3>Moderação é administrativa</h3><p>No modelo atual, somente administradores globais executam revisões.</p></div>
+      <div class="card soft"><h3>Permissão segue o vínculo</h3><p>O usuário só age sobre empresas e contas das quais participa.</p></div>
+    </div>
+    <h3 style="margin-top:9mm">Observação sobre a implementação atual</h3>
+    <p class="small">Campanhas pagas são entregues somente no feed da comunidade. Internamente, a aprovação ainda registra um placement chamado “BOTH”, mas a regra de entrega da API impede anúncios pagos na Home. O comportamento final está correto; recomenda-se alinhar esse campo futuramente para evitar ambiguidade operacional.</p>
+    <div class="callout" style="margin-top:9mm"><strong>Em uma frase</strong>O Gringoou parte de uma conta pessoal e adiciona responsabilidades por contexto, mantendo comunidade, representação profissional, publicidade e administração como níveis separados.</div>
+    <div class="footer"><span>Gringoou · Arquitetura funcional</span><span>6</span></div>
+  </section>
+</main>
+</body>
+</html>

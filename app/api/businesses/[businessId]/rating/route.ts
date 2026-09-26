@@ -5,6 +5,7 @@ import { refreshBusinessRating } from '@/lib/place-engagement';
 import { prisma } from '@/lib/prisma';
 import { starRatingSchema } from '@/lib/validators';
 import { isVisibleForRegion } from '@/lib/visibility';
+import { addMockBusinessRating, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -30,6 +31,11 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { businessId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(addMockBusinessRating(businessId, parsed.data.stars));
+  }
+
   const business = await prisma.business.findFirst({
     where: {
       OR: [{ id: businessId }, { slug: businessId }],

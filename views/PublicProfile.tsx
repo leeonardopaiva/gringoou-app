@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   BadgeCheck,
   CalendarDays,
@@ -80,15 +81,15 @@ const formatMembershipDuration = (value: string) => {
 
   if (monthDiff >= 12) {
     const years = Math.floor(monthDiff / 12);
-    return `Membro ha ${years} ${years === 1 ? 'ano' : 'anos'}`;
+    return `Gringo há ${years} ${years === 1 ? 'ano' : 'anos'}`;
   }
 
   if (monthDiff >= 1) {
-    return `Membro ha ${monthDiff} ${monthDiff === 1 ? 'mes' : 'meses'}`;
+    return `Gringo ha ${monthDiff} ${monthDiff === 1 ? 'mes' : 'meses'}`;
   }
 
   const dayDiff = Math.max(1, Math.floor((now.getTime() - joinedAt.getTime()) / (1000 * 60 * 60 * 24)));
-  return `Membro ha ${dayDiff} ${dayDiff === 1 ? 'dia' : 'dias'}`;
+  return `Gringo ha ${dayDiff} ${dayDiff === 1 ? 'dia' : 'dias'}`;
 };
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
@@ -107,6 +108,7 @@ const uniqueStrings = (values: Array<string | null | undefined>) =>
 
 const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedded = false }) => {
   const { showToast } = useToast();
+  const router = useRouter();
   const [profile, setProfile] = useState<PublicUserProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,7 +204,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
-    ? 'mx-auto w-full max-w-[600px]'
+    ? 'mx-auto w-full max-w-[600px] py-4'
     : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
@@ -307,7 +309,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       showToast('Grupo criado.', 'success');
       setGroupDraft({ name: '', category: '', description: '', regionKey: '', countryCode: 'US', isPublic: true });
       setGroupModalOpen(false);
-      refreshProfile();
+      router.push(payload?.group?.publicPath || '/grupos');
     } catch (createError) {
       showToast(createError instanceof Error ? createError.message : 'Nao foi possivel criar o grupo.', 'error');
     } finally {
@@ -373,7 +375,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
           ) : null}
 
           <div className="relative">
-            <div className={`relative h-72 overflow-hidden rounded-t-[36px] sm:h-80 lg:h-96 ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+            <div className={`relative h-32 overflow-hidden rounded-t-[28px] sm:h-40 ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {heroImage ? (
                 <img
                   src={heroImage}
@@ -383,20 +385,19 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-white/10" />
               {isOwnProfile ? (
                 <div className="absolute right-4 top-4">
                   <button type="button" onClick={() => openProfileEditor('cover')}
-                    className="inline-flex rounded-[22px] border border-white/70 bg-white/85 p-3 text-slate-600 shadow-sm backdrop-blur"
+                    className="inline-flex rounded-full border border-white/70 bg-white/85 p-2.5 text-slate-600 shadow-sm backdrop-blur"
                     aria-label="Editar capa"
                   >
-                    <MoreHorizontal size={18} />
+                    <MoreHorizontal size={16} />
                   </button>
                 </div>
               ) : null}
             </div>
 
-            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-32 w-32 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[6px] border-white bg-white shadow-lg disabled:cursor-default sm:h-40 sm:w-40" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
+            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-24 w-24 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-md disabled:cursor-default sm:h-28 sm:w-28" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
               {profile.image ? (
                 <img
                   src={profile.image}
@@ -405,66 +406,64 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   onError={handleAvatarError}
                 />
               ) : (
-                <div className={`flex h-full w-full items-center justify-center ${PROFILE_GRADIENT_CLASS} text-4xl font-bold text-white`}>
+                <div className={`flex h-full w-full items-center justify-center ${PROFILE_GRADIENT_CLASS} text-3xl font-bold text-white`}>
                   {getInitials(profile.name)}
                 </div>
               )}
             </button>
           </div>
 
-          <div className="rounded-t-[36px] bg-white px-5 pb-8 pt-24 shadow-sm sm:pt-28">
+          <div className="rounded-t-[28px] bg-white px-5 pb-8 pt-16 sm:pt-[4.75rem]">
             <div className="flex flex-col items-center text-center">
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                   {profile.name}
                 </h1>
                 {profile.stats.businessCount > 0 || profile.stats.eventCount > 0 ? (
-                  <BadgeCheck size={28} className="text-brand-500" />
+                  <BadgeCheck size={22} className="text-brand-500" />
                 ) : null}
               </div>
 
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                {formatMembershipDuration(profile.joinedAt)}
+              <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-medium text-slate-400">
+                <span>@{profile.username}</span>
+                <span aria-hidden className="text-slate-300">•</span>
+                <span>{formatMembershipDuration(profile.joinedAt)}</span>
+                {profile.locationLabel ? (
+                  <>
+                    <span aria-hidden className="text-slate-300">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={14} />
+                      {profile.locationLabel}
+                    </span>
+                  </>
+                ) : null}
               </p>
 
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
                 "{profileQuote}"
               </p>
 
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-base font-semibold text-slate-700">
-                <span className="inline-flex items-center gap-2">
-                  <Globe2 size={18} />
-                  {profile.username}
-                </span>
-                {profile.locationLabel ? (
-                  <span className="inline-flex items-center gap-2">
-                    <MapPin size={18} />
-                    {profile.locationLabel}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {isOwnProfile ? (
-                  <button type="button" onClick={() => openProfileEditor('details')} className="inline-flex min-h-12 items-center gap-2 rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-600 shadow-sm transition hover:border-brand-200 hover:text-brand-600">
+                  <button type="button" onClick={() => openProfileEditor('details')} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600">
                     Editar perfil
                   </button>
                 ) : friendStatus === 'signed_out' ? (
                   <Link
                     href="/"
-                    className="inline-flex min-h-12 items-center gap-3 rounded-full bg-brand-500 px-8 text-base font-bold text-white shadow-sm"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white"
                   >
-                    <UserPlus size={20} />
+                    <UserPlus size={16} />
                     Entrar para adicionar
                   </Link>
                 ) : friendStatus === 'accepted' ? (
-                  <div className="inline-flex min-h-12 items-center gap-3 rounded-[22px] border border-emerald-100 bg-emerald-50 px-8 text-base font-bold text-emerald-700">
-                    <UserCheck size={20} />
+                  <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-emerald-50 px-6 text-sm font-bold text-emerald-700">
+                    <UserCheck size={16} />
                     Conectado
                   </div>
                 ) : friendStatus === 'pending_sent' ? (
-                  <div className="inline-flex min-h-12 items-center gap-3 rounded-[22px] border border-slate-200 bg-slate-50 px-8 text-base font-bold text-slate-500">
-                    <UserPlus size={20} />
+                  <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-slate-50 px-6 text-sm font-bold text-slate-500">
+                    <UserPlus size={16} />
                     Solicitado
                   </div>
                 ) : (
@@ -472,9 +471,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     type="button"
                     onClick={() => void handleFriendAction()}
                     disabled={friendActionLoading}
-                    className="inline-flex min-h-12 items-center gap-3 rounded-full bg-brand-500 px-8 text-base font-bold text-white opacity-90 shadow-sm"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white opacity-90"
                   >
-                    {friendStatus === 'pending_received' ? <UserCheck size={20} /> : <UserPlus size={20} />}
+                    {friendStatus === 'pending_received' ? <UserCheck size={16} /> : <UserPlus size={16} />}
                     {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexão' : 'Adicionar'}
                   </button>
                 )}
@@ -482,29 +481,28 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <button
                     type="button"
                     onClick={() => setActiveTab('recommendations')}
-                    className="inline-flex min-h-12 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-8 text-base font-bold text-slate-700 shadow-sm"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600"
                   >
-                    <BadgeCheck size={20} />
                     Ver negócios e eventos
                   </button>
                 ) : null}
               </div>
             </div>
 
-            <div className="mt-8 border-t border-slate-100 pt-5">
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <div className="mt-6 border-t border-slate-100 pt-1">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative whitespace-nowrap px-4 py-3 text-base font-semibold transition ${
+                    className={`relative whitespace-nowrap px-3.5 py-3 text-sm font-semibold transition ${
                       activeTab === tab.id ? 'text-brand-500' : 'text-muted-foreground'
                     }`}
                   >
                     {tab.label}
                     {activeTab === tab.id ? (
-                      <span className="absolute inset-x-3 bottom-0 h-1 rounded-full bg-brand-500" />
+                      <span className="absolute inset-x-2.5 bottom-0 h-0.5 rounded-full bg-brand-500" />
                     ) : null}
                   </button>
                 ))}
@@ -526,24 +524,24 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {profile.locationLabel ? (
-                    <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Região atual</p>
+                    <div className="rounded-[18px] border border-slate-100 bg-slate-50 p-4">
+                      <p className="text-xs font-bold text-slate-400">Região atual</p>
                       <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><MapPin size={16} className="text-brand-500" /> {profile.locationLabel}</p>
                     </div>
                   ) : null}
                   {profile.birthCity ? (
                     <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Cidade natal</p>
+                      <p className="text-xs font-bold text-slate-400">Cidade natal</p>
                       <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><Globe2 size={16} className="text-brand-500" /> {profile.birthCity}</p>
                     </div>
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <ProfileMetric icon={<Users size={16} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
-                  <ProfileMetric icon={<Images size={16} />} value={profile.stats.businessCount} label="Negócios" onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
-                  <ProfileMetric icon={<CalendarDays size={16} />} value={profile.stats.eventCount} label="Eventos" onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
-                  <ProfileMetric icon={<MessageSquareText size={16} />} value={profile.stats.postCount} label="Posts" />
+                <div className="mt-5 flex items-stretch divide-x divide-slate-100 border-t border-slate-100 pt-4">
+                  <ProfileMetric icon={<Users size={15} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
+                  <ProfileMetric icon={<Images size={15} />} value={profile.stats.businessCount} label="Negócios" onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
+                  <ProfileMetric icon={<CalendarDays size={15} />} value={profile.stats.eventCount} label="Eventos" onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
+                  <ProfileMetric icon={<MessageSquareText size={15} />} value={profile.stats.postCount} label="Posts" />
                 </div>
               </section>
             ) : null}
@@ -576,7 +574,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                         )}
                         <div className="min-w-0">
                           <p className="truncate text-base font-bold text-slate-900">{friend.name}</p>
-                          <p className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          <p className="truncate text-xs font-semibold uppercase text-slate-400">
                             @{friend.username}
                           </p>
                           {friend.locationLabel ? (
@@ -688,7 +686,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                             )}
                             <div className="min-w-0">
                               <p className="truncate text-base font-bold text-slate-900">{group.name}</p>
-                              <p className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                              <p className="truncate text-xs font-semibold uppercase text-slate-400">
                                 {group.category || 'Comunidade'}
                               </p>
                             </div>
@@ -870,13 +868,13 @@ const ProfileMetric: React.FC<{ icon: React.ReactNode; value: number; label: str
   href,
 }) => {
   const content = <>
-    <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-100 text-brand-500">
+    <span className="mx-auto flex h-6 w-6 items-center justify-center text-brand-500">
       {icon}
-    </div>
-    <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
+    </span>
+    <p className="mt-1.5 text-xl font-bold text-slate-900">{value}</p>
     <p className="text-xs font-medium text-slate-500">{label}</p>
   </>;
-  const className = `rounded-[24px] border border-slate-100 bg-slate-50 p-4 text-center ${onClick || href ? 'cursor-pointer transition hover:border-brand-200 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300' : ''}`;
+  const className = `flex-1 px-2 text-center ${onClick || href ? 'cursor-pointer transition hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 rounded-lg' : ''}`;
 
   if (href) return <Link href={href} className={className}>{content}</Link>;
   if (onClick) return <button type="button" onClick={onClick} className={className}>{content}</button>;

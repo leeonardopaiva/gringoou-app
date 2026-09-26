@@ -4,6 +4,7 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { isVisibleForRegion } from '@/lib/visibility';
 import { validateBusinessSlug } from '@/lib/business-slug';
+import { getMockBusinessDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -12,8 +13,13 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { businessId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockBusinessDetail(businessId));
+  }
+
+  const session = await getServerAuthSession();
 
   const redirected = await prisma.businessSlugRedirect.findUnique({ where: { slug: businessId }, select: { businessId: true } });
   const resolvedBusinessId = redirected?.businessId || businessId;

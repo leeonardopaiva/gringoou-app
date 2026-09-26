@@ -12,6 +12,9 @@ type ProvidersProps = {
   session?: Session | null;
 };
 
+// Local/mock dev has no real traffic to measure, so skip the Vercel beacons entirely.
+const shouldLoadVercelTelemetry = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_USE_MOCKS !== 'true';
+
 export function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session}>
@@ -19,7 +22,7 @@ export function Providers({ children, session }: ProvidersProps) {
         {children}
         <AddToHomeScreenPrompt />
         <WebVitalsReporter />
-        <SpeedInsights sampleRate={0.2} />
+        {shouldLoadVercelTelemetry ? <SpeedInsights sampleRate={0.2} /> : null}
       </ToastProvider>
     </SessionProvider>
   );

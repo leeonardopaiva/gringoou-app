@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { friendRequestCreateSchema } from '@/lib/validators';
+import { sendMockFriendRequest, USE_MOCKS } from '@/lib/server/mocks';
 
 const userSelect = {
   id: true,
@@ -17,6 +18,10 @@ export async function GET() {
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (USE_MOCKS) {
+    return NextResponse.json({ requests: [] });
   }
 
   const requests = await prisma.friendRequest.findMany({
@@ -53,6 +58,11 @@ export async function POST(request: Request) {
       { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
       { status: 400 },
     );
+  }
+
+  if (USE_MOCKS) {
+    const recipientRef = parsed.data.recipientId || parsed.data.username || '';
+    return NextResponse.json(sendMockFriendRequest(recipientRef));
   }
 
   const recipient = await prisma.user.findFirst({

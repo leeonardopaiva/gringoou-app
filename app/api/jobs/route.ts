@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jobSchema } from '@/lib/validators';
+import { getMockJobsResponse, USE_MOCKS } from '@/lib/server/mocks';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,6 +13,9 @@ export async function GET(request: Request) {
   const country = searchParams.get('country')?.trim().toUpperCase();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockJobsResponse(page, pageSize));
+  }
   const where = {
     isActive: true,
     ...(employmentType ? { employmentType: { equals: employmentType, mode: 'insensitive' as const } } : {}),

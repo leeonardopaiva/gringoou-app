@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { housingSchema } from '@/lib/validators';
+import { getMockHousingResponse, USE_MOCKS } from '@/lib/server/mocks';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,6 +12,9 @@ export async function GET(request: Request) {
   const price = searchParams.get('price')?.trim();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockHousingResponse(page, pageSize));
+  }
   const where = {
     isActive: true,
     ...(propertyType ? { propertyType: { equals: propertyType, mode: 'insensitive' as const } } : {}),

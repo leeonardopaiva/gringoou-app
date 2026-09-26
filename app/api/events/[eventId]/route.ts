@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
 import { eventUpdateSchema } from '@/lib/validators';
 import { isVisibleForRegion } from '@/lib/visibility';
+import { getMockEventDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -13,8 +14,13 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { eventId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockEventDetail(eventId));
+  }
+
+  const session = await getServerAuthSession();
 
   const event = await prisma.event.findFirst({
     where: {

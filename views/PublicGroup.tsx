@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ban, Check, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UserCog, UsersRound } from 'lucide-react';
+import { Ban, Check, ChevronDown, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UserCog, UsersRound } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
 import type { User } from '../types';
@@ -282,86 +282,109 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          <section className="rounded-[24px] border border-slate-200 bg-white shadow-sm">
-            <div className={`relative h-60 rounded-t-[23px] sm:h-56 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+          <section className="overflow-hidden rounded-[28px] bg-white shadow-sm">
+            <div className={`relative h-52 sm:h-60 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.coverImageUrl || group.imageUrl ? (
-                <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full rounded-t-[23px] object-cover object-center" />
+                <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
               ) : null}
-              <div className="absolute inset-0 rounded-t-[23px] bg-gradient-to-t from-slate-950/50 via-slate-950/10 to-transparent" />
-              {viewer ? <div className="absolute right-5 top-5 z-30"><Dropdown
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
+              {viewer ? <div className="absolute right-4 top-4 z-30"><Dropdown
                 align="right"
-                trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm transition hover:bg-white" aria-label="Mais opções"><MoreHorizontal size={20} /></span>}
+                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
                 sections={[{ items: group.canManage
                   ? [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }]
                   : [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }]
                 }]}
               /></div> : null}
-              <div className="absolute bottom-5 left-5 right-5 text-white">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-card bg-surface text-xl font-bold text-brand-500">
+              <div className="absolute bottom-4 left-4 right-4 flex items-end gap-3 text-white">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/80 bg-surface text-lg font-bold text-brand-500 shadow-sm">
                   {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{group.name}</h1>
-                <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
-                  {group.category ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur">
-                      <Tag size={14} />
-                      {group.category}
+                <div className="min-w-0 flex-1">
+                  <h1 className="truncate text-xl font-bold leading-tight sm:text-2xl">{group.name}</h1>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                    {group.category ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
+                        <Tag size={10} />
+                        {group.category}
+                      </span>
+                    ) : null}
+                    {group.regionLabel ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
+                        <MapPin size={10} />
+                        {group.regionLabel}
+                      </span>
+                    ) : null}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
+                      <UsersRound size={10} />
+                      {group.memberCount} membro{group.memberCount === 1 ? '' : 's'}
                     </span>
-                  ) : null}
-                  {group.regionLabel ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur">
-                      <MapPin size={14} />
-                      {group.regionLabel}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
+                      {group.isPublic ? <UsersRound size={10} /> : <LockKeyhole size={10} />}
+                      {group.isPublic ? 'Público' : 'Restrito'}
                     </span>
-                  ) : null}
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur">
-                    <UsersRound size={14} />
-                    {group.memberCount} membro{group.memberCount === 1 ? '' : 's'}
-                  </span>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur">
-                    {group.isPublic ? <UsersRound size={14} /> : <LockKeyhole size={14} />}
-                    {group.isPublic ? 'Público' : 'Restrito'}
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-6 p-5">
+            <div className="space-y-4 p-4 sm:p-5">
               {group.description ? (
-                <p className="text-base leading-7 text-slate-700">{group.description}</p>
+                <p className="text-sm leading-6 text-slate-600">{group.description}</p>
               ) : (
-                <p className="text-base leading-7 text-slate-500">Grupo publico da comunidade Gringoou.</p>
+                <p className="text-sm leading-6 text-slate-500">Grupo publico da comunidade Gringoou.</p>
               )}
 
               {viewer ? (
-                <div className="flex flex-wrap gap-3">
-                  <button type="button" onClick={() => void handleMembership()} disabled={membershipLoading || group.viewerMembership?.role === 'OWNER' || group.viewerMembership?.status === 'BLOCKED'} className={`inline-flex min-h-12 items-center gap-3 rounded-[22px] px-8 text-base font-bold shadow-sm disabled:opacity-60 ${group.viewerMembership?.status === 'APPROVED' ? 'border border-emerald-100 bg-emerald-50 text-emerald-700' : group.viewerMembership?.status === 'PENDING' ? 'border border-amber-100 bg-amber-50 text-amber-700' : group.viewerMembership?.status === 'BLOCKED' ? 'border border-red-100 bg-red-50 text-red-700' : 'bg-brand-500 text-white'}`}>
-                    <UserCheck size={20} />
-                    {membershipLoading ? 'Aguarde...' : group.viewerMembership?.status === 'APPROVED' ? 'Participando' : group.viewerMembership?.status === 'PENDING' ? 'Solicitação pendente' : group.viewerMembership?.status === 'BLOCKED' ? 'Participação bloqueada' : 'Participar'}
-                  </button>
-                </div>
+                <button type="button" onClick={() => void handleMembership()} disabled={membershipLoading || group.viewerMembership?.role === 'OWNER' || group.viewerMembership?.status === 'BLOCKED'} className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-bold disabled:opacity-60 ${group.viewerMembership?.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700' : group.viewerMembership?.status === 'PENDING' ? 'bg-amber-50 text-amber-700' : group.viewerMembership?.status === 'BLOCKED' ? 'bg-red-50 text-red-700' : 'bg-brand-500 text-white'}`}>
+                  <UserCheck size={17} />
+                  {membershipLoading ? 'Aguarde...' : group.viewerMembership?.status === 'APPROVED' ? 'Participando' : group.viewerMembership?.status === 'PENDING' ? 'Solicitação pendente' : group.viewerMembership?.status === 'BLOCKED' ? 'Participação bloqueada' : 'Participar'}
+                  {group.viewerMembership?.status === 'APPROVED' ? <ChevronDown size={15} /> : null}
+                </button>
               ) : (
                 <Link
                   href="/"
-                  className="inline-flex min-h-12 items-center gap-3 rounded-full bg-brand-500 px-8 text-base font-bold text-white shadow-sm"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white"
                 >
-                  <LogIn size={20} />
+                  <LogIn size={17} />
                   Entrar para participar
                 </Link>
               )}
             </div>
           </section>
 
+          {group.canViewContent ? (
+            <div className="mt-4 flex items-center gap-5 border-b border-slate-100 px-1">
+              <span className="relative pb-3 text-sm font-bold text-brand-500">
+                Mural
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-brand-500" />
+              </span>
+              <button type="button" onClick={() => setMembersOpen(true)} className="pb-3 text-sm font-semibold text-slate-400 transition hover:text-slate-600">
+                Membros · {group.memberCount}
+              </button>
+            </div>
+          ) : null}
+
           {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">Conteúdo restrito</h2><p className="mt-2 text-sm text-amber-800">Sua solicitação precisa ser aprovada para acessar membros e publicações.</p></section> : null}
 
-          {group.canViewContent ? <section className="mt-5 rounded-[24px] border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div><h2 className="text-lg font-bold text-slate-900">Quem participa</h2><p className="mt-1 text-xs text-slate-500">{group.memberCount} membro{group.memberCount === 1 ? '' : 's'}</p></div>
-              {previewMembers.length ? <div className="flex items-start -space-x-2">{previewMembers.map((member) => <div key={member.id} className="relative z-10 w-14 text-center first:z-30 [&:nth-child(2)]:z-20"><Link href={member.user.username ? `/${member.user.username}` : '/'} className="block">{member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="mx-auto h-10 w-10 rounded-full border-2 border-white object-cover object-top shadow-sm" /> : <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-brand-100 text-xs font-bold text-brand-600 shadow-sm">{getInitials(member.user.name || 'Membro')}</span>}<span className="mt-1 block truncate text-[10px] font-semibold text-slate-600">{member.user.name?.split(' ')[0] || 'Membro'}</span></Link></div>)}<button type="button" onClick={() => setMembersOpen(true)} className="relative z-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-slate-600 shadow-sm" aria-label="Ver todos os membros"><MoreHorizontal size={18} /></button></div> : <button type="button" onClick={() => setMembersOpen(true)} className="text-xs font-bold text-brand-600">Ver membros</button>}
+          {group.canViewContent ? (
+            <div className="mt-4 px-1">
+              {previewMembers.length ? (
+                <div className="mb-4 flex items-center justify-between gap-4">
+                  <p className="text-xs font-semibold text-slate-500">Quem participa</p>
+                  <div className="flex items-center -space-x-2">
+                    {previewMembers.map((member) => (
+                      <Link key={member.id} href={member.user.username ? `/${member.user.username}` : '/'} className="relative z-10 block first:z-30 [&:nth-child(2)]:z-20">
+                        {member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="h-8 w-8 rounded-full border-2 border-white object-cover object-top" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-100 text-[10px] font-bold text-brand-600">{getInitials(member.user.name || 'Membro')}</span>}
+                      </Link>
+                    ))}
+                    <button type="button" onClick={() => setMembersOpen(true)} className="relative z-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-slate-500" aria-label="Ver todos os membros"><MoreHorizontal size={15} /></button>
+                  </div>
+                </div>
+              ) : null}
+              <GroupFeed groupId={group.id} groupSlug={group.slug} user={viewer} canPost={Boolean(viewer && group.viewerMembership?.status === 'APPROVED')} />
             </div>
-          </section> : null}
-
-          {group.canViewContent ? <section className="mt-5 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm"><GroupFeed groupId={group.id} groupSlug={group.slug} user={viewer} canPost={Boolean(viewer && group.viewerMembership?.status === 'APPROVED')} /></section> : null}
+          ) : null}
 
           <Modal open={membersOpen} onClose={() => setMembersOpen(false)} title="Membros do grupo" description={`${group.memberCount} pessoa${group.memberCount === 1 ? '' : 's'} participando.`} className="max-w-lg">
             <div className="divide-y divide-slate-100">

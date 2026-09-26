@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jobSchema } from '@/lib/validators';
+import { getMockJobDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = { params: Promise<{ jobId: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { jobId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockJobDetail(jobId));
+  }
+
+  const session = await getServerAuthSession();
   const job = await prisma.job.findUnique({
     where: { id: jobId },
     include: { createdBy: { select: { id: true, name: true, username: true } } },

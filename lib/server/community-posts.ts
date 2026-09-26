@@ -4,6 +4,7 @@ import { CommunityPostStatus } from '@prisma/client';
 import type { Session } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import type { Post } from '@/types';
+import { getMockCommunityPostsPage, USE_MOCKS } from '@/lib/server/mocks';
 
 const LIKERS_PREVIEW_LIMIT = 8;
 const DEFAULT_LIMIT = 20;
@@ -45,6 +46,10 @@ export async function getCommunityPostsPage({
   offset?: number;
   cursor?: string | null;
 }): Promise<CommunityPostsPage> {
+  if (USE_MOCKS) {
+    return getMockCommunityPostsPage(businessId, groupId);
+  }
+
   const pagination = normalizeCommunityPagination(limit, offset);
   const isAdmin = session?.user?.role === 'ADMIN';
   const viewerId = session?.user?.id;

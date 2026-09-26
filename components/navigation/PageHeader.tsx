@@ -13,7 +13,7 @@ type PageHeaderProps = {
 };
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, backHref = '/inicio', action, className }) => (
-  <header className={cn('flex min-h-12 items-center gap-2 pt-5', className)}>
+  <header className={cn('flex min-h-12 items-center gap-2', className)}>
     <Link
       href={backHref}
       aria-label="Voltar"

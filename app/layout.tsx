@@ -5,6 +5,9 @@ import { Providers } from './providers';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 import { Analytics } from '@vercel/analytics/next';
 
+// Local/mock dev has no real traffic to measure, so skip the Vercel beacon entirely.
+const shouldLoadVercelAnalytics = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_USE_MOCKS !== 'true';
+
 const sora = Sora({
   subsets: ['latin'],
   display: 'swap',
@@ -50,7 +53,7 @@ export default async function RootLayout({
     <html lang="pt-BR">
       <body className={`${sora.className} ${sora.variable} bg-bg text-foreground`}>
         <Providers session={session}>{children}</Providers>
-        <Analytics />
+        {shouldLoadVercelAnalytics ? <Analytics /> : null}
       </body>
     </html>
   );

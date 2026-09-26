@@ -242,10 +242,14 @@ const App: React.FC<{
     setRegistrationNotice(null);
 
     try {
-      // A tela de login representa troca de identidade, não vinculação de conta.
-      // Remover uma sessão residual evita o OAuthAccountNotLinked quando o
-      // navegador ainda carrega o JWT de outro usuário.
-      await signOut({ redirect: false });
+      if (selectAccount) {
+        // "Trocar conta" representa troca de identidade, não vinculação de conta.
+        // Remover a sessão residual evita o OAuthAccountNotLinked quando o
+        // navegador ainda carrega o JWT de outro usuário. No primeiro login
+        // (sem sessão prévia) esse signOut é desnecessário e atrasa o
+        // handshake OAuth, fazendo a primeira tentativa cair de volta no /login.
+        await signOut({ redirect: false });
+      }
 
       await signIn(
         'google',

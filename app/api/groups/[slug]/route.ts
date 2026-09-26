@@ -4,12 +4,18 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
 import { communityGroupSchema } from '@/lib/validators';
+import { getMockGroupDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = { params: Promise<{ slug: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await getServerAuthSession();
   const { slug } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockGroupDetail(slug));
+  }
+
+  const session = await getServerAuthSession();
   const group = await prisma.communityGroup.findUnique({
     where: { slug },
     select: {

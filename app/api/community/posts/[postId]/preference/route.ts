@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { setMockPostPreference, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = { params: Promise<{ postId: string }> };
 type PreferenceAction = 'save' | 'interest' | 'hide' | 'report' | 'mute';
@@ -14,6 +15,17 @@ export async function POST(request: Request, context: RouteContext) {
   const action = body?.action as PreferenceAction | undefined;
   if (!action || !['save', 'interest', 'hide', 'report', 'mute'].includes(action)) {
     return NextResponse.json({ error: 'Ação inválida.' }, { status: 400 });
+  }
+
+  if (USE_MOCKS) {
+    if (action === 'save' || action === 'interest') {
+      const preference = setMockPostPreference(postId, action);
+      if (!preference) return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
+      return NextResponse.json({ preference });
+    }
+    if (action === 'report') return NextResponse.json({ reported: true, message: 'Publicação reportada para moderação.' });
+    if (action === 'mute') return NextResponse.json({ muted: true, message: 'Usuário mutado. As novas publicações dele não aparecerão no seu feed.' });
+    return NextResponse.json({ hidden: true, message: 'Publicação ocultada.' });
   }
 
   const post = await prisma.communityPost.findUnique({

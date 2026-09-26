@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { communityPostSchema } from '@/lib/validators';
 import { getCommunityPostsPage } from '@/lib/server/community-posts';
+import { USE_MOCKS } from '@/lib/server/mocks';
 
 const DAILY_POST_LIMIT = 3;
 export async function GET(request: Request) {
@@ -14,6 +15,20 @@ export async function GET(request: Request) {
   const groupId = searchParams.get('groupId');
   const regionKey = searchParams.get('region') ?? (businessId || groupId ? undefined : session?.user?.regionKey);
   const manageBusiness = searchParams.get('manage') === '1';
+
+  if (USE_MOCKS) {
+    const page = await getCommunityPostsPage({
+      session,
+      regionKey,
+      businessId,
+      groupId,
+      limit: Number(searchParams.get('limit') ?? 20),
+      offset: Number(searchParams.get('offset') ?? 0),
+      cursor: searchParams.get('cursor'),
+    });
+    return NextResponse.json(page);
+  }
+
   const canManageBusiness = manageBusiness && businessId && session?.user?.id
     ? Boolean(await prisma.business.findFirst({
         where: {

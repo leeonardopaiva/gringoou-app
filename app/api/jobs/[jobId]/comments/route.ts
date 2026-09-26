@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { commentSchema } from '@/lib/validators';
+import { addMockJobComment, getMockJobComments, USE_MOCKS } from '@/lib/server/mocks';
 
 type Context = { params: Promise<{ jobId: string }> };
 
@@ -43,6 +44,10 @@ const decorateComment = <
 };
 
 export async function GET(_request: Request, context: Context) {
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockJobComments());
+  }
+
   const session = await getServerAuthSession();
   const { jobId } = await context.params;
   const job = await prisma.job.findFirst({
@@ -85,6 +90,19 @@ export async function POST(request: Request, context: Context) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentario invalido.' }, { status: 400 });
   }
 
+  const parentId = typeof body.parentId === 'string' ? body.parentId : null;
+
+  if (USE_MOCKS) {
+    const comment = addMockJobComment(parsed.data.content, parentId, {
+      id: session.user.id,
+      name: session.user.name || 'Usuario da comunidade',
+      username: session.user.username,
+      image: session.user.image,
+    });
+    if (!comment) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    return NextResponse.json({ comment }, { status: 201 });
+  }
+
   const job = await prisma.job.findFirst({
     where: { id: jobId, isActive: true },
     select: { id: true, createdById: true },
@@ -92,7 +110,6 @@ export async function POST(request: Request, context: Context) {
 
   if (!job) return NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
 
-  const parentId = typeof body.parentId === 'string' ? body.parentId : null;
   if (parentId) {
     const parent = await prisma.jobComment.findFirst({
       where: { id: parentId, jobId, parentId: null },

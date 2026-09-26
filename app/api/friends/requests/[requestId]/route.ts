@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { friendRequestDecisionSchema } from '@/lib/validators';
+import { decideMockFriendRequest, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -28,6 +29,11 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const { requestId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(decideMockFriendRequest(requestId, parsed.data.action));
+  }
+
   const friendRequest = await prisma.friendRequest.findUnique({
     where: { id: requestId },
     select: {

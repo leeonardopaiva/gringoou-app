@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { commentSchema } from '@/lib/validators';
+import { addMockHousingComment, getMockHousingComments, USE_MOCKS } from '@/lib/server/mocks';
 
 type Context = { params: Promise<{ housingId: string }> };
 const authorSelect = { id: true, name: true, username: true, image: true } as const;
@@ -27,6 +28,10 @@ const decorateComment = <
 };
 
 export async function GET(_request: Request, context: Context) {
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockHousingComments());
+  }
+
   const session = await getServerAuthSession();
   const { housingId } = await context.params;
   const housing = await prisma.housing.findFirst({ where: { id: housingId, isActive: true }, select: { id: true, createdById: true } });
@@ -51,10 +56,22 @@ export async function POST(request: Request, context: Context) {
   const parsed = commentSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentario invalido.' }, { status: 400 });
 
+  const parentId = typeof body.parentId === 'string' ? body.parentId : null;
+
+  if (USE_MOCKS) {
+    const comment = addMockHousingComment(parsed.data.content, parentId, {
+      id: session.user.id,
+      name: session.user.name || 'Usuario da comunidade',
+      username: session.user.username,
+      image: session.user.image,
+    });
+    if (!comment) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    return NextResponse.json({ comment }, { status: 201 });
+  }
+
   const housing = await prisma.housing.findFirst({ where: { id: housingId, isActive: true }, select: { id: true, createdById: true } });
   if (!housing) return NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
 
-  const parentId = typeof body.parentId === 'string' ? body.parentId : null;
   if (parentId) {
     const parent = await prisma.housingComment.findFirst({ where: { id: parentId, housingId, parentId: null }, select: { id: true } });
     if (!parent) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });

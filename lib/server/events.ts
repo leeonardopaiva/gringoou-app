@@ -5,10 +5,15 @@ import type { Session } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { getVisibilityFilter } from '@/lib/visibility';
 import type { EventItem } from '@/types';
+import { getMockEventsPage, USE_MOCKS } from '@/lib/server/mocks';
 
 export type EventsPage = { events: EventItem[]; scope: 'local' | 'global' };
 
 export async function getEventsPage({ session, regionKey, category }: { session: Session | null; regionKey?: string | null; category?: string | null }): Promise<EventsPage> {
+  if (USE_MOCKS) {
+    return getMockEventsPage();
+  }
+
   const viewerId = session?.user?.id;
   const isAdmin = session?.user?.role === UserRole.ADMIN;
   const events = await prisma.event.findMany({

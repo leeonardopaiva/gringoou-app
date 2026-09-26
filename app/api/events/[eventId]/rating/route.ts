@@ -5,6 +5,7 @@ import { refreshEventRating } from '@/lib/place-engagement';
 import { prisma } from '@/lib/prisma';
 import { starRatingSchema } from '@/lib/validators';
 import { isVisibleForRegion } from '@/lib/visibility';
+import { addMockEventRating, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -30,6 +31,11 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { eventId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(addMockEventRating(eventId, parsed.data.stars));
+  }
+
   const event = await prisma.event.findFirst({
     where: {
       OR: [{ id: eventId }, { slug: eventId }],

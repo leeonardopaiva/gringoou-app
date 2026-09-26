@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { isVisibleForRegion } from '@/lib/visibility';
+import { setMockEventFavorite, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
   params: Promise<{
@@ -33,6 +34,11 @@ export async function POST(_request: Request, context: RouteContext) {
   }
 
   const { eventId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(setMockEventFavorite(eventId, true));
+  }
+
   const event = await loadEventForFavorite(eventId);
 
   if (!event) {
@@ -96,6 +102,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   const { eventId } = await context.params;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(setMockEventFavorite(eventId, false));
+  }
+
   const event = await loadEventForFavorite(eventId);
 
   if (!event) {

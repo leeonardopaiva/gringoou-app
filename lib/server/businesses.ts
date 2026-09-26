@@ -5,6 +5,7 @@ import type { Session } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { getVisibilityFilter } from '@/lib/visibility';
 import type { Business } from '@/types';
+import { getMockBusinessesPage, USE_MOCKS } from '@/lib/server/mocks';
 
 export type BusinessesPage = { businesses: Business[]; scope: 'local' | 'global' };
 
@@ -19,6 +20,10 @@ export async function getBusinessesPage({
   category?: string | null;
   search?: string | null;
 }): Promise<BusinessesPage> {
+  if (USE_MOCKS) {
+    return getMockBusinessesPage();
+  }
+
   const viewerId = session?.user?.id;
   const isAdmin = session?.user?.role === UserRole.ADMIN;
   const where: Prisma.BusinessWhereInput = {

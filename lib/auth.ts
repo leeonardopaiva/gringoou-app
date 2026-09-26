@@ -13,6 +13,7 @@ import {
 import { normalizeAuthEmail, verifyPassword } from '@/lib/password-auth';
 import { prisma } from '@/lib/prisma';
 import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
+import { USE_MOCKS } from '@/lib/server/mocks/config';
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -260,6 +261,42 @@ export const authOptions: NextAuthOptions = {
       const userId = user?.id || token.id || token.sub;
 
       if (!userId) {
+        return token;
+      }
+
+      if (USE_MOCKS) {
+        // Local mock mode: this callback re-runs on every getServerSession()/useSession()
+        // call, and a DB-backed refresh here would hit the real database on every page
+        // even though the mocked flows never need it. Keep whatever the token/provider
+        // already carries instead of round-tripping to Prisma.
+        token.id = userId;
+        token.sub = userId;
+        token.accountDeleted = false;
+
+        if (user) {
+          const mockUser = user as typeof user & {
+            role?: string;
+            username?: string | null;
+            phone?: string | null;
+            locationLabel?: string | null;
+            regionKey?: string | null;
+            onboardingCompleted?: boolean;
+            recruiterVerified?: boolean;
+            isAdvertiser?: boolean;
+          };
+          token.name = mockUser.name;
+          token.email = mockUser.email;
+          token.picture = mockUser.image;
+          token.role = mockUser.role ?? token.role ?? 'USER';
+          token.username = mockUser.username ?? token.username ?? null;
+          token.phone = mockUser.phone ?? token.phone ?? null;
+          token.locationLabel = mockUser.locationLabel ?? token.locationLabel ?? null;
+          token.regionKey = mockUser.regionKey ?? token.regionKey ?? null;
+          token.onboardingCompleted = mockUser.onboardingCompleted ?? token.onboardingCompleted ?? true;
+          token.recruiterVerified = mockUser.recruiterVerified ?? token.recruiterVerified ?? false;
+          token.isAdvertiser = mockUser.isAdvertiser ?? token.isAdvertiser ?? false;
+        }
+
         return token;
       }
 

@@ -5,18 +5,24 @@ import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
 import { uniqueSlug } from '@/lib/slug';
 import { communityGroupSchema } from '@/lib/validators';
+import { getMockGroupsPage, USE_MOCKS } from '@/lib/server/mocks';
 
 export async function GET(request: Request) {
-  const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search')?.trim();
-  const region = searchParams.get('region')?.trim();
-  const country = searchParams.get('country')?.trim().toUpperCase();
-  const mine = searchParams.get('mine') === '1';
   const rawLimit = Number(searchParams.get('limit') ?? 24);
   const rawOffset = Number(searchParams.get('offset') ?? 0);
   const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 24) : 24;
   const offset = Number.isFinite(rawOffset) ? Math.max(Math.trunc(rawOffset), 0) : 0;
+
+  if (USE_MOCKS) {
+    return NextResponse.json(getMockGroupsPage(limit, offset));
+  }
+
+  const session = await getServerAuthSession();
+  const search = searchParams.get('search')?.trim();
+  const region = searchParams.get('region')?.trim();
+  const country = searchParams.get('country')?.trim().toUpperCase();
+  const mine = searchParams.get('mine') === '1';
 
   const baseWhere: Prisma.CommunityGroupWhereInput = {
     AND: [
