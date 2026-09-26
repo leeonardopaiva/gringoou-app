@@ -13,6 +13,7 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
+import { FilterPopover } from "@/components/ui/FilterPopover";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
@@ -146,40 +147,42 @@ export default function JobList({ user }: { user: User }) {
           Criar vaga
         </Button>
       } />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Select
-          value={employmentType}
-          onChange={(e) => {
-            setEmploymentType(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">Todos os contratos</option>
-          <option>Tempo integral</option>
-          <option>Meio periodo</option>
-          <option>Freelancer</option>
-        </Select>
-        <Input
-          value={location}
-          onChange={(e) => {
-            setLocation(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Localizacao"
-        />
-        <Input
-          value={salary}
-          onChange={(e) => {
-            setSalary(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Faixa salarial"
-        />
-      </div>
       <section className="space-y-3">
-        <h2 className="text-body-sm font-bold text-foreground">
-          Vagas disponiveis
-        </h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-body-sm font-bold text-foreground">
+            Vagas disponiveis
+          </h2>
+          <FilterPopover>
+            <Select
+              value={employmentType}
+              onChange={(e) => {
+                setEmploymentType(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Todos os contratos</option>
+              <option>Tempo integral</option>
+              <option>Meio periodo</option>
+              <option>Freelancer</option>
+            </Select>
+            <Input
+              value={location}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Localizacao"
+            />
+            <Input
+              value={salary}
+              onChange={(e) => {
+                setSalary(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Faixa salarial"
+            />
+          </FilterPopover>
+        </div>
         {loading ? (
           <p className="text-sm text-muted-foreground">
             Atualizando resultados...

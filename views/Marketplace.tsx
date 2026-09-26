@@ -10,6 +10,9 @@ import ImageGalleryField from '../components/forms/ImageGalleryField';
 import { Check, Heart, MapPin, Plus, Search } from 'lucide-react';
 import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
+import { CompactActionCard } from '../components/ui/CompactActionCard';
+import { FilterPopover } from '../components/ui/FilterPopover';
+import { SectionTabs } from '../components/ui/SectionTabs';
 import {
   type FieldErrors,
   hasFieldErrors,
@@ -40,6 +43,9 @@ const SAMPLE_EVENTS: EventItem[] = [
     imageUrl: 'https://picsum.photos/seed/foodfest/300',
   },
 ];
+
+const EVENT_TABS = ['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros'];
+const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
 
 const isSameLocalDay = (left: Date, right: Date) =>
   left.getFullYear() === right.getFullYear() &&
@@ -363,42 +369,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             <Plus size={16} /> Criar evento
           </button>
         } />
-        <button
-          type="button"
-          onClick={() => setShowCreateForm((current) => !current)}
-          className="w-full rounded-card bg-secondary p-4 text-left text-foreground transition hover:brightness-95"
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
-              <Plus size={20} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600">
-                Cadastre seu evento
-              </p>
-              <p className="mt-1 text-sm font-bold text-foreground">
-                Divulgue seu evento para a comunidade local.
-              </p>
-              <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">
-                {showCreateForm ? 'Toque para fechar o modal.' : 'Toque para abrir o cadastro em modal.'}
-              </p>
-            </div>
-          </div>
-        </button>
-        <div className="relative">
-          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar eventos" className="w-full rounded-full border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
-        </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros'].map((tab) => (
-                <button 
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-sm border ${activeTab === tab ? 'theme-bg text-white border-transparent' : 'bg-white theme-text border-slate-100'}`}
-                >
-                    {tab}
-                </button>
-            ))}
+        <div className="grid gap-2 sm:grid-cols-1">
+          <CompactActionCard
+            icon={<Plus size={16} />}
+            eyebrow="Evento gratuito"
+            title="Cadastre seu evento"
+            description={showCreateForm ? 'Toque para fechar o cadastro' : 'Divulgue para a comunidade local'}
+            onClick={() => setShowCreateForm((current) => !current)}
+          />
         </div>
 
         {showCreateForm ? (
@@ -533,7 +511,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       </div>
 
       <div className="space-y-4">
-        <h2 className="font-bold theme-text">{sectionTitle}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-bold theme-text">{sectionTitle}</h2>
+          <div className="flex items-center gap-2">
+            <SectionTabs options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
+            <FilterPopover>
+              <div className="relative">
+                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar eventos" className="w-full rounded-full border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
+              </div>
+            </FilterPopover>
+          </div>
+        </div>
         {resultScope === 'global' && events.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             Ainda nao ha eventos publicados na sua regiao. Mostrando eventos de outras regioes.

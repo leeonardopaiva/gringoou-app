@@ -13,6 +13,7 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
+import { FilterPopover } from "@/components/ui/FilterPopover";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
@@ -126,39 +127,41 @@ export default function HousingList({ user: _user }: { user: User }) {
           Criar anúncio
         </Button>
       } />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Select
-          value={propertyType}
-          onChange={(e) => {
-            setPropertyType(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">Todos os tipos</option>
-          <option>Apartamento</option>
-          <option>Casa</option>
-          <option>Quarto</option>
-          <option>Republica</option>
-        </Select>
-        <Input
-          value={location}
-          onChange={(e) => {
-            setLocation(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Localizacao"
-        />
-        <Input
-          value={price}
-          onChange={(e) => {
-            setPrice(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Preco"
-        />
-      </div>
       <section className="space-y-3">
-        <h2 className="text-body-sm font-bold">Imoveis disponiveis</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-body-sm font-bold">Imoveis disponiveis</h2>
+          <FilterPopover>
+            <Select
+              value={propertyType}
+              onChange={(e) => {
+                setPropertyType(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Todos os tipos</option>
+              <option>Apartamento</option>
+              <option>Casa</option>
+              <option>Quarto</option>
+              <option>Republica</option>
+            </Select>
+            <Input
+              value={location}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Localizacao"
+            />
+            <Input
+              value={price}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Preco"
+            />
+          </FilterPopover>
+        </div>
         {loading ? (
           <p className="text-sm text-muted-foreground">
             Atualizando resultados...
