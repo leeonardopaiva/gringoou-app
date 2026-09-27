@@ -252,9 +252,12 @@ const App: React.FC<{
         await signOut({ redirect: false });
       }
 
+      const oauthCallbackUrl = new URL(authCallbackUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+      oauthCallbackUrl.searchParams.set('authGrace', '1');
+
       await signIn(
         'google',
-        { callbackUrl: authCallbackUrl },
+        { callbackUrl: oauthCallbackUrl.toString() },
         selectAccount ? { prompt: 'select_account' } : undefined,
       );
     } catch (error) {
@@ -272,7 +275,10 @@ const App: React.FC<{
     setRegistrationNotice(null);
 
     try {
-      await signIn('mock-dev', { callbackUrl: authCallbackUrl });
+      const mockCallbackUrl = new URL(authCallbackUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+      mockCallbackUrl.searchParams.set('authGrace', '1');
+
+      await signIn('mock-dev', { callbackUrl: mockCallbackUrl.toString() });
     } catch (error) {
       console.error('Mock sign-in failed:', error);
       setRegistrationError('Nao foi possivel entrar com o usuario de teste agora.');

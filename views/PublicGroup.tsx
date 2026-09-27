@@ -246,7 +246,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
     ? 'mx-auto w-full max-w-[600px]'
-    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
+    : 'mx-auto w-full max-w-[600px]';
   const approvedMembers = group.members.filter((member) => member.status === 'APPROVED');
   const previewMembers = approvedMembers.slice(0, 3);
 
@@ -283,7 +283,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          <section className="overflow-hidden rounded-[28px] bg-white shadow-sm">
+          <section className="rounded-[28px] bg-white shadow-sm">
             <div className={`relative h-52 sm:h-60 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.coverImageUrl || group.imageUrl ? (
                 <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
@@ -355,7 +355,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           </section>
 
           {group.canViewContent ? (
-            <div className="mt-4 flex items-center gap-5 overflow-x-auto border-b border-slate-100 px-1 scrollbar-hide">
+            <div className="mt-4 flex items-center gap-5 overflow-x-auto border-b border-slate-100 px-4 scrollbar-hide">
               {(
                 [
                   ['mural', 'Mural'],
@@ -385,7 +385,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">Conteúdo restrito</h2><p className="mt-2 text-sm text-amber-800">Sua solicitação precisa ser aprovada para acessar membros e publicações.</p></section> : null}
 
           {group.canViewContent && groupTab === 'mural' ? (
-            <div className="mt-4 px-1">
+            <div className="mt-4 px-4">
               {previewMembers.length ? (
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <p className="text-xs font-semibold text-slate-500">Quem participa</p>

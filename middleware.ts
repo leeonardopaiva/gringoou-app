@@ -97,6 +97,7 @@ export async function middleware(request: NextRequest) {
       const isApiRequest = request.nextUrl.pathname.startsWith('/api/');
       const maintenanceEnabled = isTruthyEnv(process.env.MAINTENANCE_MODE);
       const isAdmin = token?.role === 'ADMIN';
+      const isOAuthCallback = request.nextUrl.searchParams.get('authGrace') === '1';
 
       if (token?.accountDeleted) {
         return buildDeletedAccountResponse(request);
@@ -105,6 +106,12 @@ export async function middleware(request: NextRequest) {
       if (!token) {
         if (isApiRequest) {
           return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+        }
+
+        if (isOAuthCallback) {
+          const response = NextResponse.next();
+          response.headers.set('x-middleware-cache', 'no-store');
+          return response;
         }
 
         const url = request.nextUrl.clone();

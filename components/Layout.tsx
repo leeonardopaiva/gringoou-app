@@ -424,7 +424,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         </div>
 
         <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
-          <header className="relative border-b border-border/70 bg-bg/95 backdrop-blur">
+          <header className="relative border-b border-border/70 bg-white">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
             <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:flex-nowrap md:gap-y-2 md:px-5 md:py-4">
               <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">

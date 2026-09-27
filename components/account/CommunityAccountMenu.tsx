@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, Store, UserRound } from 'lucide-react';
 import { Avatar } from '@/components/ui';
+import { Popover } from '@/components/ui/Popover';
 
 type ManagedBusiness = {
   id: string;
@@ -157,8 +158,8 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
         <Avatar src={user.avatar} name={user.name} size="md" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>
-      {open ? (
-        <div className="absolute right-0 top-[calc(100%+10px)] z-[80] w-[310px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[310px] overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+        <div>
           <div className="p-4">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Conectado como</p>
             <div className="mt-3 flex w-full items-center gap-3 rounded-xl bg-slate-50 p-2">
@@ -200,7 +201,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
             <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={17} />Sair</button>
           </div>
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 }

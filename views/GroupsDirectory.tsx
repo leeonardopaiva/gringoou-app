@@ -204,21 +204,24 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
             />
           </label>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {countries.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setCountry(value)}
-                className={`h-9 shrink-0 rounded-full px-4 text-xs font-bold transition ${
-                  country === value
-                    ? 'bg-brand-500 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-700'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            {countries
+              .filter(([value]) => value === country)
+              .map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    const nextCountryIndex = countries.findIndex(([c]) => c === country);
+                    const nextCountry = countries[(nextCountryIndex + 1) % countries.length];
+                    setCountry(nextCountry[0]);
+                  }}
+                  className="h-9 shrink-0 rounded-full bg-brand-500 px-4 text-xs font-bold text-white transition hover:brightness-110"
+                  title="Clique para alterar país"
+                >
+                  {label}
+                </button>
+              ))}
           </div>
         </div>
 
