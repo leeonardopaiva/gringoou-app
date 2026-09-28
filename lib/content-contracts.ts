@@ -26,6 +26,11 @@ export interface EventsInitialData {
   regionKey: string;
 }
 
+export interface JobsInitialData {
+  jobs: any[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+}
+
 export interface ProfileInitialData {
   user: {
     id: string;

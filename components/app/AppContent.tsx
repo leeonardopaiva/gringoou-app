@@ -6,7 +6,7 @@ import BusinessWorkspace from '@/components/app/workspaces/BusinessWorkspace';
 import UserWorkspace from '@/components/app/workspaces/UserWorkspace';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
-import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, ProfileInitialData } from '@/lib/content-contracts';
+import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from '@/lib/content-contracts';
 
 type AppContentProps = {
   currentUser: User;
@@ -20,6 +20,7 @@ type AppContentProps = {
   initialCommunityData?: CommunityInitialData;
   initialBusinessesData?: BusinessesInitialData;
   initialEventsData?: EventsInitialData;
+  initialJobsData?: JobsInitialData;
   initialProfileData?: ProfileInitialData;
 };
 
@@ -35,6 +36,7 @@ const AppContent: React.FC<AppContentProps> = ({
   initialCommunityData,
   initialBusinessesData,
   initialEventsData,
+  initialJobsData,
   initialProfileData,
 }) => {
   const { rootSegment } = parseAppRoute(pathname);
@@ -67,6 +69,7 @@ const AppContent: React.FC<AppContentProps> = ({
       onPersonaModeChange={onPersonaModeChange}
       initialHomeData={initialHomeData}
       initialCommunityData={initialCommunityData}
+      initialJobsData={initialJobsData}
       initialProfileData={initialProfileData}
     />
   );

@@ -20,6 +20,7 @@ import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
+import type { JobsInitialData } from "@/lib/content-contracts";
 
 type Job = {
   id: string;
@@ -46,15 +47,16 @@ const emptyDraft = {
   galleryUrls: [] as string[],
 };
 
-export default function JobList({ user }: { user: User }) {
+export default function JobList({ user, initialData }: { user: User; initialData?: JobsInitialData }) {
   const { showToast } = useToast();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>(initialData?.jobs ?? []);
   const [employmentType, setEmploymentType] = useState("");
   const [location, setLocation] = useState("");
   const [salary, setSalary] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(initialData?.pagination.totalPages ?? 1);
+  const [loading, setLoading] = useState(!initialData);
+  const initialPageConsumedRef = React.useRef(!!initialData);
   const [modalOpen, setModalOpen] = useState(false);
   const [companyInviteOpen, setCompanyInviteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -70,6 +72,11 @@ export default function JobList({ user }: { user: User }) {
   }, []);
 
   useEffect(() => {
+    if (!initialPageConsumedRef.current && initialData && page === 1 && !employmentType && !location && !salary) {
+      initialPageConsumedRef.current = true;
+      return;
+    }
+
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setLoading(true);
@@ -101,7 +108,7 @@ export default function JobList({ user }: { user: User }) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [employmentType, location, page, salary, showToast]);
+  }, [employmentType, location, page, salary, showToast, initialData]);
 
   const createJob = async () => {
     setSaving(true);

@@ -12,7 +12,7 @@ import Profile from '@/views/Profile';
 import SearchResults from '@/views/SearchResults';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
-import type { CommunityInitialData, HomeInitialData, ProfileInitialData } from '@/lib/content-contracts';
+import type { CommunityInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from '@/lib/content-contracts';
 
 type UserWorkspaceProps = {
   currentUser: User;
@@ -24,6 +24,7 @@ type UserWorkspaceProps = {
   onPersonaModeChange: (mode: PersonaMode) => void;
   initialHomeData?: HomeInitialData;
   initialCommunityData?: CommunityInitialData;
+  initialJobsData?: JobsInitialData;
   initialProfileData?: ProfileInitialData;
 };
 
@@ -37,6 +38,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
   onPersonaModeChange,
   initialHomeData,
   initialCommunityData,
+  initialJobsData,
   initialProfileData,
 }) => {
   const { segments, rootSegment } = parseAppRoute(pathname);
@@ -58,7 +60,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
     case 'buscar':
       return <SearchResults />;
     case 'vagas':
-      return segments[1] ? <JobDetail jobId={decodeURIComponent(segments[1])} /> : <JobList user={currentUser} />;
+      return segments[1] ? <JobDetail jobId={decodeURIComponent(segments[1])} /> : <JobList user={currentUser} initialData={initialJobsData} />;
     case 'moradia':
       return segments[1] ? <HousingDetail housingId={decodeURIComponent(segments[1])} /> : <HousingList user={currentUser} />;
     case 'profile':

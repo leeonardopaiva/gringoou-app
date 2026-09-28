@@ -10,7 +10,7 @@ import PublicEntry from './components/app/PublicEntry';
 import { DEFAULT_AVATAR_URL } from './lib/avatar';
 import { parseAppRoute } from './lib/app-route';
 import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
-import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, ProfileInitialData } from './lib/content-contracts';
+import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from './lib/content-contracts';
 
 const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== 'false';
 const EMAIL_AUTH_ENABLED = process.env.NEXT_PUBLIC_EMAIL_AUTH_ENABLED === 'true';
@@ -73,8 +73,9 @@ const App: React.FC<{
   initialCommunityData?: CommunityInitialData;
   initialBusinessesData?: BusinessesInitialData;
   initialEventsData?: EventsInitialData;
+  initialJobsData?: JobsInitialData;
   initialProfileData?: ProfileInitialData;
-}> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialProfileData }) => {
+}> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialJobsData, initialProfileData }) => {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { data: session, status, update } = useSession();
@@ -654,6 +655,7 @@ const App: React.FC<{
         initialCommunityData={initialCommunityData}
         initialBusinessesData={initialBusinessesData}
         initialEventsData={initialEventsData}
+        initialJobsData={initialJobsData}
         initialProfileData={initialProfileData}
       />
     </Layout>
