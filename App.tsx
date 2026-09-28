@@ -255,11 +255,20 @@ const App: React.FC<{
       const oauthCallbackUrl = new URL(authCallbackUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
       oauthCallbackUrl.searchParams.set('authGrace', '1');
 
-      await signIn(
+      const result = await signIn(
         'google',
-        { callbackUrl: oauthCallbackUrl.toString() },
+        {
+          redirect: false,
+          callbackUrl: oauthCallbackUrl.toString()
+        },
         selectAccount ? { prompt: 'select_account' } : undefined,
       );
+
+      if (result?.url) {
+        window.location.assign(result.url);
+      } else if (result?.ok) {
+        window.location.assign(authCallbackUrl);
+      }
     } catch (error) {
       console.error('Google sign-in failed:', error);
       setRegistrationError('Nao foi possivel entrar com Google agora.');
@@ -278,7 +287,16 @@ const App: React.FC<{
       const mockCallbackUrl = new URL(authCallbackUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
       mockCallbackUrl.searchParams.set('authGrace', '1');
 
-      await signIn('mock-dev', { callbackUrl: mockCallbackUrl.toString() });
+      const result = await signIn('mock-dev', {
+        redirect: false,
+        callbackUrl: mockCallbackUrl.toString()
+      });
+
+      if (result?.url) {
+        window.location.assign(result.url);
+      } else if (result?.ok) {
+        window.location.assign(authCallbackUrl);
+      }
     } catch (error) {
       console.error('Mock sign-in failed:', error);
       setRegistrationError('Nao foi possivel entrar com o usuario de teste agora.');
