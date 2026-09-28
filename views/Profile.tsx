@@ -130,8 +130,10 @@ const Profile: React.FC<{
     interests: false,
     gallery: false,
     region: false,
+    profile: false,
   });
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [profileEditDraft, setProfileEditDraft] = useState<ProfileState | null>(null);
 
   useEffect(() => {
     if (!initialDataConsumedRef.current && initialData) {
@@ -457,6 +459,35 @@ const Profile: React.FC<{
     setInterestInput('');
   };
 
+  const openEditProfileModal = () => {
+    setProfileEditDraft(profile);
+    setEditing((c) => ({ ...c, profile: true }));
+  };
+
+  const closeEditProfileModal = () => {
+    setProfileEditDraft(null);
+    setEditing((c) => ({ ...c, profile: false }));
+  };
+
+  const saveCompleteProfile = async () => {
+    if (!profileEditDraft) return;
+    const patchData = {
+      name: profileEditDraft.name,
+      username: profileEditDraft.username,
+      phone: profileEditDraft.phone,
+      bio: profileEditDraft.bio,
+      coverImageUrl: profileEditDraft.coverImageUrl,
+      galleryUrls: profileEditDraft.galleryUrls,
+      interests: profileEditDraft.interests,
+      gender: profileEditDraft.gender,
+      age: profileEditDraft.age,
+      timeAbroad: profileEditDraft.timeAbroad,
+      birthCity: profileEditDraft.birthCity,
+    };
+    await saveProfile(patchData, 'Perfil atualizado com sucesso.', 'profile');
+    closeEditProfileModal();
+  };
+
   const avatarImage = profile.image || DEFAULT_AVATAR_URL;
   const referralUrl = referralSummary.referralUrl || `${getClientAppBaseUrl()}/convite/${profile.username || 'seu-nome-publico'}`;
   const professionalIdentity = professionalProfile.identity;
@@ -497,9 +528,15 @@ const Profile: React.FC<{
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-slate-950/5 to-transparent" />
-          <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="absolute right-4 top-4 rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600" aria-label="Editar capa">
-            <PencilLine size={16} />
-          </button>
+          <div className="absolute right-4 top-4 flex gap-2">
+            <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-white/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
+              <PencilLine size={16} />
+              Editar perfil
+            </button>
+            <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600" aria-label="Editar capa">
+              <PencilLine size={16} />
+            </button>
+          </div>
         </div>
         <div className="-mt-12 px-5 pb-5">
           <div className="flex flex-col items-center text-center">
@@ -556,6 +593,73 @@ const Profile: React.FC<{
                 <SecondaryButton className={secondaryButtonClass} label={avatarDraft ? 'Limpar' : 'Cancelar'} onClick={() => { if (avatarDraft) { setAvatarDraft(''); return; } setEditing((c) => ({ ...c, avatar: false })); }} disabled={savingKey === 'avatar'} />
               </ActionRow>
             </EditorCard>
+          </Modal>
+
+          <Modal open={editing.profile} onClose={closeEditProfileModal} title="Editar perfil" description="Atualize todos os seus dados pessoais em um único lugar." className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+            {profileEditDraft && (
+              <EditorCard>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Capa do perfil</h3>
+                    <div className="space-y-3">
+                      <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" placeholder="Link da capa" hint="Use uma imagem horizontal para destacar seu perfil." />
+                      <p className="text-xs text-slate-500">Para editar a foto do perfil, use o botão no canto da imagem do header.</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Informações pessoais</h3>
+                    <div className="space-y-3">
+                      <Input value={profileEditDraft.name} onChange={(name) => setProfileEditDraft((c) => c ? { ...c, name } : null)} placeholder="Nome completo" icon={<UserRound size={16} />} />
+                      <Input value={profileEditDraft.username} onChange={(username) => setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null)} placeholder="Nome publico" icon={<Globe size={16} />} />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Input value={profileEditDraft.phone} onChange={(phone) => setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null)} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
+                        <Input value={profileEditDraft.birthCity} onChange={(birthCity) => setProfileEditDraft((c) => c ? { ...c, birthCity } : null)} placeholder="Cidade natal" icon={<MapPin size={16} />} />
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Input value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => setProfileEditDraft((c) => c ? { ...c, age: value ? Number(value) : null } : null)} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
+                        <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={profileEditDraft.gender} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
+                      </div>
+                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={profileEditDraft.timeAbroad} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
+                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500 block">Sobre você</span><textarea rows={4} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre voce" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" /></label>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Interesses</h3>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <input type="text" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder="Adicionar interesse" className="flex-1 rounded-full border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
+                        <button type="button" onClick={() => { const normalized = interestInput.trim(); if (normalized && !profileEditDraft.interests.includes(normalized) && profileEditDraft.interests.length < 8) { setProfileEditDraft((c) => c ? { ...c, interests: [...c.interests, normalized] } : null); setInterestInput(''); } }} className={`inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 text-sm font-bold text-white shadow-md ${primaryButtonClass}`}><Plus size={16} /></button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {profileEditDraft.interests.length > 0 ? profileEditDraft.interests.map((interest) => (
+                          <span key={interest} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+                            {interest}
+                            <button type="button" onClick={() => setProfileEditDraft((c) => c ? { ...c, interests: c.interests.filter((i) => i !== interest) } : null)} className="rounded-full bg-slate-100 p-1 text-slate-500"><X size={12} /></button>
+                          </span>
+                        )) : <p className="text-sm text-slate-500">Adicione ate 8 interesses.</p>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Galeria</h3>
+                    <ImageGalleryField value={profileEditDraft.galleryUrls} onChange={(galleryUrls) => setProfileEditDraft((c) => c ? { ...c, galleryUrls } : null)} folder="profiles" maxItems={6} hint="Adicione ate 6 fotos pessoais, do trabalho ou da comunidade." />
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
+                    <RegionSelector value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negocios e eventos priorizam esta regiao." />
+                  </div>
+
+                  <ActionRow>
+                    <PrimaryButton className={primaryButtonClass} label={savingKey === 'profile' ? 'Salvando...' : 'Salvar perfil'} onClick={() => void saveCompleteProfile()} disabled={savingKey === 'profile'} />
+                    <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={closeEditProfileModal} disabled={savingKey === 'profile'} />
+                  </ActionRow>
+                </div>
+              </EditorCard>
+            )}
           </Modal>
         </div>
       </section>
