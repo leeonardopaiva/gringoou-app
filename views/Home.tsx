@@ -1,5 +1,5 @@
 ﻿'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,7 +11,6 @@ import {
   CalendarDays,
   ShoppingBag,
   UserPlus,
-  type LucideIcon,
 } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { useRegionBanners, useRegionCommunityPosts } from '../hooks/useRegionContent';
@@ -23,6 +22,7 @@ import { BannerAd, Business, EventItem, User } from '../types';
 import type { HomeInitialData } from '../lib/content-contracts';
 import { ViewableAdSlot } from '../components/ads/ViewableAdSlot';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import { ServiceCard } from '../components/ui/ServiceCard';
 
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
   const router = useRouter();
@@ -44,9 +44,19 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     { href: '/moradia', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
   ];
 
+  // Evita fetch no mount inicial — o servidor já forneceu initialData.
+  // A busca client-side só ocorre quando o usuário troca de região.
+  const isFirstMount = useRef(true);
+
   useEffect(() => {
     const controller = new AbortController();
     const regionQuery = user.regionKey ? `?region=${encodeURIComponent(user.regionKey)}` : '';
+
+    // Pula o fetch na primeira renderizacao — usa os dados do servidor.
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
 
     void Promise.all([
       fetch(`/api/businesses${regionQuery}`, { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
@@ -237,65 +247,6 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       <TrendsCarousel items={trendItems} />
 
     </ContentColumn>
-  );
-};
-
-const ServiceCard: React.FC<{
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  disabled?: boolean;
-  onDisabledClick?: () => void;
-  onActivate?: () => void;
-}> = ({
-  href,
-  icon: Icon,
-  label,
-  disabled = false,
-  onDisabledClick,
-  onActivate,
-}) => {
-  const classes = `flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 transition-all ${
-    disabled
-      ? 'cursor-pointer border-slate-200 bg-white opacity-50'
-      : 'border-slate-200 bg-white hover:border-brand-300 active:scale-95'
-  }`;
-
-  const content = (
-    <>
-      <div
-        className={`flex h-11 w-11 items-center justify-center rounded-full ${
-          disabled ? 'bg-slate-100 text-slate-400' : 'theme-icon-surface'
-        }`}
-      >
-        <Icon size={20} strokeWidth={2.2} />
-      </div>
-      <span className={`block text-center text-caption font-bold leading-tight ${disabled ? 'text-slate-400' : 'text-text'}`}>
-        {label}
-      </span>
-    </>
-  );
-
-  if (disabled) {
-    return (
-      <button type="button" aria-disabled="true" onClick={onDisabledClick} className={classes}>
-        {content}
-      </button>
-    );
-  }
-
-  if (onActivate) {
-    return (
-      <button type="button" onClick={onActivate} className={classes}>
-        {content}
-      </button>
-    );
-  }
-
-  return (
-    <Link href={href} className={classes}>
-      {content}
-    </Link>
   );
 };
 

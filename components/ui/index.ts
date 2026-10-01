@@ -17,3 +17,4 @@ export * from './Autocomplete';
 export * from './ContentColumn';
 export * from './CharacterCounter';
 export * from './FeedCard';
+export * from './ServiceCard';

@@ -11,15 +11,15 @@ import { DEFAULT_AVATAR_URL } from './lib/avatar';
 import { parseAppRoute } from './lib/app-route';
 import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
 import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from './lib/content-contracts';
-
-const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== 'false';
-const EMAIL_AUTH_ENABLED = process.env.NEXT_PUBLIC_EMAIL_AUTH_ENABLED === 'true';
-const PASSWORD_AUTH_ENABLED = true;
-const DEV_AUTH_ENABLED =
-  process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEV_AUTH_ENABLED === 'true';
-const MOCK_LOGIN_ENABLED = DEV_AUTH_ENABLED && process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
-const PERSONA_MODE_STORAGE_KEY = 'gringoou:persona-mode';
-const BUSINESS_PROFILE_STORAGE_KEY = 'gringoou:business-profile-id';
+import {
+  GOOGLE_AUTH_ENABLED,
+  EMAIL_AUTH_ENABLED,
+  PASSWORD_AUTH_ENABLED,
+  DEV_AUTH_ENABLED,
+  MOCK_LOGIN_ENABLED,
+  PERSONA_MODE_STORAGE_KEY,
+  BUSINESS_PROFILE_STORAGE_KEY,
+} from './config/app';
 const toProfessionalIdentity = (business: ProfessionalProfileBusiness): ProfessionalProfileIdentity => ({
   id: business.id,
   name: business.name,
