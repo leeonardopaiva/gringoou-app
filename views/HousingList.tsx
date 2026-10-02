@@ -21,6 +21,7 @@ import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import RegionSelector from "@/components/RegionSelector";
+import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
 
 type Housing = {
@@ -57,6 +58,7 @@ export default function HousingList({ user }: { user: User }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
+  const activeRegionKey = useActiveRegion() || user.regionKey;
   const formatPrice = (value: string) => {
     const amount = Number(value.replace(/[^0-9.,]/g, '').replace(',', '.'));
     if (!Number.isFinite(amount) || amount <= 0) return value || 'Valor a combinar';
@@ -67,7 +69,7 @@ export default function HousingList({ user }: { user: User }) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
-      if (user.regionKey) params.set("region", user.regionKey);
+      if (activeRegionKey) params.set("region", activeRegionKey);
       if (propertyType) params.set("propertyType", propertyType);
       if (location) params.set("location", location);
       if (price) params.set("price", price);
@@ -95,7 +97,7 @@ export default function HousingList({ user }: { user: User }) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [location, page, price, propertyType, showToast, user.regionKey]);
+  }, [location, page, price, propertyType, showToast, activeRegionKey]);
   const createHousing = async () => {
     setSaving(true);
     try {

@@ -26,6 +26,7 @@ import { parseDateTimeInputPtBr } from '../lib/forms/datetime';
 import { EventItem, PersonaMode, ProfessionalProfileIdentity } from '../types';
 import type { EventsInitialData } from '../lib/content-contracts';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import { useActiveRegion } from '../components/RegionContext';
 
 const SAMPLE_EVENTS: EventItem[] = [
   {
@@ -134,9 +135,10 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const [createForm, setCreateForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<EventField>>({});
   const isProfessionalMode = personaMode === 'professional' && Boolean(professionalIdentity);
+  const contextRegionKey = useActiveRegion();
   const activeRegionKey = isProfessionalMode
-    ? professionalIdentity?.regionKey || session?.user?.regionKey || ''
-    : session?.user?.regionKey || '';
+    ? professionalIdentity?.regionKey || contextRegionKey || session?.user?.regionKey || ''
+    : contextRegionKey || session?.user?.regionKey || '';
 
   const clearFieldError = (field: EventField) => {
     setFieldErrors((current) => {

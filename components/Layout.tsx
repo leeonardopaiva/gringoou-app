@@ -41,6 +41,7 @@ import CommunityAssistantModal from './search/CommunityAssistantModal';
 import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
+import { ActiveRegionProvider } from './RegionContext';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -309,7 +310,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
   React.useEffect(() => onContentUpdated(async (detail) => {
     if (detail.refreshSession) await updateSession();
-    router.refresh();
+    // A region switch already re-fetches every listing through the active-region
+    // context, so skip the heavier RSC refresh to keep the update instant.
+    if (!detail.regionKey) router.refresh();
   }), [router, updateSession]);
 
   React.useEffect(() => {
@@ -512,7 +515,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           </header>
 
           <main className="mx-auto w-full max-w-[1120px] px-4 pt-4 md:px-6 md:pt-6">
-            {children}
+            <ActiveRegionProvider value={activeRegion.key || null}>
+              {children}
+            </ActiveRegionProvider>
           </main>
 
           <SuggestionButton />

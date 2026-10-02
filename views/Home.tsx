@@ -23,6 +23,7 @@ import type { HomeInitialData } from '../lib/content-contracts';
 import { ViewableAdSlot } from '../components/ads/ViewableAdSlot';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { ServiceCard } from '../components/ui/ServiceCard';
+import { useActiveRegion } from '../components/RegionContext';
 
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
   const router = useRouter();
@@ -31,8 +32,9 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   const [latestEvent, setLatestEvent] = useState<EventItem | null>(initialData?.latestEvent ?? null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [submittingBannerId, setSubmittingBannerId] = useState<string | null>(null);
-  const { data: banners } = useRegionBanners('home', user.regionKey);
-  const { data: communityPosts } = useRegionCommunityPosts(user.regionKey, 4);
+  const activeRegionKey = useActiveRegion() || user.regionKey;
+  const { data: banners } = useRegionBanners('home', activeRegionKey);
+  const { data: communityPosts } = useRegionCommunityPosts(activeRegionKey, 4);
   const latestPost = communityPosts[0] ?? initialData?.latestPost;
   const latestJob = STATIC_JOBS[0];
   const latestHousing = STATIC_HOUSING[0];
@@ -50,7 +52,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
 
   useEffect(() => {
     const controller = new AbortController();
-    const regionQuery = user.regionKey ? `?region=${encodeURIComponent(user.regionKey)}` : '';
+    const regionQuery = activeRegionKey ? `?region=${encodeURIComponent(activeRegionKey)}` : '';
 
     // Pula o fetch na primeira renderizacao — usa os dados do servidor.
     if (isFirstMount.current) {
@@ -70,7 +72,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     });
 
     return () => controller.abort();
-  }, [user.regionKey]);
+  }, [activeRegionKey]);
 
   useEffect(() => {
     if (activeBannerIndex <= Math.max(banners.length - 1, 0)) {

@@ -26,6 +26,7 @@ import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
 import { CompactActionCard } from '../components/ui/CompactActionCard';
+import { useActiveRegion } from '../components/RegionContext';
 
 const SAMPLE_BUSINESSES: Business[] = [
   {
@@ -95,9 +96,10 @@ const BusinessList: React.FC<BusinessListProps> = ({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<BusinessField>>({});
   const isProfessionalMode = personaMode === 'professional' && Boolean(professionalIdentity);
   const legacyAdAccountId = searchParams?.get('adAccountId') || '';
+  const contextRegionKey = useActiveRegion();
   const activeRegionKey = isProfessionalMode
-    ? professionalIdentity?.regionKey || session?.user?.regionKey || ''
-    : session?.user?.regionKey || '';
+    ? professionalIdentity?.regionKey || contextRegionKey || session?.user?.regionKey || ''
+    : contextRegionKey || session?.user?.regionKey || '';
 
   const clearFieldError = (field: BusinessField) => {
     setFieldErrors((current) => {

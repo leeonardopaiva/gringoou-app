@@ -13,9 +13,10 @@ export const getVisibilityFilter = (viewerRegionKey?: string | null) => {
     };
   }
 
+  // Listings are strictly regional: only items scoped to the viewer's region
+  // (or explicitly targeted at it) are returned. GLOBAL items are not mixed in.
   return {
     OR: [
-      { visibilityScope: VisibilityScope.GLOBAL },
       {
         visibilityScope: VisibilityScope.USER_REGION,
         regionKey: viewerRegionKey,

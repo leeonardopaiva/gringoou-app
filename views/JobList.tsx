@@ -21,6 +21,7 @@ import PageHeader from "@/components/navigation/PageHeader";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import RegionSelector from "@/components/RegionSelector";
+import { useActiveRegion } from "@/components/RegionContext";
 import type { JobsInitialData } from "@/lib/content-contracts";
 
 type Job = {
@@ -66,6 +67,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
   const [publishAs, setPublishAs] = useState<'person' | 'business'>('person');
   const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
   const canPublish = Boolean(user.id);
+  const activeRegionKey = useActiveRegion() || user.regionKey;
 
   useEffect(() => {
     void fetch('/api/businesses?mine=1').then((response) => response.ok ? response.json() : null).then((payload) => {
@@ -83,7 +85,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
-      if (user.regionKey) params.set("region", user.regionKey);
+      if (activeRegionKey) params.set("region", activeRegionKey);
       if (employmentType) params.set("employmentType", employmentType);
       if (location) params.set("location", location);
       if (salary) params.set("salary", salary);
@@ -111,7 +113,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [employmentType, location, page, salary, showToast, initialData, user.regionKey]);
+  }, [employmentType, location, page, salary, showToast, initialData, activeRegionKey]);
 
   const createJob = async () => {
     setSaving(true);
