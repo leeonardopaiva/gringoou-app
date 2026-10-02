@@ -71,10 +71,13 @@ export const Dropdown: React.FC<DropdownProps> = ({ trigger, sections, align = '
                   type="button"
                   role="menuitem"
                   disabled={item.disabled}
-                  onClick={() => {
+                  onMouseDown={(e) => {
                     if (item.disabled) return;
-                    setOpen(false);
+                    e.preventDefault();
                     item.onClick();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-body-sm font-medium transition-colors',
