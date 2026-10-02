@@ -93,13 +93,61 @@ export const MOCK_BUSINESSES: MockBusinessRecord[] = [
     createdByName: 'Limpeza Brasil Express',
     isFavorite: false,
   },
+  {
+    id: 'mock-business-4',
+    slug: 'padaria-danbury',
+    name: 'Padaria Danbury',
+    category: 'Padaria',
+    address: '12 Main St.',
+    description: 'Padaria brasileira com pão francês, coxinha e café fresquinho todos os dias.',
+    imageUrl: 'https://picsum.photos/seed/mock-business-4/600/400',
+    galleryUrls: [],
+    locationLabel: 'Danbury, CT',
+    regionKey: 'danbury-ct',
+    phone: '+1 203-555-0104',
+    whatsapp: '+1 203-555-0104',
+    website: '',
+    instagram: '@padariadanbury',
+    ratingAverage: 4.7,
+    ratingCount: 34,
+    status: 'PUBLISHED',
+    createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    createdByName: 'Padaria Danbury',
+    isFavorite: false,
+  },
+  {
+    id: 'mock-business-5',
+    slug: 'acougue-brasil-danbury',
+    name: 'Açougue Brasil Danbury',
+    category: 'Açougue',
+    address: '88 White St.',
+    description: 'Cortes brasileiros, linguiça caseira e picanha na hora.',
+    imageUrl: 'https://picsum.photos/seed/mock-business-5/600/400',
+    galleryUrls: [],
+    locationLabel: 'Danbury, CT',
+    regionKey: 'danbury-ct',
+    phone: '+1 203-555-0105',
+    whatsapp: '+1 203-555-0105',
+    website: '',
+    instagram: '',
+    ratingAverage: 4.6,
+    ratingCount: 21,
+    status: 'PUBLISHED',
+    createdAt: new Date(Date.now() - 40 * 86400000).toISOString(),
+    createdByName: 'Açougue Brasil Danbury',
+    isFavorite: false,
+  },
 ];
 
 const findMockBusiness = (idOrSlug: string) =>
   MOCK_BUSINESSES.find((business) => business.id === idOrSlug || business.slug === idOrSlug) ?? MOCK_BUSINESSES[0];
 
-export function getMockBusinessesPage(): BusinessesPage {
-  const businesses: Business[] = MOCK_BUSINESSES.map((business) => ({
+export function getMockBusinessesPage(regionKey?: string | null): BusinessesPage {
+  const scoped = regionKey
+    ? MOCK_BUSINESSES.filter((business) => business.regionKey === regionKey)
+    : MOCK_BUSINESSES;
+
+  const businesses: Business[] = scoped.map((business) => ({
     id: business.id,
     slug: business.slug,
     name: business.name,

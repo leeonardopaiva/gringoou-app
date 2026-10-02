@@ -21,7 +21,7 @@ export async function getBusinessesPage({
   search?: string | null;
 }): Promise<BusinessesPage> {
   if (USE_MOCKS) {
-    return getMockBusinessesPage();
+    return getMockBusinessesPage(regionKey);
   }
 
   const viewerId = session?.user?.id;

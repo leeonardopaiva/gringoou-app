@@ -85,13 +85,57 @@ export const MOCK_EVENTS: MockEventRecord[] = [
     ratingCount: 0,
     createdByName: 'Comunidade Gringoou',
   },
+  {
+    id: 'mock-event-4',
+    slug: 'festa-junina-danbury',
+    title: 'Festa Junina da Comunidade',
+    venueName: 'Danbury Community Center',
+    category: 'Festa',
+    startsAt: new Date(Date.now() + 8 * 86400000).toISOString(),
+    locationLabel: 'Danbury, CT',
+    description: 'Quadrilha, comidas típicas e música ao vivo para toda a família.',
+    imageUrl: 'https://picsum.photos/seed/mock-event-4/600/400',
+    galleryUrls: [],
+    regionKey: 'danbury-ct',
+    city: 'Danbury',
+    state: 'CT',
+    isFavorite: false,
+    interestCount: 31,
+    ratingAverage: 0,
+    ratingCount: 0,
+    createdByName: 'Comunidade Gringoou',
+  },
+  {
+    id: 'mock-event-5',
+    slug: 'feira-de-empregos-danbury',
+    title: 'Feira de Empregos para Brasileiros',
+    venueName: 'Danbury Library',
+    category: 'Networking',
+    startsAt: new Date(Date.now() + 15 * 86400000).toISOString(),
+    locationLabel: 'Danbury, CT',
+    description: 'Empresas locais contratando, com apoio para currículo e entrevistas.',
+    imageUrl: 'https://picsum.photos/seed/mock-event-5/600/400',
+    galleryUrls: [],
+    regionKey: 'danbury-ct',
+    city: 'Danbury',
+    state: 'CT',
+    isFavorite: false,
+    interestCount: 19,
+    ratingAverage: 0,
+    ratingCount: 0,
+    createdByName: 'Comunidade Gringoou',
+  },
 ];
 
 const findMockEvent = (idOrSlug: string) =>
   MOCK_EVENTS.find((event) => event.id === idOrSlug || event.slug === idOrSlug) ?? MOCK_EVENTS[0];
 
-export function getMockEventsPage(): EventsPage {
-  const events: EventItem[] = MOCK_EVENTS.map((event) => ({
+export function getMockEventsPage(regionKey?: string | null): EventsPage {
+  const scoped = regionKey
+    ? MOCK_EVENTS.filter((event) => event.regionKey === regionKey)
+    : MOCK_EVENTS;
+
+  const events: EventItem[] = scoped.map((event) => ({
     id: event.id,
     slug: event.slug,
     title: event.title,

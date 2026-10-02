@@ -11,7 +11,7 @@ export type EventsPage = { events: EventItem[]; scope: 'local' | 'global' };
 
 export async function getEventsPage({ session, regionKey, category }: { session: Session | null; regionKey?: string | null; category?: string | null }): Promise<EventsPage> {
   if (USE_MOCKS) {
-    return getMockEventsPage();
+    return getMockEventsPage(regionKey);
   }
 
   const viewerId = session?.user?.id;

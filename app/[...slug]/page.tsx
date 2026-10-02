@@ -63,7 +63,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
 
   if (slug.length === 1 && slug[0] === 'vagas') {
     try {
-      initialJobsData = await getJobsPage();
+      initialJobsData = await getJobsPage(session?.user?.regionKey);
     } catch (error) {
       console.error('Failed to load initial Jobs on the server:', error);
     }

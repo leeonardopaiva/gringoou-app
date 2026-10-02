@@ -257,6 +257,7 @@ model Job {
   employmentType String
   locationLabel  String
   countryCode    String   @default("US")
+  regionKey      String?
   salary         String?
   contactUrl     String?
   imageUrl       String?
@@ -271,6 +272,7 @@ model Job {
   comments       JobComment[]
 
   @@index([isActive, createdAt])
+  @@index([isActive, regionKey, createdAt])
   @@index([createdById, createdAt])
   @@index([businessId, createdAt])
 }
@@ -281,6 +283,7 @@ model Housing {
   description   String   @db.Text
   propertyType  String
   locationLabel String
+  regionKey     String?
   price         String
   imageUrl      String?
   galleryUrls   String[] @default([])
@@ -293,6 +296,7 @@ model Housing {
   comments      HousingComment[]
 
   @@index([isActive, createdAt])
+  @@index([isActive, regionKey, createdAt])
   @@index([createdById, createdAt])
 }
 

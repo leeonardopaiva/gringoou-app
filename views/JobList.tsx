@@ -20,6 +20,7 @@ import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
+import RegionSelector from "@/components/RegionSelector";
 import type { JobsInitialData } from "@/lib/content-contracts";
 
 type Job = {
@@ -40,6 +41,7 @@ const emptyDraft = {
   employmentType: "Tempo integral",
   locationLabel: "",
   countryCode: "US",
+  regionKey: "",
   salary: "",
   contactUrl: "",
   businessId: "",
@@ -81,6 +83,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
+      if (user.regionKey) params.set("region", user.regionKey);
       if (employmentType) params.set("employmentType", employmentType);
       if (location) params.set("location", location);
       if (salary) params.set("salary", salary);
@@ -108,7 +111,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [employmentType, location, page, salary, showToast, initialData]);
+  }, [employmentType, location, page, salary, showToast, initialData, user.regionKey]);
 
   const createJob = async () => {
     setSaving(true);
@@ -148,9 +151,14 @@ export default function JobList({ user, initialData }: { user: User; initialData
         <Button
           size="sm"
           iconLeft={<Plus size={16} />}
-          onClick={() =>
-            canPublish ? setModalOpen(true) : setCompanyInviteOpen(true)
-          }
+          onClick={() => {
+            if (!canPublish) {
+              setCompanyInviteOpen(true);
+              return;
+            }
+            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
+            setModalOpen(true);
+          }}
         >
           Criar vaga
         </Button>
@@ -301,6 +309,12 @@ export default function JobList({ user, initialData }: { user: User; initialData
             onChange={(e) =>
               setDraft({ ...draft, locationLabel: e.target.value })
             }
+          />
+          <RegionSelector
+            value={draft.regionKey}
+            onChange={(region) => setDraft({ ...draft, regionKey: region.key })}
+            label="Região"
+            hint="A vaga será exibida para esta região."
           />
           <Select value={draft.countryCode} onChange={(event) => setDraft({ ...draft, countryCode: event.target.value })}>
             <option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option>

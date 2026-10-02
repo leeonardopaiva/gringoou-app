@@ -20,6 +20,7 @@ import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
+import RegionSelector from "@/components/RegionSelector";
 import PageHeader from "@/components/navigation/PageHeader";
 
 type Housing = {
@@ -37,13 +38,14 @@ const emptyDraft = {
   description: "",
   propertyType: "Apartamento",
   locationLabel: "",
+  regionKey: "",
   price: "",
   imageUrl: "",
   galleryUrls: [] as string[],
   contactUrl: "",
 };
 
-export default function HousingList({ user: _user }: { user: User }) {
+export default function HousingList({ user }: { user: User }) {
   const { showToast } = useToast();
   const [items, setItems] = useState<Housing[]>([]);
   const [propertyType, setPropertyType] = useState("");
@@ -65,6 +67,7 @@ export default function HousingList({ user: _user }: { user: User }) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), pageSize: "8" });
+      if (user.regionKey) params.set("region", user.regionKey);
       if (propertyType) params.set("propertyType", propertyType);
       if (location) params.set("location", location);
       if (price) params.set("price", price);
@@ -92,7 +95,7 @@ export default function HousingList({ user: _user }: { user: User }) {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [location, page, price, propertyType, showToast]);
+  }, [location, page, price, propertyType, showToast, user.regionKey]);
   const createHousing = async () => {
     setSaving(true);
     try {
@@ -123,7 +126,10 @@ export default function HousingList({ user: _user }: { user: User }) {
         <Button
           size="sm"
           iconLeft={<Plus size={16} />}
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
+            setModalOpen(true);
+          }}
         >
           Criar anúncio
         </Button>
@@ -235,6 +241,12 @@ export default function HousingList({ user: _user }: { user: User }) {
             placeholder="Pesquise cidade, rua ou endereço"
             value={draft.locationLabel}
             onChange={(locationLabel) => setDraft({ ...draft, locationLabel })}
+          />
+          <RegionSelector
+            value={draft.regionKey}
+            onChange={(region) => setDraft({ ...draft, regionKey: region.key })}
+            label="Região"
+            hint="O anúncio será exibido para esta região."
           />
           <Input
             placeholder="Preco"

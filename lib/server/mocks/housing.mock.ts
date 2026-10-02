@@ -10,6 +10,7 @@ type MockHousingRecord = {
   description: string;
   propertyType: string;
   locationLabel: string;
+  regionKey: string;
   price: string;
   contactUrl: string | null;
   imageUrl: string | null;
@@ -25,6 +26,7 @@ export const MOCK_HOUSING: MockHousingRecord[] = [
     description: 'Quarto mobiliado em casa compartilhada, 5 minutos a pé da estação. Contas de água e internet inclusas.',
     propertyType: 'Quarto',
     locationLabel: 'Somerville, MA',
+    regionKey: 'boston-ma',
     price: 'US$ 850/mês',
     contactUrl: 'https://wa.me/16175550111',
     imageUrl: 'https://picsum.photos/seed/mock-housing-1/600/400',
@@ -38,6 +40,7 @@ export const MOCK_HOUSING: MockHousingRecord[] = [
     description: 'Apartamento reformado, cozinha equipada, aceita animais de pequeno porte. Estacionamento incluso.',
     propertyType: 'Apartamento',
     locationLabel: 'Cambridge, MA',
+    regionKey: 'boston-ma',
     price: 'US$ 1,950/mês',
     contactUrl: 'https://wa.me/16175550112',
     imageUrl: 'https://picsum.photos/seed/mock-housing-2/600/400',
@@ -51,6 +54,7 @@ export const MOCK_HOUSING: MockHousingRecord[] = [
     description: 'Vaga em república com outros 3 brasileiros, contas divididas, perto do ponto de ônibus.',
     propertyType: 'Republica',
     locationLabel: 'Boston, MA',
+    regionKey: 'boston-ma',
     price: 'US$ 700/mês',
     contactUrl: null,
     imageUrl: null,
@@ -58,12 +62,41 @@ export const MOCK_HOUSING: MockHousingRecord[] = [
     createdByName: 'Thiago Alves',
     createdByUsername: 'thiago.alves',
   },
+  {
+    id: 'mock-housing-4',
+    title: 'Quarto mobiliado no centro de Danbury',
+    description: 'Quarto em casa compartilhada, perto do comércio e do transporte público.',
+    propertyType: 'Quarto',
+    locationLabel: 'Danbury, CT',
+    regionKey: 'danbury-ct',
+    price: 'US$ 800/mês',
+    contactUrl: 'https://wa.me/12035550114',
+    imageUrl: 'https://picsum.photos/seed/mock-housing-4/600/400',
+    galleryUrls: [],
+    createdByName: 'Juliana Prado',
+    createdByUsername: 'juliana.prado',
+  },
+  {
+    id: 'mock-housing-5',
+    title: 'Apartamento 2 quartos em Danbury',
+    description: 'Apartamento amplo, cozinha equipada e vaga de estacionamento inclusa.',
+    propertyType: 'Apartamento',
+    locationLabel: 'Danbury, CT',
+    regionKey: 'danbury-ct',
+    price: 'US$ 1,700/mês',
+    contactUrl: null,
+    imageUrl: null,
+    galleryUrls: [],
+    createdByName: 'Marcos Vieira',
+    createdByUsername: 'marcos.vieira',
+  },
 ];
 
 const findMockHousing = (id: string) => MOCK_HOUSING.find((item) => item.id === id) ?? MOCK_HOUSING[0];
 
-export function getMockHousingResponse(page: number, pageSize: number) {
-  const housing = MOCK_HOUSING.map(({ createdByName: _createdByName, createdByUsername: _createdByUsername, contactUrl: _contactUrl, ...item }) => item);
+export function getMockHousingResponse(page: number, pageSize: number, regionKey?: string | null) {
+  const scoped = regionKey ? MOCK_HOUSING.filter((item) => item.regionKey === regionKey) : MOCK_HOUSING;
+  const housing = scoped.map(({ createdByName: _createdByName, createdByUsername: _createdByUsername, regionKey: _regionKey, contactUrl: _contactUrl, ...item }) => item);
   return { housing, pagination: { page, pageSize, total: housing.length, totalPages: 1 } };
 }
 

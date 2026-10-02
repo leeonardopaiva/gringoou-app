@@ -12,6 +12,7 @@ type MockJobRecord = {
   employmentType: string;
   locationLabel: string;
   countryCode: string;
+  regionKey: string;
   salary: string | null;
   contactUrl: string | null;
   imageUrl: string | null;
@@ -29,6 +30,7 @@ export const MOCK_JOBS: MockJobRecord[] = [
     employmentType: 'Tempo integral',
     locationLabel: 'Boston, MA',
     countryCode: 'US',
+    regionKey: 'boston-ma',
     salary: '$18/hora',
     contactUrl: 'https://wa.me/16175550102',
     imageUrl: 'https://picsum.photos/seed/mock-job-1/600/400',
@@ -44,6 +46,7 @@ export const MOCK_JOBS: MockJobRecord[] = [
     employmentType: 'Freelancer',
     locationLabel: 'Cambridge, MA',
     countryCode: 'US',
+    regionKey: 'boston-ma',
     salary: '$25/hora',
     contactUrl: 'https://wa.me/16175550103',
     imageUrl: null,
@@ -59,6 +62,7 @@ export const MOCK_JOBS: MockJobRecord[] = [
     employmentType: 'Meio periodo',
     locationLabel: 'Somerville, MA',
     countryCode: 'US',
+    regionKey: 'boston-ma',
     salary: '$22/hora',
     contactUrl: null,
     imageUrl: null,
@@ -66,12 +70,45 @@ export const MOCK_JOBS: MockJobRecord[] = [
     createdByName: 'Sabor Brasil Mercado',
     createdByUsername: 'sabor.brasil',
   },
+  {
+    id: 'mock-job-4',
+    title: 'Atendente de loja',
+    company: 'Padaria Danbury',
+    description: 'Atendimento ao público em padaria brasileira, experiência desejável. Treinamento incluso.',
+    employmentType: 'Tempo integral',
+    locationLabel: 'Danbury, CT',
+    countryCode: 'US',
+    regionKey: 'danbury-ct',
+    salary: '$17/hora',
+    contactUrl: 'https://wa.me/12035550104',
+    imageUrl: null,
+    galleryUrls: [],
+    createdByName: 'Padaria Danbury',
+    createdByUsername: 'padaria.danbury',
+  },
+  {
+    id: 'mock-job-5',
+    title: 'Auxiliar de limpeza',
+    company: 'Clean Danbury',
+    description: 'Limpeza residencial e comercial na região de Danbury, horário flexível.',
+    employmentType: 'Freelancer',
+    locationLabel: 'Danbury, CT',
+    countryCode: 'US',
+    regionKey: 'danbury-ct',
+    salary: '$20/hora',
+    contactUrl: null,
+    imageUrl: null,
+    galleryUrls: [],
+    createdByName: 'Clean Danbury',
+    createdByUsername: 'clean.danbury',
+  },
 ];
 
 const findMockJob = (id: string) => MOCK_JOBS.find((job) => job.id === id) ?? MOCK_JOBS[0];
 
-export function getMockJobsResponse(page: number, pageSize: number) {
-  const jobs = MOCK_JOBS.map(({ createdByName: _createdByName, createdByUsername: _createdByUsername, countryCode: _countryCode, contactUrl: _contactUrl, ...job }) => job);
+export function getMockJobsResponse(page: number, pageSize: number, regionKey?: string | null) {
+  const scoped = regionKey ? MOCK_JOBS.filter((job) => job.regionKey === regionKey) : MOCK_JOBS;
+  const jobs = scoped.map(({ createdByName: _createdByName, createdByUsername: _createdByUsername, countryCode: _countryCode, regionKey: _regionKey, contactUrl: _contactUrl, ...job }) => job);
   return { jobs, pagination: { page, pageSize, total: jobs.length, totalPages: 1 } };
 }
 

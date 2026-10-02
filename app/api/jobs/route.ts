@@ -11,13 +11,15 @@ export async function GET(request: Request) {
   const location = searchParams.get('location')?.trim();
   const salary = searchParams.get('salary')?.trim();
   const country = searchParams.get('country')?.trim().toUpperCase();
+  const region = searchParams.get('region')?.trim();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
   if (USE_MOCKS) {
-    return NextResponse.json(getMockJobsResponse(page, pageSize));
+    return NextResponse.json(getMockJobsResponse(page, pageSize, region));
   }
   const where = {
     isActive: true,
+    ...(region ? { regionKey: region } : {}),
     ...(employmentType ? { employmentType: { equals: employmentType, mode: 'insensitive' as const } } : {}),
     ...(location ? { locationLabel: { contains: location, mode: 'insensitive' as const } } : {}),
     ...(salary ? { salary: { contains: salary, mode: 'insensitive' as const } } : {}),
@@ -50,17 +52,19 @@ export async function POST(request: Request) {
           id: parsed.data.businessId,
           OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }],
         },
-        select: { id: true, name: true },
+        select: { id: true, name: true, regionKey: true },
       })
     : null;
   if (parsed.data.businessId && !business) {
     return NextResponse.json({ error: 'Selecione um negócio que você administra.' }, { status: 403 });
   }
+  const regionKey = business?.regionKey ?? parsed.data.regionKey ?? session.user.regionKey ?? null;
   const job = await prisma.job.create({
     data: {
       ...parsed.data,
       company: business?.name ?? parsed.data.company,
       businessId: business?.id,
+      regionKey,
       createdById: session.user.id,
     },
   });

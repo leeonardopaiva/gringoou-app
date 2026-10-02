@@ -10,13 +10,15 @@ export async function GET(request: Request) {
   const propertyType = searchParams.get('propertyType')?.trim();
   const location = searchParams.get('location')?.trim();
   const price = searchParams.get('price')?.trim();
+  const region = searchParams.get('region')?.trim();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
   if (USE_MOCKS) {
-    return NextResponse.json(getMockHousingResponse(page, pageSize));
+    return NextResponse.json(getMockHousingResponse(page, pageSize, region));
   }
   const where = {
     isActive: true,
+    ...(region ? { regionKey: region } : {}),
     ...(propertyType ? { propertyType: { equals: propertyType, mode: 'insensitive' as const } } : {}),
     ...(location ? { locationLabel: { contains: location, mode: 'insensitive' as const } } : {}),
     ...(price ? { price: { contains: price, mode: 'insensitive' as const } } : {}),
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
   if (!session.user.onboardingCompleted) return NextResponse.json({ error: 'Complete seu perfil antes de publicar.' }, { status: 403 });
   const parsed = housingSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
-  const housing = await prisma.housing.create({ data: { ...parsed.data, createdById: session.user.id } });
+  const regionKey = parsed.data.regionKey ?? session.user.regionKey ?? null;
+  const housing = await prisma.housing.create({ data: { ...parsed.data, regionKey, createdById: session.user.id } });
   return NextResponse.json({ housing }, { status: 201 });
 }
