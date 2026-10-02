@@ -1,4 +1,4 @@
-import { EventStatus, UserRole, VisibilityScope } from '@prisma/client';
+import { EventStatus, VisibilityScope } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -6,13 +6,51 @@ import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/
 import { findRegionByKey } from '@/lib/region-store';
 import { slugify, uniqueSlug } from '@/lib/slug';
 import { eventSchema } from '@/lib/validators';
-import { getEventsPage } from '@/lib/server/events';
+import { eventsUseCases } from '@/lib/server/events-usecases';
 
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
+  const viewerId = session?.user?.id ?? '';
+  const isAdmin = session?.user?.role === 'ADMIN';
   const { searchParams } = new URL(request.url);
   const viewerRegionKey = searchParams.get('region') ?? session?.user?.regionKey;
-  return NextResponse.json(await getEventsPage({ session, regionKey: viewerRegionKey, category: searchParams.get('category') || undefined }));
+
+  const result = await eventsUseCases.listEvents({
+    viewerId,
+    isAdmin,
+    regionKey: viewerRegionKey,
+    category: searchParams.get('category') || undefined,
+  });
+
+  // Mapeia para o formato esperado pelo client (EventItem[])
+  const events = result.events.map((event) => ({
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    venueName: event.venueName,
+    category: event.category,
+    startsAt: event.startsAt,
+    locationLabel: event.locationLabel,
+    description: event.description,
+    endsAt: event.endsAt ?? null,
+    regionKey: event.regionKey,
+    externalUrl: event.externalUrl ?? null,
+    imageUrl: event.imageUrl ?? null,
+    galleryUrls: event.galleryUrls,
+    status: event.status,
+    isFavorite: event.isFavorite,
+    canEdit: event.canEdit,
+    isPendingReview: event.isPendingReview,
+    publicPath: event.publicPath,
+    ratingAverage: event.ratingAverage,
+    ratingCount: event.ratingCount,
+    interestCount: event.interestCount,
+    interestPreview: event.interestPreview,
+    canViewInterestedUsers: event.canViewInterestedUsers,
+    canUnlockInterestedUsers: event.canUnlockInterestedUsers,
+  }));
+
+  return NextResponse.json({ events, scope: result.scope });
 }
 
 export async function POST(request: Request) {

@@ -7,7 +7,7 @@ import Layout from './components/Layout';
 import AppContent from './components/app/AppContent';
 import AuthWorkspace from './components/app/AuthWorkspace';
 import PublicEntry from './components/app/PublicEntry';
-import { DEFAULT_AVATAR_URL } from './lib/avatar';
+import { buildCurrentUser, mapUserRole } from './lib/build-current-user';
 import { parseAppRoute } from './lib/app-route';
 import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
 import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from './lib/content-contracts';
@@ -28,44 +28,6 @@ const toProfessionalIdentity = (business: ProfessionalProfileBusiness): Professi
   locationLabel: business.locationLabel,
   regionKey: business.regionKey,
   publicPath: business.publicPath,
-});
-const mapUserRole = (role?: string | null): UserRole => {
-  switch (role) {
-    case UserRole.ADMIN:
-      return UserRole.ADMIN;
-    case UserRole.MODERATOR:
-      return UserRole.MODERATOR;
-    case UserRole.BUSINESS_OWNER:
-      return UserRole.BUSINESS_OWNER;
-    case UserRole.COMPANY:
-      return UserRole.COMPANY;
-    default:
-      return UserRole.USER;
-  }
-};
-
-const buildCurrentUser = (sessionUser: {
-  id: string;
-  name?: string | null;
-  username?: string | null;
-  email?: string | null;
-  image?: string | null;
-  phone?: string | null;
-  locationLabel?: string | null;
-  regionKey?: string | null;
-  role?: string | null;
-  recruiterVerified?: boolean;
-}): User => ({
-  id: sessionUser.id,
-  name: sessionUser.name || 'Comunidade Gringoou',
-  username: sessionUser.username,
-  role: mapUserRole(sessionUser.role),
-  avatar: sessionUser.image || DEFAULT_AVATAR_URL,
-  location: sessionUser.locationLabel || 'Defina sua regiao',
-  regionKey: sessionUser.regionKey,
-  email: sessionUser.email,
-  phone: sessionUser.phone,
-  recruiterVerified: Boolean(sessionUser.recruiterVerified),
 });
 
 const App: React.FC<{

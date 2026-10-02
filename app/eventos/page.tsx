@@ -1,17 +1,33 @@
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import App from '../../App';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
-import { getEventsPage } from '@/lib/server/events';
+import { eventsUseCases } from '@/lib/server/events-usecases';
+import type { EventsInitialData } from '@/lib/content-contracts';
 
-export default async function EventsPage() {
+export const metadata: Metadata = {
+  title: 'Eventos — Gringoou',
+  description:
+    'Descubra eventos da comunidade brasileira no exterior. Feiras, encontros, torneios, workshops e muito mais perto de você.',
+};
+
+export default async function EventsRoute() {
   const session = await getCachedServerAuthSession();
 
   if (!session?.user?.id) {
-    return <App />;
+    redirect('/login');
   }
 
-  const initialEventsData = session?.user?.regionKey
-    ? await getEventsPage({ session, regionKey: session.user.regionKey })
-        .then((page) => ({ ...page, regionKey: session.user.regionKey! }))
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+  const initialEventsData: EventsInitialData | undefined = session?.user?.regionKey
+    ? await eventsUseCases
+        .listEvents({
+          viewerId: session.user.id,
+          isAdmin,
+          regionKey: session.user.regionKey,
+        })
+        .then((page) => ({ events: page.events, scope: page.scope, regionKey: session.user.regionKey! }))
         .catch(() => undefined)
     : undefined;
 

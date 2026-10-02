@@ -1,0 +1,1 @@
+export { makePrismaEventRepository } from './prisma-event.repository';

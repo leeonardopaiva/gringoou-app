@@ -1,10 +1,10 @@
-import { EventStatus, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
 import { eventUpdateSchema } from '@/lib/validators';
-import { isVisibleForRegion } from '@/lib/visibility';
+import { eventsUseCases } from '@/lib/server/events-usecases';
 import { getMockEventDetail, USE_MOCKS } from '@/lib/server/mocks';
 
 type RouteContext = {
@@ -21,108 +21,20 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const session = await getServerAuthSession();
+  const viewerId = session?.user?.id ?? null;
+  const isAdmin = session?.user?.role === 'ADMIN';
 
-  const event = await prisma.event.findFirst({
-    where: {
-      OR: [{ id: eventId }, { slug: eventId }],
-    },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      category: true,
-      description: true,
-      venueName: true,
-      startsAt: true,
-      endsAt: true,
-      locationLabel: true,
-      regionKey: true,
-      visibilityScope: true,
-      visibilityRegionKey: true,
-      externalUrl: true,
-      imageUrl: true,
-      galleryUrls: true,
-      ratingAverage: true,
-      ratingCount: true,
-      status: true,
-      ownershipVerifiedAt: true,
-      createdById: true,
-      createdBy: {
-        select: {
-          name: true,
-        },
-      },
-      favorites: {
-        where: { userId: session?.user?.id || '__no-user__' },
-        select: { id: true },
-        take: 1,
-      },
-      ratings: {
-        where: { userId: session?.user?.id || '__no-user__' },
-        select: { stars: true },
-        take: 1,
-      },
-    },
+  const event = await eventsUseCases.getEvent({
+    idOrSlug: eventId,
+    viewerId,
+    isAdmin,
   });
 
   if (!event) {
     return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
   }
 
-  const isBusinessMember = session?.user?.id
-    ? (
-        await prisma.$queryRaw<Array<{ id: string }>>(
-          Prisma.sql`
-            SELECT bm."id"
-            FROM "public"."Event" e
-            INNER JOIN "public"."BusinessMember" bm ON bm."businessId" = e."businessId"
-            WHERE e."id" = ${event.id}
-              AND bm."userId" = ${session.user.id}
-            LIMIT 1
-          `,
-        )
-      ).length > 0
-    : false;
-  const canView =
-    (event.status === EventStatus.PUBLISHED &&
-      isVisibleForRegion(
-        {
-          regionKey: event.regionKey,
-          visibilityScope: event.visibilityScope,
-          visibilityRegionKey: event.visibilityRegionKey,
-        },
-        session?.user?.regionKey,
-    )) ||
-    session?.user?.role === 'ADMIN' ||
-    session?.user?.id === event.createdById ||
-    isBusinessMember;
-
-  if (!canView) {
-    return NextResponse.json({ error: 'Evento nao disponivel.' }, { status: 404 });
-  }
-
-  const region = await findRegionByKey(event.regionKey);
-  const canEdit = session?.user?.role === 'ADMIN' || session?.user?.id === event.createdById || isBusinessMember;
-  const canRate =
-    Boolean(session?.user?.id) &&
-    session?.user?.role !== 'ADMIN' &&
-    session?.user?.id !== event.createdById &&
-    !isBusinessMember;
-
-  return NextResponse.json({
-    event: {
-      ...event,
-      favorites: undefined,
-      ratings: undefined,
-      city: region?.city ?? null,
-      state: region?.state ?? null,
-      canEdit,
-      canRate,
-      isFavorite: event.favorites.length > 0,
-      viewerRating: event.ratings[0]?.stars ?? null,
-      publicPath: `/eventos/${event.slug}`,
-    },
-  });
+  return NextResponse.json({ event });
 }
 
 export async function PUT(request: Request, context: RouteContext) {

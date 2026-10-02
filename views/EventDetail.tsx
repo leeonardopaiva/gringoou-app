@@ -20,6 +20,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { User } from '../types';
+import type { EventDetailItem } from '../domain/events/entities/event.entity';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
@@ -30,6 +31,7 @@ import RegionSelector from '../components/RegionSelector';
 interface EventDetailProps {
   eventId?: string;
   user: User;
+  initialEvent?: EventDetailItem | null;
 }
 
 type EventDetailState = {
@@ -105,10 +107,39 @@ type EventDetailsDraft = Pick<EventDetailState, 'title' | 'description' | 'venue
   endsAt: string;
 };
 
-const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
+const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }) => {
   const { showToast } = useToast();
-  const [event, setEvent] = useState<EventDetailState>(defaultEvent);
-  const [loading, setLoading] = useState(true);
+  const initialState: EventDetailState = initialEvent
+    ? {
+        id: initialEvent.id,
+        slug: initialEvent.slug,
+        title: initialEvent.title,
+        category: initialEvent.category || 'Outros',
+        description: initialEvent.description || defaultEvent.description,
+        venueName: initialEvent.venueName,
+        startsAt: initialEvent.startsAt,
+        endsAt: initialEvent.endsAt || null,
+        locationLabel: initialEvent.locationLabel || '',
+        regionKey: initialEvent.regionKey || '',
+        city: initialEvent.city || '',
+        state: initialEvent.state || '',
+        externalUrl: initialEvent.externalUrl || '',
+        imageUrl: initialEvent.imageUrl || defaultEvent.imageUrl,
+        galleryUrls: Array.isArray(initialEvent.galleryUrls) ? initialEvent.galleryUrls : [],
+        ratingAverage: Number(initialEvent.ratingAverage ?? 0),
+        ratingCount: Number(initialEvent.ratingCount ?? 0),
+        viewerRating: initialEvent.viewerRating ?? null,
+        isFavorite: Boolean(initialEvent.isFavorite),
+        canRate: Boolean(initialEvent.canRate),
+        createdByName: initialEvent.createdByName || 'Comunidade Gringoou',
+        canEdit: Boolean(initialEvent.canEdit),
+        publicPath: initialEvent.publicPath || `/eventos/${initialEvent.slug || initialEvent.id}`,
+        status: initialEvent.status || 'PUBLISHED',
+        ownershipVerifiedAt: initialEvent.ownershipVerifiedAt || null,
+      }
+    : defaultEvent;
+  const [event, setEvent] = useState<EventDetailState>(initialState);
+  const [loading, setLoading] = useState(!initialEvent);
   const [editingMedia, setEditingMedia] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
   const [savingDetails, setSavingDetails] = useState(false);
@@ -121,6 +152,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Se initialEvent foi fornecido, não faz fetch inicial — monta direto
+    if (initialEvent) {
+      return;
+    }
+
     let ignore = false;
 
     const fetchEvent = async () => {
@@ -161,7 +197,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
             viewerRating: payload.event.viewerRating ?? null,
             isFavorite: Boolean(payload.event.isFavorite),
             canRate: Boolean(payload.event.canRate),
-            createdByName: payload.event.createdBy?.name || 'Comunidade Gringoou',
+            createdByName: payload.event.createdByName || payload.event.createdBy?.name || 'Comunidade Gringoou',
             canEdit: Boolean(payload.event.canEdit),
             publicPath: payload.event.publicPath || `/eventos/${payload.event.slug || payload.event.id}`,
             status: payload.event.status || 'PUBLISHED',
@@ -189,7 +225,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user }) => {
     return () => {
       ignore = true;
     };
-  }, [eventId, showToast]);
+  }, [eventId, showToast, initialEvent]);
 
   const publicUrl =
     typeof window === 'undefined'
