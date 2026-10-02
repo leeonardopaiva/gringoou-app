@@ -43,7 +43,11 @@ function mapKnownBusinesses(businesses: NonNullable<CommunityAccountMenuProps['k
   });
 }
 
-export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }: CommunityAccountMenuProps) {
+// Stable reference: an inline `= []` default creates a new array on every render,
+// which recreates `loadBusinesses` and re-triggers its effects in a loop.
+const NO_KNOWN_BUSINESSES: NonNullable<CommunityAccountMenuProps['knownBusinesses']> = [];
+
+export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_KNOWN_BUSINESSES }: CommunityAccountMenuProps) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -119,15 +123,6 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = [] }
   useEffect(() => {
     if (open) void loadBusinesses();
   }, [loadBusinesses, open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
 
   async function openBusiness(accountId: string) {
     await fetch('/api/ads/accounts/select', {
