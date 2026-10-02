@@ -105,10 +105,10 @@ export default function JobDetail({ jobId }: { jobId: string }) {
   };
 
   if (loading) {
-    return <ContentColumn className="space-y-4 px-5 py-6"><div className="h-64 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
+    return <ContentColumn className="space-y-4 pb-6"><div className="h-64 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
   }
   if (!job) {
-    return <ContentColumn className="px-5 py-10 text-center text-muted-foreground">Vaga não encontrada.</ContentColumn>;
+    return <ContentColumn className="pb-10 text-center text-muted-foreground">Vaga não encontrada.</ContentColumn>;
   }
   const contactIsUrl = Boolean(job.contactUrl && /^https?:\/\//i.test(job.contactUrl));
   const contactHref = job.contactUrl

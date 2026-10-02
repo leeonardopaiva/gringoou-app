@@ -118,7 +118,7 @@ export default function HousingList({ user: _user }: { user: User }) {
     }
   };
   return (
-    <ContentColumn className="animate-in space-y-5 px-5 pb-24 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-5 pb-24 fade-in duration-500">
       <PageHeader title="Moradia" action={
         <Button
           size="sm"

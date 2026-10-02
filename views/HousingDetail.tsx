@@ -42,8 +42,8 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
     finally { setSaving(false); }
   };
 
-  if (loading) return <ContentColumn className="space-y-4 px-5 py-6"><div className="h-72 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
-  if (!item) return <ContentColumn className="px-5 py-10 text-center text-muted-foreground">Moradia não encontrada.</ContentColumn>;
+  if (loading) return <ContentColumn className="space-y-4 pb-6"><div className="h-72 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
+  if (!item) return <ContentColumn className="pb-10 text-center text-muted-foreground">Moradia não encontrada.</ContentColumn>;
   const contactIsUrl = Boolean(item.contactUrl && /^https?:\/\//i.test(item.contactUrl));
   const contactHref = item.contactUrl ? (contactIsUrl ? item.contactUrl : `tel:${item.contactUrl.replace(/\D/g, '')}`) : '';
   const amount = Number(item.price.replace(/[^0-9.,]/g, '').replace(',', '.'));

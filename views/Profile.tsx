@@ -510,7 +510,7 @@ const Profile: React.FC<{
 
   if (loading) {
     return (
-      <ContentColumn className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
+      <ContentColumn className="animate-in space-y-5 pb-24 fade-in duration-500">
         <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
         <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
         <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
@@ -519,7 +519,7 @@ const Profile: React.FC<{
   }
 
   return (
-    <ContentColumn className="animate-in space-y-5 px-5 pb-24 pt-6 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-5 pb-24 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
           {profile.coverImageUrl ? (

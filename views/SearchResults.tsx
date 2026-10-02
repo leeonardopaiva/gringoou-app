@@ -162,7 +162,7 @@ const SearchResults: React.FC = () => {
   const hasCriteria = Boolean(params.get('browse') === '1' || queryFromUrl || params.get('region') !== null || params.get('country') || params.get('city') || params.get('businessType') || params.get('propertyType') || params.get('dateScope'));
 
   return (
-    <ContentColumn className="animate-in space-y-6 px-5 py-4 pb-24 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-6 pb-24 fade-in duration-500">
       <header><h1 className="text-h2 font-bold text-foreground">Busca</h1><p className="mt-1 text-sm text-slate-500">Encontre pessoas, grupos, negócios, eventos, vagas e conversas.</p></header>
       <div className="flex flex-wrap gap-2">
         <button ref={filtersButtonRef} type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>

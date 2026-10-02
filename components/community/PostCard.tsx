@@ -236,7 +236,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
 
       {imageUrl ? (
         <>
-          <button type="button" onClick={() => setImageOpen(true)} className="-mx-5 block w-[calc(100%+2.5rem)] overflow-hidden bg-bg" aria-label="Ampliar imagem da publicação">
+          <button type="button" onClick={() => setImageOpen(true)} className="-mx-4 block w-[calc(100%+2rem)] overflow-hidden bg-bg md:-mx-6 md:w-[calc(100%+3rem)]" aria-label="Ampliar imagem da publicação">
             <FeedCard.Media src={imageUrl} alt="Imagem da publicação" className="aspect-[4/3] rounded-none" />
           </button>
           <ImageLightbox open={imageOpen} onClose={() => setImageOpen(false)} src={imageUrl} alt="Imagem ampliada da publicação" />

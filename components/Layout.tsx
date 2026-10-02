@@ -337,6 +337,24 @@ const Layout: React.FC<LayoutWithUserProps> = ({
     }
   }, [pathname, searchParams]);
 
+  // `authGrace=1` is a transient marker added by the login flow (see App.tsx)
+  // so the middleware lets the first post-OAuth request through before the
+  // session cookie is readable. Once the authenticated shell is mounted the
+  // marker has served its purpose, so we strip it from the URL without adding
+  // a new history entry.
+  React.useEffect(() => {
+    if (!searchParams?.get('authGrace')) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('authGrace');
+    const query = params.toString();
+    const nextUrl = `${pathname}${query ? `?${query}` : ''}`;
+    // Update the address bar synchronously so the marker disappears even before
+    // the App Router reconciles, then keep the router in sync. Neither call
+    // adds a new history entry.
+    window.history.replaceState(null, '', nextUrl);
+    router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
@@ -426,7 +444,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
           <header className="relative border-b border-border/70">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
-            <div className="mx-auto flex w-full max-w-[600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:flex-nowrap md:gap-y-2 md:px-5 md:py-4">
+            <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,600px)_minmax(0,1fr)] md:items-center md:gap-y-2 md:px-6 md:py-4">
               <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">
                 <button
                   type="button"
@@ -441,7 +459,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </span>
               </div>
 
-              <div className="order-3 flex w-full items-center gap-2 md:order-none md:mr-auto md:max-w-3xl">
+              <div className="order-3 flex w-full items-center gap-2 md:order-none md:col-start-2 md:w-auto">
                 <div className="min-w-0 flex-1">
                   <UnifiedSearchInput
                     value={headerSearch}
@@ -458,7 +476,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     onVoiceError={(message) => showToast(message, 'error')}
                     animatedTerms={['Negócios', 'Eventos', 'Vagas']}
                     animatedIndex={searchTermIndex}
-                    className="h-14 shadow-none"
+                    className="h-11 shadow-none"
                   />
                 </div>
                 <button
@@ -466,20 +484,20 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="hidden h-14 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
+                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
                   <span className="truncate">{shortRegionLabel}</span>
                 </button>
               </div>
 
-              <div className="flex h-14 items-center gap-1.5 sm:gap-2">
+              <div className="flex h-10 items-center gap-1.5 sm:gap-2 md:col-start-3 md:justify-self-end">
                 <button
                   type="button"
                   onClick={openRegionSelector}
                   aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
                 </button>
@@ -493,8 +511,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             </div>
           </header>
 
-          <main className="w-full">
-            <div className="w-full px-0 pt-4 sm:pt-0 md:px-6 lg:px-8 xl:px-10 2xl:px-12">{children}</div>
+          <main className="mx-auto w-full max-w-[1120px] px-4 pt-4 md:px-6 md:pt-6">
+            {children}
           </main>
 
           <SuggestionButton />

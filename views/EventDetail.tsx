@@ -427,7 +427,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   if (loading) {
     return (
-      <ContentColumn className="animate-in space-y-5 px-5 py-6 fade-in duration-500">
+      <ContentColumn className="animate-in space-y-5 pb-6 fade-in duration-500">
         <div className="h-64 animate-pulse rounded-[28px] bg-slate-100" />
         <div className="space-y-3">
           <div className="h-8 w-2/3 animate-pulse rounded-full bg-slate-100" />

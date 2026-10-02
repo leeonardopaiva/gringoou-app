@@ -851,7 +851,7 @@ const Community: React.FC<{
   };
 
   return (
-    <ContentColumn className="animate-in space-y-3 px-5 pb-20 pt-4 fade-in duration-500">
+    <ContentColumn className="animate-in space-y-3 pb-20 fade-in duration-500">
       <header className="flex items-center gap-2 pb-1">
         <Link href="/inicio" aria-label="Voltar para a home" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100">
           <ArrowLeft size={19} />

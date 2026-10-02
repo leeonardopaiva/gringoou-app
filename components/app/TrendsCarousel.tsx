@@ -55,7 +55,7 @@ export const TrendsCarousel: React.FC<{ items: TrendItem[]; className?: string }
             : nearest, 0);
         setActiveIndex(nearestIndex);
       }}
-      className="scrollbar-hide -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1"
+      className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 md:-mx-6 md:px-6"
     >
       {items.map(({ href, category, title, description, icon: Icon, imageUrl }) => (
         <Link

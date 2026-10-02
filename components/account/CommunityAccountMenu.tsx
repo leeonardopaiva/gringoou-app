@@ -149,8 +149,8 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
 
   return (
     <div ref={rootRef} className="relative">
-      <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-14 items-center gap-1 rounded-full p-0 transition hover:bg-slate-100">
-        <Avatar src={user.avatar} name={user.name} size="md" />
+      <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-10 items-center gap-1 rounded-full p-0 transition hover:bg-slate-100">
+        <Avatar src={user.avatar} name={user.name} size="sm" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>
       <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[310px] overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-950/10">

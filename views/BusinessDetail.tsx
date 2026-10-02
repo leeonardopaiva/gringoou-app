@@ -392,7 +392,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   if (loading) {
     return (
-      <ContentColumn className="animate-in space-y-5 px-5 py-6 fade-in duration-500">
+      <ContentColumn className="animate-in space-y-5 pb-6 fade-in duration-500">
         <div className="h-64 animate-pulse rounded-[28px] bg-slate-100" />
         <div className="space-y-3">
           <div className="h-8 w-2/3 animate-pulse rounded-full bg-slate-100" />
@@ -405,7 +405,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   if (managementMode && !business.canEdit) {
     return (
-      <ContentColumn className="px-5 py-8">
+      <ContentColumn className="pb-8">
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-6 text-center">
           <h1 className="text-xl font-bold text-red-700">Acesso não autorizado</h1>
           <p className="mt-2 text-sm text-red-600">Somente proprietários e administradores podem gerenciar esta página.</p>
