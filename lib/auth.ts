@@ -17,6 +17,24 @@ import { isDevAuthEnabled } from '@/lib/dev-magic-links';
 import { USE_MOCKS } from '@/lib/server/mocks/config';
 import { getMockDevUser } from '@/lib/server/mocks/profiles.mock';
 
+// On Vercel, a stale localhost NEXTAUTH_URL (often copied from the local .env)
+// makes NextAuth build an unreachable OAuth redirect_uri and the callback fails
+// with OAuthCallback. Derive the public URL from the deployment when the
+// configured one still points at localhost.
+if (
+  process.env.NODE_ENV === 'production' &&
+  process.env.NEXTAUTH_URL &&
+  /localhost|127\.0\.0\.1/i.test(process.env.NEXTAUTH_URL)
+) {
+  const deploymentHost =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//i, '');
+  if (deploymentHost) {
+    process.env.NEXTAUTH_URL = `https://${deploymentHost.replace(/\/$/, '')}`;
+  }
+}
+
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const passwordAuthEnabled = process.env.NEXT_PUBLIC_PASSWORD_AUTH_ENABLED !== 'false';
@@ -271,7 +289,12 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (user.id && isConfiguredAdminEmail(user.email)) {
-        await syncAdminRole(user.id, user.email);
+        // Admin role sync is a convenience step; never let it break sign-in.
+        try {
+          await syncAdminRole(user.id, user.email);
+        } catch (error) {
+          console.error('[auth] syncAdminRole failed during signIn:', error);
+        }
       }
 
       return true;

@@ -2,7 +2,11 @@ import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const CANONICAL_HOST = 'gringoou.com';
-const REDIRECT_HOSTS = new Set(['emigrei.com', 'www.emigrei.com']);
+// Hosts redirected to the canonical domain. Keeping the OAuth flow on a single
+// host is required: the `state` cookie is set on the host that starts the
+// sign-in, so a www/non-www mismatch makes the callback fail with
+// "State cookie was missing".
+const REDIRECT_HOSTS = new Set(['emigrei.com', 'www.emigrei.com', 'www.gringoou.com']);
 const PUBLIC_ASSET_PREFIXES = [
   '/_next/',
   '/assets/',
