@@ -1,5 +1,10 @@
 import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
+import {
+  PRE_LAUNCH_COOKIE_NAME,
+  isPreLaunchGateEnabled,
+  verifyPreLaunchToken,
+} from '@/lib/pre-launch-gate';
 
 const CANONICAL_HOST = 'gringoou.com';
 // Hosts redirected to the canonical domain. Keeping the OAuth flow on a single
@@ -32,6 +37,28 @@ const PUBLIC_AUTH_PATHS = [
   '/api/dev/magic-link',
   '/api/dev/email-preview',
   '/api/dev/magic-link',
+  // Pre-launch access gate: the gate page and its validation endpoint must stay
+  // reachable without authentication (and without the gate cookie itself).
+  '/pre-launch',
+  '/api/pre-launch',
+];
+
+// Paths that stay reachable while the pre-launch gate is active. Everything
+// else (including /login) requires a valid gate cookie first. Technical routes
+// required by NextAuth/OAuth, static assets and error pages are always exempt
+// so the gate can never break the sign-in flow or cause a redirect loop.
+const PRE_LAUNCH_PUBLIC_PATHS = [
+  '/landing',
+  '/pre-launch',
+  '/api/pre-launch',
+  '/api/auth',
+  '/api/webhooks/stripe',
+  '/api/health',
+  '/maintenance',
+  '/access-blocked',
+  '/styleguide',
+  '/api/dev/',
+  ...PUBLIC_ASSET_PREFIXES,
 ];
 
 const isTruthyEnv = (value?: string | null) =>
@@ -42,6 +69,30 @@ const isPublicPath = (pathname: string) =>
   pathname === '/api/webhooks/stripe' ||
   PUBLIC_ASSET_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   PUBLIC_AUTH_PATHS.some((prefix) => pathname.startsWith(prefix));
+
+const isPreLaunchPublicPath = (pathname: string) =>
+  pathname === '/' || PRE_LAUNCH_PUBLIC_PATHS.some((prefix) => pathname.startsWith(prefix));
+
+const shouldApplyPreLaunchGate = (pathname: string) => !isPreLaunchPublicPath(pathname);
+
+const buildPreLaunchResponse = (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.json({ error: 'Acesso restrito.' }, { status: 403 });
+  }
+
+  const url = request.nextUrl.clone();
+  url.pathname = '/pre-launch';
+  url.search = '';
+
+  const next = `${pathname}${request.nextUrl.search}`;
+  if (next && next !== '/pre-launch') {
+    url.searchParams.set('next', next);
+  }
+
+  return NextResponse.redirect(url, 307);
+};
 
 const buildMaintenanceResponse = (request: NextRequest) => {
   const pathname = request.nextUrl.pathname;
@@ -96,6 +147,15 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();
 
   if (!host || !REDIRECT_HOSTS.has(host)) {
+    if (isPreLaunchGateEnabled() && shouldApplyPreLaunchGate(request.nextUrl.pathname)) {
+      const preLaunchToken = request.cookies.get(PRE_LAUNCH_COOKIE_NAME)?.value;
+      const hasPreLaunchAccess = await verifyPreLaunchToken(preLaunchToken);
+
+      if (!hasPreLaunchAccess) {
+        return buildPreLaunchResponse(request);
+      }
+    }
+
     if (!isPublicPath(request.nextUrl.pathname)) {
       const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
       const isApiRequest = request.nextUrl.pathname.startsWith('/api/');
