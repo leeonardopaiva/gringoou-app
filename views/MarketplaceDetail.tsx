@@ -4,8 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Heart, MapPin, Share2, ShoppingBag, Trash2, User as UserIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, Share2, ShoppingBag, Trash2, User as UserIcon, X } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { MarketplaceCard, formatPrice, formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -23,11 +24,6 @@ const CONDITION_LABELS: Record<string, string> = {
   GOOD: 'Bom',
   FAIR: 'Regular',
   POOR: 'Ruim',
-};
-
-const formatPrice = (priceCents: number | null, isFree: boolean) => {
-  if (isFree || priceCents == null || priceCents === 0) return 'Grátis';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceCents / 100);
 };
 
 type MarketplaceDetailProps = {
@@ -50,6 +46,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const gallery = item ? [item.imageUrl, ...item.galleryUrls].filter((url): url is string => Boolean(url)) : [];
   const currentImage = gallery[activeImage] ?? null;
@@ -110,6 +107,22 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       ignore = true;
     };
   }, [activeRegionKey, item]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLightboxOpen(false);
+      if (event.key === 'ArrowLeft') setActiveImage((current) => (current - 1 + gallery.length) % gallery.length);
+      if (event.key === 'ArrowRight') setActiveImage((current) => (current + 1) % gallery.length);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [gallery.length, lightboxOpen]);
 
   const handleToggleFavorite = async () => {
     if (!item) return;
@@ -185,12 +198,20 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   if (loading) {
     return (
-      <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+      <ContentColumn size="wide" className="px-5 pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
-        <div className="mt-4 space-y-4">
-          <Skeleton className="aspect-[4/3] w-full" />
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-4 w-3/4" />
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-4">
+            <Skeleton className="aspect-[4/3] w-full rounded-2xl sm:aspect-[16/10]" />
+            <Skeleton className="h-4 w-1/2 rounded-full" />
+            <Skeleton className="h-4 w-3/4 rounded-full" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-1/3 rounded-full" />
+            <Skeleton className="h-4 w-full rounded-full" />
+            <Skeleton className="h-4 w-5/6 rounded-full" />
+            <Skeleton className="h-11 w-full rounded-full" />
+          </div>
         </div>
       </ContentColumn>
     );
@@ -198,7 +219,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   if (error || !item) {
     return (
-      <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+      <ContentColumn size="wide" className="px-5 pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
         <div className="mt-6">
           <EmptyState icon={<ShoppingBag size={28} />} title="Anúncio indisponível" description={error ?? 'Este anúncio não está mais disponível.'} />
@@ -209,19 +230,29 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   const sellerProfilePath = item.sellerUsername ? `/perfil/${encodeURIComponent(item.sellerUsername)}` : null;
 
+  const sellerLocation = item.city ? `${item.city}${item.state ? `, ${item.state}` : ''}` : item.locationLabel;
+
   return (
-    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="px-5 pb-24 pt-2">
       <PageHeader title="Anúncio" backHref="/marketplace" />
 
-      <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-4">
-          <div className="relative overflow-hidden rounded-card bg-slate-100">
-            <div className="flex aspect-[4/3] w-full items-center justify-center">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        {/* Galeria */}
+        <section className="min-w-0" aria-label="Galeria de imagens">
+          <div className="relative overflow-hidden rounded-2xl bg-slate-100">
+            <div className="aspect-[4/3] w-full sm:aspect-[16/10]">
               {currentImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={currentImage} alt={item.title} className="h-full w-full object-cover" />
+                <img
+                  src={currentImage}
+                  alt={item.title}
+                  onClick={() => setLightboxOpen(true)}
+                  className="h-full w-full cursor-zoom-in object-cover"
+                />
               ) : (
-                <ShoppingBag className="text-brand-300" size={48} />
+                <div className="flex h-full w-full items-center justify-center">
+                  <ShoppingBag size={48} className="text-slate-300" />
+                </div>
               )}
             </div>
             {gallery.length > 1 ? (
@@ -230,7 +261,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   type="button"
                   onClick={() => setActiveImage((current) => (current - 1 + gallery.length) % gallery.length)}
                   aria-label="Imagem anterior"
-                  className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-sm"
+                  className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -238,10 +269,13 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   type="button"
                   onClick={() => setActiveImage((current) => (current + 1) % gallery.length)}
                   aria-label="Próxima imagem"
-                  className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-sm"
+                  className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white"
                 >
                   <ChevronRight size={18} />
                 </button>
+                <span className="absolute bottom-3 left-3 rounded-full bg-slate-900/60 px-2.5 py-1 text-[11px] font-bold text-white">
+                  {activeImage + 1} / {gallery.length}
+                </span>
               </>
             ) : null}
             {item.status === 'SOLD' ? (
@@ -249,17 +283,29 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 Vendido
               </span>
             ) : null}
+            {currentImage ? (
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                aria-label="Ampliar imagem"
+                className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:bg-white"
+              >
+                <Maximize2 size={16} />
+              </button>
+            ) : null}
           </div>
 
           {gallery.length > 1 ? (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {gallery.map((url, index) => (
                 <button
                   key={url}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  aria-label={`Imagem ${index + 1}`}
-                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${index === activeImage ? 'border-brand-500' : 'border-transparent'}`}
+                  aria-label={`Ir para imagem ${index + 1}`}
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                    index === activeImage ? 'border-brand-500' : 'border-transparent opacity-70 hover:opacity-100'
+                  }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt="" className="h-full w-full object-cover" />
@@ -267,51 +313,24 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               ))}
             </div>
           ) : null}
+        </section>
 
-          <div className="rounded-card bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-bold text-foreground">Descrição</h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">{item.description}</p>
-          </div>
-
-          {suggestions.length > 0 ? (
-            <div>
-              <h2 className="mb-3 text-base font-bold text-foreground">Mais anúncios perto de você</h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {suggestions.map((suggestion) => (
-                  <Link
-                    key={suggestion.id}
-                    href={suggestion.publicPath}
-                    className="group overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-brand-50 to-slate-100">
-                      {suggestion.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={suggestion.imageUrl} alt={suggestion.title} className="h-full w-full object-cover" loading="lazy" />
-                      ) : (
-                        <ShoppingBag className="text-brand-300" size={28} />
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-sm font-bold text-foreground">{formatPrice(suggestion.priceCents, suggestion.isFree)}</p>
-                      <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold text-slate-700">{suggestion.title}</h3>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
-          <div className="rounded-card bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-2xl font-bold text-foreground">{formatPrice(item.priceCents, item.isFree)}</p>
-                <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
-                  <MapPin size={12} /> {item.locationLabel}
+      {/* Painel de informações */}
+        <aside className="min-w-0 lg:sticky lg:top-4 lg:self-start">
+          <div className="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className={item.isFree ? 'text-2xl font-bold text-emerald-600' : 'text-2xl font-bold text-text'}>
+                  {formatPrice(item.priceCents, item.isFree)}
+                </p>
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                  <MapPin size={13} className="shrink-0" aria-hidden />
+                  <span className="truncate">{item.locationLabel}</span>
+                  <span aria-hidden>·</span>
+                  <span className="shrink-0">{formatRelativeTime(item.createdAt)}</span>
                 </p>
               </div>
-              <div className="flex gap-1">
+              <div className="flex shrink-0 gap-1.5">
                 <button
                   type="button"
                   onClick={handleToggleFavorite}
@@ -332,13 +351,14 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               </div>
             </div>
 
-            <h1 className="mt-3 text-lg font-bold leading-snug text-foreground">{item.title}</h1>
+            <h1 className="mt-3 text-lg font-bold leading-snug text-text">{item.title}</h1>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge tone="neutro">{item.category}</Badge>
               <Badge tone="primary" variant="outline">
                 {CONDITION_LABELS[item.condition] ?? item.condition}
               </Badge>
+              {item.status === 'SOLD' ? <Badge tone="erro">Vendido</Badge> : null}
             </div>
 
             {item.canEdit ? (
@@ -365,7 +385,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <div className="mt-4">
                 {sellerProfilePath ? (
                   <Link href={sellerProfilePath} className="block">
-                    <Button size="md" fullWidth iconLeft={<UserIcon size={16} />}>
+                    <Button size="md" fullWidth iconLeft={<MessageCircle size={16} />}>
                       Contatar anunciante
                     </Button>
                   </Link>
@@ -379,12 +399,9 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 </p>
               </div>
             )}
-          </div>
 
-          <div className="rounded-card bg-white p-4 shadow-sm">
-            <h2 className="text-sm font-bold text-foreground">Anunciante</h2>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-brand-50">
+            <div className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-50">
                 {item.sellerImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={item.sellerImage} alt={item.sellerName ?? 'Anunciante'} className="h-full w-full object-cover" />
@@ -393,16 +410,83 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 )}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">{item.sellerName ?? 'Membro da comunidade'}</p>
-                {item.sellerUsername ? <p className="truncate text-xs text-slate-400">@{item.sellerUsername}</p> : null}
+                <p className="truncate text-sm font-semibold text-text">{item.sellerName ?? 'Membro da comunidade'}</p>
+                <p className="truncate text-xs text-slate-400">
+                  {item.sellerUsername ? `@${item.sellerUsername} · ` : ''}
+                  Localização aproximada: {item.sellerLocationLabel ?? sellerLocation}
+                </p>
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-400">
-              Localização aproximada: {item.city ? `${item.city}${item.state ? `, ${item.state}` : ''}` : item.locationLabel}
-            </p>
+
+            <div className="mt-5 border-t border-slate-100 pt-4">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Descrição</h2>
+              <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-slate-700">{item.description}</p>
+            </div>
           </div>
         </aside>
+
+      {/* Sugestões */}
+        <section className="min-w-0">
+          {suggestions.length > 0 ? (
+            <div>
+              <h2 className="text-base font-bold text-text">Mais anúncios perto de você</h2>
+              <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3">
+                {suggestions.map((suggestion) => (
+                  <MarketplaceCard key={suggestion.id} item={suggestion} />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
       </div>
+
+      {lightboxOpen && currentImage ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visualização ampliada do anúncio"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95"
+          onClick={(event) => event.target === event.currentTarget && setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Fechar visualização ampliada"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+          >
+            <X size={20} />
+          </button>
+          {gallery.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => setActiveImage((current) => (current - 1 + gallery.length) % gallery.length)}
+              aria-label="Imagem anterior"
+              className="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:left-6"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          ) : null}
+          {currentImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={currentImage} alt={item.title} className="max-h-full max-w-full px-4 py-14 object-contain sm:px-12" />
+          ) : null}
+          {gallery.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveImage((current) => (current + 1) % gallery.length)}
+                aria-label="Próxima imagem"
+                className="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:right-6"
+              >
+                <ChevronRight size={24} />
+              </button>
+              <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">
+                {activeImage + 1} / {gallery.length}
+              </span>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       <Modal
         open={showDeleteConfirm}

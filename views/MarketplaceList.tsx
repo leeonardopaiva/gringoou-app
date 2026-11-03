@@ -1,13 +1,12 @@
 'use client';
 
 import React, { startTransition, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Heart, MapPin, Plus, Search, ShoppingBag } from 'lucide-react';
+import { Plus, Search, ShoppingBag, X } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { MarketplaceCard } from '../components/marketplace/MarketplaceCard';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
 import { SectionTabs } from '../components/ui/SectionTabs';
@@ -67,10 +66,7 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 24;
 
-const formatPrice = (priceCents: number | null, isFree: boolean) => {
-  if (isFree || priceCents == null || priceCents === 0) return 'Grátis';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceCents / 100);
-};
+
 
 const emptyForm = {
   title: '',
@@ -260,8 +256,29 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
 
   const filteredCount = useMemo(() => items.length, [items]);
 
+  const activeFilters = useMemo(() => {
+    const filters: { id: string; label: string; onClear: () => void }[] = [];
+    if (search.trim()) {
+      filters.push({ id: 'search', label: `Busca: ${search.trim()}`, onClear: () => { setSearch(''); setPage(1); } });
+    }
+    if (category) {
+      filters.push({ id: 'category', label: category, onClear: () => { setCategory(''); setPage(1); } });
+    }
+    if (minPrice) {
+      filters.push({ id: 'minPrice', label: `Min: US$ ${minPrice}`, onClear: () => { setMinPrice(''); setPage(1); } });
+    }
+    if (maxPrice) {
+      filters.push({ id: 'maxPrice', label: `Máx: US$ ${maxPrice}`, onClear: () => { setMaxPrice(''); setPage(1); } });
+    }
+    const activeSortLabel = SORT_OPTIONS.find((option) => option.id === sort)?.label;
+    if (sort !== 'recent' && activeSortLabel) {
+      filters.push({ id: 'sort', label: activeSortLabel, onClear: () => { setSort('recent'); setPage(1); } });
+    }
+    return filters;
+  }, [category, maxPrice, minPrice, search, sort]);
+
   return (
-    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
       <PageHeader
         title="Marketplace"
         backHref="/inicio"
@@ -366,22 +383,36 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               </div>
             </div>
           </FilterPopover>
-          {category ? (
-            <Badge tone="primary" variant="outline">
-              {category}
-            </Badge>
-          ) : null}
-        </div>
+          </div>
+
+        {activeFilters.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2" aria-label="Filtros ativos">
+            {activeFilters.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={filter.onClear}
+                aria-label={`Remover filtro: ${filter.label}`}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-white pl-3 pr-2.5 text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+              >
+                {filter.label}
+                <X size={13} aria-hidden />
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {loading ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Skeleton.Card />
-          <Skeleton.Card />
-          <Skeleton.Card />
-          <Skeleton.Card />
-          <Skeleton.Card />
-          <Skeleton.Card />
+        <div className="mt-5 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-x-5">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="min-w-0">
+              <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+              <Skeleton className="mt-3 h-4 w-1/3 rounded-full" />
+              <Skeleton className="mt-2 h-4 w-3/4 rounded-full" />
+              <Skeleton className="mt-2 h-3 w-1/2 rounded-full" />
+            </div>
+          ))}
         </div>
       ) : error ? (
         <div className="mt-6">
@@ -402,46 +433,22 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         </div>
       ) : (
         <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <p className="mt-5 text-xs font-semibold text-slate-400">
+            {total} {total === 1 ? 'anúncio' : 'anúncios'}
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-x-5">
             {items.map((item) => (
-              <div key={item.id} className="group relative overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
-                <Link href={item.publicPath} className="block">
-                  <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-brand-50 to-slate-100">
-                    {item.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
-                    ) : (
-                      <ShoppingBag className="text-brand-300" size={32} />
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="text-sm font-bold text-foreground">{formatPrice(item.priceCents, item.isFree)}</p>
-                    <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold text-slate-700">{item.title}</h3>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
-                      <MapPin size={12} /> {item.locationLabel}
-                    </p>
-                  </div>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => handleToggleFavorite(item.id)}
-                  disabled={togglingId === item.id}
-                  aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
-                  className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:scale-105 disabled:opacity-50"
-                >
-                  <Heart size={16} className={item.isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-400'} />
-                </button>
-                {item.status === 'SOLD' ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-white">
-                    Vendido
-                  </span>
-                ) : null}
-              </div>
+              <MarketplaceCard
+                key={item.id}
+                item={item}
+                onToggleFavorite={() => handleToggleFavorite(item.id)}
+                favoriteToggling={togglingId === item.id}
+              />
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-8 flex justify-center">
               <Pagination page={page} totalPages={totalPages} onChange={setPage} />
             </div>
           ) : null}
