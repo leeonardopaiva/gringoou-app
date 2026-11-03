@@ -96,14 +96,8 @@ const navigationItems: NavigationItem[] = [
   { href: '/eventos', label: 'Eventos', icon: <Calendar size={18} /> },
   { href: '/vagas', label: 'Vagas', icon: <Briefcase size={18} /> },
   { href: '/moradia', label: 'Moradia', icon: <House size={18} /> },
-  {
-    href: '/marketplace',
-    label: 'Marketplace',
-    icon: <ShoppingBag size={18} />,
-    disabled: true,
-    badge: '',
-  },
-  { href: '/noticias', label: 'Notícias', icon: <Newspaper size={18} />, disabled: true, badge: '' },
+  { href: '/marketplace', label: 'Marketplace', icon: <ShoppingBag size={18} /> },
+  { href: '/noticias', label: 'Notícias', icon: <Newspaper size={18} /> },
 ];
 
 const SidebarContent: React.FC<{

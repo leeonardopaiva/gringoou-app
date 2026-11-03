@@ -6,7 +6,7 @@ import BusinessWorkspace from '@/components/app/workspaces/BusinessWorkspace';
 import UserWorkspace from '@/components/app/workspaces/UserWorkspace';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
-import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from '@/lib/content-contracts';
+import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, MarketplaceInitialData, NewsInitialData, ProfileInitialData } from '@/lib/content-contracts';
 
 type AppContentProps = {
   currentUser: User;
@@ -21,6 +21,8 @@ type AppContentProps = {
   initialBusinessesData?: BusinessesInitialData;
   initialEventsData?: EventsInitialData;
   initialJobsData?: JobsInitialData;
+  initialNewsData?: NewsInitialData;
+  initialMarketplaceData?: MarketplaceInitialData;
   initialProfileData?: ProfileInitialData;
 };
 
@@ -37,6 +39,8 @@ const AppContent: React.FC<AppContentProps> = ({
   initialBusinessesData,
   initialEventsData,
   initialJobsData,
+  initialNewsData,
+  initialMarketplaceData,
   initialProfileData,
 }) => {
   const { rootSegment } = parseAppRoute(pathname);
@@ -54,6 +58,7 @@ const AppContent: React.FC<AppContentProps> = ({
         professionalIdentity={professionalIdentity}
         initialBusinessesData={initialBusinessesData}
         initialEventsData={initialEventsData}
+        initialMarketplaceData={initialMarketplaceData}
       />
     );
   }
@@ -70,6 +75,7 @@ const AppContent: React.FC<AppContentProps> = ({
       initialHomeData={initialHomeData}
       initialCommunityData={initialCommunityData}
       initialJobsData={initialJobsData}
+      initialNewsData={initialNewsData}
       initialProfileData={initialProfileData}
     />
   );

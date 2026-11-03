@@ -55,8 +55,17 @@ export async function POST(request: Request) {
     where: { id: session.user.id },
     select: {
       referredById: true,
+      phoneVerifiedAt: true,
     },
   });
+
+  // The profile can only be completed after the phone is confirmed by SMS.
+  if (!currentUser?.phoneVerifiedAt) {
+    return NextResponse.json(
+      { error: 'Confirme seu telefone por SMS antes de concluir o cadastro.' },
+      { status: 403 },
+    );
+  }
 
   const referrer =
     !currentUser?.referredById && parsed.data.referralUsername
@@ -68,7 +77,7 @@ export async function POST(request: Request) {
     data: {
       name: parsed.data.name,
       username: usernameValidation.normalized,
-      phone: parsed.data.phone,
+      // The phone is owned by the SMS confirmation flow, so the typed value is not saved here.
       locationLabel: region.label,
       regionKey: region.key,
       gender: parsed.data.gender,

@@ -7,12 +7,14 @@ import { hashPassword, normalizeAuthEmail } from '@/lib/password-auth';
 import { verifySimpleCaptcha } from '@/lib/simple-captcha';
 import { z } from 'zod';
 import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
+import { consumeInviteInTx, isInviteOnlyRegistration } from '@/lib/invites';
 
 const registerSchema = z.object({
   email: z.string().trim().email('Informe um email valido.'),
   password: z.string().min(8, 'Use uma senha mais forte.'),
   captchaToken: z.string().min(10),
   captchaAnswer: z.string().trim().min(1, 'Resolva o calculo de verificacao.'),
+  inviteCode: z.string().trim().optional(),
 });
 
 export async function POST(request: Request) {
@@ -70,17 +72,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Esse email ja esta cadastrado.' }, { status: 409 });
   }
 
+  // Private Beta: novos cadastros exigem convite válido.
+  const inviteRequired = isInviteOnlyRegistration();
+  if (inviteRequired && !parsed.data.inviteCode) {
+    return NextResponse.json(
+      { error: 'O cadastro esta em fase de convite. Informe o codigo do convite.' },
+      { status: 403 },
+    );
+  }
+
   try {
-    const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash: await hashPassword(parsed.data.password),
-        emailVerificationRequired: true,
-      },
-      select: {
-        id: true,
-        email: true,
-      },
+    // Cria o usuário e consome o convite de forma atômica (se exigido).
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          passwordHash: await hashPassword(parsed.data.password),
+          emailVerificationRequired: true,
+        },
+        select: {
+          id: true,
+          email: true,
+        },
+      });
+
+      if (inviteRequired && parsed.data.inviteCode) {
+        const consumed = await consumeInviteInTx(tx, parsed.data.inviteCode, email, created.id);
+        if (!consumed.ok) {
+          throw new InviteRejectedError(consumed.error ?? 'Convite invalido.');
+        }
+      }
+
+      return created;
     });
 
     return NextResponse.json({
@@ -88,6 +111,10 @@ export async function POST(request: Request) {
       message: 'Conta criada. Enviamos um link para confirmar seu email.',
     });
   } catch (error) {
+    if (error instanceof InviteRejectedError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json({ error: 'Esse email ja esta cadastrado.' }, { status: 409 });
     }
@@ -95,3 +122,5 @@ export async function POST(request: Request) {
     throw error;
   }
 }
+
+class InviteRejectedError extends Error {}

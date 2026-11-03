@@ -176,6 +176,22 @@ enum AdAccountRole {
   VIEWER
 }
 
+enum MarketplaceStatus {
+  PENDING_REVIEW
+  ACTIVE
+  SOLD
+  UNAVAILABLE
+  REMOVED
+}
+
+enum MarketplaceCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+}
+
 model User {
   id                        String                 @id @default(cuid())
   name                      String?
@@ -193,6 +209,9 @@ model User {
   galleryUrls               String[]               @default([])
   role                      UserRole               @default(USER)
   phone                     String?
+  phoneVerifiedAt           DateTime?
+  phoneCountry              String?
+  accessCountry             String?
   locationLabel             String?
   regionKey                 String?
   referredById              String?
@@ -245,6 +264,12 @@ model User {
   reviewedGroupReports      CommunityGroupReport[] @relation("CommunityGroupReportReviewer")
   referredBy                User?                  @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals                 User[]                 @relation("UserReferrals")
+  phoneVerificationCodes    PhoneVerificationCode[]
+  marketplaceItems          MarketplaceItem[]        @relation("MarketplaceItemCreator")
+  marketplaceFavorites      MarketplaceFavorite[]    @relation("MarketplaceFavoriteUser")
+  createdInvites            Invite[]                 @relation("InviteCreator")
+  revokedInvites            Invite[]                 @relation("InviteRevoker")
+  inviteUsages              InviteUsage[]            @relation("InviteUsageUser")
 
   @@index([referredById, createdAt])
 }
@@ -936,4 +961,122 @@ model AnalyticsEvent {
   @@index([targetType, targetKey, createdAt])
   @@index([userId, createdAt])
   @@index([sourceSection, createdAt])
+}
+
+enum WaitlistStatus {
+  PENDING
+  INVITED
+  ACTIVE
+}
+
+enum InviteStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
+}
+
+// Pre-launch waiting list captured from the institutional landing page.
+// Access is released gradually by moving entries from PENDING to INVITED.
+model WaitlistEntry {
+  id        String         @id @default(cuid())
+  email     String         @unique
+  name      String?
+  country   String?
+  status    WaitlistStatus @default(PENDING)
+  invitedAt DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  invites   Invite[]
+
+  @@index([status, createdAt])
+}
+
+// One-time SMS codes. Only an HMAC of the code is stored, never the code itself.
+model PhoneVerificationCode {
+  id        String    @id @default(cuid())
+  userId    String
+  phone     String
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, phone, createdAt])
+}
+
+model Invite {
+  id              String        @id @default(cuid())
+  codeHash        String        @unique
+  status          InviteStatus  @default(ACTIVE)
+  email           String?
+  usageLimit      Int           @default(1)
+  usedCount       Int           @default(0)
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  createdById     String
+  revokedById     String?
+  waitlistEntryId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       User          @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  revokedBy       User?         @relation("InviteRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+  waitlistEntry   WaitlistEntry? @relation(fields: [waitlistEntryId], references: [id], onDelete: SetNull)
+  usages          InviteUsage[]
+
+  @@index([status, createdAt])
+  @@index([email, status])
+  @@index([createdById, createdAt])
+  @@index([waitlistEntryId])
+}
+
+model InviteUsage {
+  id        String   @id @default(cuid())
+  inviteId  String
+  userId    String
+  createdAt DateTime @default(now())
+  invite    Invite   @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  user      User     @relation("InviteUsageUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([inviteId, userId])
+  @@index([userId, createdAt])
+  @@index([inviteId, createdAt])
+}
+
+model MarketplaceItem {
+  id            String               @id @default(cuid())
+  title         String
+  description   String               @db.Text
+  category      String
+  priceCents    Int?
+  isFree        Boolean              @default(false)
+  condition     MarketplaceCondition @default(GOOD)
+  locationLabel String
+  regionKey     String
+  imageUrl      String?
+  galleryUrls   String[]             @default([])
+  status        MarketplaceStatus    @default(PENDING_REVIEW)
+  createdById   String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  createdBy     User                 @relation("MarketplaceItemCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  favorites     MarketplaceFavorite[]
+
+  @@index([status, regionKey, createdAt])
+  @@index([status, category, regionKey, createdAt])
+  @@index([createdById, createdAt])
+}
+
+model MarketplaceFavorite {
+  id        String          @id @default(cuid())
+  itemId    String
+  userId    String
+  createdAt DateTime        @default(now())
+  item      MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user      User            @relation("MarketplaceFavoriteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId])
+  @@index([userId, createdAt])
 }

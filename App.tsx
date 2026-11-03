@@ -6,11 +6,12 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import Layout from './components/Layout';
 import AppContent from './components/app/AppContent';
 import AuthWorkspace from './components/app/AuthWorkspace';
+import { PhoneVerificationGate } from './components/app/PhoneVerificationGate';
 import PublicEntry from './components/app/PublicEntry';
 import { buildCurrentUser, mapUserRole } from './lib/build-current-user';
 import { parseAppRoute } from './lib/app-route';
 import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
-import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from './lib/content-contracts';
+import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, MarketplaceInitialData, NewsInitialData, ProfileInitialData } from './lib/content-contracts';
 import {
   GOOGLE_AUTH_ENABLED,
   EMAIL_AUTH_ENABLED,
@@ -36,8 +37,10 @@ const App: React.FC<{
   initialBusinessesData?: BusinessesInitialData;
   initialEventsData?: EventsInitialData;
   initialJobsData?: JobsInitialData;
+  initialNewsData?: NewsInitialData;
+  initialMarketplaceData?: MarketplaceInitialData;
   initialProfileData?: ProfileInitialData;
-}> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialJobsData, initialProfileData }) => {
+}> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialJobsData, initialNewsData, initialMarketplaceData, initialProfileData }) => {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { data: session, status, update } = useSession();
@@ -70,6 +73,7 @@ const App: React.FC<{
     sessionRole === UserRole.ADMIN ||
     hasProfessionalBusinesses;
   const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
+  const inviteRequired = process.env.NEXT_PUBLIC_INVITE_ONLY_REGISTRATION === 'true';
 
   useEffect(() => {
     if (pathname === '/profile' && session?.user?.username) {
@@ -402,6 +406,7 @@ const App: React.FC<{
     password: string;
     captchaToken: string;
     captchaAnswer: string;
+    inviteCode?: string;
   }) => {
     setRegistrationError(null);
     setRegistrationNotice(null);
@@ -486,7 +491,9 @@ const App: React.FC<{
     }
   };
 
-  if (status === 'loading') {
+  // Only hide the app before the first session read. A background session refresh
+  // must not unmount the profile wizard, which keeps its answers in local state.
+  if (status === 'loading' && !session) {
     return null;
   }
 
@@ -518,6 +525,7 @@ const App: React.FC<{
         submitting={authSubmitting}
         error={registrationError}
         notice={registrationNotice}
+        inviteRequired={inviteRequired}
       />
     );
   }
@@ -528,6 +536,10 @@ const App: React.FC<{
     }
 
     return null;
+  }
+
+  if (!session.user.phoneVerified) {
+    return <PhoneVerificationGate onVerified={() => void update()} />;
   }
 
   if (!session.user.onboardingCompleted || !session.user.username) {
@@ -544,6 +556,7 @@ const App: React.FC<{
         submitting={savingProfile}
         error={registrationError}
         notice={registrationNotice}
+        inviteRequired={inviteRequired}
         defaultValues={{
           name: session.user.name || '',
           username: session.user.username || '',
@@ -618,6 +631,8 @@ const App: React.FC<{
         initialBusinessesData={initialBusinessesData}
         initialEventsData={initialEventsData}
         initialJobsData={initialJobsData}
+        initialNewsData={initialNewsData}
+        initialMarketplaceData={initialMarketplaceData}
         initialProfileData={initialProfileData}
       />
     </Layout>

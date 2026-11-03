@@ -1,0 +1,168 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { waitlistSchema } from '@/lib/waitlist';
+
+const inputClassName =
+  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-[#0086ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0086ff]';
+
+export function WaitlistSection() {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [country, setCountry] = useState('');
+  const [website, setWebsite] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (loading) {
+      return;
+    }
+
+    const parsed = waitlistSchema.safeParse({ email, name, country, website });
+
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? 'Dados invalidos.');
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(parsed.data),
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setError(data?.error ?? 'Nao foi possivel concluir agora. Tente novamente.');
+        return;
+      }
+
+      setSuccess(data?.message ?? 'Pronto! Voce esta na lista.');
+    } catch {
+      setError('Nao foi possivel concluir agora. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section id="lista" className="mx-auto w-full max-w-[1440px] px-5 pb-16 sm:px-8 lg:px-16">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 rounded-[32px] bg-white px-6 py-10 text-center shadow-[0_8px_24px_rgba(15,43,99,0.08)] sm:px-10">
+        <div className="flex flex-col gap-3">
+          <h2 className="text-2xl font-extrabold tracking-tight text-[#0f2b63] sm:text-3xl">
+            Entre na lista de espera
+          </h2>
+          <p className="text-sm leading-6 text-[#4a5672] sm:text-base">
+            Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponivel.
+          </p>
+        </div>
+
+        {success ? (
+          <p role="status" className="rounded-2xl bg-[#f0f7ff] px-4 py-4 text-sm font-semibold text-[#0f2b63]">
+            {success}
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-left" noValidate>
+            <label htmlFor="waitlist-name" className="sr-only">
+              Nome
+            </label>
+            <input
+              id="waitlist-name"
+              name="name"
+              type="text"
+              autoComplete="name"
+              placeholder="Seu nome"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className={inputClassName}
+            />
+
+            <label htmlFor="waitlist-email" className="sr-only">
+              Email
+            </label>
+            <input
+              id="waitlist-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              placeholder="Seu melhor email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'waitlist-error' : undefined}
+              className={inputClassName}
+            />
+
+            <label htmlFor="waitlist-country" className="sr-only">
+              Pais onde voce mora
+            </label>
+            <input
+              id="waitlist-country"
+              name="country"
+              type="text"
+              autoComplete="country-name"
+              placeholder="Pais onde voce mora"
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
+              className={inputClassName}
+            />
+
+            {/* Honeypot: hidden from people and screen readers, bots tend to fill it. */}
+            <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+              <label htmlFor="waitlist-website">Site</label>
+              <input
+                id="waitlist-website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+              />
+            </div>
+
+            {error && (
+              <p id="waitlist-error" role="alert" className="text-sm font-semibold text-[#c2410c]">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 rounded-full bg-[#0086ff] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#006ed4] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0086ff]"
+            >
+              {loading ? 'Enviando...' : 'Quero entrar na lista'}
+            </button>
+          </form>
+        )}
+
+        <div className="flex flex-col items-center gap-2 border-t border-[#eef1f7] pt-5">
+          <Link
+            href="/login"
+            className="text-sm font-bold text-[#0086ff] transition hover:text-[#006ed4]"
+          >
+            Ja tem um convite? Entrar
+          </Link>
+          <Link
+            href="/login"
+            className="text-xs font-medium text-[#4a5672] transition hover:text-[#0f2b63]"
+          >
+            Ja e cadastrado? Fazer login
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}

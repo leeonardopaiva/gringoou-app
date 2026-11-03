@@ -56,6 +56,7 @@ interface RegistrationProps {
     password: string;
     captchaToken: string;
     captchaAnswer: string;
+    inviteCode?: string;
   }) => Promise<void>;
   onCompleteProfile?: (values: RegistrationValues) => Promise<void>;
   submitting?: boolean;
@@ -63,6 +64,7 @@ interface RegistrationProps {
   notice?: string | null;
   referralUsername?: string | null;
   defaultValues?: RegistrationValues;
+  inviteRequired?: boolean;
 }
 
 type RegistrationField =
@@ -110,6 +112,7 @@ const Registration: React.FC<RegistrationProps> = ({
   notice,
   referralUsername,
   defaultValues,
+  inviteRequired = false,
 }) => {
   const initialPhoneState = splitPhoneNumber(defaultValues?.phone);
   const [formValues, setFormValues] = useState<RegistrationValues>({
@@ -144,6 +147,10 @@ const Registration: React.FC<RegistrationProps> = ({
   const [captchaPrompt, setCaptchaPrompt] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
   const [loadingCaptcha, setLoadingCaptcha] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteValidating, setInviteValidating] = useState(false);
+  const [inviteValidated, setInviteValidated] = useState(false);
 
   const isOnboarding = mode === 'complete-profile';
   const normalizedUsername = normalizeUsernameInput(formValues.username);
@@ -160,6 +167,10 @@ const Registration: React.FC<RegistrationProps> = ({
     if (token) {
       setPasswordReset((current) => ({ ...current, token, email }));
       setPasswordAuthView('reset');
+    }
+    const inviteParam = params.get('invite');
+    if (inviteParam) {
+      setInviteCode(inviteParam.toUpperCase());
     }
   }, []);
 
@@ -269,6 +280,19 @@ const Registration: React.FC<RegistrationProps> = ({
       checkingUsername ||
       usernameAvailable !== true ||
       normalizedUsername.length < USERNAME_MIN_LENGTH);
+  // Lists what still blocks the submit button, so the user is not left guessing.
+  const onboardingMissing = isOnboarding
+    ? [
+        !formValues.regionKey && 'regiao',
+        !formValues.gender && 'genero',
+        !formValues.age && 'idade',
+        !formValues.timeAbroad && 'tempo no exterior',
+        !formValues.birthCity.trim() && 'cidade natal',
+        (normalizedUsername.length < USERNAME_MIN_LENGTH || usernameAvailable === false) &&
+          'nome publico disponivel',
+        checkingUsername && 'aguarde a validacao do nome publico',
+      ].filter((item): item is string => Boolean(item))
+    : [];
   const onboardingRequiredValues = [
     formValues.name,
     formValues.username,
@@ -342,12 +366,48 @@ const Registration: React.FC<RegistrationProps> = ({
     }
   };
 
-  const submitGoogleLogin = () => {
+  const validateInviteCode = async (): Promise<boolean> => {
+    if (!inviteRequired) return true;
+    if (inviteValidated) return true;
+
+    if (!inviteCode.trim()) {
+      setInviteError('Informe o codigo do convite.');
+      return false;
+    }
+
+    setInviteValidating(true);
+    setInviteError(null);
+    try {
+      const response = await fetch('/api/invites/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inviteCode, email: formValues.email || undefined }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        setInviteError(payload?.error ?? 'Codigo de convite invalido.');
+        return false;
+      }
+      setInviteValidated(true);
+      return true;
+    } catch {
+      setInviteError('Nao foi possivel validar o convite agora.');
+      return false;
+    } finally {
+      setInviteValidating(false);
+    }
+  };
+
+  const submitGoogleLogin = async () => {
+    const ok = await validateInviteCode();
+    if (!ok) return;
     setGoogleSubmitting(true);
     onGoogleLogin();
   };
 
-  const submitGoogleSelectAccount = () => {
+  const submitGoogleSelectAccount = async () => {
+    const ok = await validateInviteCode();
+    if (!ok) return;
     setGoogleSubmitting(true);
     if (onGoogleSelectAccount) {
       onGoogleSelectAccount();
@@ -400,6 +460,9 @@ const Registration: React.FC<RegistrationProps> = ({
       return false;
     }
 
+    const ok = await validateInviteCode();
+    if (!ok) return false;
+
     await onEmailLogin?.(normalizedEmail);
     return true;
   };
@@ -421,6 +484,33 @@ const Registration: React.FC<RegistrationProps> = ({
                   A rede social do imigrante brasileiro.
                 </p>
               </div>
+
+              {inviteRequired ? (
+                <div className="mt-8 w-full max-w-[360px] mx-auto">
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Codigo de convite
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Ex.: ABC123XYZ789"
+                    value={inviteCode}
+                    onChange={(event) => {
+                      setInviteCode(event.target.value.toUpperCase());
+                      setInviteValidated(false);
+                      setInviteError(null);
+                    }}
+                    aria-invalid={Boolean(inviteError)}
+                    className={inputClass}
+                  />
+                  {inviteError ? <FieldErrorMessage message={inviteError} /> : null}
+                  {inviteValidated ? (
+                    <p className="mt-1 text-xs font-semibold text-emerald-600">Convite valido.</p>
+                  ) : null}
+                  <p className="mt-2 text-center text-[11px] text-slate-400">
+                    O cadastro esta em fase de convite. Informe o codigo para continuar.
+                  </p>
+                </div>
+              ) : null}
 
               <div className="mt-10 flex flex-col items-center gap-3">
                 {googleEnabled ? (
@@ -661,6 +751,7 @@ const Registration: React.FC<RegistrationProps> = ({
                         password: passwordSignUp.password,
                         captchaToken,
                         captchaAnswer: passwordSignUp.captchaAnswer,
+                        inviteCode,
                       });
                     }}
                   >
@@ -1142,6 +1233,7 @@ const Registration: React.FC<RegistrationProps> = ({
                             password: passwordSignUp.password,
                             captchaToken,
                             captchaAnswer: passwordSignUp.captchaAnswer,
+                            inviteCode,
                           });
                         }}
                       >
@@ -1576,6 +1668,11 @@ const Registration: React.FC<RegistrationProps> = ({
                   </div>
                 </div>
 
+                {onboardingBlocked && onboardingMissing.length > 0 && (
+                  <p className="px-2 text-center text-[12px] font-semibold text-amber-700">
+                    Falta preencher: {onboardingMissing.join(', ')}.
+                  </p>
+                )}
                 <Button
                   type="submit"
                   fullWidth

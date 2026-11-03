@@ -8,11 +8,12 @@ import HousingList from '@/views/HousingList';
 import JobList from '@/views/JobList';
 import JobDetail from '@/views/JobDetail';
 import HousingDetail from '@/views/HousingDetail';
+import NewsList from '@/views/NewsList';
 import Profile from '@/views/Profile';
 import SearchResults from '@/views/SearchResults';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
-import type { CommunityInitialData, HomeInitialData, JobsInitialData, ProfileInitialData } from '@/lib/content-contracts';
+import type { CommunityInitialData, HomeInitialData, JobsInitialData, NewsInitialData, ProfileInitialData } from '@/lib/content-contracts';
 
 type UserWorkspaceProps = {
   currentUser: User;
@@ -25,6 +26,7 @@ type UserWorkspaceProps = {
   initialHomeData?: HomeInitialData;
   initialCommunityData?: CommunityInitialData;
   initialJobsData?: JobsInitialData;
+  initialNewsData?: NewsInitialData;
   initialProfileData?: ProfileInitialData;
 };
 
@@ -39,6 +41,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
   initialHomeData,
   initialCommunityData,
   initialJobsData,
+  initialNewsData,
   initialProfileData,
 }) => {
   const { segments, rootSegment } = parseAppRoute(pathname);
@@ -59,6 +62,8 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
       );
     case 'buscar':
       return <SearchResults />;
+    case 'noticias':
+      return <NewsList initialData={initialNewsData} />;
     case 'vagas':
       return segments[1] ? <JobDetail jobId={decodeURIComponent(segments[1])} /> : <JobList user={currentUser} initialData={initialJobsData} />;
     case 'moradia':

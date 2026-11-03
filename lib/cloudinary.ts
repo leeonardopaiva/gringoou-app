@@ -14,7 +14,8 @@ export type CloudinaryFolder =
   | 'profiles'
   | 'community'
   | 'housing'
-  | 'jobs';
+  | 'jobs'
+  | 'marketplace';
 
 export const getCloudinaryFolderPath = (folder: CloudinaryFolder) =>
   `emigrei/${folder}`;

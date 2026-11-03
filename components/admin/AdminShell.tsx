@@ -19,6 +19,7 @@ import {
   Megaphone,
   Search,
   ShieldCheck,
+  Ticket,
   Users,
   X,
 } from 'lucide-react';
@@ -40,11 +41,12 @@ const navigation = [
   { href: '/admin/imports', label: 'Importacoes', icon: CloudUpload },
   { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/admin/convites', label: 'Convites', icon: Ticket },
 ];
 
 const labels: Record<string, string> = {
   ads: 'Anuncios', moderation: 'Moderacao', businesses: 'Negocios', events: 'Eventos', users: 'Usuarios',
-  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics',
+  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', convites: 'Convites',
 };
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {

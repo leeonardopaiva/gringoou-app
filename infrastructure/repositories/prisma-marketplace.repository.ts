@@ -1,0 +1,286 @@
+import 'server-only';
+
+import { MarketplaceStatus, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+import type { MarketplaceRepository } from '@/domain/marketplace/repositories/marketplace.repository';
+import type {
+  MarketplaceCondition,
+  MarketplaceDetailItem,
+  MarketplaceListFilters,
+  MarketplaceListItem,
+  MarketplacePage,
+} from '@/domain/marketplace/entities/marketplace.entity';
+import { findRegionByKey } from '@/lib/region-store';
+
+const DEFAULT_PAGE_SIZE = 24;
+
+const mapCondition = (condition: string): MarketplaceCondition => {
+  if (condition === 'NEW') return 'NEW';
+  if (condition === 'LIKE_NEW') return 'LIKE_NEW';
+  if (condition === 'FAIR') return 'FAIR';
+  if (condition === 'POOR') return 'POOR';
+  return 'GOOD';
+};
+
+const mapStatus = (status: string): MarketplaceListItem['status'] => {
+  if (status === 'ACTIVE') return 'ACTIVE';
+  if (status === 'SOLD') return 'SOLD';
+  if (status === 'UNAVAILABLE') return 'UNAVAILABLE';
+  if (status === 'REMOVED') return 'REMOVED';
+  return 'PENDING_REVIEW';
+};
+
+function buildWhere(filters: MarketplaceListFilters): Prisma.MarketplaceItemWhereInput {
+  const { viewerId, isAdmin, regionKey, category, query, minPriceCents, maxPriceCents, scope } = filters;
+
+  const visibleStatuses: MarketplaceStatus[] = [MarketplaceStatus.ACTIVE];
+
+  const where: Prisma.MarketplaceItemWhereInput = {
+    ...(category ? { category } : {}),
+    ...(query
+      ? {
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
+    ...(minPriceCents != null ? { priceCents: { gte: minPriceCents } } : {}),
+    ...(maxPriceCents != null ? { priceCents: { lte: maxPriceCents } } : {}),
+  };
+
+  if (scope === 'mine') {
+    return {
+      ...where,
+      createdById: viewerId,
+      status: { in: [...visibleStatuses, MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
+    };
+  }
+
+  if (scope === 'favorites') {
+    return {
+      ...where,
+      favorites: { some: { userId: viewerId } },
+      status: { in: visibleStatuses },
+    };
+  }
+
+  // Listagem pública: apenas ativos, restritos à região do usuário.
+  return {
+    ...where,
+    status: { in: visibleStatuses },
+    ...(regionKey ? { regionKey } : {}),
+  };
+}
+
+function buildOrderBy(filters: MarketplaceListFilters): Prisma.MarketplaceItemOrderByWithRelationInput[] {
+  switch (filters.sort) {
+    case 'price_asc':
+      return [{ priceCents: 'asc' as const }, { createdAt: 'desc' as const }];
+    case 'price_desc':
+      return [{ priceCents: 'desc' as const }, { createdAt: 'desc' as const }];
+    default:
+      return [{ createdAt: 'desc' as const }];
+  }
+}
+
+const listSelect = {
+  id: true,
+  title: true,
+  description: true,
+  category: true,
+  priceCents: true,
+  isFree: true,
+  condition: true,
+  locationLabel: true,
+  regionKey: true,
+  imageUrl: true,
+  galleryUrls: true,
+  status: true,
+  createdById: true,
+  createdAt: true,
+  createdBy: { select: { id: true, name: true, username: true, image: true } },
+  favorites: { select: { userId: true }, take: 1 },
+} satisfies Prisma.MarketplaceItemSelect;
+
+type ListRaw = Prisma.MarketplaceItemGetPayload<{ select: typeof listSelect }>;
+
+function mapListItem(raw: ListRaw, viewerId: string | null, isAdmin: boolean): MarketplaceListItem {
+  const canEdit = isAdmin || raw.createdById === viewerId;
+  return {
+    id: raw.id,
+    title: raw.title,
+    description: raw.description,
+    category: raw.category,
+    priceCents: raw.priceCents,
+    isFree: raw.isFree,
+    condition: mapCondition(raw.condition),
+    locationLabel: raw.locationLabel,
+    regionKey: raw.regionKey,
+    imageUrl: raw.imageUrl,
+    galleryUrls: raw.galleryUrls,
+    status: mapStatus(raw.status),
+    isFavorite: Boolean(viewerId && raw.favorites.some((f) => f.userId === viewerId)),
+    canEdit,
+    isPendingReview: raw.status === MarketplaceStatus.PENDING_REVIEW,
+    publicPath: `/marketplace/${raw.id}`,
+    createdAt: raw.createdAt.toISOString(),
+    sellerName: raw.createdBy?.name ?? null,
+    sellerUsername: raw.createdBy?.username ?? null,
+    sellerImage: raw.createdBy?.image ?? null,
+  };
+}
+
+export function makePrismaMarketplaceRepository(prisma: PrismaClient): MarketplaceRepository {
+  return {
+    async list(filters: MarketplaceListFilters): Promise<MarketplacePage> {
+      const page = Math.max(1, filters.page ?? 1);
+      const pageSize = Math.min(48, Math.max(1, filters.pageSize ?? DEFAULT_PAGE_SIZE));
+
+      const where = buildWhere(filters);
+      const orderBy = buildOrderBy(filters);
+
+      const [items, total] = await Promise.all([
+        prisma.marketplaceItem.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          select: listSelect,
+        }),
+        prisma.marketplaceItem.count({ where }),
+      ]);
+
+      const hasRegional = filters.regionKey ? items.some((item) => item.regionKey === filters.regionKey) : false;
+
+      return {
+        items: items.map((raw) => mapListItem(raw, filters.viewerId, filters.isAdmin)),
+        scope: filters.regionKey && hasRegional ? 'local' : 'global',
+        total,
+      };
+    },
+
+    async getById(id: string, viewerId: string | null, isAdmin: boolean): Promise<MarketplaceDetailItem | null> {
+      const item = await prisma.marketplaceItem.findUnique({
+        where: { id },
+        select: {
+          ...listSelect,
+          createdBy: {
+            select: { id: true, name: true, username: true, image: true, locationLabel: true },
+          },
+        },
+      });
+
+      if (!item) return null;
+
+      const isOwner = item.createdById === viewerId;
+      const canEdit = isAdmin || isOwner;
+
+      // Não expõe anúncios não ativos para quem não é dono/admin.
+      if (item.status !== MarketplaceStatus.ACTIVE && !canEdit) {
+        return null;
+      }
+
+      const region = await findRegionByKey(item.regionKey);
+
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        priceCents: item.priceCents,
+        isFree: item.isFree,
+        condition: mapCondition(item.condition),
+        locationLabel: item.locationLabel,
+        regionKey: item.regionKey,
+        city: region?.city ?? null,
+        state: region?.state ?? null,
+        imageUrl: item.imageUrl,
+        galleryUrls: item.galleryUrls,
+        status: mapStatus(item.status),
+        isFavorite: Boolean(viewerId && item.favorites.some((f) => f.userId === viewerId)),
+        canEdit,
+        isOwner,
+        publicPath: `/marketplace/${item.id}`,
+        createdAt: item.createdAt.toISOString(),
+        sellerId: item.createdBy?.id ?? item.createdById,
+        sellerName: item.createdBy?.name ?? null,
+        sellerUsername: item.createdBy?.username ?? null,
+        sellerImage: item.createdBy?.image ?? null,
+        sellerLocationLabel: item.createdBy?.locationLabel ?? null,
+      };
+    },
+
+    async create(input): Promise<MarketplaceDetailItem> {
+      const created = await prisma.marketplaceItem.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          category: input.category,
+          priceCents: input.isFree ? null : input.priceCents,
+          isFree: input.isFree,
+          condition: input.condition,
+          locationLabel: input.locationLabel,
+          regionKey: input.regionKey,
+          imageUrl: input.imageUrl,
+          galleryUrls: input.galleryUrls,
+          status: MarketplaceStatus.PENDING_REVIEW,
+          createdById: input.createdById,
+        },
+        select: listSelect,
+      });
+
+      return (await this.getById(created.id, input.createdById, false))!;
+    },
+
+    async update(id, viewerId, isAdmin, data): Promise<MarketplaceDetailItem | null> {
+      const existing = await prisma.marketplaceItem.findUnique({ where: { id }, select: { createdById: true } });
+      if (!existing) return null;
+      if (!isAdmin && existing.createdById !== viewerId) return null;
+
+      const updated = await prisma.marketplaceItem.update({
+        where: { id },
+        data: {
+          ...(data.title !== undefined ? { title: data.title } : {}),
+          ...(data.description !== undefined ? { description: data.description } : {}),
+          ...(data.category !== undefined ? { category: data.category } : {}),
+          ...(data.priceCents !== undefined ? { priceCents: data.isFree ? null : data.priceCents } : {}),
+          ...(data.isFree !== undefined ? { isFree: data.isFree } : {}),
+          ...(data.condition !== undefined ? { condition: data.condition } : {}),
+          ...(data.locationLabel !== undefined ? { locationLabel: data.locationLabel } : {}),
+          ...(data.regionKey !== undefined ? { regionKey: data.regionKey } : {}),
+          ...(data.imageUrl !== undefined ? { imageUrl: data.imageUrl } : {}),
+          ...(data.galleryUrls !== undefined ? { galleryUrls: data.galleryUrls } : {}),
+          ...(data.status !== undefined ? { status: data.status } : {}),
+        },
+        select: listSelect,
+      });
+
+      return this.getById(updated.id, viewerId, isAdmin);
+    },
+
+    async remove(id, viewerId, isAdmin): Promise<boolean> {
+      const existing = await prisma.marketplaceItem.findUnique({ where: { id }, select: { createdById: true } });
+      if (!existing) return false;
+      if (!isAdmin && existing.createdById !== viewerId) return false;
+
+      await prisma.marketplaceItem.delete({ where: { id } });
+      return true;
+    },
+
+    async toggleFavorite(id, viewerId): Promise<{ isFavorite: boolean }> {
+      const existing = await prisma.marketplaceFavorite.findUnique({
+        where: { itemId_userId: { itemId: id, userId: viewerId } },
+        select: { id: true },
+      });
+
+      if (existing) {
+        await prisma.marketplaceFavorite.delete({ where: { id: existing.id } });
+        return { isFavorite: false };
+      }
+
+      await prisma.marketplaceFavorite.create({ data: { itemId: id, userId: viewerId } });
+      return { isFavorite: true };
+    },
+  };
+}

@@ -5,6 +5,7 @@ import { ShieldAlert } from 'lucide-react';
 import AdminPanel from '@/views/AdminPanel';
 import AdminShell from '@/components/admin/AdminShell';
 import GroupReportsSection from '@/components/admin/GroupReportsSection';
+import InvitesSection from '@/components/admin/InvitesSection';
 import { UserRole, type User } from '@/types';
 
 type AdminWorkspaceProps = {
@@ -36,6 +37,10 @@ const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }
   if (isModerator) {
     if (segment !== 'moderation') return <AdminAccessDenied />;
     return <AdminShell user={currentUser}><div className="mx-auto max-w-6xl p-5 sm:p-8"><GroupReportsSection /></div></AdminShell>;
+  }
+
+  if (segment === 'convites') {
+    return <AdminShell user={currentUser}><InvitesSection /></AdminShell>;
   }
   const sectionBySegment = {
     ads: 'ads',

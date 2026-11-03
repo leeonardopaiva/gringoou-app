@@ -27,6 +27,7 @@ type AuthWorkspaceProps = {
   error: string | null;
   notice: string | null;
   defaultValues?: RegistrationValues;
+  inviteRequired?: boolean;
   onGoogleLogin: () => void;
   onGoogleSelectAccount: () => void;
   mockLoginEnabled?: boolean;
@@ -38,6 +39,7 @@ type AuthWorkspaceProps = {
     password: string;
     captchaToken: string;
     captchaAnswer: string;
+    inviteCode?: string;
   }) => Promise<void>;
   onCompleteProfile?: (values: RegistrationValues) => Promise<void>;
 };
@@ -52,6 +54,7 @@ const AuthWorkspace: React.FC<AuthWorkspaceProps> = ({
   error,
   notice,
   defaultValues,
+  inviteRequired,
   onGoogleLogin,
   onGoogleSelectAccount,
   mockLoginEnabled,
@@ -78,6 +81,7 @@ const AuthWorkspace: React.FC<AuthWorkspaceProps> = ({
     error={error}
     notice={notice}
     referralUsername={referralUsername}
+    inviteRequired={inviteRequired}
     defaultValues={defaultValues}
   />
 );

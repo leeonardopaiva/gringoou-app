@@ -2,6 +2,7 @@ import {
   BusinessStatus,
   BannerType,
   EventStatus,
+  MarketplaceCondition,
   SuggestionCategory,
   SuggestionStatus,
   UserRole,
@@ -431,4 +432,30 @@ export const analyticsEventSchema = z.object({
   sourcePath: z.string().trim().max(160).optional(),
   sourceSection: z.string().trim().max(80).optional(),
   regionKey: z.string().trim().max(80).optional(),
+});
+
+export const marketplaceItemSchema = z.object({
+  title: z.string().trim().min(3, 'Informe um titulo com ao menos 3 caracteres').max(120),
+  description: z.string().trim().min(10, 'Descreva melhor o anuncio').max(4000),
+  category: z.string().trim().min(2, 'Selecione uma categoria').max(60),
+  priceCents: z.coerce.number().int().min(0).max(100_000_000).nullable().optional(),
+  isFree: z.boolean().default(false),
+  condition: z.nativeEnum(MarketplaceCondition, { message: 'Selecione a condicao do item' }),
+  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  imageUrl: optionalUrl.nullable(),
+  galleryUrls: optionalUrlArray,
+});
+
+export const marketplaceCreateSchema = marketplaceItemSchema.refine(
+  (value) => !value.isFree || value.priceCents == null || value.priceCents === 0,
+  {
+    message: 'Itens gratuitos nao devem ter preco.',
+    path: ['priceCents'],
+  },
+);
+
+export const marketplaceUpdateSchema = marketplaceItemSchema.partial().extend({
+  status: z
+    .enum(['PENDING_REVIEW', 'ACTIVE', 'SOLD', 'UNAVAILABLE', 'REMOVED'])
+    .optional(),
 });

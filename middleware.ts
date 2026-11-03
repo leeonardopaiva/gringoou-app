@@ -5,6 +5,17 @@ import {
   isPreLaunchGateEnabled,
   verifyPreLaunchToken,
 } from '@/lib/pre-launch-gate';
+import {
+  GEO_BYPASS_COOKIE_NAME,
+  getRequestIp,
+  isCountryBlocked,
+  isCountryBlockedByList,
+  isGeoBlockEnabled,
+  isGeoBypassIp,
+  isGeoExemptPath,
+  isGeoRestrictionEnabled,
+  verifyGeoBypassToken,
+} from '@/lib/geo-access';
 
 const CANONICAL_HOST = 'gringoou.com';
 // Hosts redirected to the canonical domain. Keeping the OAuth flow on a single
@@ -41,6 +52,8 @@ const PUBLIC_AUTH_PATHS = [
   // reachable without authentication (and without the gate cookie itself).
   '/pre-launch',
   '/api/pre-launch',
+  // Waiting list signup from the landing page must work for anonymous visitors.
+  '/api/waitlist',
 ];
 
 // Paths that stay reachable while the pre-launch gate is active. Everything
@@ -58,6 +71,7 @@ const PRE_LAUNCH_PUBLIC_PATHS = [
   '/access-blocked',
   '/styleguide',
   '/api/dev/',
+  '/api/waitlist',
   ...PUBLIC_ASSET_PREFIXES,
 ];
 
@@ -142,6 +156,32 @@ const buildDeletedAccountResponse = (request: NextRequest) => {
 export async function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'production' && request.nextUrl.pathname.startsWith('/api/dev/')) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  // Country check first, so blocked visitors never reach sign-in or the gate.
+  // The developer is exempt by fixed IP or by the bypass cookie. The Founder
+  // (authenticated ADMIN) is exempt so maintenance from blocked regions works.
+  const geoEnabled = isGeoBlockEnabled() || isGeoRestrictionEnabled();
+  if (geoEnabled && !isGeoExemptPath(request.nextUrl.pathname)) {
+    const country = request.headers.get('x-vercel-ip-country');
+    const isExempt =
+      isGeoBypassIp(getRequestIp(request)) ||
+      (await verifyGeoBypassToken(request.cookies.get(GEO_BYPASS_COOKIE_NAME)?.value));
+
+    let isFounder = false;
+    if (!isExempt) {
+      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+      isFounder = token?.role === 'ADMIN';
+    }
+
+    const blocked = isGeoBlockEnabled() ? isCountryBlocked(country) : isCountryBlockedByList(country);
+
+    if (!isExempt && !isFounder && blocked) {
+      return new NextResponse(
+        '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gringoou</title><body style="font-family:sans-serif;padding:32px;color:#0f2b63"><h1>Gringoou ainda nao esta disponivel na sua regiao.</h1><p>Estamos liberando a plataforma aos poucos. Volte em breve.</p></body></html>',
+        { status: 403, headers: { 'content-type': 'text/html; charset=utf-8' } },
+      );
+    }
   }
 
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();

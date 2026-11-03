@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingHero } from '@/components/landing/LandingHero';
+import { WaitlistSection } from '@/components/landing/WaitlistSection';
 
 export const metadata: Metadata = {
   title: 'Gringoou — A comunidade brasileira no exterior',
@@ -13,6 +14,7 @@ export default function LandingPage() {
     <div className="min-h-screen overflow-hidden bg-[#f7f8fb]">
       <LandingHeader />
       <LandingHero />
+      <WaitlistSection />
     </div>
   );
 }

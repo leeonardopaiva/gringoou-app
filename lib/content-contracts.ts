@@ -31,6 +31,62 @@ export interface JobsInitialData {
   pagination: { page: number; pageSize: number; total: number; totalPages: number };
 }
 
+export interface MarketplaceItemContract {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priceCents: number | null;
+  isFree: boolean;
+  condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR' | 'POOR';
+  locationLabel: string;
+  regionKey: string;
+  imageUrl: string | null;
+  galleryUrls: string[];
+  status: 'PENDING_REVIEW' | 'ACTIVE' | 'SOLD' | 'UNAVAILABLE' | 'REMOVED';
+  isFavorite: boolean;
+  canEdit: boolean;
+  isPendingReview: boolean;
+  publicPath: string;
+  createdAt: string;
+  sellerName: string | null;
+  sellerUsername: string | null;
+  sellerImage: string | null;
+  city?: string | null;
+  state?: string | null;
+  sellerId?: string;
+  isOwner?: boolean;
+  sellerLocationLabel?: string | null;
+}
+
+export interface MarketplaceInitialData {
+  items: MarketplaceItemContract[];
+  scope: 'local' | 'global';
+  regionKey: string;
+  total: number;
+}
+
+export interface NewsItemContract {
+  id: string;
+  title: string;
+  source: string;
+  publishedAt: string;
+  url: string;
+  imageUrl: string | null;
+  description: string | null;
+  category: 'for-you' | 'region' | 'immigration' | 'community' | 'headlines';
+  language: 'pt' | 'en';
+  regionKey: string | null;
+}
+
+export interface NewsInitialData {
+  items: NewsItemContract[];
+  regionKey: string | null;
+  regionLabel: string | null;
+  provider: string;
+  fetchedAt: string;
+}
+
 export interface ProfileInitialData {
   user: {
     id: string;

@@ -3,6 +3,7 @@ import { getServerSession, type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import EmailProvider from 'next-auth/providers/email';
 import GoogleProvider from 'next-auth/providers/google';
+import { cookies } from 'next/headers';
 import { isConfiguredAdminEmail, syncAdminRole } from '@/lib/admin';
 import {
   emailFrom,
@@ -16,6 +17,8 @@ import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 import { isDevAuthEnabled } from '@/lib/dev-magic-links';
 import { USE_MOCKS } from '@/lib/server/mocks/config';
 import { getMockDevUser } from '@/lib/server/mocks/profiles.mock';
+import { consumeInvite, isInviteOnlyRegistration, validateInvite } from '@/lib/invites';
+import { INVITE_COOKIE_NAME, verifyInviteToken } from '@/lib/invite-token';
 
 // On Vercel, a stale localhost NEXTAUTH_URL (often copied from the local .env)
 // makes NextAuth build an unreachable OAuth redirect_uri and the callback fails
@@ -68,6 +71,24 @@ export const isPasswordAuthConfigured = Boolean(passwordAuthEnabled && process.e
 // mocked content is being used, reusing the same flags as the dev magic-link
 // shortcut (never true in production).
 export const isMockDevAuthConfigured = USE_MOCKS && isDevAuthEnabled;
+
+/**
+ * Lê o convite do cookie de curta duração e o consome para o usuário.
+ * Retorna true se o convite foi consumido com sucesso; false se não houver
+ * cookie válido ou se o consumo falhar.
+ */
+async function consumeInviteFromCookie(email: string, userId: string): Promise<boolean> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(INVITE_COOKIE_NAME)?.value;
+  const payload = verifyInviteToken(token);
+
+  if (!payload) {
+    return false;
+  }
+
+  const result = await consumeInvite(payload.code, email, userId);
+  return result.ok;
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -155,13 +176,32 @@ export const authOptions: NextAuthOptions = {
             from: emailFrom,
             maxAge: 15 * 60,
             sendVerificationRequest: async (params) => {
+              const email = normalizeAuthEmail(params.identifier);
+              const existingUser = await prisma.user.findUnique({
+                where: { email },
+                select: { id: true },
+              });
+
               if (!isOperationalFeatureEnabled('registration')) {
-                const existingUser = await prisma.user.findUnique({
-                  where: { email: normalizeAuthEmail(params.identifier) },
-                  select: { id: true },
-                });
                 if (!existingUser) throw new Error('REGISTRATION_DISABLED');
               }
+
+              // Private Beta: novos cadastros por e-mail exigem convite válido.
+              if (isInviteOnlyRegistration() && !existingUser) {
+                const cookieStore = await cookies();
+                const token = cookieStore.get(INVITE_COOKIE_NAME)?.value;
+                const payload = verifyInviteToken(token);
+
+                if (!payload) {
+                  throw new Error('INVITE_REQUIRED');
+                }
+
+                const validation = await validateInvite(payload.code, email);
+                if (!validation.ok) {
+                  throw new Error('INVITE_REQUIRED');
+                }
+              }
+
               await sendMagicLinkVerification(params);
             },
           }),
@@ -274,6 +314,12 @@ export const authOptions: NextAuthOptions = {
               where: { id: existingUser.id },
               data: { emailVerified: new Date(), emailVerificationRequired: false },
             });
+          } else if (isInviteOnlyRegistration()) {
+            // Novo cadastro via Google: exige convite válido.
+            const consumed = await consumeInviteFromCookie(verifiedEmail, user.id || '');
+            if (!consumed) {
+              return false;
+            }
           }
         }
       }
@@ -286,6 +332,22 @@ export const authOptions: NextAuthOptions = {
             emailVerificationRequired: false,
           },
         });
+
+        // Novo cadastro via magic link: consome o convite apenas se houver
+        // cookie válido (usuários existentes não possuem cookie e seguem livres).
+        if (isInviteOnlyRegistration()) {
+          const email = normalizeAuthEmail(user.email || '');
+          const cookieStore = await cookies();
+          const token = cookieStore.get(INVITE_COOKIE_NAME)?.value;
+          const payload = verifyInviteToken(token);
+
+          if (payload) {
+            const result = await consumeInvite(payload.code, email, user.id);
+            if (!result.ok) {
+              return false;
+            }
+          }
+        }
       }
 
       if (user.id && isConfiguredAdminEmail(user.email)) {
@@ -337,6 +399,34 @@ export const authOptions: NextAuthOptions = {
           token.onboardingCompleted = mockUser.onboardingCompleted ?? token.onboardingCompleted ?? true;
           token.recruiterVerified = mockUser.recruiterVerified ?? token.recruiterVerified ?? false;
           token.isAdvertiser = mockUser.isAdvertiser ?? token.isAdvertiser ?? false;
+          // Mock accounts exist only for local development and skip SMS confirmation.
+          token.phoneVerified = true;
+        }
+
+        // Real accounts still need onboarding and SMS confirmation read from the database,
+        // so changes made during the session show up without signing out again.
+        // Mock accounts are complete from sign-in and skip this lookup.
+        if (!token.phoneVerified || !token.onboardingCompleted || !token.username) {
+          const dbRow = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              username: true,
+              phone: true,
+              locationLabel: true,
+              regionKey: true,
+              onboardingCompleted: true,
+              phoneVerifiedAt: true,
+            },
+          });
+
+          if (dbRow) {
+            token.username = dbRow.username;
+            token.phone = dbRow.phone;
+            token.locationLabel = dbRow.locationLabel;
+            token.regionKey = dbRow.regionKey;
+            token.onboardingCompleted = dbRow.onboardingCompleted;
+            token.phoneVerified = Boolean(dbRow.phoneVerifiedAt);
+          }
         }
 
         return token;
@@ -357,6 +447,7 @@ export const authOptions: NextAuthOptions = {
           onboardingCompleted: true,
           recruiterVerified: true,
           isAdvertiser: true,
+          phoneVerifiedAt: true,
         },
       });
 
@@ -381,6 +472,7 @@ export const authOptions: NextAuthOptions = {
       token.onboardingCompleted = dbUser.onboardingCompleted;
       token.recruiterVerified = dbUser.recruiterVerified;
       token.isAdvertiser = dbUser.isAdvertiser;
+      token.phoneVerified = Boolean(dbUser.phoneVerifiedAt);
       token.accountDeleted = false;
 
       return token;
@@ -400,6 +492,7 @@ export const authOptions: NextAuthOptions = {
       session.user.onboardingCompleted = Boolean(token.onboardingCompleted);
       session.user.recruiterVerified = Boolean(token.recruiterVerified);
       session.user.isAdvertiser = Boolean(token.isAdvertiser);
+      session.user.phoneVerified = Boolean(token.phoneVerified);
       session.user.name = (token.name as string | null | undefined) ?? null;
       session.user.email = (token.email as string | null | undefined) ?? null;
       session.user.image = (token.picture as string | null | undefined) ?? null;

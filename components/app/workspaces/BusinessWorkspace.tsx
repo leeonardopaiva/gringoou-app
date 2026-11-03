@@ -5,9 +5,11 @@ import BusinessDetail from '@/views/BusinessDetail';
 import BusinessList from '@/views/BusinessList';
 import EventDetail from '@/views/EventDetail';
 import Marketplace from '@/views/Marketplace';
+import MarketplaceDetail from '@/views/MarketplaceDetail';
+import MarketplaceList from '@/views/MarketplaceList';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
-import type { BusinessesInitialData, EventsInitialData } from '@/lib/content-contracts';
+import type { BusinessesInitialData, EventsInitialData, MarketplaceInitialData } from '@/lib/content-contracts';
 
 type BusinessWorkspaceProps = {
   currentUser: User;
@@ -16,6 +18,7 @@ type BusinessWorkspaceProps = {
   professionalIdentity: ProfessionalProfileIdentity | null;
   initialBusinessesData?: BusinessesInitialData;
   initialEventsData?: EventsInitialData;
+  initialMarketplaceData?: MarketplaceInitialData;
 };
 
 const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
@@ -25,6 +28,7 @@ const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
   professionalIdentity,
   initialBusinessesData,
   initialEventsData,
+  initialMarketplaceData,
 }) => {
   const { segments, rootSegment } = parseAppRoute(pathname);
 
@@ -40,7 +44,15 @@ const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
     return <BusinessDetail businessId={decodeURIComponent(segments[1])} user={currentUser} managementMode />;
   }
 
-  if ((rootSegment === 'eventos' || rootSegment === 'marketplace') && segments.length === 2) {
+  if (rootSegment === 'marketplace' && segments.length === 2) {
+    return <MarketplaceDetail itemId={decodeURIComponent(segments[1])} user={currentUser} />;
+  }
+
+  if (rootSegment === 'marketplace') {
+    return <MarketplaceList user={currentUser} initialData={initialMarketplaceData} />;
+  }
+
+  if (rootSegment === 'eventos' && segments.length === 2) {
     return <EventDetail eventId={decodeURIComponent(segments[1])} user={currentUser} />;
   }
 
