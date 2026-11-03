@@ -128,8 +128,12 @@ const parseRssItems = (xml: string): Array<Record<string, string>> => {
     const source = extract('source');
     const description = extract('description');
 
+    // Imagem via media:content (Google News RSS expõe quando disponível).
+    const mediaMatch = /<media:content[^>]*url="([^"]+)"/i.exec(block);
+    const imageUrl = mediaMatch?.[1] ? decodeEntities(mediaMatch[1]) : '';
+
     if (title && link) {
-      items.push({ title, link, pubDate, source, description });
+      items.push({ title, link, pubDate, source, description, imageUrl });
     }
   }
 
@@ -167,6 +171,7 @@ const normalizeItems = (
 
     const description = raw.description.trim() || null;
     const language = detectLanguage(title, description ?? '');
+    const imageUrl = raw.imageUrl && isValidHttpUrl(raw.imageUrl) ? raw.imageUrl : null;
 
     items.push({
       id: `news-${Buffer.from(normalizedUrl).toString('base64url').slice(0, 24)}`,
@@ -174,7 +179,7 @@ const normalizeItems = (
       source: raw.source.trim() || 'Google News',
       publishedAt: raw.pubDate ? new Date(raw.pubDate).toISOString() : new Date().toISOString(),
       url,
-      imageUrl: null, // Google News RSS não expõe imagens licenciadas; mantém nulo.
+      imageUrl,
       description,
       category,
       language,

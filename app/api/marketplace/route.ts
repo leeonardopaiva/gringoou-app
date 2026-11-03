@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     priceCents: parsed.data.isFree ? null : parsed.data.priceCents ?? null,
     isFree: parsed.data.isFree,
     condition: parsed.data.condition,
-    locationLabel: region.label,
+    locationLabel: parsed.data.locationLabel?.trim() || region.label,
     regionKey: region.key,
     imageUrl: parsed.data.imageUrl ?? null,
     galleryUrls: parsed.data.galleryUrls,

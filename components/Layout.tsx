@@ -42,6 +42,7 @@ import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
 import { ActiveRegionProvider } from './RegionContext';
+import { LanguageProvider } from './i18n/LanguageProvider';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -510,7 +511,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
           <main className="mx-auto w-full max-w-[1120px] px-4 pt-4 md:px-6 md:pt-6">
             <ActiveRegionProvider value={activeRegion.key || null}>
-              {children}
+              <LanguageProvider>{children}</LanguageProvider>
             </ActiveRegionProvider>
           </main>
 

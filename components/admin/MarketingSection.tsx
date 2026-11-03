@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Eye, Mail, Plus, Save, Trash2 } from 'lucide-react';
+import { Eye, KeyRound, Mail, Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { useToast } from '../feedback/ToastProvider';
@@ -14,6 +14,7 @@ type SavedTemplate = {
 };
 
 const STORAGE_KEY = 'gringoou_marketing_templates';
+const SETTINGS_KEY = 'gringoou_marketing_settings';
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="pt-BR">
@@ -49,15 +50,34 @@ const MarketingSection: React.FC = () => {
   const [html, setHtml] = useState(DEFAULT_TEMPLATE);
   const [preview, setPreview] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [provider, setProvider] = useState('resend');
+  const [apiKey, setApiKey] = useState('');
+  const [fromEmail, setFromEmail] = useState('');
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored) setTemplates(JSON.parse(stored));
+      const settings = window.localStorage.getItem(SETTINGS_KEY);
+      if (settings) {
+        const parsed = JSON.parse(settings);
+        setProvider(parsed.provider ?? 'resend');
+        setApiKey(parsed.apiKey ?? '');
+        setFromEmail(parsed.fromEmail ?? '');
+      }
     } catch {
       setTemplates([]);
     }
   }, []);
+
+  const saveSettings = () => {
+    try {
+      window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ provider, apiKey, fromEmail }));
+      showToast('Configuração do serviço de e-mail salva.', 'success');
+    } catch {
+      showToast('Não foi possível salvar a configuração.', 'error');
+    }
+  };
 
   const persist = (next: SavedTemplate[]) => {
     setTemplates(next);
@@ -110,6 +130,56 @@ const MarketingSection: React.FC = () => {
         <p className="mt-1 text-sm text-slate-400">
           Crie e edite templates de e-mail. O envio em massa requer um serviço de e-mail transacional/bulk.
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <KeyRound size={16} className="text-brand-500" />
+          <h2 className="text-sm font-bold text-slate-700">Serviço de e-mail (envio em massa)</h2>
+        </div>
+        <p className="mt-1 text-xs text-slate-400">
+          Configure o provedor e a chave de API. Em produção, recomenda-se armazenar a chave no servidor (variável de ambiente).
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-xs font-bold text-slate-600">Provedor</label>
+            <select
+              value={provider}
+              onChange={(event) => setProvider(event.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+            >
+              <option value="resend">Resend</option>
+              <option value="sendgrid">SendGrid</option>
+              <option value="ses">Amazon SES</option>
+              <option value="nodemailer">SMTP (Nodemailer)</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold text-slate-600">API Key</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder="chave da API"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold text-slate-600">E-mail remetente</label>
+            <input
+              type="email"
+              value={fromEmail}
+              onChange={(event) => setFromEmail(event.target.value)}
+              placeholder="no-reply@gringoou.com"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex justify-end">
+          <Button size="sm" iconLeft={<Save size={15} />} onClick={saveSettings}>
+            Salvar configuração
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">

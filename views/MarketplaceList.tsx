@@ -21,6 +21,7 @@ import ImageGalleryField from '../components/forms/ImageGalleryField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import { useActiveRegion } from '../components/RegionContext';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import AddressAutocomplete from '../components/ui/AddressAutocomplete';
 import type { User } from '../types';
 import type { MarketplaceInitialData, MarketplaceItemContract } from '../lib/content-contracts';
 import {
@@ -79,11 +80,12 @@ const emptyForm = {
   isFree: false,
   condition: 'GOOD',
   regionKey: '',
+  locationLabel: '',
   imageUrl: '',
   galleryUrls: [] as string[],
 };
 
-type FormField = 'title' | 'description' | 'category' | 'price' | 'condition' | 'regionKey' | 'imageUrl';
+type FormField = 'title' | 'description' | 'category' | 'price' | 'condition' | 'regionKey' | 'locationLabel' | 'imageUrl';
 
 type MarketplaceListProps = {
   user: User;
@@ -210,6 +212,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           isFree: form.isFree,
           condition: form.condition,
           regionKey: form.regionKey,
+          locationLabel: form.locationLabel,
           imageUrl: normalizeUrlFieldValue(form.imageUrl),
           galleryUrls: form.galleryUrls,
         }),
@@ -258,7 +261,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
   const filteredCount = useMemo(() => items.length, [items]);
 
   return (
-    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
+    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
       <PageHeader
         title="Marketplace"
         backHref="/inicio"
@@ -553,6 +556,15 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
                 />
               </div>
             ) : null}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-bold text-slate-600">Localização</label>
+            <AddressAutocomplete
+              value={form.locationLabel}
+              onChange={(value) => setForm((current) => ({ ...current, locationLabel: value }))}
+              placeholder="Bairro, cidade ou endereço"
+            />
           </div>
 
           <div>

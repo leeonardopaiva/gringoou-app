@@ -442,6 +442,7 @@ export const marketplaceItemSchema = z.object({
   isFree: z.boolean().default(false),
   condition: z.nativeEnum(MarketplaceCondition, { message: 'Selecione a condicao do item' }),
   regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  locationLabel: z.string().trim().max(160).optional(),
   imageUrl: optionalUrl.nullable(),
   galleryUrls: optionalUrlArray,
 });

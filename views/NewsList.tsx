@@ -10,6 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
 import { SectionTabs } from '../components/ui/SectionTabs';
 import { useActiveRegion } from '../components/RegionContext';
+import { useLanguage } from '../components/i18n/LanguageProvider';
 import type { NewsInitialData, NewsItemContract } from '../lib/content-contracts';
 
 type NewsCategory = NewsItemContract['category'];
@@ -51,6 +52,7 @@ type NewsListProps = {
 
 const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
   const { data: session } = useSession();
+  const { t } = useLanguage();
   const contextRegionKey = useActiveRegion();
   const regionKey = contextRegionKey || session?.user?.regionKey || null;
 
@@ -128,8 +130,8 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
   };
 
   return (
-    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
-      <PageHeader title="Notícias" backHref="/inicio" />
+    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+      <PageHeader title={t('news.title')} backHref="/inicio" />
 
       <div className="mt-4 space-y-4">
         <div className="relative">
@@ -137,7 +139,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
             type="text"
             value={search}
             onChange={(event) => handleSearch(event.target.value)}
-            placeholder="Buscar notícias..."
+            placeholder={t('news.search')}
             aria-label="Buscar notícias"
             className="w-full rounded-2xl border border-slate-100 bg-white py-3.5 pl-12 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
           />
@@ -153,7 +155,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
 
         {regionLabel ? (
           <p className="text-xs font-medium text-slate-500">
-            Notícias para <span className="font-bold text-brand-600">{regionLabel}</span>
+            {t('news.region')} <span className="font-bold text-brand-600">{regionLabel}</span>
           </p>
         ) : null}
       </div>
@@ -186,6 +188,40 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
         </div>
       ) : (
         <div className="mt-6 space-y-6">
+          {filteredItems.length > 1 ? (
+            <div>
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">{t('news.trending')}</h2>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {filteredItems.slice(0, 6).map((item, index) => (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group w-40 shrink-0 overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md"
+                  >
+                    <div className="relative flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-brand-50 to-slate-100">
+                      {item.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <Newspaper className="text-brand-300" size={24} />
+                      )}
+                      <span className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/70 text-[11px] font-bold text-white">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div className="p-2.5">
+                      <p className="line-clamp-2 text-xs font-semibold leading-snug text-slate-700 group-hover:text-brand-700">
+                        {item.title}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {featured ? (
             <a
               href={featured.url}
@@ -198,7 +234,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2 text-[11px] font-bold text-brand-600">
-                  <span className="rounded-full bg-brand-50 px-2 py-0.5">Destaque</span>
+                  <span className="rounded-full bg-brand-50 px-2 py-0.5">{t('news.featured')}</span>
                   <span>{featured.source}</span>
                   {featured.language === 'en' ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-500">
@@ -216,7 +252,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
                   <Clock size={12} />
                   {formatRelativeTime(featured.publishedAt)}
                   <span className="ml-auto inline-flex items-center gap-1 font-semibold text-brand-600">
-                    Ler notícia <ExternalLink size={12} />
+                    {t('news.read')} <ExternalLink size={12} />
                   </span>
                 </div>
               </div>

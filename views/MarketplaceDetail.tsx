@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight, Heart, MapPin, Share2, ShoppingBag, Trash2, User as UserIcon } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { ContentColumn } from '../components/ui/ContentColumn';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -184,32 +185,32 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   if (loading) {
     return (
-      <div className="px-5 pb-20 pt-2">
+      <ContentColumn size="feed" className="px-5 pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
         <div className="mt-4 space-y-4">
           <Skeleton className="aspect-[4/3] w-full" />
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="h-4 w-3/4" />
         </div>
-      </div>
+      </ContentColumn>
     );
   }
 
   if (error || !item) {
     return (
-      <div className="px-5 pb-20 pt-2">
+      <ContentColumn size="feed" className="px-5 pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
         <div className="mt-6">
           <EmptyState icon={<ShoppingBag size={28} />} title="Anúncio indisponível" description={error ?? 'Este anúncio não está mais disponível.'} />
         </div>
-      </div>
+      </ContentColumn>
     );
   }
 
   const sellerProfilePath = item.sellerUsername ? `/perfil/${encodeURIComponent(item.sellerUsername)}` : null;
 
   return (
-    <div className="px-5 pb-20 pt-2">
+    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
       <PageHeader title="Anúncio" backHref="/marketplace" />
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -419,7 +420,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
           </div>
         }
       />
-    </div>
+    </ContentColumn>
   );
 };
 
