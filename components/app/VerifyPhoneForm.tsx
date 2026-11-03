@@ -90,7 +90,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
 
   if (step === 'code') {
     return (
-      <form onSubmit={confirmCode} className="flex flex-col gap-4 text-left" noValidate>
+      <form onSubmit={confirmCode} className="flex flex-col gap-4 text-center" noValidate>
         <p className="text-sm text-[#4a5672]">
           Enviamos um codigo por SMS para <strong className="text-[#0f2b63]">{phone}</strong>.
         </p>
@@ -118,7 +118,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
           </p>
         )}
 
-        <button type="submit" disabled={loading || code.length < 4} className={buttonClassName}>
+        <button type="submit" disabled={loading || code.length < 4} className={`${buttonClassName} w-full`}>
           {loading ? 'Confirmando...' : 'Confirmar codigo'}
         </button>
         <button
@@ -137,7 +137,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
   }
 
   return (
-    <form onSubmit={sendCode} className="flex flex-col gap-4 text-left" noValidate>
+    <form onSubmit={sendCode} className="flex flex-col gap-4 text-center" noValidate>
       <label htmlFor="verify-phone" className="text-sm font-semibold text-[#0f2b63]">
         Telefone com codigo do pais
       </label>
@@ -161,7 +161,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
         </p>
       )}
 
-      <button type="submit" disabled={loading || phone.replace(/\D/g, '').length < 8} className={buttonClassName}>
+      <button type="submit" disabled={loading || phone.replace(/\D/g, '').length < 8} className={`${buttonClassName} w-full`}>
         {loading ? 'Enviando...' : 'Enviar codigo por SMS'}
       </button>
     </form>

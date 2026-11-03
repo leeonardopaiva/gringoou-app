@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isPhoneVerificationEnabled } from '@/lib/phone-verification';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findReferrerByUsername } from '@/lib/referrals';
@@ -59,8 +60,9 @@ export async function POST(request: Request) {
     },
   });
 
-  // The profile can only be completed after the phone is confirmed by SMS.
-  if (!currentUser?.phoneVerifiedAt) {
+  // The profile can only be completed after the phone is confirmed by SMS,
+  // when phone verification is enabled.
+  if (isPhoneVerificationEnabled() && !currentUser?.phoneVerifiedAt) {
     return NextResponse.json(
       { error: 'Confirme seu telefone por SMS antes de concluir o cadastro.' },
       { status: 403 },

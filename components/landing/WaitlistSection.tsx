@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LocateFixed } from 'lucide-react';
 import { waitlistSchema } from '@/lib/waitlist';
+import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 
 const inputClassName =
   'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-[#0086ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0086ff]';
@@ -15,6 +17,59 @@ export function WaitlistSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
+
+  const detectLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setError('Seu navegador nao suporta localizacao. Selecione o pais manualmente.');
+      return;
+    }
+
+    setLocating(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+        try {
+          if (token) {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${token}&types=country&limit=1`,
+            );
+            const data = await response.json().catch(() => null);
+            const countryName = data?.features?.[0]?.text;
+            if (countryName) {
+              setCountry(countryName);
+              setLocating(false);
+              return;
+            }
+          }
+
+          // Fallback: inferir o pais a partir do fuso horario.
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const match = COUNTRY_CALLING_CODE_OPTIONS.find((option) =>
+            timeZone.toUpperCase().includes(option.iso2.toUpperCase()),
+          );
+          if (match) {
+            setCountry(match.country);
+          } else {
+            setError('Nao foi possivel detectar o pais. Selecione manualmente.');
+          }
+        } catch {
+          setError('Nao foi possivel detectar o pais. Selecione manualmente.');
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setLocating(false);
+        setError('Permita o acesso a localizacao para detectar o pais automaticamente.');
+      },
+      { timeout: 10000 },
+    );
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -104,19 +159,38 @@ export function WaitlistSection() {
               className={inputClassName}
             />
 
-            <label htmlFor="waitlist-country" className="sr-only">
-              Pais onde voce mora
-            </label>
-            <input
-              id="waitlist-country"
-              name="country"
-              type="text"
-              autoComplete="country-name"
-              placeholder="Pais onde voce mora"
-              value={country}
-              onChange={(event) => setCountry(event.target.value)}
-              className={inputClassName}
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label htmlFor="waitlist-country" className="sr-only">
+                  Pais onde voce mora
+                </label>
+                <select
+                  id="waitlist-country"
+                  name="country"
+                  autoComplete="country-name"
+                  value={country}
+                  onChange={(event) => setCountry(event.target.value)}
+                  className={inputClassName}
+                >
+                  <option value="">Selecione o pais</option>
+                  {COUNTRY_CALLING_CODE_OPTIONS.map((option) => (
+                    <option key={option.iso2} value={option.country}>
+                      {option.country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={detectLocation}
+                disabled={locating}
+                aria-label="Usar minha localizacao"
+                title="Usar minha localizacao"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-[#0086ff] transition hover:bg-[#f0f7ff] disabled:opacity-60"
+              >
+                <LocateFixed size={18} className={locating ? 'animate-pulse' : ''} />
+              </button>
+            </div>
 
             {/* Honeypot: hidden from people and screen readers, bots tend to fill it. */}
             <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">

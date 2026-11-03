@@ -52,8 +52,12 @@ export const getAccessCountry = (request: Request) =>
 // SMS. Never active in production, so it cannot replace a real delivery there.
 const isDevSmsMode = process.env.NODE_ENV !== 'production' && process.env.PHONE_SMS_DEV_MODE === 'true';
 
+// Phone verification is opt-in. Off by default (Twilio not integrated yet).
+export const isPhoneVerificationEnabled = () => process.env.PHONE_VERIFICATION_ENABLED === 'true';
+
 export const isPhoneVerificationConfigured = Boolean(
-  process.env.NEXTAUTH_SECRET &&
+  isPhoneVerificationEnabled() &&
+    process.env.NEXTAUTH_SECRET &&
     (isDevSmsMode ||
       (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER)),
 );

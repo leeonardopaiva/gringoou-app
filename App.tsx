@@ -74,6 +74,7 @@ const App: React.FC<{
     hasProfessionalBusinesses;
   const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
   const inviteRequired = process.env.NEXT_PUBLIC_INVITE_ONLY_REGISTRATION === 'true';
+  const phoneVerificationEnabled = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
 
   useEffect(() => {
     if (pathname === '/profile' && session?.user?.username) {
@@ -538,7 +539,7 @@ const App: React.FC<{
     return null;
   }
 
-  if (!session.user.phoneVerified) {
+  if (phoneVerificationEnabled && !session.user.phoneVerified) {
     return <PhoneVerificationGate onVerified={() => void update()} />;
   }
 
