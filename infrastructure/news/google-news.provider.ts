@@ -36,40 +36,45 @@ const cache = new Map<string, CacheEntry>();
 
 const isEnabled = () => {
   const flag = process.env.NEWS_GOOGLE_RSS_ENABLED?.trim().toLowerCase();
-  // Habilitado por padrão apenas em desenvolvimento; em produção exige flag explícita.
-  if (process.env.NODE_ENV === 'production') {
-    return flag === 'true';
-  }
+  // Habilitado por padrão; desative com NEWS_GOOGLE_RSS_ENABLED=false.
   return flag !== 'false';
+};
+
+// Locale do país da região (para notícias locais relevantes).
+const getLocale = (countryCode?: string | null) => {
+  if (countryCode === 'US' || countryCode === 'CA') {
+    return { hl: 'en-US', gl: 'US', ceid: 'US:en' };
+  }
+  if (countryCode === 'PT') {
+    return { hl: 'pt-PT', gl: 'PT', ceid: 'PT:pt-150' };
+  }
+  // Padrão: edição brasileira (comunidade brasileira no exterior).
+  return { hl: 'pt-BR', gl: 'BR', ceid: 'BR:pt-419' };
 };
 
 const buildUrl = (filters: NewsListFilters): string => {
   const { city, state, countryCode, category, query } = filters;
-
-  // Edição brasileira por padrão (comunidade brasileira no exterior).
-  const hl = 'pt-BR';
-  const gl = 'BR';
-  const ceid = 'BR:pt-419';
+  const locale = getLocale(countryCode);
 
   if (query) {
-    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${ceid}`;
+    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent(query)}&hl=${locale.hl}&gl=${locale.gl}&ceid=${locale.ceid}`;
   }
 
   if (category === 'immigration') {
-    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent('imigração brasileiros exterior')}&hl=${hl}&gl=${gl}&ceid=${ceid}`;
+    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent('imigração brasileiros exterior')}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
   }
 
   if (category === 'community') {
-    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent('comunidade brasileira exterior')}&hl=${hl}&gl=${gl}&ceid=${ceid}`;
+    return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent('comunidade brasileira exterior')}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
   }
 
   if (category === 'headlines') {
-    return `${GOOGLE_NEWS_BASE}/headlines/section/topic/WORLD?hl=${hl}&gl=${gl}&ceid=${ceid}`;
+    return `${GOOGLE_NEWS_BASE}/headlines/section/topic/WORLD?hl=pt-BR&gl=BR&ceid=BR:pt-419`;
   }
 
-  // Regional: usa cidade/estado quando disponíveis, senão país.
-  const location = city || state || countryCode || 'United States';
-  return `${GOOGLE_NEWS_BASE}/headlines/section/geo/${encodeURIComponent(location)}?hl=${hl}&gl=${gl}&ceid=${ceid}`;
+  // Regional: busca por cidade/estado (mais confiável que o feed geo).
+  const location = [city, state].filter(Boolean).join(', ') || countryCode || 'United States';
+  return `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent(location)}&hl=${locale.hl}&gl=${locale.gl}&ceid=${locale.ceid}`;
 };
 
 const decodeEntities = (value: string) =>

@@ -6,6 +6,7 @@ import AdminPanel from '@/views/AdminPanel';
 import AdminShell from '@/components/admin/AdminShell';
 import GroupReportsSection from '@/components/admin/GroupReportsSection';
 import InvitesSection from '@/components/admin/InvitesSection';
+import MarketingSection from '@/components/admin/MarketingSection';
 import { UserRole, type User } from '@/types';
 
 type AdminWorkspaceProps = {
@@ -41,6 +42,10 @@ const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }
 
   if (segment === 'convites') {
     return <AdminShell user={currentUser}><InvitesSection /></AdminShell>;
+  }
+
+  if (segment === 'marketing') {
+    return <AdminShell user={currentUser}><MarketingSection /></AdminShell>;
   }
   const sectionBySegment = {
     ads: 'ads',

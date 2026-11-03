@@ -20,6 +20,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import { useActiveRegion } from '../components/RegionContext';
+import { ContentColumn } from '../components/ui/ContentColumn';
 import type { User } from '../types';
 import type { MarketplaceInitialData, MarketplaceItemContract } from '../lib/content-contracts';
 import {
@@ -185,10 +186,10 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
     event.preventDefault();
 
     const nextErrors: FieldErrors<FormField> = {};
-    if (!form.title.trim()) nextErrors.title = requiredFieldError('o titulo');
-    if (!form.description.trim()) nextErrors.description = requiredFieldError('a descricao');
-    if (!form.regionKey.trim()) nextErrors.regionKey = requiredFieldError('uma regiao');
-    if (!form.isFree && !form.price.trim()) nextErrors.price = requiredFieldError('o preco');
+    if (!form.title.trim()) nextErrors.title = requiredFieldError('o título');
+    if (!form.description.trim()) nextErrors.description = requiredFieldError('a descrição');
+    if (!form.regionKey.trim()) nextErrors.regionKey = requiredFieldError('uma região');
+    if (!form.isFree && !form.price.trim()) nextErrors.price = requiredFieldError('o preço');
 
     const imageUrlError = validateOptionalUrlField(form.imageUrl, 'O link da imagem');
     if (imageUrlError) nextErrors.imageUrl = imageUrlError;
@@ -257,7 +258,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
   const filteredCount = useMemo(() => items.length, [items]);
 
   return (
-    <div className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
       <PageHeader
         title="Marketplace"
         backHref="/inicio"
@@ -579,7 +580,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           </div>
         </form>
       </Modal>
-    </div>
+    </ContentColumn>
   );
 };
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Clock, ExternalLink, Globe, Newspaper, Search } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
 import { SectionTabs } from '../components/ui/SectionTabs';
@@ -127,7 +128,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
   };
 
   return (
-    <div className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
       <PageHeader title="Notícias" backHref="/inicio" />
 
       <div className="mt-4 space-y-4">
@@ -258,7 +259,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
           </p>
         </div>
       )}
-    </div>
+    </ContentColumn>
   );
 };
 

@@ -14,6 +14,7 @@ import {
   ImageIcon,
   LayoutGrid,
   LogOut,
+  Mail,
   MapPin,
   Menu,
   Megaphone,
@@ -42,11 +43,12 @@ const navigation = [
   { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/convites', label: 'Convites', icon: Ticket },
+  { href: '/admin/marketing', label: 'Marketing', icon: Mail },
 ];
 
 const labels: Record<string, string> = {
   ads: 'Anuncios', moderation: 'Moderacao', businesses: 'Negocios', events: 'Eventos', users: 'Usuarios',
-  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', convites: 'Convites',
+  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', convites: 'Convites', marketing: 'Marketing',
 };
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {

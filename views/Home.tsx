@@ -175,8 +175,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
           href="/marketplace"
           icon={ShoppingBag}
           label="Marketplace"
-          disabled
-          onDisabledClick={() => handleDisabledFeatureClick('marketplace', 'Marketplace')}
+          onActivate={() => router.push('/marketplace')}
         />
         <ServiceCard
           href="/moradia"

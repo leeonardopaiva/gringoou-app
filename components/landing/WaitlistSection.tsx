@@ -153,7 +153,7 @@ export function WaitlistSection() {
               placeholder="Seu melhor email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => setEmail(event.target.value.toLowerCase())}
               aria-invalid={Boolean(error)}
               aria-describedby={error ? 'waitlist-error' : undefined}
               className={inputClassName}
