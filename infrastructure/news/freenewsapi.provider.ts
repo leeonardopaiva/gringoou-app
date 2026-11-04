@@ -40,7 +40,7 @@ const getCountry = (countryCode?: string | null) => {
 
 const getLanguage = (countryCode?: string | null): string => {
   if (countryCode === 'PT' || countryCode === 'BR') return 'pt';
-  return 'en';
+  return 'pt';
 };
 
 const buildQuery = (filters: NewsListFilters): string => {
