@@ -1,12 +1,11 @@
 import 'server-only';
 
-import { makeGoogleNewsProvider } from '@/infrastructure/news/google-news.provider';
-import { makeGNewsProvider } from '@/infrastructure/news/gnews.provider';
+import { makeFreeNewsProvider } from '@/infrastructure/news/freenewsapi.provider';
 import { createNewsUseCases } from '@/application/news';
 
-// Prefere a GNews API (dados estruturados com imagem/descrição) quando a chave
-// estiver configurada; caso contrário, usa o Google News RSS (dev/PoC).
-const provider = process.env.GNEWS_API_KEY?.trim() ? makeGNewsProvider() : makeGoogleNewsProvider();
+// Prefere a FreeNewsApi (5.000 req/dia gratuitos) quando a chave estiver
+// configurada; caso contrário, retorna array vazio (sem notícias).
+const provider = process.env.FREE_NEWS_API_KEY?.trim() ? makeFreeNewsProvider() : makeFreeNewsProvider();
 const useCases = createNewsUseCases(provider);
 
 /** Instância compartilhada dos casos de uso de Notícias (server-side). */
