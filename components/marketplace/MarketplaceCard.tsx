@@ -41,11 +41,17 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   className,
 }) => {
   const showFavorite = Boolean(onToggleFavorite);
+  const isMine = item.canEdit === true;
 
   return (
     <div className={cn('relative', className)}>
       <Link href={item.publicPath} className="group block" aria-label={item.title}>
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-100">
+        <div
+          className={cn(
+            'relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100',
+            isMine ? 'border-2 border-brand-400' : 'border border-slate-100',
+          )}
+        >
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -67,6 +73,11 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           {item.isPendingReview ? (
             <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-700">
               Em análise
+            </span>
+          ) : null}
+        {isMine ? (
+            <span className="absolute bottom-2 left-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+              Meu anúncio
             </span>
           ) : null}
         </div>

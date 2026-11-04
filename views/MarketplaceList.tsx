@@ -290,33 +290,22 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       />
 
       <div className="mt-4 space-y-4">
-        <div className="relative">
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder="Buscar anúncios..."
-            aria-label="Buscar anúncios"
-            className="w-full rounded-2xl border border-slate-100 bg-white py-3.5 pl-12 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        </div>
-
-        <SectionTabs
-          options={SCOPE_TABS}
-          value={scope}
-          onChange={(id) => {
-            setScope(id as 'all' | 'mine' | 'favorites');
-            setPage(1);
-          }}
-          ariaLabel="Filtro de anúncios"
-        />
-
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterPopover label="Filtros">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Buscar anúncios..."
+              aria-label="Buscar anúncios"
+              className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          </div>
+          <FilterPopover label="Filtros" triggerClassName="h-11 shrink-0">
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-600">Categoria</label>
@@ -383,7 +372,19 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               </div>
             </div>
           </FilterPopover>
-          </div>
+        </div>
+
+        <SectionTabs
+          options={SCOPE_TABS}
+          value={scope}
+          onChange={(id) => {
+            setScope(id as 'all' | 'mine' | 'favorites');
+            setPage(1);
+          }}
+          ariaLabel="Filtro de anúncios"
+        />
+
+        
 
         {activeFilters.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2" aria-label="Filtros ativos">
