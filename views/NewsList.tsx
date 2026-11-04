@@ -298,7 +298,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
           </div>
 
           <p className="pt-2 text-center text-[11px] text-slate-400">
-            As notícias abrem no site original do publicador. Conteúdo agregado apenas como referência.
+            Sem link direto, a busca da notícia abre no Google Notícias (mais confiável que o Google News direto). Conteúdo agregado apenas como referência.
           </p>
         </div>
       )}

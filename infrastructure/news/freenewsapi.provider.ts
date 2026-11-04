@@ -82,39 +82,42 @@ const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<unknown
   } finally { clearTimeout(timer); }
 };
 
+const googleNewsSearchUrl = (term: string) =>
+  `https://www.google.com/search?q=${encodeURIComponent(`"${term.replace(/[“”]/g, '"')}"`)}&tbm=nws&hl=pt-BR`;
+
 const FALLBACK_ITEMS: Array<{ title: string; source: string; url: string; imageUrl: string; description: string }> = [
   {
     title: 'Brasileiros no exterior: como a comunidade se organiza nos EUA',
     source: 'Comunidade Gringoou',
-    url: 'https://news.google.com/search?q=%22brasileiros%20no%20exterior%22',
+    url: 'https://www.google.com/search?q=%22brasileiros%20no%20exterior%22&tbm=nws',
     imageUrl: 'https://picsum.photos/seed/gringoou1/600/400',
     description: 'Encontros, feiras e grupos fortalecem a rede de brasileiros que vivem fora do Brasil.',
   },
   {
     title: 'Imigração: o que mudou nas regras de visto em 2025',
     source: 'Atualidades',
-    url: 'https://news.google.com/search?q=%22imigra%C3%A7%C3%A3o%20visto%22',
+    url: 'https://www.google.com/search?q=%22imigra%C3%A7%C3%A3o%20visto%22&tbm=nws',
     imageUrl: 'https://picsum.photos/seed/gringoou2/600/400',
     description: 'Entenda as principais mudanças e como elas afetam quem planeja morar no exterior.',
   },
   {
     title: 'Empreendedorismo brasileiro cresce entre a comunidade no exterior',
     source: 'Comunidade Gringoou',
-    url: 'https://news.google.com/search?q=%22empreendedorismo%20brasileiro%22',
+    url: 'https://www.google.com/search?q=%22empreendedorismo%20brasileiro%22&tbm=nws',
     imageUrl: 'https://picsum.photos/seed/gringoou3/600/400',
     description: 'Cada vez mais brasileiros abrem negócios próprios e movimentam a economia local.',
   },
   {
     title: 'Dicas para recém-chegados: documentação e adaptação',
     source: 'Guia do Imigrante',
-    url: 'https://news.google.com/search?q=%22guia%20para%20rec%C3%A9m-chegados%22',
+    url: 'https://www.google.com/search?q=%22guia%20para%20rec%C3%A9m-chegados%22&tbm=nws',
     imageUrl: 'https://picsum.photos/seed/gringoou4/600/400',
     description: 'Um passo a passo para quem está começando a vida em um novo país.',
   },
   {
     title: 'Comunidade brasileira celebra datas e tradições no exterior',
     source: 'Comunidade Gringoou',
-    url: 'https://news.google.com/search?q=%22comunidade%20brasileira%22',
+    url: 'https://www.google.com/search?q=%22comunidade%20brasileira%22&tbm=nws',
     imageUrl: 'https://picsum.photos/seed/gringoou5/600/400',
     description: 'Festas, culinária e cultura aproximam os brasileiros que vivem longe do Brasil.',
   },
@@ -167,7 +170,7 @@ export function makeFreeNewsProvider(): NewsProvider {
           const title = article.title?.trim() || '';
             const link = rawLink && isValidHttpUrl(rawLink)
             ? rawLink
-          : `https://news.google.com/search?q=${encodeURIComponent(title)}`;
+          : googleNewsSearchUrl(title);
           const normalizedUrl = link.replace(/^https?:\/\//i, '').replace(/\/$/, '');
           if (seen.has(normalizedUrl)) continue; seen.add(normalizedUrl);
           
