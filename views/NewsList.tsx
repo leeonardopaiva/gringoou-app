@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Clock, ExternalLink, Globe, Newspaper, Search } from 'lucide-react';
@@ -129,6 +129,37 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
     setSearch(value);
   };
 
+  const trendingRef = useRef<HTMLDivElement>(null);
+  const trendingDrag = useRef({ down: false, startX: 0, scrollLeft: 0, moved: false });
+
+  const handleTrendingPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse') return;
+    const el = trendingRef.current;
+    if (!el) return;
+    trendingDrag.current = { down: true, startX: event.clientX, scrollLeft: el.scrollLeft, moved: false };
+  };
+
+  const handleTrendingPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const state = trendingDrag.current;
+    const el = trendingRef.current;
+    if (!state.down || !el) return;
+    const delta = event.clientX - state.startX;
+    if (Math.abs(delta) > 4) state.moved = true;
+    el.scrollLeft = state.scrollLeft - delta;
+  };
+
+  const handleTrendingPointerUp = () => {
+    trendingDrag.current.down = false;
+  };
+
+  const handleTrendingClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (trendingDrag.current.moved) {
+      event.preventDefault();
+      event.stopPropagation();
+      trendingDrag.current.moved = false;
+    }
+  };
+
   return (
     <ContentColumn size="feed" className="px-5 pb-20 pt-2">
       <PageHeader title={t('news.title')} backHref="/inicio" />
@@ -191,7 +222,15 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
           {filteredItems.length > 1 ? (
             <div>
               <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">{t('news.trending')}</h2>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div
+                ref={trendingRef}
+                onPointerDown={handleTrendingPointerDown}
+                onPointerMove={handleTrendingPointerMove}
+                onPointerUp={handleTrendingPointerUp}
+                onPointerLeave={handleTrendingPointerUp}
+                onClickCapture={handleTrendingClickCapture}
+                className="flex cursor-grab touch-pan-x gap-3 overflow-x-auto pb-2 scrollbar-hide select-none active:cursor-grabbing"
+              >
                 {filteredItems.slice(0, 6).map((item, index) => (
                   <a
                     key={item.id}

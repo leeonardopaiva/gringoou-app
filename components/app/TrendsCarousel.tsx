@@ -106,7 +106,7 @@ export const TrendsCarousel: React.FC<{ items: TrendItem[]; className?: string }
             setPaused(false);
             handleDragEnd(event, info);
           }}
-          className="flex"
+          className="flex cursor-grab select-none active:cursor-grabbing"
         >
           {items.map(({ href, category, title, description, icon: Icon, imageUrl }) => (
             <Link

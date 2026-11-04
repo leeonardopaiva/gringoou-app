@@ -136,7 +136,8 @@ export function makeNewsDataProvider(): NewsProvider {
       const params = new URLSearchParams();
       params.set('q', buildQuery(filters));
       params.set('language', 'pt');
-      params.set('size', String(Math.min(30, limit)));
+      // Plano gratuito limita `size` a 10 por request (o app pede até 30).
+      params.set('size', String(Math.min(10, limit)));
       const country = getCountry(filters.countryCode);
       if (country) params.set('country', country);
 
