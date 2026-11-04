@@ -3,19 +3,21 @@ import 'server-only';
 import { BusinessStatus, CommunityPostStatus, EventStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getVisibilityFilter } from '@/lib/visibility';
+import { newsUseCases } from '@/lib/server/news-usecases';
 import type { HomeInitialData } from '@/lib/content-contracts';
 
 const EMPTY_HOME_DATA: HomeInitialData = {
   latestPost: null,
   latestBusiness: null,
   latestEvent: null,
+  latestNews: null,
 };
 
 export async function getHomeInitialData(regionKey?: string | null): Promise<HomeInitialData> {
   if (!regionKey) return EMPTY_HOME_DATA;
 
   try {
-    const [post, business, event] = await Promise.all([
+    const [post, business, event, latestNews] = await Promise.all([
       prisma.communityPost.findFirst({
         where: { status: CommunityPostStatus.PUBLISHED, regionKey },
         orderBy: { createdAt: 'desc' },
@@ -44,6 +46,10 @@ export async function getHomeInitialData(regionKey?: string | null): Promise<Hom
         orderBy: { startsAt: 'asc' },
         select: { id: true, slug: true, title: true, venueName: true, startsAt: true, locationLabel: true, imageUrl: true },
       }),
+      newsUseCases
+        .listNews({ regionKey, category: 'for-you', limit: 1 })
+        .then((feed) => feed.items[0] ?? null)
+        .catch(() => null),
     ]);
 
     return {
@@ -67,6 +73,7 @@ export async function getHomeInitialData(regionKey?: string | null): Promise<Hom
       latestEvent: event
         ? { ...event, startsAt: event.startsAt.toISOString(), publicPath: `/eventos/${event.slug || event.id}` }
         : null,
+      latestNews,
     };
   } catch (error) {
     console.error('Failed to load initial Home data on the server:', error);

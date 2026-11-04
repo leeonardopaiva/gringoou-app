@@ -174,7 +174,10 @@ export function makeFreeNewsProvider(): NewsProvider {
           if (!title) continue;
           const description = article.description?.trim() || article.snippet?.trim() || null;
           const rawImage = article.image || article.image_url || article.imageUrl || article.thumbnail || null;
-          const imageUrl = rawImage && isValidHttpUrl(rawImage) ? rawImage : null;
+          const imageUrl =
+            rawImage && isValidHttpUrl(rawImage)
+              ? rawImage
+              : `https://picsum.photos/seed/${article.uuid ?? normalizedUrl}/600/400`;
           const source = article.publisher?.trim() || article.source?.trim() || 'FreeNewsApi';
           items.push({
             id: article.uuid ?? 'freenews-' + Buffer.from(normalizedUrl).toString('base64url').slice(0, 24),

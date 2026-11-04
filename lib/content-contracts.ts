@@ -4,6 +4,7 @@ export interface HomeInitialData {
   latestPost: Post | null;
   latestBusiness: Business | null;
   latestEvent: EventItem | null;
+  latestNews: NewsItemContract | null;
 }
 
 export interface CommunityInitialData {

@@ -229,8 +229,15 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
               rel="noopener noreferrer"
               className="group block overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md"
             >
-              <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-brand-50 to-slate-100">
-                <Newspaper className="text-brand-300" size={40} />
+              <div className="relative aspect-[16/9] w-full bg-gradient-to-br from-brand-50 to-slate-100">
+                {featured.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={featured.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Newspaper className="text-brand-300" size={40} />
+                  </div>
+                )}
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2 text-[11px] font-bold text-brand-600">
@@ -259,7 +266,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
             </a>
           ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             {rest.map((item) => (
               <a
                 key={item.id}

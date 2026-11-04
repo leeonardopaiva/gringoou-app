@@ -9,6 +9,7 @@ import {
   Briefcase,
   Users,
   CalendarDays,
+  Newspaper,
   ShoppingBag,
   UserPlus,
 } from 'lucide-react';
@@ -36,6 +37,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   const { data: banners } = useRegionBanners('home', activeRegionKey);
   const { data: communityPosts } = useRegionCommunityPosts(activeRegionKey, 4);
   const latestPost = communityPosts[0] ?? initialData?.latestPost;
+  const latestNews = initialData?.latestNews ?? null;
   const latestJob = STATIC_JOBS[0];
   const latestHousing = STATIC_HOUSING[0];
   const trendItems: TrendItem[] = [
@@ -44,6 +46,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     { href: latestEvent?.publicPath || (latestEvent ? `/eventos/${latestEvent.slug || latestEvent.id}` : '/eventos'), category: 'Eventos', title: latestEvent?.title || 'Veja os próximos eventos', description: latestEvent?.venueName || 'Agenda da sua região', icon: CalendarDays, imageUrl: latestEvent?.imageUrl },
     { href: '/vagas', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
     { href: '/moradia', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
+    { href: '/noticias', category: 'Notícias', title: latestNews?.title || 'Últimas notícias da comunidade', description: 'Veja as notícias mais recentes', icon: Newspaper, imageUrl: latestNews?.imageUrl },
   ];
 
   // Evita fetch no mount inicial — o servidor já forneceu initialData.
