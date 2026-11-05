@@ -65,10 +65,18 @@ function buildWhere(filters: MarketplaceListFilters): Prisma.MarketplaceItemWher
     };
   }
 
-  // Listagem pública: apenas ativos, restritos à região do usuário.
+  // Listagem pública: apenas ativos do público, mais os itens do próprio
+  // usuário (qualquer status: PENDING_REVIEW, SOLD ou UNAVAILABLE) para que
+  // ele os veja na aba "Todos" enquanto aguardam aprovação.
   return {
     ...where,
-    status: { in: visibleStatuses },
+    OR: [
+      { status: { in: visibleStatuses } },
+      {
+        createdById: viewerId,
+        status: { in: [MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
+      },
+    ],
     ...(regionKey ? { regionKey } : {}),
   };
 }
