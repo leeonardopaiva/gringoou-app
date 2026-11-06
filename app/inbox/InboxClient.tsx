@@ -566,12 +566,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
           </div>
         )}
 
-        {/* Click outside to close menu */}
-        <div
-          className={showMenu ? 'fixed inset-0 z-40 md:hidden' : 'hidden'}
-          onClick={() => setShowMenu(null)}
-          aria-hidden="true"
-        />
+        {/* Click outside to close menu - only render when menu is open */}
+        {showMenu && (
+          <div
+            className="fixed inset-0 z-40 md:hidden"
+            onClick={() => setShowMenu(null)}
+            aria-hidden="true"
+          />
+        )}
       </main>
     </div>
   );
