@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw, Edit, Map } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { MarketplaceCard, formatPrice, formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { ContentColumn } from '../components/ui/ContentColumn';
@@ -343,38 +343,74 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       {/* Painel de informações */}
         <aside className="min-w-0 lg:sticky lg:top-4 lg:self-start">
           <div className="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className={item.isFree ? 'text-2xl font-bold text-emerald-600' : 'text-2xl font-bold text-text'}>
-                  {formatPrice(item.priceCents, item.isFree)}
-                </p>
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
-                  <MapPin size={13} className="shrink-0" aria-hidden />
-                  <span className="truncate">{item.locationLabel}</span>
-                  <span aria-hidden>·</span>
-                  <span className="shrink-0">{formatRelativeTime(item.createdAt)}</span>
-                </p>
-              </div>
-              <div className="flex shrink-0 gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleToggleFavorite}
-                  disabled={togglingFavorite}
-                  aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
-                >
-                  <Heart size={17} className={item.isFavorite ? 'fill-red-500 text-red-500' : ''} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  aria-label="Compartilhar anúncio"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
-                >
-                  <Share2 size={17} />
-                </button>
-              </div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className={item.isFree ? 'text-2xl font-bold text-emerald-600' : 'text-2xl font-bold text-text'}>
+                {formatPrice(item.priceCents, item.isFree)}
+              </p>
             </div>
+            <div className="flex shrink-0 gap-1.5">
+              <button
+                type="button"
+                onClick={handleToggleFavorite}
+                disabled={togglingFavorite}
+                aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                <Heart size={17} className={item.isFavorite ? 'fill-red-500 text-red-500' : ''} />
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Compartilhar anúncio"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+              >
+                <Share2 size={17} />
+              </button>
+              {item.canEdit ? (
+                <Dropdown
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label="Mais opções"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+                    >
+                      <MoreHorizontal size={17} />
+                    </button>
+                  }
+                  sections={[
+                    {
+                      items: [
+                        {
+                          label: 'Editar anúncio',
+                          icon: <Edit size={14} />,
+                          onClick: () => router.push(`/marketplace/${item.id}/editar`),
+                        },
+                        {
+                          label: 'Excluir anúncio',
+                          icon: <Trash2 size={14} />,
+                          onClick: () => setShowDeleteConfirm(true),
+                          destructive: true,
+                        },
+                        ...(item.status !== 'ACTIVE' ? [{
+                          label: 'Reativar anúncio',
+                          icon: <RotateCcw size={14} />,
+                          onClick: () => handleStatusChange('ACTIVE'),
+                        }] : []),
+                      ],
+                    },
+                  ]}
+                  align="right"
+                />
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+            <MapPin size={13} className="shrink-0" aria-hidden />
+            <span className="truncate">{item.locationLabel}</span>
+            <span aria-hidden>·</span>
+            <span className="shrink-0">{formatRelativeTime(item.createdAt)}</span>
+          </div>
 
             <h1 className="mt-3 text-lg font-bold leading-snug text-text">{item.title}</h1>
 
@@ -477,6 +513,24 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 </Button>
               ) : null}
             </div>
+
+            {/* Mapa compacto da localização aproximada */}
+            {(item.latitude && item.longitude) ? (
+              <div className="mt-4 border-t border-slate-100 pt-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
+                <div className="mt-2 relative h-32 w-full rounded-xl overflow-hidden bg-slate-100">
+                  <iframe
+                    title="Localização aproximada do anúncio"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${item.longitude - 0.01}%2C${item.latitude - 0.01}%2C${item.longitude + 0.01}%2C${item.latitude + 0.01}&layer=mapnik&marker=${item.latitude}%2C${item.longitude}`}
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-slate-400">Mapa aproximado — localização exata não é exibida por privacidade.</p>
+              </div>
+            ) : null}
 
             <div className="mt-5 border-t border-slate-100 pt-4">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Descrição</h2>
