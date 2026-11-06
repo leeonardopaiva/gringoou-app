@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "MarketplaceItem" ADD COLUMN     "latitude" DOUBLE PRECISION,
+ADD COLUMN     "longitude" DOUBLE PRECISION;

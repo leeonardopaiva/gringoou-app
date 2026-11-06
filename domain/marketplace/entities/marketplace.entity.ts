@@ -81,6 +81,8 @@ export interface MarketplaceDetailItem {
   sellerUsername: string | null;
   sellerImage: string | null;
   sellerLocationLabel: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface MarketplacePage {

@@ -173,6 +173,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
         where: { id },
         select: {
           ...listSelect,
+          latitude: true,
+          longitude: true,
           createdBy: {
             select: { id: true, name: true, username: true, image: true, locationLabel: true },
           },
@@ -216,6 +218,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
         sellerUsername: item.createdBy?.username ?? null,
         sellerImage: item.createdBy?.image ?? null,
         sellerLocationLabel: item.createdBy?.locationLabel ?? null,
+        latitude: item.latitude ?? null,
+        longitude: item.longitude ?? null,
       };
     },
 
@@ -234,6 +238,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
           galleryUrls: input.galleryUrls,
           status: MarketplaceStatus.PENDING_REVIEW,
           createdById: input.createdById,
+          latitude: input.latitude ?? null,
+          longitude: input.longitude ?? null,
         },
         select: listSelect,
       });
@@ -260,6 +266,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
           ...(data.imageUrl !== undefined ? { imageUrl: data.imageUrl } : {}),
           ...(data.galleryUrls !== undefined ? { galleryUrls: data.galleryUrls } : {}),
           ...(data.status !== undefined ? { status: data.status } : {}),
+          ...(data.latitude !== undefined ? { latitude: data.latitude } : {}),
+          ...(data.longitude !== undefined ? { longitude: data.longitude } : {}),
         },
         select: listSelect,
       });

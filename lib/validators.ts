@@ -445,6 +445,8 @@ export const marketplaceItemSchema = z.object({
   locationLabel: z.string().trim().max(160).optional(),
   imageUrl: optionalUrl.nullable(),
   galleryUrls: optionalUrlArray,
+  latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
+  longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
 });
 
 export const marketplaceCreateSchema = marketplaceItemSchema.refine(

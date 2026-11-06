@@ -80,9 +80,11 @@ const emptyForm = {
   locationLabel: '',
   imageUrl: '',
   galleryUrls: [] as string[],
+  latitude: null as number | null,
+  longitude: null as number | null,
 };
 
-type FormField = 'title' | 'description' | 'category' | 'price' | 'condition' | 'regionKey' | 'locationLabel' | 'imageUrl';
+type FormField = 'title' | 'description' | 'category' | 'price' | 'condition' | 'regionKey' | 'locationLabel' | 'imageUrl' | 'latitude' | 'longitude';
 
 type MarketplaceListProps = {
   user: User;
@@ -212,6 +214,8 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           locationLabel: form.locationLabel,
           imageUrl: normalizeUrlFieldValue(form.imageUrl),
           galleryUrls: form.galleryUrls,
+          latitude: form.latitude,
+          longitude: form.longitude,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -584,7 +588,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
             <label className="mb-1 block text-xs font-bold text-slate-600">Localização</label>
             <AddressAutocomplete
               value={form.locationLabel}
-              onChange={(value) => setForm((current) => ({ ...current, locationLabel: value }))}
+              onChange={(value, latitude, longitude) => setForm((current) => ({ ...current, locationLabel: value, latitude, longitude }))}
               placeholder="Bairro, cidade ou endereço"
             />
           </div>

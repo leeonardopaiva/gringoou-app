@@ -96,6 +96,8 @@ export async function POST(request: Request) {
     imageUrl: parsed.data.imageUrl ?? null,
     galleryUrls: parsed.data.galleryUrls,
     createdById: session.user.id,
+    latitude: parsed.data.latitude ?? null,
+    longitude: parsed.data.longitude ?? null,
   });
 
   return NextResponse.json({

@@ -13,6 +13,8 @@ export interface CreateMarketplaceInput {
   imageUrl: string | null;
   galleryUrls: string[];
   createdById: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export type CreateMarketplaceOutput = MarketplaceDetailItem;

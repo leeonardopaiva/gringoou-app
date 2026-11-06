@@ -17,6 +17,8 @@ export interface UpdateMarketplaceInput {
     imageUrl: string | null;
     galleryUrls: string[];
     status: MarketplaceStatus;
+    latitude?: number | null;
+    longitude?: number | null;
   }>;
 }
 

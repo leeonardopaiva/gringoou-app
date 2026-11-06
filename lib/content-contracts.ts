@@ -58,6 +58,8 @@ export interface MarketplaceItemContract {
   sellerId?: string;
   isOwner?: boolean;
   sellerLocationLabel?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface MarketplaceInitialData {

@@ -1064,6 +1064,8 @@ model MarketplaceItem {
   createdById   String
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+  latitude      Float?
+  longitude     Float?
   createdBy     User                 @relation("MarketplaceItemCreator", fields: [createdById], references: [id], onDelete: Cascade)
   favorites     MarketplaceFavorite[]
   conversations MarketplaceConversation[]

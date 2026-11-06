@@ -5,15 +5,18 @@ import { LoaderCircle, MapPin } from 'lucide-react';
 
 type AddressAutocompleteProps = {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, latitude?: number | null, longitude?: number | null) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  onChangeLatLong?: (latitude: number | null, longitude: number | null) => void;
 };
 
 type AddressSuggestion = {
   id: string;
   label: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -45,10 +48,16 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Pe
         const payload = await response.json().catch(() => null);
         if (!response.ok) throw new Error('Falha ao pesquisar endereço.');
         const nextSuggestions = Array.isArray(payload?.features)
-          ? payload.features.map((feature: { id?: string; properties?: { full_address?: string; name?: string; place_formatted?: string } }) => {
+          ? payload.features.map((feature: { id?: string; properties?: { full_address?: string; name?: string; place_formatted?: string; coordinates?: { longitude: number; latitude: number } } }) => {
               const properties = feature.properties ?? {};
               const label = properties.full_address || [properties.name, properties.place_formatted].filter(Boolean).join(', ');
-              return { id: feature.id || label, label };
+              const coordinates = properties.coordinates;
+              return {
+                id: feature.id || label,
+                label,
+                latitude: coordinates?.latitude ?? null,
+                longitude: coordinates?.longitude ?? null,
+              };
             }).filter((item: AddressSuggestion) => item.label)
           : [];
         setSuggestions(nextSuggestions);
@@ -105,7 +114,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Pe
               type="button"
               role="option"
               onClick={() => {
-                onChange(suggestion.label);
+                onChange(suggestion.label, suggestion.latitude, suggestion.longitude);
                 setOpen(false);
                 setSuggestions([]);
               }}
