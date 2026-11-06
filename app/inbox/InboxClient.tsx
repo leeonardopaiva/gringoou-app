@@ -107,11 +107,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   return (
     <div className="min-h-screen bg-bg">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-16 items-center justify-between gap-4">
-            {/* Back button on mobile when in chat view */}
-            {(window.innerWidth < 768 && mobileView === 'chat' && activeConv) && (
+            {/* Back button - visible on mobile when in chat view, and on desktop when conversation selected */}
+            {((window.innerWidth < 768 && mobileView === 'chat') || (window.innerWidth >= 768 && activeConv)) && (
               <button
                 type="button"
                 onClick={handleBack}
@@ -172,7 +172,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
           </div>
 
           {/* Mobile tabs */}
-          <div className="md:hidden border-t mt-2 pt-2">
+          <div className="md:hidden border-t border-slate-200 mt-2 pt-2">
             <div className="flex overflow-x-auto gap-1 pb-2 -mx-4 px-4">
               {(['todas', 'marketplace', 'diretas'] as const).map((t) => {
                 const info = tabLabels[t];
@@ -218,7 +218,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               <Skeleton className="h-20 w-full rounded-2xl" />
             </div>
             <div className="h-[500px] rounded-2xl border border-slate-200 bg-white">
-              <Skeleton className="h-16 w-full border-b" />
+              <Skeleton className="h-16 w-full border-b border-slate-200" />
               <div className="p-4 space-y-4">
                 <Skeleton className="h-12 w-3/4 rounded-lg" />
                 <Skeleton className="h-12 w-1/2 rounded-lg" />
@@ -299,8 +299,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         if (window.innerWidth < 768) setMobileView('chat');
                       }}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left transition-colors',
-                        isActive ? 'border-brand-400 bg-brand-50 shadow-sm' : 'hover:border-brand-300 hover:bg-brand-50/40'
+                        'flex w-full items-center gap-3 rounded-2xl border bg-white p-3 text-left transition-colors',
+                        isActive ? 'border-brand-300 bg-brand-50 shadow-sm' : 'border-slate-200 hover:border-brand-200 hover:bg-brand-50/40'
                       )}
                     >
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-100">
@@ -343,7 +343,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               {activeConv ? (
                 <>
                   {/* Chat Header */}
-                  <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
+                  <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
                     <button
                       type="button"
                       onClick={handleBack}
@@ -385,7 +385,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   {activeConv.item && (
                     <Link
                       href={activeConv.item.publicPath}
-                      className="flex items-center gap-3 border-b bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
+                      className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
                     >
                       {activeConv.item.imageUrl ? (
                         <img
@@ -411,7 +411,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   )}
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 mb-3">
@@ -438,7 +438,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                                 'max-w-[75%] rounded-2xl px-4 py-2',
                                 isMine
                                   ? 'rounded-br-md bg-brand-600 text-white shadow-sm'
-                                  : 'rounded-bl-md bg-white border border-slate-200 text-slate-900 shadow-sm'
+                                  : 'rounded-bl-md bg-slate-100 text-slate-900 shadow-sm'
                               )}
                             >
                               <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
@@ -459,7 +459,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Input Area */}
-                  <div className="border-t bg-white px-4 py-3">
+                  <div className="border-t border-slate-200 bg-white px-4 py-3">
                     <div className="flex items-end gap-2">
                       <textarea
                         value={draft}

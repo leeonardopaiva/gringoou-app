@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, Share2, ShoppingBag, Trash2, User as UserIcon, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { MarketplaceCard, formatPrice, formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { ContentColumn } from '../components/ui/ContentColumn';
@@ -12,6 +12,7 @@ import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
+import { Dropdown, DropdownItem, DropdownSection } from '../components/ui/Dropdown';
 import { useToast } from '../components/feedback/ToastProvider';
 import { useActiveRegion } from '../components/RegionContext';
 import type { User } from '../types';
@@ -397,13 +398,32 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                     </Button>
                   </div>
                 ) : (
-                  <Button size="sm" variant="secondary" fullWidth onClick={() => handleStatusChange('ACTIVE')}>
-                    Reativar anúncio
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="secondary" iconLeft={<RotateCcw size={14} />} onClick={() => handleStatusChange('ACTIVE')}>
+                      Reativar
+                    </Button>
+                    <Dropdown
+                      trigger={
+                        <Button size="sm" variant="ghost" iconLeft={<MoreHorizontal size={14} />} aria-label="Mais opções">
+                          <span className="sr-only">Mais opções</span>
+                        </Button>
+                      }
+                      sections={[
+                        {
+                          items: [
+                            {
+                              label: 'Excluir anúncio',
+                              icon: <Trash2 size={14} />,
+                              onClick: () => setShowDeleteConfirm(true),
+                              destructive: true,
+                            },
+                          ],
+                        },
+                      ]}
+                      align="right"
+                    />
+                  </div>
                 )}
-                <Button size="sm" variant="destructive" fullWidth iconLeft={<Trash2 size={15} />} onClick={() => setShowDeleteConfirm(true)}>
-                  Excluir anúncio
-                </Button>
               </div>
             ) : (
               <div className="mt-4">
@@ -415,11 +435,11 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                     loading={contacting}
                     onClick={() => void handleContactSeller()}
                   >
-                    Contatar anunciante
+                    Enviar Mensagem
                   </Button>
                 ) : (
                   <Button size="md" fullWidth disabled>
-                    Contatar anunciante
+                    Enviar Mensagem
                   </Button>
                 )}
                 <p className="mt-2 text-center text-[11px] text-slate-400">

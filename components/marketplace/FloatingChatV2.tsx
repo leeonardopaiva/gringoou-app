@@ -128,7 +128,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
     >
       <div className="flex w-96 max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
           {activeConv ? (
             <>
               <button
@@ -227,7 +227,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
             {activeConv.item && (
               <Link
                 href={activeConv.item.publicPath}
-                className="flex items-center gap-3 border-b bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
               >
                 {activeConv.item.imageUrl ? (
                   <img
@@ -253,7 +253,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
             )}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 mb-3">
@@ -272,7 +272,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
                           'max-w-[75%] rounded-2xl px-4 py-2',
                           isMine
                             ? 'rounded-br-md bg-brand-600 text-white shadow-sm'
-                            : 'rounded-bl-md bg-white border border-slate-200 text-slate-900 shadow-sm'
+                            : 'rounded-bl-md bg-slate-100 text-slate-900 shadow-sm'
                         )}
                       >
                         <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
@@ -293,7 +293,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
             </div>
 
             {/* Input Area */}
-            <div className="border-t bg-white px-4 py-3">
+            <div className="border-t border-slate-200 bg-white px-4 py-3">
               <div className="flex items-end gap-2">
                 <textarea
                   value={draft}
@@ -325,7 +325,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
         ) : (
           <>
             {/* Tabs */}
-            <div className="flex border-b bg-white">
+            <div className="flex border-b border-slate-200 bg-white">
               {(['todas', 'marketplace', 'diretas'] as const).map((t) => (
                 <button
                   key={t}
@@ -438,7 +438,7 @@ export const FloatingChatV2: React.FC<{ user: UserType | null }> = ({ user }) =>
             </div>
 
             {/* CTA to Inbox */}
-            <div className="border-t bg-white px-4 py-3">
+            <div className="border-t border-slate-200 bg-white px-4 py-3">
               <button
                 type="button"
                 onClick={() => setShowInbox(true)}

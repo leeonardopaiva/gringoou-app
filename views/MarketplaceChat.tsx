@@ -163,19 +163,22 @@ const MarketplaceChat: React.FC<{ user: User }> = ({ user }) => {
                   type="button"
                   onClick={() => selectConversation(conv.id)}
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40 focus-visible:ring-2 focus-visible:ring-brand-200',
-                    conv.id === activeConversationId && 'border-brand-400 bg-brand-50',
+                    'flex w-full items-center gap-3 rounded-2xl border bg-white p-3 text-left transition',
+                    conv.id === activeConversationId ? 'border-brand-300 bg-brand-50' : 'border-slate-200 hover:border-brand-200 hover:bg-brand-50/40'
                   )}
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-base font-bold text-slate-500">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-base font-bold text-brand-600">
                     {other.image ? <img src={other.image} alt={otherName} className="h-full w-full object-cover" /> : otherName.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-semibold text-text">{otherName}</span>
+                      <span className="truncate text-sm font-semibold text-slate-900">{otherName}</span>
                       <span className="shrink-0 text-[10px] text-slate-400">{conv.updatedAt ? new Date(conv.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</span>
                     </span>
-                    <span className="block truncate text-xs text-slate-400">{conv.item.title}</span>
+                    <span className="block truncate text-xs text-slate-500 flex items-center gap-1">
+                      <span className="text-slate-400" aria-hidden="true">📦</span>
+                      {conv.item.title}
+                    </span>
                     {lastMsg ? <span className="mt-0.5 block truncate text-[11px] text-slate-400">{lastMsg.senderId === user.id ? 'Você: ' : ''}{lastMsg.content}</span> : null}
                   </span>
                 </button>
@@ -187,7 +190,7 @@ const MarketplaceChat: React.FC<{ user: User }> = ({ user }) => {
           <div className="flex min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
             {activeConversationId ? (
               <>
-                <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+                <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 bg-white">
                   {messages.length === 0 ? (
                     <p className="py-8 text-center text-sm text-slate-400">Nenhuma mensagem ainda. Converse sobre o item.</p>
                   ) : (
@@ -195,9 +198,9 @@ const MarketplaceChat: React.FC<{ user: User }> = ({ user }) => {
                       const isMine = msg.senderId === user.id;
                       return (
                         <div key={msg.id} className={cn('flex', isMine ? 'justify-end' : 'justify-start')}>
-                          <div className={cn('max-w-[80%] rounded-2xl px-3 py-2', isMine ? 'rounded-br-sm bg-brand-100 text-text' : 'rounded-bl-sm bg-slate-100 text-text')}>
+                          <div className={cn('max-w-[80%] rounded-2xl px-3 py-2', isMine ? 'rounded-br-sm bg-brand-600 text-white shadow-sm' : 'rounded-bl-sm bg-slate-100 text-slate-900 shadow-sm')}>
                             <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
-                            <p className={cn('mt-0.5 text-right text-[10px]', isMine ? 'text-brand-500' : 'text-slate-400')}>
+                            <p className={cn('mt-0.5 text-right text-[10px]', isMine ? 'text-brand-100' : 'text-slate-400')}>
                               {new Date(msg.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
@@ -207,7 +210,7 @@ const MarketplaceChat: React.FC<{ user: User }> = ({ user }) => {
                   )}
                   <div ref={(el) => el?.scrollIntoView({ block: 'end' })} />
                 </div>
-                <div className="flex items-center gap-2 border-t border-slate-100 px-3 py-3">
+                <div className="flex items-center gap-2 border-t border-slate-200 bg-white px-3 py-3">
                   <input
                     type="text"
                     value={draft}
@@ -222,7 +225,7 @@ const MarketplaceChat: React.FC<{ user: User }> = ({ user }) => {
                     onClick={() => void sendMessage()}
                     disabled={!draft.trim() || sending}
                     aria-label="Enviar mensagem"
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
                   >
                     {sending ? '...' : '&#10148;'}
                   </button>
