@@ -38,6 +38,7 @@ import { PersonaMode, ProfessionalProfileBusiness, ProfessionalProfileIdentity, 
 import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
+import { MarketplaceChatBubble } from './marketplace/MarketplaceChatBubble';
 import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
@@ -618,6 +619,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               hint="Pesquise pela cidade ou use sua localização atual."
             />
           </Modal>
+          <MarketplaceChatBubble user={user} />
         </div>
       </div>
     </div>
