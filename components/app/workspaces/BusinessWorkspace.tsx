@@ -7,6 +7,7 @@ import EventDetail from '@/views/EventDetail';
 import Marketplace from '@/views/Marketplace';
 import MarketplaceDetail from '@/views/MarketplaceDetail';
 import MarketplaceList from '@/views/MarketplaceList';
+import MarketplaceChat from '@/views/MarketplaceChat';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
 import type { BusinessesInitialData, EventsInitialData, MarketplaceInitialData } from '@/lib/content-contracts';
@@ -42,6 +43,10 @@ const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
 
   if (rootSegment === 'negocios' && segments.length === 3 && segments[2] === 'gerenciar') {
     return <BusinessDetail businessId={decodeURIComponent(segments[1])} user={currentUser} managementMode />;
+  }
+
+  if (rootSegment === 'marketplace' && segments[1] === 'conversacoes') {
+    return <MarketplaceChat user={currentUser} />;
   }
 
   if (rootSegment === 'marketplace' && segments.length === 2) {

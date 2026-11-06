@@ -16,6 +16,7 @@ import {
   Phone,
   Share2,
   X,
+  Send,
 } from 'lucide-react';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -30,6 +31,7 @@ import { BusinessPostsPanel } from '../components/business/BusinessPostsPanel';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
+import { useMessaging } from '../lib/MessagingProvider';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -102,6 +104,7 @@ const normalizeWhatsappLink = (value: string) => {
 
 const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
   const { showToast } = useToast();
+  const { startConversation } = useMessaging();
 
   const [business, setBusiness] = useState<BusinessDetailState>(defaultBusiness);
   const [loading, setLoading] = useState(true);
@@ -109,6 +112,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editModalTab, setEditModalTab] = useState<EditModalTab>('info');
   const [savingBusiness, setSavingBusiness] = useState(false);
+  const [contacting, setContacting] = useState(false);
 
   const [nameDraft, setNameDraft] = useState('');
   const [slugDraft, setSlugDraft] = useState('');
@@ -595,6 +599,23 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               </div>
             </a>
           ) : null}
+
+          {/* Mensagem interna do Gringoou */}
+          <button
+            type="button"
+            onClick={() => {
+              startConversation(business.id, null, `Olá! Tenho interesse no negócio "${business.name}".`);
+            }}
+            disabled={contacting}
+            className="w-full flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send size={18} />
+            <span>Enviar mensagem pelo Gringoou</span>
+            {contacting && <span className="animate-spin">⏳</span>}
+          </button>
+          <p className="text-center text-[11px] text-slate-400">
+            A conversa acontece dentro do Gringoou, sem abrir seus contatos.
+          </p>
         </section>
 
         <section className="space-y-3 border-b border-slate-100 pb-7">

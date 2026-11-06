@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, Share2, ShoppingBag, Trash2, User as UserIcon, X } from 'lucide-react';
@@ -44,6 +43,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   const [activeImage, setActiveImage] = useState(0);
   const [suggestions, setSuggestions] = useState<MarketplaceItemContract[]>([]);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
+  const [contacting, setContacting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -156,6 +156,32 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
     }
   };
 
+  const handleContactSeller = async () => {
+    if (!item) return;
+    setContacting(true);
+    try {
+      const response = await fetch('/api/marketplace/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          itemId: item.id,
+          content: `Olá! Tenho interesse no anúncio "${item.title}".`,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok && response.status !== 409) {
+        showToast(payload?.error ?? 'Não foi possível iniciar a conversa.', 'error');
+        return;
+      }
+      // 201 = criada; 409 = já existe
+      router.push(`/marketplace/conversacoes?conversation=${payload?.conversationId}`);
+    } catch {
+      showToast('Não foi possível iniciar a conversa.', 'error');
+    } finally {
+      setContacting(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!item) return;
     setDeleting(true);
@@ -227,8 +253,6 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       </ContentColumn>
     );
   }
-
-  const sellerProfilePath = item.sellerUsername ? `/perfil/${encodeURIComponent(item.sellerUsername)}` : null;
 
   const sellerLocation = item.city ? `${item.city}${item.state ? `, ${item.state}` : ''}` : item.locationLabel;
 
@@ -383,19 +407,23 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               </div>
             ) : (
               <div className="mt-4">
-                {sellerProfilePath ? (
-                  <Link href={sellerProfilePath} className="block">
-                    <Button size="md" fullWidth iconLeft={<MessageCircle size={16} />}>
-                      Contatar anunciante
-                    </Button>
-                  </Link>
+                {item.sellerUsername ? (
+                  <Button
+                    size="md"
+                    fullWidth
+                    iconLeft={<MessageCircle size={16} />}
+                    loading={contacting}
+                    onClick={() => void handleContactSeller()}
+                  >
+                    Contatar anunciante
+                  </Button>
                 ) : (
                   <Button size="md" fullWidth disabled>
                     Contatar anunciante
                   </Button>
                 )}
                 <p className="mt-2 text-center text-[11px] text-slate-400">
-                  O contato é feito pelo perfil público do anunciante.
+                  A conversa acontece dentro do Gringoou, sem abrir seus contatos.
                 </p>
               </div>
             )}

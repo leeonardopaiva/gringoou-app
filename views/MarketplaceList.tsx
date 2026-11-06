@@ -3,7 +3,8 @@
 import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, Search, ShoppingBag, X } from 'lucide-react';
+import Link from 'next/link';
+import { MessageCircle, Plus, Search, ShoppingBag, X } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { MarketplaceCard } from '../components/marketplace/MarketplaceCard';
 import { Button } from '../components/ui/Button';
@@ -283,9 +284,19 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         title="Marketplace"
         backHref="/inicio"
         action={
-          <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
-            Anunciar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/marketplace/conversacoes"
+              aria-label="Minhas mensagens"
+              title="Minhas mensagens"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200"
+            >
+              <MessageCircle size={18} />
+            </Link>
+            <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
+              Anunciar
+            </Button>
+          </div>
         }
       />
 

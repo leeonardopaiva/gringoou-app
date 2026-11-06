@@ -2,13 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Heart, MapPin, ShoppingBag } from 'lucide-react';
+import { Heart, MapPin, ShoppingBag, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { MarketplaceItemContract } from '@/lib/content-contracts';
+import { useMessaging } from '@/lib/MessagingProvider';
 
 export const formatPrice = (priceCents: number | null, isFree: boolean): string => {
   if (isFree || priceCents == null || priceCents === 0) return 'Grátis';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceCents / 100);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(priceCents / 100);
 };
 
 export const formatRelativeTime = (iso: string): string => {
@@ -29,6 +30,9 @@ export interface MarketplaceCardProps {
   /** Quando presente, exibe o botão de favorito sobre a imagem. */
   onToggleFavorite?: (id: string) => void;
   favoriteToggling?: boolean;
+  /** Quando presente, exibe o botão de contato para iniciar conversa. */
+  onContact?: (itemId: string, sellerUsername: string | null) => void;
+  contacting?: boolean;
   className?: string;
 }
 
@@ -38,10 +42,21 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   item,
   onToggleFavorite,
   favoriteToggling,
+  onContact,
+  contacting,
   className,
 }) => {
   const showFavorite = Boolean(onToggleFavorite);
   const isMine = item.canEdit === true;
+  const { startConversation } = useMessaging();
+
+  const handleContact = () => {
+    if (onContact) {
+      onContact(item.id, item.sellerUsername);
+    } else {
+      startConversation(item.id, item.sellerUsername, `Olá! Tenho interesse no anúncio "${item.title}".`);
+    }
+  };
 
   return (
     <div className={cn('relative', className)}>
@@ -112,6 +127,19 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           <Heart size={16} className={cn('transition-colors', item.isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-500')} />
         </button>
       ) : null}
+
+      {/* Contact button - appears on hover for non-owner items */}
+      {!isMine && item.sellerUsername && (
+        <button
+          type="button"
+          onClick={handleContact}
+          disabled={contacting}
+          aria-label="Contatar anunciante"
+          className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60 opacity-0 group-hover:opacity-100"
+        >
+          <MessageCircle size={16} className="text-brand-600" />
+        </button>
+      )}
     </div>
   );
 };
