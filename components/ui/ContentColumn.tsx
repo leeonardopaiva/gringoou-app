@@ -1,16 +1,18 @@
 import React from 'react';
 import { cn } from '@/lib/cn';
 
-export type ContentColumnSize = 'feed' | 'reading' | 'wide';
+export type ContentColumnSize = 'compact' | 'feed' | 'reading' | 'standard' | 'wide';
 
 export interface ContentColumnProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: ContentColumnSize;
 }
 
 const widths: Record<ContentColumnSize, string> = {
+  compact: 'max-w-[620px]',
   feed: 'max-w-[600px]',
   reading: 'max-w-[720px]',
-  wide: 'max-w-[1120px]',
+  standard: 'max-w-[1120px]',
+  wide: 'max-w-[1600px]',
 };
 
 export const ContentColumn = React.forwardRef<HTMLDivElement, ContentColumnProps>(
