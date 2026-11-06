@@ -515,13 +515,13 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             </div>
 
             {/* Mapa compacto da localização aproximada */}
-            {(item.latitude && item.longitude) ? (
+            {(item.city || item.state) ? (
               <div className="mt-4 border-t border-slate-100 pt-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
                 <div className="mt-2 relative h-32 w-full rounded-xl overflow-hidden bg-slate-100">
                   <iframe
                     title="Localização aproximada do anúncio"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${item.longitude - 0.01}%2C${item.latitude - 0.01}%2C${item.longitude + 0.01}%2C${item.latitude + 0.01}&layer=mapnik&marker=${item.latitude}%2C${item.longitude}`}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=-180%2C-90%2C180%2C90&layer=mapnik`}
                     className="h-full w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
