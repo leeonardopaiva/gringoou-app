@@ -9,7 +9,8 @@ export type MarketplaceStatus =
   | 'ACTIVE'
   | 'SOLD'
   | 'UNAVAILABLE'
-  | 'REMOVED';
+  | 'REMOVED'
+  | 'REJECTED';
 
 export type MarketplaceCondition = 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR' | 'POOR';
 
@@ -48,6 +49,8 @@ export interface MarketplaceListItem {
   isFavorite: boolean;
   canEdit: boolean;
   isPendingReview: boolean;
+  /** Motivo da rejeição/remoção — visível apenas para dono e moderadores. */
+  moderationReason: string | null;
   publicPath: string;
   createdAt: string;
   sellerName: string | null;
@@ -74,6 +77,8 @@ export interface MarketplaceDetailItem {
   isFavorite: boolean;
   canEdit: boolean;
   isOwner: boolean;
+  canModerate: boolean;
+  moderationReason: string | null;
   publicPath: string;
   createdAt: string;
   sellerId: string;
@@ -103,4 +108,41 @@ export interface MarketplaceListFilters {
   scope?: 'all' | 'mine' | 'favorites' | null;
   page?: number;
   pageSize?: number;
+}
+
+export type MarketplaceModerationDecision = 'APPROVE' | 'REJECT' | 'REMOVE';
+
+export interface MarketplaceModerationLogEntry {
+  id: string;
+  decision: MarketplaceModerationDecision;
+  reason: string | null;
+  moderatorName: string | null;
+  createdAt: string;
+}
+
+/** Item exibido na fila de moderação. */
+export interface MarketplaceModerationItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priceCents: number | null;
+  isFree: boolean;
+  imageUrl: string | null;
+  locationLabel: string;
+  regionKey: string;
+  status: MarketplaceStatus;
+  publicPath: string;
+  createdAt: string;
+  sellerId: string;
+  sellerName: string | null;
+  sellerUsername: string | null;
+  moderationReason: string | null;
+  moderatedAt: string | null;
+  logs: MarketplaceModerationLogEntry[];
+}
+
+export interface MarketplaceModerationPage {
+  items: MarketplaceModerationItem[];
+  total: number;
 }

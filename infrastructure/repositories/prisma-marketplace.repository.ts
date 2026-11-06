@@ -8,8 +8,15 @@ import type {
   MarketplaceDetailItem,
   MarketplaceListFilters,
   MarketplaceListItem,
+  MarketplaceModerationDecision,
   MarketplacePage,
 } from '@/domain/marketplace/entities/marketplace.entity';
+import {
+  MarketplaceRuleError,
+  assertNotSelfModeration,
+  resolveModerationStatus,
+  resolveOwnerStatus,
+} from '@/domain/marketplace/rules';
 import { findRegionByKey } from '@/lib/region-store';
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -27,6 +34,7 @@ const mapStatus = (status: string): MarketplaceListItem['status'] => {
   if (status === 'SOLD') return 'SOLD';
   if (status === 'UNAVAILABLE') return 'UNAVAILABLE';
   if (status === 'REMOVED') return 'REMOVED';
+  if (status === 'REJECTED') return 'REJECTED';
   return 'PENDING_REVIEW';
 };
 
@@ -53,7 +61,7 @@ function buildWhere(filters: MarketplaceListFilters): Prisma.MarketplaceItemWher
     return {
       ...where,
       createdById: viewerId,
-      status: { in: [...visibleStatuses, MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
+      status: { in: [...visibleStatuses, MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.REJECTED, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
     };
   }
 
@@ -74,7 +82,7 @@ function buildWhere(filters: MarketplaceListFilters): Prisma.MarketplaceItemWher
       { status: { in: visibleStatuses } },
       {
         createdById: viewerId,
-        status: { in: [MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
+        status: { in: [MarketplaceStatus.PENDING_REVIEW, MarketplaceStatus.REJECTED, MarketplaceStatus.SOLD, MarketplaceStatus.UNAVAILABLE] },
       },
     ],
     ...(regionKey ? { regionKey } : {}),
@@ -105,6 +113,7 @@ const listSelect = {
   imageUrl: true,
   galleryUrls: true,
   status: true,
+  moderationReason: true,
   createdById: true,
   createdAt: true,
   createdBy: { select: { id: true, name: true, username: true, image: true } },
@@ -131,6 +140,7 @@ function mapListItem(raw: ListRaw, viewerId: string | null, isAdmin: boolean): M
     isFavorite: Boolean(viewerId && raw.favorites.some((f) => f.userId === viewerId)),
     canEdit,
     isPendingReview: raw.status === MarketplaceStatus.PENDING_REVIEW,
+    moderationReason: canEdit ? raw.moderationReason : null,
     publicPath: `/marketplace/${raw.id}`,
     createdAt: raw.createdAt.toISOString(),
     sellerName: raw.createdBy?.name ?? null,
@@ -168,7 +178,7 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
       };
     },
 
-    async getById(id: string, viewerId: string | null, isAdmin: boolean): Promise<MarketplaceDetailItem | null> {
+    async getById(id: string, viewerId: string | null, isAdmin: boolean, canModerate = false): Promise<MarketplaceDetailItem | null> {
       const item = await prisma.marketplaceItem.findUnique({
         where: { id },
         select: {
@@ -186,8 +196,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
       const isOwner = item.createdById === viewerId;
       const canEdit = isAdmin || isOwner;
 
-      // Não expõe anúncios não ativos para quem não é dono/admin.
-      if (item.status !== MarketplaceStatus.ACTIVE && !canEdit) {
+      // Não expõe anúncios não ativos para quem não é dono/admin/moderador.
+      if (item.status !== MarketplaceStatus.ACTIVE && !canEdit && !canModerate) {
         return null;
       }
 
@@ -211,6 +221,8 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
         isFavorite: Boolean(viewerId && item.favorites.some((f) => f.userId === viewerId)),
         canEdit,
         isOwner,
+        canModerate: canModerate && !isOwner,
+        moderationReason: canEdit || canModerate ? item.moderationReason : null,
         publicPath: `/marketplace/${item.id}`,
         createdAt: item.createdAt.toISOString(),
         sellerId: item.createdBy?.id ?? item.createdById,
@@ -248,9 +260,18 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
     },
 
     async update(id, viewerId, isAdmin, data): Promise<MarketplaceDetailItem | null> {
-      const existing = await prisma.marketplaceItem.findUnique({ where: { id }, select: { createdById: true } });
+      const existing = await prisma.marketplaceItem.findUnique({ where: { id }, select: { createdById: true, status: true } });
       if (!existing) return null;
       if (!isAdmin && existing.createdById !== viewerId) return null;
+
+      // Proprietário (não-admin): status só muda dentro das regras de domínio.
+      // Isso impede auto-aprovação e que edição/reativação burlem uma rejeição.
+      let nextStatus: MarketplaceStatus | undefined = data.status as MarketplaceStatus | undefined;
+      if (!isAdmin) {
+        const { status: requestedStatus, ...content } = data;
+        const contentChanged = Object.values(content).some((value) => value !== undefined);
+        nextStatus = resolveOwnerStatus(mapStatus(existing.status), requestedStatus, contentChanged) as MarketplaceStatus | undefined;
+      }
 
       const updated = await prisma.marketplaceItem.update({
         where: { id },
@@ -265,7 +286,7 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
           ...(data.regionKey !== undefined ? { regionKey: data.regionKey } : {}),
           ...(data.imageUrl !== undefined ? { imageUrl: data.imageUrl } : {}),
           ...(data.galleryUrls !== undefined ? { galleryUrls: data.galleryUrls } : {}),
-          ...(data.status !== undefined ? { status: data.status } : {}),
+          ...(nextStatus !== undefined ? { status: nextStatus } : {}),
           ...(data.latitude !== undefined ? { latitude: data.latitude } : {}),
           ...(data.longitude !== undefined ? { longitude: data.longitude } : {}),
         },
@@ -282,6 +303,102 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
 
       await prisma.marketplaceItem.delete({ where: { id } });
       return true;
+    },
+
+    async listForModeration({ statuses, page = 1, pageSize = 24 }) {
+      const take = Math.min(48, Math.max(1, pageSize));
+      const where: Prisma.MarketplaceItemWhereInput = { status: { in: statuses as MarketplaceStatus[] } };
+
+      const [items, total] = await Promise.all([
+        prisma.marketplaceItem.findMany({
+          where,
+          orderBy: { createdAt: 'asc' },
+          skip: (Math.max(1, page) - 1) * take,
+          take,
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            category: true,
+            priceCents: true,
+            isFree: true,
+            imageUrl: true,
+            locationLabel: true,
+            regionKey: true,
+            status: true,
+            createdAt: true,
+            createdById: true,
+            moderationReason: true,
+            moderatedAt: true,
+            createdBy: { select: { name: true, username: true } },
+            moderationLogs: {
+              orderBy: { createdAt: 'desc' },
+              take: 10,
+              select: { id: true, decision: true, reason: true, createdAt: true, moderator: { select: { name: true } } },
+            },
+          },
+        }),
+        prisma.marketplaceItem.count({ where }),
+      ]);
+
+      return {
+        total,
+        items: items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          priceCents: item.priceCents,
+          isFree: item.isFree,
+          imageUrl: item.imageUrl,
+          locationLabel: item.locationLabel,
+          regionKey: item.regionKey,
+          status: mapStatus(item.status),
+          publicPath: `/marketplace/${item.id}`,
+          createdAt: item.createdAt.toISOString(),
+          sellerId: item.createdById,
+          sellerName: item.createdBy?.name ?? null,
+          sellerUsername: item.createdBy?.username ?? null,
+          moderationReason: item.moderationReason,
+          moderatedAt: item.moderatedAt ? item.moderatedAt.toISOString() : null,
+          logs: item.moderationLogs.map((log) => ({
+            id: log.id,
+            decision: log.decision as MarketplaceModerationDecision,
+            reason: log.reason,
+            moderatorName: log.moderator?.name ?? null,
+            createdAt: log.createdAt.toISOString(),
+          })),
+        })),
+      };
+    },
+
+    async moderate({ id, moderatorId, decision, reason }) {
+      await prisma.$transaction(async (tx) => {
+        const item = await tx.marketplaceItem.findUnique({ where: { id }, select: { createdById: true, status: true } });
+        if (!item) throw new MarketplaceRuleError('NOT_FOUND', 'Anúncio não encontrado.');
+
+        assertNotSelfModeration(item.createdById, moderatorId);
+        const nextStatus = resolveModerationStatus(mapStatus(item.status), decision, reason ?? null);
+        const cleanReason = reason?.trim() ? reason.trim() : null;
+
+        // A condição de status no WHERE evita que decisões concorrentes se sobrescrevam.
+        const result = await tx.marketplaceItem.updateMany({
+          where: { id, status: item.status },
+          data: {
+            status: nextStatus as MarketplaceStatus,
+            moderationReason: decision === 'APPROVE' ? null : cleanReason,
+            moderatedById: moderatorId,
+            moderatedAt: new Date(),
+          },
+        });
+        if (result.count === 0) {
+          throw new MarketplaceRuleError('INVALID_TRANSITION', 'O anúncio foi alterado por outra decisão. Recarregue.');
+        }
+
+        await tx.marketplaceModerationLog.create({
+          data: { itemId: id, moderatorId, decision, reason: cleanReason },
+        });
+      });
     },
 
     async toggleFavorite(id, viewerId): Promise<{ isFavorite: boolean }> {

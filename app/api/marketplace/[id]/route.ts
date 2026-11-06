@@ -3,6 +3,8 @@ import { getServerAuthSession } from '@/lib/auth';
 import { findRegionByKey } from '@/lib/region-store';
 import { marketplaceUpdateSchema } from '@/lib/validators';
 import { marketplaceUseCases } from '@/lib/server/marketplace-usecases';
+import { marketplaceErrorResponse } from '@/lib/server/marketplace-errors';
+import { getStoredUserRole } from '@/lib/admin';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -10,9 +12,11 @@ export async function GET(_request: Request, { params }: RouteContext) {
   const { id } = await params;
   const session = await getServerAuthSession();
   const viewerId = session?.user?.id ?? null;
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const role = viewerId ? await getStoredUserRole(viewerId) : null;
+  const isAdmin = role === 'ADMIN';
+  const canModerate = role === 'ADMIN' || role === 'MODERATOR';
 
-  const item = await marketplaceUseCases.getMarketplace({ id, viewerId, isAdmin });
+  const item = await marketplaceUseCases.getMarketplace({ id, viewerId, isAdmin, canModerate });
 
   if (!item) {
     return NextResponse.json({ error: 'Anuncio nao encontrado.' }, { status: 404 });
@@ -29,7 +33,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const isAdmin = (await getStoredUserRole(session.user.id)) === 'ADMIN';
   const body = await request.json();
   const parsed = marketplaceUpdateSchema.safeParse(body);
 
@@ -47,15 +51,20 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     }
   }
 
-  const item = await marketplaceUseCases.updateMarketplace({
-    id,
-    viewerId: session.user.id,
-    isAdmin,
-    data: {
-      ...parsed.data,
-      priceCents: parsed.data.isFree ? null : parsed.data.priceCents ?? undefined,
-    },
-  });
+  let item;
+  try {
+    item = await marketplaceUseCases.updateMarketplace({
+      id,
+      viewerId: session.user.id,
+      isAdmin,
+      data: {
+        ...parsed.data,
+        priceCents: parsed.data.isFree ? null : parsed.data.priceCents ?? undefined,
+      },
+    });
+  } catch (error) {
+    return marketplaceErrorResponse(error);
+  }
 
   if (!item) {
     return NextResponse.json(
@@ -75,7 +84,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const isAdmin = (await getStoredUserRole(session.user.id)) === 'ADMIN';
   const removed = await marketplaceUseCases.removeMarketplace({
     id,
     viewerId: session.user.id,

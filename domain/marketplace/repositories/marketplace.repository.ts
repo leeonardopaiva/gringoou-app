@@ -2,7 +2,10 @@ import type {
   MarketplaceDetailItem,
   MarketplaceListFilters,
   MarketplaceListItem,
+  MarketplaceModerationDecision,
+  MarketplaceModerationPage,
   MarketplacePage,
+  MarketplaceStatus,
 } from '../entities/marketplace.entity';
 
 /** Contrato do repositório de Marketplace — a camada de domínio depende apenas desta interface. */
@@ -11,7 +14,7 @@ export interface MarketplaceRepository {
   list(filters: MarketplaceListFilters): Promise<MarketplacePage>;
 
   /** Obtém detalhe de um anúncio pelo ID. */
-  getById(id: string, viewerId: string | null, isAdmin: boolean): Promise<MarketplaceDetailItem | null>;
+  getById(id: string, viewerId: string | null, isAdmin: boolean, canModerate?: boolean): Promise<MarketplaceDetailItem | null>;
 
   /** Cria um anúncio. */
   create(input: {
@@ -54,6 +57,12 @@ export interface MarketplaceRepository {
 
   /** Exclui um anúncio (somente proprietário/admin). */
   remove(id: string, viewerId: string, isAdmin: boolean): Promise<boolean>;
+
+  /** Lista anúncios para a fila de moderação (somente moderadores/admin). */
+  listForModeration(input: { statuses: MarketplaceStatus[]; page?: number; pageSize?: number }): Promise<MarketplaceModerationPage>;
+
+  /** Aplica uma decisão de moderação e registra o histórico. Lança MarketplaceRuleError. */
+  moderate(input: { id: string; moderatorId: string; decision: MarketplaceModerationDecision; reason: string | null }): Promise<void>;
 
   /** Alterna favorito do usuário. */
   toggleFavorite(id: string, viewerId: string): Promise<{ isFavorite: boolean }>;

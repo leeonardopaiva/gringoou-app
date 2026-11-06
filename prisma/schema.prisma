@@ -182,6 +182,7 @@ enum MarketplaceStatus {
   SOLD
   UNAVAILABLE
   REMOVED
+  REJECTED
 }
 
 enum MarketplaceCondition {
@@ -273,6 +274,7 @@ model User {
   buyerConversations        MarketplaceConversation[] @relation("ConversationBuyer")
   sellerConversations       MarketplaceConversation[] @relation("ConversationSeller")
   sentMessages              MarketplaceMessage[]      @relation("MessageSender")
+  marketplaceModerationLogs MarketplaceModerationLog[] @relation("MarketplaceModerator")
 
   @@index([referredById, createdAt])
 }
@@ -1066,6 +1068,10 @@ model MarketplaceItem {
   updatedAt     DateTime             @updatedAt
   latitude      Float?
   longitude     Float?
+  moderationReason String? @db.Text
+  moderatedById    String?
+  moderatedAt      DateTime?
+  moderationLogs   MarketplaceModerationLog[]
   createdBy     User                 @relation("MarketplaceItemCreator", fields: [createdById], references: [id], onDelete: Cascade)
   favorites     MarketplaceFavorite[]
   conversations MarketplaceConversation[]
@@ -1125,4 +1131,18 @@ model MarketplaceMessage {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+model MarketplaceModerationLog {
+  id          String          @id @default(cuid())
+  itemId      String
+  moderatorId String?
+  decision    String
+  reason      String?         @db.Text
+  createdAt   DateTime        @default(now())
+  item        MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  moderator   User?           @relation("MarketplaceModerator", fields: [moderatorId], references: [id], onDelete: SetNull)
+
+  @@index([itemId, createdAt])
+  @@index([moderatorId])
 }

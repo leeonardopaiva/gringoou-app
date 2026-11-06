@@ -392,7 +392,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                           onClick: () => setShowDeleteConfirm(true),
                           destructive: true,
                         },
-                        ...(item.status !== 'ACTIVE' ? [{
+                        ...(item.status === 'SOLD' || item.status === 'UNAVAILABLE' ? [{
                           label: 'Reativar anúncio',
                           icon: <RotateCcw size={14} />,
                           onClick: () => handleStatusChange('ACTIVE'),
@@ -420,7 +420,18 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 {CONDITION_LABELS[item.condition] ?? item.condition}
               </Badge>
               {item.status === 'SOLD' ? <Badge tone="erro">Vendido</Badge> : null}
+              {item.status === 'PENDING_REVIEW' ? <Badge tone="neutro">Em análise</Badge> : null}
+              {item.status === 'REJECTED' ? <Badge tone="erro">Rejeitado</Badge> : null}
+              {item.status === 'REMOVED' ? <Badge tone="erro">Removido</Badge> : null}
             </div>
+
+            {item.canEdit && (item.status === 'REJECTED' || item.status === 'REMOVED') ? (
+              <p role="alert" className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+                {item.status === 'REJECTED' ? 'Anúncio rejeitado pela moderação.' : 'Anúncio removido pela moderação.'}
+                {item.moderationReason ? <span className="mt-1 block font-medium">Motivo: {item.moderationReason}</span> : null}
+                {item.status === 'REJECTED' ? <span className="mt-1 block text-xs">Edite o anúncio para reenviá-lo à revisão.</span> : null}
+              </p>
+            ) : null}
 
             {item.canEdit ? (
               <div className="mt-4 space-y-2">
@@ -435,9 +446,11 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   </div>
                 ) : (
                   <div className="flex gap-2">
+                    {item.status === 'SOLD' || item.status === 'UNAVAILABLE' ? (
                     <Button size="sm" variant="secondary" iconLeft={<RotateCcw size={14} />} onClick={() => handleStatusChange('ACTIVE')}>
                       Reativar
                     </Button>
+                    ) : null}
                     <Dropdown
                       trigger={
                         <Button size="sm" variant="ghost" iconLeft={<MoreHorizontal size={14} />} aria-label="Mais opções">

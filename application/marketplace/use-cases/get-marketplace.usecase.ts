@@ -5,13 +5,14 @@ export interface GetMarketplaceInput {
   id: string;
   viewerId: string | null;
   isAdmin: boolean;
+  canModerate?: boolean;
 }
 
 export type GetMarketplaceOutput = MarketplaceDetailItem | null;
 
 export function makeGetMarketplace(repo: MarketplaceRepository) {
   return async (input: GetMarketplaceInput): Promise<GetMarketplaceOutput> => {
-    return repo.getById(input.id, input.viewerId, input.isAdmin);
+    return repo.getById(input.id, input.viewerId, input.isAdmin, input.canModerate ?? false);
   };
 }
 

@@ -44,10 +44,11 @@ export interface MarketplaceItemContract {
   regionKey: string;
   imageUrl: string | null;
   galleryUrls: string[];
-  status: 'PENDING_REVIEW' | 'ACTIVE' | 'SOLD' | 'UNAVAILABLE' | 'REMOVED';
+  status: 'PENDING_REVIEW' | 'ACTIVE' | 'SOLD' | 'UNAVAILABLE' | 'REMOVED' | 'REJECTED';
   isFavorite: boolean;
   canEdit: boolean;
   isPendingReview: boolean;
+  moderationReason?: string | null;
   publicPath: string;
   createdAt: string;
   sellerName: string | null;
@@ -57,6 +58,7 @@ export interface MarketplaceItemContract {
   state?: string | null;
   sellerId?: string;
   isOwner?: boolean;
+  canModerate?: boolean;
   sellerLocationLabel?: string | null;
   latitude?: number | null;
   longitude?: number | null;

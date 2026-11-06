@@ -70,6 +70,11 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
               Vendido
             </span>
           ) : null}
+          {item.status === 'REJECTED' ? (
+            <span className="absolute left-2 top-2 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-700">
+              Rejeitado
+            </span>
+          ) : null}
           {item.isPendingReview ? (
             <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-700">
               Em análise
