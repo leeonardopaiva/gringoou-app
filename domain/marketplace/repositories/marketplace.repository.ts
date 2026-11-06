@@ -26,6 +26,8 @@ export interface MarketplaceRepository {
     imageUrl: string | null;
     galleryUrls: string[];
     createdById: string;
+    latitude?: number | null;
+    longitude?: number | null;
   }): Promise<MarketplaceDetailItem>;
 
   /** Atualiza um anúncio (somente proprietário/admin). */
@@ -45,6 +47,8 @@ export interface MarketplaceRepository {
       imageUrl: string | null;
       galleryUrls: string[];
       status: MarketplaceListItem['status'];
+      latitude?: number | null;
+      longitude?: number | null;
     }>,
   ): Promise<MarketplaceDetailItem | null>;
 
