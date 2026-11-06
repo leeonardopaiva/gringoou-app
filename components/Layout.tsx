@@ -443,7 +443,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
           <header className="relative border-b border-border/70">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
-            <div className="mx-auto flex w-full max-w-[720px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,480px)_minmax(0,1fr)] md:items-center md:gap-y-2 md:px-6 md:py-4">
+            <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:grid md:grid-cols-[1fr_auto_auto] md:items-center md:gap-y-2 md:px-6 md:py-4">
               <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">
                 <button
                   type="button"
@@ -458,7 +458,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </span>
               </div>
 
-              <div className="order-3 flex w-full items-center gap-2 md:order-none md:col-start-2 md:w-auto">
+              <div className="order-3 flex w-full items-center gap-2 md:order-none md:col-start-1 md:w-full">
                 <div className="min-w-0 flex-1">
                   <UnifiedSearchInput
                     value={headerSearch}
@@ -478,6 +478,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     className="h-11 shadow-none"
                   />
                 </div>
+              </div>
+
+              <div className="flex h-10 items-center gap-1.5 sm:gap-2 md:col-start-2 md:justify-self-center">
                 <button
                   type="button"
                   onClick={openRegionSelector}
@@ -510,7 +513,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-[720px] px-4 pt-4 md:px-6 md:pt-6">
+          <main className="mx-auto w-full max-w-[1120px] px-4 pt-4 md:px-6 md:pt-6">
             <ActiveRegionProvider value={activeRegion.key || null}>
               <LanguageProvider>{children}</LanguageProvider>
             </ActiveRegionProvider>
