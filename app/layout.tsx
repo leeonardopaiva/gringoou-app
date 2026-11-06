@@ -54,7 +54,7 @@ export default async function RootLayout({
       <body className={`${sora.className} ${sora.variable} bg-bg text-foreground`}>
         <script
           src="https://cdn.ably.io/lib/ably.min-1.js"
-          integrity="sha384-jO4CeFczrH/tCOlvLGzpaK9pDCt7U2u+npVX32J+jFfa2g4jlPyjxF79kiCNG0Sa"
+          integrity="sha384-1VctYsPyM44cfdPM4wtl9VekdhFjLP0JD+sph/uI7FHQeimgi5m30/Jst/IrcBTc"
           crossOrigin="anonymous"
           data-app="gringoou-app"
         />
