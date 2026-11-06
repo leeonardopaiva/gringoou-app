@@ -11,7 +11,8 @@ export async function GET() {
   const token = await generateAblyClientToken(session.user.id);
 
   if (!token) {
-    return NextResponse.json({ error: 'Ably não configurado.' }, { status: 501 });
+    // Return a more graceful error that the client can handle
+    return NextResponse.json({ error: 'Realtime não disponível', token: null }, { status: 503 });
   }
 
   return NextResponse.json({ token });

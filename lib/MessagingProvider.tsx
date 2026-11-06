@@ -80,7 +80,11 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     try {
       const res = await fetch('/api/marketplace/messages/token', { cache: 'no-store' });
       const payload = await res.json();
-      if (!res.ok || !payload.token) return;
+      if (!res.ok || !payload.token) {
+        // Token endpoint unavailable (e.g., Ably not configured) - skip realtime
+        isAblyReady.current = true; // Mark as "ready" to prevent retries
+        return;
+      }
       const client = new (window as any).Ably.Realtime({ token: payload.token, clientId: user.id, echoMessages: true });
       ablyClientRef.current = client;
       isAblyReady.current = true;
