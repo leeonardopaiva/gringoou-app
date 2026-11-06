@@ -93,8 +93,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     if (window.innerWidth < 768) {
       setMobileView('list');
       router.push('/inbox');
-    } else {
+    } else if (activeConv) {
       selectConversation('');
+    } else {
+      router.back();
     }
   };
 
@@ -108,7 +110,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-[1120px] px-4">
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Back button - visible on mobile when in chat view, and on desktop when conversation selected */}
             {((window.innerWidth < 768 && mobileView === 'chat') || (window.innerWidth >= 768 && activeConv)) && (
@@ -208,7 +210,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto max-w-[1120px] px-4 py-6">
         {loading ? (
           /* Loading State */
           <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">

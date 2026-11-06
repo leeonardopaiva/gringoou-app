@@ -161,7 +161,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
   };
 
   return (
-    <ContentColumn size="feed" className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
       <PageHeader title={t('news.title')} backHref="/inicio" />
 
       <div className="mt-4 space-y-4">

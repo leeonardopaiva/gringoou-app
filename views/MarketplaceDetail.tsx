@@ -457,13 +457,25 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   <UserIcon size={18} className="text-brand-500" />
                 )}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-text">{item.sellerName ?? 'Membro da comunidade'}</p>
                 <p className="truncate text-xs text-slate-400">
                   {item.sellerUsername ? `@${item.sellerUsername} · ` : ''}
                   Localização aproximada: {item.sellerLocationLabel ?? sellerLocation}
                 </p>
               </div>
+              {!item.canEdit && item.sellerUsername ? (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  iconLeft={<MessageCircle size={14} />}
+                  loading={contacting}
+                  onClick={() => void handleContactSeller()}
+                  className="shrink-0"
+                >
+                  Enviar Mensagem
+                </Button>
+              ) : null}
             </div>
 
             <div className="mt-5 border-t border-slate-100 pt-4">

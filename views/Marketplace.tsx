@@ -372,7 +372,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         ? 'Eventos desta semana'
         : 'Eventos proximos';
   return (
-    <ContentColumn className="space-y-6 pb-20 animate-in fade-in duration-500">
+    <ContentColumn size="wide" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
         <PageHeader title="Eventos" action={
           <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
