@@ -8,11 +8,13 @@ type Suggestion = {
   id: string;
   placeName: string;
   text: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 type AddressAutocompleteProps = {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, latitude?: number | null, longitude?: number | null) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -73,10 +75,12 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       const data = await response.json().catch(() => null);
       const features = data?.features ?? [];
       setSuggestions(
-        features.map((feature: { id: string; place_name: string; text: string }) => ({
+        features.map((feature: { id: string; place_name: string; text: string; center?: [number, number] }) => ({
           id: feature.id,
           placeName: feature.place_name,
           text: feature.text,
+          longitude: feature.center?.[0] ?? null,
+          latitude: feature.center?.[1] ?? null,
         })),
       );
       setOpen(true);
@@ -95,7 +99,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   };
 
   const selectSuggestion = (suggestion: Suggestion) => {
-    onChange(suggestion.placeName);
+    onChange(suggestion.placeName, suggestion.latitude ?? null, suggestion.longitude ?? null);
     setSuggestions([]);
     setOpen(false);
   };
