@@ -6,6 +6,8 @@ import { ToastProvider } from '@/components/feedback/ToastProvider';
 import AddToHomeScreenPrompt from '@/components/pwa/AddToHomeScreenPrompt';
 import WebVitalsReporter from '@/components/performance/WebVitalsReporter';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { MessagingProvider } from '@/lib/MessagingProvider';
+import type { User } from '@/types';
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -19,10 +21,12 @@ export function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session}>
       <ToastProvider>
-        {children}
-        <AddToHomeScreenPrompt />
-        <WebVitalsReporter />
-        {shouldLoadVercelTelemetry ? <SpeedInsights sampleRate={0.2} /> : null}
+        <MessagingProvider user={session?.user as unknown as User | null}>
+          {children}
+          <AddToHomeScreenPrompt />
+          <WebVitalsReporter />
+          {shouldLoadVercelTelemetry ? <SpeedInsights sampleRate={0.2} /> : null}
+        </MessagingProvider>
       </ToastProvider>
     </SessionProvider>
   );

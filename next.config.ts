@@ -5,7 +5,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''} https://js.stripe.com https://maps.googleapis.com https://www.googletagmanager.com`,
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''} https://js.stripe.com https://maps.googleapis.com https://www.googletagmanager.com https://cdn.ably.io`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
@@ -22,6 +22,13 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Ably SDK não é compatível com o webpack do Next; carregamos via CDN.
+      config.externals = [...(config.externals || []), { ably: 'Ably' }];
+    }
+    return config;
+  },
   async headers() {
     return [
       {
@@ -48,3 +55,4 @@ export default withSentryConfig(nextConfig, {
     deleteSourcemapsAfterUpload: true,
   },
 });
+

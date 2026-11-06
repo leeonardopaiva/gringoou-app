@@ -52,6 +52,12 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${sora.className} ${sora.variable} bg-bg text-foreground`}>
+        <script
+          src="https://cdn.ably.io/lib/ably.min-1.js"
+          integrity="sha384-jO4CeFczrH/tCOlvLGzpaK9pDCt7U2u+npVX32J+jFfa2g4jlPyjxF79kiCNG0Sa"
+          crossOrigin="anonymous"
+          data-app="gringoou-app"
+        />
         <Providers session={session}>{children}</Providers>
         {shouldLoadVercelAnalytics ? <Analytics /> : null}
       </body>
