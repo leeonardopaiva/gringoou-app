@@ -4,7 +4,7 @@ import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { MessageCircle, Plus, Search, ShoppingBag, X } from 'lucide-react';
+import { MessageCircle, Plus, Search, ShoppingBag, X, Send } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { MarketplaceCard } from '../components/marketplace/MarketplaceCard';
 import { Button } from '../components/ui/Button';
@@ -293,6 +293,9 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
             >
               <MessageCircle size={18} />
             </Link>
+            <Button size="sm" variant="secondary" iconLeft={<Send size={16} />} onClick={() => window.location.href = '/inbox'}>
+              Nova mensagem
+            </Button>
             <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
               Anunciar
             </Button>

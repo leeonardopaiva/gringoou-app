@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import MarketplaceChat from '@/views/MarketplaceChat';
-import { FloatingChatV2 } from '@/components/marketplace/FloatingChatV2';
+import { FloatingChatTab } from '@/components/marketplace/FloatingChatTab';
 import type { User } from '@/types';
 
 export default function App() {
@@ -11,7 +11,7 @@ export default function App() {
   return (
     <>
       <MarketplaceChat user={session.user as unknown as User} />
-      <FloatingChatV2 user={session.user as unknown as User} />
+      <FloatingChatTab user={session.user as unknown as User} />
     </>
   );
 }
