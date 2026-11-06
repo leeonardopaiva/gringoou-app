@@ -588,7 +588,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
             <label className="mb-1 block text-xs font-bold text-slate-600">Localização</label>
             <AddressAutocomplete
               value={form.locationLabel}
-              onChange={(value, latitude, longitude) => setForm((current) => ({ ...current, locationLabel: value, latitude, longitude }))}
+              onChange={(value, latitude, longitude) => setForm((current) => ({ ...current, locationLabel: value, latitude: latitude ?? null, longitude: longitude ?? null }))}
               placeholder="Bairro, cidade ou endereço"
             />
           </div>
