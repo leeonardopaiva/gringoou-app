@@ -26,6 +26,7 @@ import AdsModerationSection from '../components/admin/AdsModerationSection';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminAnalyticsSection from '../components/admin/AdminAnalyticsSection';
 import GroupReportsSection from '../components/admin/GroupReportsSection';
+import MarketplaceModerationSection from '../components/admin/MarketplaceModerationSection';
 import UserDeletionModal from '../components/admin/UserDeletionModal';
 import { Button, Modal } from '../components/ui';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -1670,6 +1671,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'moderation' ? (
           <>
+        <MarketplaceModerationSection />
         <GroupReportsSection />
         <ModerationSection
           title="Negocios em aprovacao"

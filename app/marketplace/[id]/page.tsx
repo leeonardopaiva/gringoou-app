@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import App from '../../../App';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 import { marketplaceUseCases } from '@/lib/server/marketplace-usecases';
+import { getStoredUserRole } from '@/lib/admin';
 
 export const metadata: Metadata = {
   title: 'Anuncio — Gringoou',
@@ -20,11 +21,13 @@ export default async function MarketplaceDetailRoute({
     redirect('/login');
   }
 
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const role = await getStoredUserRole(session.user.id);
+  const isAdmin = role === 'ADMIN';
+  const canModerate = role === 'ADMIN' || role === 'MODERATOR';
 
   const itemExists = id
     ? await marketplaceUseCases
-        .getMarketplace({ id, viewerId: session.user.id, isAdmin })
+        .getMarketplace({ id, viewerId: session.user.id, isAdmin, canModerate })
         .then((item) => item !== null)
         .catch(() => false)
     : false;

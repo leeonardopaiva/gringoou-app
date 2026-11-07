@@ -6,6 +6,7 @@ import BusinessList from '@/views/BusinessList';
 import EventDetail from '@/views/EventDetail';
 import Marketplace from '@/views/Marketplace';
 import MarketplaceDetail from '@/views/MarketplaceDetail';
+import MarketplaceEdit from '@/views/MarketplaceEdit';
 import MarketplaceList from '@/views/MarketplaceList';
 import MarketplaceChat from '@/views/MarketplaceChat';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
@@ -47,6 +48,10 @@ const BusinessWorkspace: React.FC<BusinessWorkspaceProps> = ({
 
   if (rootSegment === 'marketplace' && segments[1] === 'conversacoes') {
     return <MarketplaceChat user={currentUser} />;
+  }
+
+  if (rootSegment === 'marketplace' && segments.length === 3 && segments[2] === 'editar') {
+    return <MarketplaceEdit itemId={decodeURIComponent(segments[1])} user={currentUser} />;
   }
 
   if (rootSegment === 'marketplace' && segments.length === 2) {
