@@ -1,4 +1,5 @@
 import React, { startTransition, useEffect, useState } from 'react';
+import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -372,7 +373,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         ? 'Eventos desta semana'
         : 'Eventos proximos';
   return (
-    <ContentColumn size="standard" className="space-y-6 pb-20 animate-in fade-in duration-500">
+    <ContentColumn size="wide" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
         <PageHeader title="Eventos" action={
           <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
@@ -562,6 +563,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             Nenhum evento encontrado para este filtro.
           </div>
         ) : null}
+        <ListingGrid variant="row">
         {displayedEvents.map((item) => (
           <EventCard
             key={item.id}
@@ -580,6 +582,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             onToggleFavorite={() => void handleFavoriteToggle(item)}
           />
         ))}
+        </ListingGrid>
       </div>
     </ContentColumn>
   );

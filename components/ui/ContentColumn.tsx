@@ -12,7 +12,7 @@ const widths: Record<ContentColumnSize, string> = {
   feed: 'max-w-[600px]',
   reading: 'max-w-[720px]',
   standard: 'max-w-[1120px]',
-  wide: 'max-w-[1600px]',
+  wide: 'max-w-[1280px]',
 };
 
 export const ContentColumn = React.forwardRef<HTMLDivElement, ContentColumnProps>(

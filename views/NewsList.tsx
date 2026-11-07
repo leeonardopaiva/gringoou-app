@@ -1,5 +1,6 @@
 'use client';
 
+import { ListingGrid } from '@/components/ui/ListingGrid';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -161,7 +162,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
   };
 
   return (
-    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="pb-20 pt-2">
       <PageHeader title={t('news.title')} backHref="/inicio" />
 
       <div className="mt-4 space-y-4">
@@ -194,12 +195,12 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
       {loading ? (
         <div className="mt-6 space-y-4">
           <Skeleton className="h-48 w-full" />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <ListingGrid variant="row">
             <Skeleton.Card />
             <Skeleton.Card />
             <Skeleton.Card />
             <Skeleton.Card />
-          </div>
+          </ListingGrid>
         </div>
       ) : error ? (
         <div className="mt-6">
@@ -305,7 +306,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
             </a>
           ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <ListingGrid variant="row">
             {rest.map((item) => (
               <a
                 key={item.id}
@@ -334,7 +335,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
                 </div>
               </a>
             ))}
-          </div>
+          </ListingGrid>
 
           <p className="pt-2 text-center text-[11px] text-slate-400">
             Sem link direto, a busca da notícia abre no Google Notícias (mais confiável que o Google News direto). Conteúdo agregado apenas como referência.

@@ -15,6 +15,7 @@ export * from './EmptyState';
 export * from './ProgressBar';
 export * from './Autocomplete';
 export * from './ContentColumn';
+export * from './ListingGrid';
 export * from './CharacterCounter';
 export * from './FeedCard';
 export * from './ServiceCard';

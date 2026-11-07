@@ -1,5 +1,6 @@
 "use client";
 
+import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { MapPin, Plus } from "lucide-react";
@@ -123,7 +124,7 @@ export default function HousingList({ user }: { user: User }) {
     }
   };
   return (
-    <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
+    <ContentColumn size="wide" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <PageHeader title="Moradia" action={
         <Button
           size="sm"
@@ -175,7 +176,8 @@ export default function HousingList({ user }: { user: User }) {
             Atualizando resultados...
           </p>
         ) : items.length ? (
-          items.map((item) => (
+          <ListingGrid variant="row">
+          {items.map((item) => (
             <Card
               key={item.id}
               padded={false}
@@ -202,7 +204,8 @@ export default function HousingList({ user }: { user: User }) {
                 </Link>
             </div>
             </Card>
-          ))
+          ))}
+          </ListingGrid>
         ) : (
           <p className="text-sm text-muted-foreground">
             Nenhuma moradia encontrada.

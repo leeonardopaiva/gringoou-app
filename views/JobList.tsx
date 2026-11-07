@@ -1,5 +1,6 @@
 "use client";
 
+import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Briefcase, MapPin, Plus } from "lucide-react";
@@ -148,7 +149,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
   };
 
   return (
-    <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
+    <ContentColumn size="wide" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <PageHeader title="Vagas" action={
         <Button
           size="sm"
@@ -203,7 +204,8 @@ export default function JobList({ user, initialData }: { user: User; initialData
             Atualizando resultados...
           </p>
         ) : jobs.length ? (
-          jobs.map((job) => (
+          <ListingGrid variant="row">
+          {jobs.map((job) => (
             <Card key={job.id} padded={false} className="overflow-hidden border border-border shadow-xs">
             {job.imageUrl ? <img src={job.imageUrl} alt={'Capa da vaga ' + job.title} className="h-36 w-full object-cover" /> : null}
             <div className="p-4">
@@ -227,7 +229,8 @@ export default function JobList({ user, initialData }: { user: User; initialData
             </div>
             </div>
             </Card>
-          ))
+          ))}
+          </ListingGrid>
         ) : (
           <p className="text-sm text-muted-foreground">
             Nenhuma vaga encontrada.

@@ -145,7 +145,7 @@ const SidebarContent: React.FC<{
   };
 
   return (
-    <div className={`space-y-4 p-5 pb-20 pt-7 md:flex md:h-full md:flex-col md:justify-between md:py-7 ${collapsed ? 'md:px-3' : 'md:px-6'}`}>
+    <div className={`space-y-4 p-5 pb-20 pt-7 lg:flex lg:h-full lg:flex-col lg:justify-between lg:py-7 ${collapsed ? 'lg:px-3' : 'lg:px-6'}`}>
       <div className="space-y-4">
         <div className="mb-5 space-y-4">
           <div className={`flex items-center gap-1 ${collapsed ? 'justify-center' : 'justify-start'}`}>
@@ -161,7 +161,7 @@ const SidebarContent: React.FC<{
             onClick={onToggleCollapsed}
             aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="order-last hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 md:inline-flex"
+            className="order-last hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 lg:inline-flex"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
@@ -413,16 +413,16 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
   return (
     <div className="app-shell min-h-dvh bg-bg" data-persona={isProfessionalTheme ? 'professional' : 'personal'}>
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-bg font-sans md:max-w-none md:bg-transparent">
+      <div className="mx-auto flex min-h-dvh w-full flex-col bg-bg font-sans lg:bg-transparent">
         {isMenuOpen ? (
           <div
-            className="fixed inset-0 z-50 animate-in bg-overlay fade-in duration-300 md:hidden"
+            className="fixed inset-0 z-50 animate-in bg-overlay fade-in duration-300 lg:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
         ) : null}
 
         <div
-          className={`fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-border bg-bg transition-[width,transform] duration-300 ease-out md:max-w-none md:translate-x-0 md:overflow-visible md:shadow-none ${isSidebarCollapsed ? 'md:w-20' : 'md:w-72'} ${
+          className={`fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-border bg-bg transition-[width,transform] duration-300 ease-out lg:max-w-none lg:translate-x-0 lg:overflow-visible lg:shadow-none ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-72'} ${
             isMenuOpen ? 'translate-x-0' : '-translate-x-full'
           } ${panelClass}`}
         >
@@ -440,11 +440,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           />
         </div>
 
-        <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-72'}`}>
+        <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
           <header className="relative border-b border-border/70">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
-            <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-4 pb-3 pt-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,620px)_minmax(0,1fr)] md:items-center md:gap-x-4 md:gap-y-2 md:px-6 md:py-4">
-              <div className="flex min-w-0 items-center py-2 gap-2.5 md:hidden">
+            <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-3 pb-3 pt-3 sm:px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)_minmax(0,1fr)] lg:items-center lg:gap-x-4 lg:gap-y-2 lg:px-6 lg:py-4">
+              <div className="flex min-w-0 items-center py-2 gap-2.5 lg:hidden">
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(true)}
@@ -458,7 +458,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </span>
               </div>
 
-              <div className="order-3 flex w-full items-center gap-2 md:order-none md:col-start-2 md:row-start-1 md:w-full">
+              <div className="order-3 flex w-full items-center gap-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:w-full">
                 <div className="min-w-0 flex-1">
                   <UnifiedSearchInput
                     value={headerSearch}
@@ -480,13 +480,13 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </div>
               </div>
 
-              <div className="flex h-10 items-center gap-1.5 sm:gap-2 md:col-start-3 md:row-start-1 md:justify-self-end">
+              <div className="flex h-10 items-center gap-1.5 sm:gap-2 lg:col-start-3 lg:row-start-1 lg:justify-self-end">
                 <button
                   type="button"
                   onClick={openRegionSelector}
                   aria-label={`Região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:flex"
+                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
                   <span className="truncate">{shortRegionLabel}</span>
@@ -496,7 +496,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 md:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
                 </button>
@@ -510,7 +510,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-[1600px] px-4 pt-4 md:px-6 md:pt-6">
+          <main className="mx-auto w-full max-w-[1600px] px-3 pt-4 sm:px-4 lg:px-6 lg:pt-6">
             <ActiveRegionProvider value={activeRegion.key || null}>
               <LanguageProvider>{children}</LanguageProvider>
             </ActiveRegionProvider>
@@ -519,10 +519,10 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           <SuggestionButton />
 
           {isQuickMenuOpen ? (
-            <div className="fixed inset-0 z-45 md:hidden" onClick={() => setIsQuickMenuOpen(false)} />
+            <div className="fixed inset-0 z-45 lg:hidden" onClick={() => setIsQuickMenuOpen(false)} />
           ) : null}
 
-          <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:hidden">
+          <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 lg:hidden">
             <div className="relative flex w-full max-w-[300px] justify-center">
               {isQuickMenuOpen ? (
                 <div className="absolute bottom-[58px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">

@@ -1,5 +1,6 @@
 'use client';
 
+import { ListingGrid } from '@/components/ui/ListingGrid';
 import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -283,7 +284,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
   }, [category, maxPrice, minPrice, search, sort]);
 
   return (
-    <ContentColumn size="wide" className="px-5 pb-20 pt-2">
+    <ContentColumn size="wide" className="pb-20 pt-2">
       <PageHeader
         title="Marketplace"
         backHref="/inicio"
@@ -423,7 +424,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       </div>
 
       {loading ? (
-        <div className="mt-5 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-x-5">
+        <ListingGrid variant="tile" className="mt-5">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="min-w-0">
               <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
@@ -432,7 +433,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               <Skeleton className="mt-2 h-3 w-1/2 rounded-full" />
             </div>
           ))}
-        </div>
+        </ListingGrid>
       ) : error ? (
         <div className="mt-6">
           <EmptyState icon={<ShoppingBag size={28} />} title="Anúncios indisponíveis" description={error} />
@@ -455,7 +456,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           <p className="mt-5 text-xs font-semibold text-slate-400">
             {total} {total === 1 ? 'anúncio' : 'anúncios'}
           </p>
-          <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-x-5">
+          <ListingGrid variant="tile" className="mt-3">
             {items.map((item) => (
               <MarketplaceCard
                 key={item.id}
@@ -464,7 +465,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
                 favoriteToggling={togglingId === item.id}
               />
             ))}
-          </div>
+          </ListingGrid>
 
           {totalPages > 1 ? (
             <div className="mt-8 flex justify-center">

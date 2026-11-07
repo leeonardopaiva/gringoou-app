@@ -225,7 +225,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   if (loading) {
     return (
-      <ContentColumn size="wide" className="px-5 pb-20 pt-2">
+      <ContentColumn size="wide" className="pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
@@ -246,7 +246,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   if (error || !item) {
     return (
-      <ContentColumn size="wide" className="px-5 pb-20 pt-2">
+      <ContentColumn size="wide" className="pb-20 pt-2">
         <PageHeader title="Anúncio" backHref="/marketplace" />
         <div className="mt-6">
           <EmptyState icon={<ShoppingBag size={28} />} title="Anúncio indisponível" description={error ?? 'Este anúncio não está mais disponível.'} />
@@ -258,7 +258,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   const sellerLocation = item.city ? `${item.city}${item.state ? `, ${item.state}` : ''}` : item.locationLabel;
 
   return (
-    <ContentColumn size="wide" className="px-5 pb-24 pt-2">
+    <ContentColumn size="wide" className="pb-24 pt-2">
       <PageHeader title="Anúncio" backHref="/marketplace" />
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
