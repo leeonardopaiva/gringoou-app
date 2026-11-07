@@ -86,6 +86,10 @@ export interface EventDetailItem {
   canEdit: boolean;
   canRate: boolean;
   createdByName: string;
+  /** Pessoa que criou o evento (destino das mensagens ao organizador). */
+  organizerId?: string | null;
+  /** A pessoa logada criou este evento (não conversa consigo mesma; administrador não é dono). */
+  isOwner?: boolean;
   /** Quem publicou (negócio tem prioridade sobre pessoa). */
   publisher?: { name: string; image: string | null; href: string | null; kind: 'USER' | 'BUSINESS' } | null;
   publicPath: string;

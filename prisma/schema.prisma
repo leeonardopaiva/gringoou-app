@@ -269,6 +269,11 @@ model User {
   marketplaceItems          MarketplaceItem[]        @relation("MarketplaceItemCreator")
   newsArticles              NewsArticle[]            @relation("NewsArticleAuthor")
   newsLikes                 NewsArticleLike[]
+  blocksMade                UserBlock[]              @relation("UserBlocksMade")
+  blocksReceived            UserBlock[]              @relation("UserBlocksReceived")
+  messageReportsMade        MessageReport[]          @relation("MessageReportAuthor")
+  messageReportsReceived    MessageReport[]          @relation("MessageReportTarget")
+  messageReportsReviewed    MessageReport[]          @relation("MessageReportReviewer")
   marketplaceFavorites      MarketplaceFavorite[]    @relation("MarketplaceFavoriteUser")
   createdInvites            Invite[]                 @relation("InviteCreator")
   revokedInvites            Invite[]                 @relation("InviteRevoker")
@@ -1109,6 +1114,7 @@ model MarketplaceConversation {
   buyer     User                   @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   seller    User                   @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
   messages  MarketplaceMessage[]
+  reports   MessageReport[]
 
   @@unique([itemId, buyerId])
   @@index([buyerId, updatedAt])
@@ -1188,4 +1194,53 @@ model NewsArticleLike {
 
   @@id([userId, articleId])
   @@index([articleId])
+}
+
+enum MessageReportReason {
+  SPAM
+  HARASSMENT
+  SCAM
+  INAPPROPRIATE
+  OTHER
+}
+
+enum MessageReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+/// Bloqueio entre pessoas: quem bloqueia não recebe nem envia mensagens para a pessoa bloqueada.
+model UserBlock {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User     @relation("UserBlocksMade", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("UserBlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+/// Denúncia de uma conversa direta ou de anúncio, revisada pela moderação.
+model MessageReport {
+  id             String                   @id @default(cuid())
+  conversationId String?
+  reporterId     String
+  reportedUserId String
+  reason         MessageReportReason
+  details        String?
+  status         MessageReportStatus      @default(PENDING)
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  conversation   MarketplaceConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  reporter       User                     @relation("MessageReportAuthor", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User                     @relation("MessageReportTarget", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reviewedBy     User?                    @relation("MessageReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reportedUserId, createdAt])
+  @@index([reporterId, createdAt])
 }

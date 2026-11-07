@@ -85,6 +85,8 @@ export interface NewsArticleContract {
   likeCount: number;
   /** A pessoa logada já curtiu esta notícia. */
   viewerLiked: boolean;
+  /** Últimas pessoas que curtiram (até 3), para o grupo de avatares. */
+  recentLikers: Array<{ id: string; name: string | null; username: string | null; image: string | null }>;
 }
 
 export interface NewsAdminArticleContract extends NewsArticleContract {

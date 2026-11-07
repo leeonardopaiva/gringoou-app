@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { publishNewMessage } from '@/lib/ably';
+import { isBlockedBetween } from '@/lib/server/blocks';
 
 type RouteContext = { params: Promise<{ conversationId: string }> };
 
@@ -78,12 +79,18 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Você não participa desta conversa.' }, { status: 403 });
   }
 
+  // Bloqueio entre as duas pessoas (em qualquer direção) impede novas mensagens.
+  const otherId = conversation.buyerId === viewerId ? conversation.sellerId : conversation.buyerId;
+  if (await isBlockedBetween(viewerId, otherId)) {
+    return NextResponse.json({ error: 'Não é possível enviar mensagem para esta pessoa.' }, { status: 403 });
+  }
+
   // Cria mensagem
   const message = await prisma.marketplaceMessage.create({
     data: {
       conversationId,
       senderId: viewerId,
-      content: body.content.trim(),
+      content: body.content.trim().slice(0, 2000),
     },
     select: {
       id: true,

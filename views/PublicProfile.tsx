@@ -26,6 +26,7 @@ import { Logo } from '../components/Layout';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
+import { BackBar } from '../components/ui/BackBar';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
@@ -116,6 +117,11 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const { startDirectConversation } = useMessaging();
   const router = useRouter();
   const [messageLoading, setMessageLoading] = useState(false);
+
+  // Pré-carrega a Inbox para o "Enviar mensagem" abrir sem espera.
+  useEffect(() => {
+    if (viewer) router.prefetch('/inbox');
+  }, [router, viewer]);
   const [profile, setProfile] = useState<PublicUserProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -348,6 +354,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <Logo size="lg" />
             </div>
           ) : null}
+          {!embedded ? <BackBar fallbackHref={viewer ? '/community' : '/'} label="Comunidade" /> : null}
 
           <div className="relative">
             <div className={`relative h-32 overflow-hidden rounded-t-[28px] sm:h-40 ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
@@ -462,13 +469,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <button
                     type="button"
                     disabled={messageLoading}
-                    onClick={async () => {
+                    onClick={() => {
                       setMessageLoading(true);
-                      const started = await startDirectConversation(profile.id);
-                      if (!started) {
-                        setMessageLoading(false);
-                        showToast('Não foi possível abrir a conversa agora. Tente novamente.', 'error');
-                      }
+                      startDirectConversation(profile.id);
                     }}
                     className="inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-5 text-sm font-bold text-brand-600 transition hover:bg-brand-50 disabled:opacity-60"
                   >

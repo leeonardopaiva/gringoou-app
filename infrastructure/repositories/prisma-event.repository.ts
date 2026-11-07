@@ -216,6 +216,8 @@ export function makePrismaEventRepository(prisma: PrismaClient): EventRepository
         canRate,
         createdByName: event.createdBy?.name ?? 'Comunidade Gringoou',
         publisher: buildPublisher(event.createdBy, event.business),
+        organizerId: event.createdById,
+        isOwner,
         publicPath: `/events/${event.slug || event.id}`,
         status: event.status,
         ownershipVerifiedAt: event.ownershipVerifiedAt?.toISOString() ?? null,

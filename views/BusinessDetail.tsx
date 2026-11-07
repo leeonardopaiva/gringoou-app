@@ -18,7 +18,7 @@ import {
   X,
   Send,
 } from 'lucide-react';
-import { BackButton } from '../components/ui/BackButton';
+import { BackBar } from '../components/ui/BackBar';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -456,11 +456,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           </div>
         </div>
       ) : null}
+      <BackBar fallbackHref="/businesses" label="Negócios" />
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-        <BackButton fallbackHref="/businesses" className="h-9 w-9" />
 
         <div className="absolute right-4 top-4 flex gap-2">
           <button
@@ -618,13 +617,9 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             <>
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   setContacting(true);
-                  const started = await startDirectConversation(business.ownerId);
-                  if (!started) {
-                    setContacting(false);
-                    showToast('Não foi possível iniciar a conversa agora. Tente novamente.', 'error');
-                  }
+                  startDirectConversation(business.ownerId);
                 }}
                 disabled={contacting}
                 className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"

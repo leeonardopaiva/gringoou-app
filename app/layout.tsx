@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Sora } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { isInviteOnlyRegistration } from '@/lib/invites';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 import { Analytics } from '@vercel/analytics/next';
 
@@ -58,7 +59,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
           data-app="gringoou-app"
         />
-        <Providers session={session}>{children}</Providers>
+        <Providers session={session} inviteRequired={isInviteOnlyRegistration()}>{children}</Providers>
         {shouldLoadVercelAnalytics ? <Analytics /> : null}
       </body>
     </html>

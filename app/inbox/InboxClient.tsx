@@ -7,10 +7,13 @@ import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { Skeleton } from '@/components/ui/Skeleton';
 import PageHeader from '@/components/navigation/PageHeader';
+import { goBackOr } from '@/lib/navigation-history';
 import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMessaging, type Conversation as MessagingConversation } from '@/lib/MessagingProvider';
-import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Archive, Bell, Flag, Trash2, X, Send, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/feedback/ToastProvider';
+import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
 type Conversation = MessagingConversation;
@@ -28,12 +31,22 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     sendMessage,
     refreshConversations,
     startConversation,
+    openDirectConversation,
   } = useMessaging();
+  const { showToast } = useToast();
+  const directTarget = searchParams?.get('to') ?? null;
+  const openedDirectRef = useRef<string | null>(null);
+  const [openingDirect, setOpeningDirect] = useState(Boolean(directTarget));
 
   const [tab, setTab] = useState<'todas' | 'marketplace' | 'diretas'>('todas');
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<string>('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const [isMobile, setIsMobile] = useState(false);
   const refreshedForRef = useRef<string | null>(null);
@@ -49,6 +62,22 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
+
+  // Abre a conversa direta pedida por "?to=<pessoa>": a navegação é imediata e a conversa abre aqui.
+  useEffect(() => {
+    if (!directTarget || openedDirectRef.current === directTarget) return;
+    openedDirectRef.current = directTarget;
+    setOpeningDirect(true);
+    void openDirectConversation(directTarget).then((conversationId) => {
+      setOpeningDirect(false);
+      if (conversationId) {
+        router.replace(`/inbox?conversation=${conversationId}`);
+      } else {
+        showToast('Não foi possível abrir a conversa agora. Tente novamente.', 'error');
+        router.replace('/inbox');
+      }
+    });
+  }, [directTarget, openDirectConversation, router, showToast]);
 
   // Handle URL conversation parameter (conversa recém-criada pode ainda não estar na lista)
   useEffect(() => {
@@ -68,18 +97,74 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true
   );
 
+  const REPORT_REASONS = [
+    { id: 'SPAM', label: 'Spam ou propaganda' },
+    { id: 'HARASSMENT', label: 'Assédio ou ofensas' },
+    { id: 'SCAM', label: 'Golpe ou fraude' },
+    { id: 'INAPPROPRIATE', label: 'Conteúdo impróprio' },
+    { id: 'OTHER', label: 'Outro motivo' },
+  ];
+
+  const toggleBlock = async (conv: Conversation) => {
+    const other = conv.buyer.id === user.id ? conv.seller : conv.buyer;
+    const unblock = Boolean(conv.blockedByViewer);
+    setBlockBusy(true);
+    try {
+      const response = await fetch(unblock ? `/api/blocks?userId=${encodeURIComponent(other.id)}` : '/api/blocks', {
+        method: unblock ? 'DELETE' : 'POST',
+        headers: { 'content-type': 'application/json' },
+        ...(unblock ? {} : { body: JSON.stringify({ userId: other.id }) }),
+      });
+      if (!response.ok) throw new Error();
+      showToast(unblock ? 'Pessoa desbloqueada.' : 'Pessoa bloqueada. Vocês não trocam mais mensagens.', 'success');
+      await refreshConversations();
+    } catch {
+      showToast('Não foi possível concluir agora. Tente novamente.', 'error');
+    } finally {
+      setBlockBusy(false);
+      setShowMenu(null);
+    }
+  };
+
+  const submitReport = async () => {
+    if (!activeConversationId || !reportReason || reportSending) return;
+    setReportSending(true);
+    try {
+      const response = await fetch('/api/reports/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ conversationId: activeConversationId, reason: reportReason, details: reportDetails.trim() || undefined }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível enviar a denúncia.');
+      showToast('Denúncia enviada. Nossa equipe vai analisar.', 'success');
+      setReportOpen(false);
+      setReportReason('');
+      setReportDetails('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Não foi possível enviar a denúncia.', 'error');
+    } finally {
+      setReportSending(false);
+    }
+  };
+
   const handleSend = useCallback(async () => {
     if (!draft.trim() || !activeConversationId || sending) return;
     setSending(true);
     const text = draft.trim();
     setDraft('');
     try {
-      await sendMessage(text);
-      scrollToBottom(true);
+      const sendError = await sendMessage(text);
+      if (sendError) {
+        setDraft(text);
+        showToast(sendError, 'error');
+      } else {
+        scrollToBottom(true);
+      }
     } finally {
       setSending(false);
     }
-  }, [activeConversationId, draft, scrollToBottom, sendMessage, sending]);
+  }, [activeConversationId, draft, scrollToBottom, sendMessage, sending, showToast]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -105,17 +190,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     return conv.messages.filter((m) => m.senderId !== user.id).length;
   };
 
-  /** Sai da Inbox: volta no histórico interno; em acesso direto, cai na Comunidade. */
-  const exitInbox = () => {
-    let sameOrigin = false;
-    try {
-      sameOrigin = Boolean(document.referrer) && new URL(document.referrer).origin === window.location.origin;
-    } catch {
-      sameOrigin = false;
-    }
-    if (sameOrigin && window.history.length > 1) router.back();
-    else router.push('/community');
-  };
+  /** Sai da Inbox: volta para a tela de onde veio; em acesso direto, cai na Comunidade. */
+  const exitInbox = () => goBackOr(router, '/community');
 
   const handleBack = () => {
     if (isMobile && mobileView === 'chat') {
@@ -210,7 +286,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               </div>
             </div>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : filtered.length === 0 && !openingDirect ? (
           /* Empty State */
           <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
             <div className="space-y-3">
@@ -325,7 +401,17 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
 
             {/* Chat Panel */}
             <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-[70vh]', isMobile && mobileView !== 'chat' && 'hidden')}>
-              {activeConv ? (
+              {openingDirect && !activeConv ? (
+                <div className="flex flex-1 flex-col" role="status" aria-label="Abrindo conversa">
+                  <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                  <div className="flex flex-1 items-center justify-center">
+                    <Loader2 size={22} className="animate-spin text-brand-500" aria-hidden />
+                  </div>
+                </div>
+              ) : activeConv ? (
                 <>
                   {/* Chat Header */}
                   <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
@@ -463,6 +549,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   </div>
 
                   {/* Input Area */}
+                  {activeConv.blockedByViewer ? (
+                    <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-center text-sm text-slate-500">
+                      Você bloqueou esta pessoa.{' '}
+                      <button type="button" onClick={() => void toggleBlock(activeConv)} disabled={blockBusy} className="font-semibold text-brand-600 hover:underline disabled:opacity-50">
+                        Desbloquear
+                      </button>
+                    </div>
+                  ) : (
                   <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
                     <div className="flex items-end gap-2">
                       <textarea
@@ -491,6 +585,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       </button>
                     </div>
                   </div>
+                  )}
                 </>
               ) : (
                 /* No conversation selected */
@@ -516,32 +611,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   <button
                     type="button"
                     onClick={() => {
-                      // Archive conversation
                       setShowMenu(null);
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    role="menuitem"
-                  >
-                    <Archive size={16} />
-                    Arquivar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Mark as unread
-                      setShowMenu(null);
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    role="menuitem"
-                  >
-                    <Bell size={16} />
-                    Marcar como não lida
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Report
-                      setShowMenu(null);
+                      setReportOpen(true);
                     }}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     role="menuitem"
@@ -552,21 +623,61 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   <hr className="my-1 border-slate-100" />
                   <button
                     type="button"
-                    onClick={() => {
-                      // Delete
-                      setShowMenu(null);
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={blockBusy}
+                    onClick={() => void toggleBlock(activeConv)}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                     role="menuitem"
                   >
-                    <Trash2 size={16} />
-                    Excluir conversa
+                    <Ban size={16} />
+                    {activeConv.blockedByViewer ? 'Desbloquear pessoa' : 'Bloquear pessoa'}
                   </button>
                 </div>
               )}
             </div>
           </div>
         )}
+
+        <Modal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          title="Denunciar conversa"
+          description="Conte o que aconteceu. Nossa equipe analisa e a outra pessoa não é avisada."
+          className="max-w-md"
+          footer={
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setReportOpen(false)} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void submitReport()}
+                disabled={!reportReason || reportSending}
+                className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {reportSending ? 'Enviando...' : 'Enviar denúncia'}
+              </button>
+            </div>
+          }
+        >
+          <fieldset className="space-y-2">
+            <legend className="sr-only">Motivo da denúncia</legend>
+            {REPORT_REASONS.map((reason) => (
+              <label key={reason.id} className={cn('flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition', reportReason === reason.id ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-700 hover:bg-slate-50')}>
+                <input type="radio" name="report-reason" value={reason.id} checked={reportReason === reason.id} onChange={() => setReportReason(reason.id)} className="accent-brand-600" />
+                {reason.label}
+              </label>
+            ))}
+          </fieldset>
+          <textarea
+            value={reportDetails}
+            onChange={(event) => setReportDetails(event.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="Detalhes (opcional)"
+            aria-label="Detalhes da denúncia"
+            className="mt-3 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+          />
+        </Modal>
 
         {/* Click outside to close menu - only render when menu is open */}
         {showMenu && (

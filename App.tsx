@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Layout from './components/Layout';
+import { usePublicConfig } from './lib/public-config';
 import { PageLoader } from './components/ui/PageLoader';
 import AppContent from './components/app/AppContent';
 import AuthWorkspace from './components/app/AuthWorkspace';
@@ -74,7 +75,8 @@ const App: React.FC<{
     sessionRole === UserRole.ADMIN ||
     hasProfessionalBusinesses;
   const authCallbackUrl = pathname === '/login' ? '/home' : pathname || '/home';
-  const inviteRequired = process.env.NEXT_PUBLIC_INVITE_ONLY_REGISTRATION === 'true';
+  // Vem do servidor (mesma regra do cadastro), para a tela e o servidor nunca divergirem.
+  const { inviteRequired } = usePublicConfig();
   const phoneVerificationEnabled = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
 
   useEffect(() => {

@@ -8,6 +8,8 @@ export type Conversation = {
   id: string;
   /** Nulo em conversas diretas entre pessoas. */
   itemId: string | null;
+  /** A pessoa logada bloqueou o outro participante. */
+  blockedByViewer?: boolean;
   lastMessageAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -35,13 +37,16 @@ type MessagingContextType = {
   floatingChatMinimized: boolean;
   loading: boolean;
   selectConversation: (id: string) => Promise<void>;
-  sendMessage: (content: string) => Promise<void>;
+  /** Retorna `null` se enviou, ou a mensagem de erro se falhou. */
+  sendMessage: (content: string) => Promise<string | null>;
   setFloatingChatOpen: (open: boolean) => void;
   setFloatingChatMinimized: (minimized: boolean) => void;
   refreshConversations: () => Promise<void>;
   startConversation: (itemId: string, sellerUsername: string | null, defaultMessage?: string) => Promise<void>;
   /** Abre (ou cria) a conversa direta com outra pessoa e leva para a Inbox. Retorna false se falhar. */
-  startDirectConversation: (recipientId: string) => Promise<boolean>;
+  startDirectConversation: (recipientId: string) => void;
+  /** Cria/abre a conversa direta, adiciona na lista e seleciona. Retorna o id (ou null se falhar). */
+  openDirectConversation: (recipientId: string) => Promise<string | null>;
 };
 
 const MessagingContext = createContext<MessagingContextType | null>(null);
@@ -141,8 +146,8 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     } catch { /* */ }
   }, []);
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!activeConversationId || !content.trim()) return;
+  const sendMessage = useCallback(async (content: string): Promise<string | null> => {
+    if (!activeConversationId || !content.trim()) return null;
     const text = content.trim();
     try {
       const res = await fetch(`/api/marketplace/messages/${activeConversationId}`, {
@@ -150,9 +155,14 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ content: text }),
       });
-      const data = await res.json();
-      if (res.ok) { setMessages((prev) => [...prev, data.message]); void refreshConversations(); }
-    } catch { /* */ }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) return data?.error ?? 'Não foi possível enviar a mensagem.';
+      setMessages((prev) => [...prev, data.message]);
+      void refreshConversations();
+      return null;
+    } catch {
+      return 'Não foi possível enviar a mensagem. Verifique sua conexão.';
+    }
   }, [activeConversationId, refreshConversations]);
 
   const startConversation = useCallback(async (itemId: string, _sellerUsername: string | null, defaultMessage?: string) => {
@@ -172,8 +182,13 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     } catch { /* */ }
   }, [user, refreshConversations, router]);
 
-  const startDirectConversation = useCallback(async (recipientId: string) => {
-    if (!user) return false;
+  /** Leva para a Inbox na hora; a própria Inbox abre a conversa (sem esperar a rede antes de navegar). */
+  const startDirectConversation = useCallback((recipientId: string) => {
+    router.push(`/inbox?to=${encodeURIComponent(recipientId)}`);
+  }, [router]);
+
+  const openDirectConversation = useCallback(async (recipientId: string) => {
+    if (!user) return null;
     try {
       const res = await fetch('/api/marketplace/messages', {
         method: 'POST',
@@ -181,20 +196,22 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
         body: JSON.stringify({ recipientId }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.conversationId) return false;
-      await refreshConversations();
-      router.push(`/inbox?conversation=${data.conversationId}`);
-      return true;
+      if (!res.ok || !data?.conversationId) return null;
+      // A API já devolve a conversa pronta: entra na lista sem precisar recarregá-la.
+      if (data.conversation) {
+        setConversations((prev) => [data.conversation, ...prev.filter((c) => c.id !== data.conversation.id)]);
+      }
+      return data.conversationId as string;
     } catch {
-      return false;
+      return null;
     }
-  }, [user, refreshConversations, router]);
+  }, [user]);
 
   const value: MessagingContextType = {
     conversations, activeConversationId, messages, unreadCount,
     floatingChatOpen, floatingChatMinimized, loading,
     selectConversation, sendMessage,
-    setFloatingChatOpen, setFloatingChatMinimized, refreshConversations, startConversation, startDirectConversation,
+    setFloatingChatOpen, setFloatingChatMinimized, refreshConversations, startConversation, startDirectConversation, openDirectConversation,
   };
 
   return <MessagingContext.Provider value={value}>{children}</MessagingContext.Provider>;

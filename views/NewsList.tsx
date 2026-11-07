@@ -6,6 +6,9 @@ import { ExternalLink, Heart, MapPin, Newspaper, Search, Share2 } from 'lucide-r
 import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
+import Link from 'next/link';
+import { Avatar } from '../components/ui/Avatar';
+import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { SectionTabs } from '../components/ui/SectionTabs';
 import { Button } from '../components/ui';
@@ -36,6 +39,10 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
   const [liked, setLiked] = useState(article.viewerLiked);
   const [likeCount, setLikeCount] = useState(article.likeCount);
   const [likeBusy, setLikeBusy] = useState(false);
+  const { data: session } = useSession();
+  const [likers, setLikers] = useState(article.recentLikers);
+  const [likersOpen, setLikersOpen] = useState(false);
+  const [likersList, setLikersList] = useState<Array<{ id: string; name: string | null; username: string | null; image: string | null; locationLabel?: string | null }> | null>(null);
   const showImage = Boolean(article.imageUrl) && !imageFailed;
 
   /** Curtir com atualização imediata; desfaz se o servidor recusar. */
@@ -45,17 +52,39 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
     setLikeBusy(true);
     setLiked(nextLiked);
     setLikeCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
+    const me = session?.user;
+    if (me?.id) {
+      setLikers((current) =>
+        nextLiked
+          ? [{ id: me.id, name: me.name ?? null, username: me.username ?? null, image: me.image ?? null }, ...current.filter((p) => p.id !== me.id)].slice(0, 3)
+          : current.filter((p) => p.id !== me.id),
+      );
+    }
+    setLikersList(null);
     try {
       const response = await fetch(`/api/news/${article.id}/like`, { method: nextLiked ? 'POST' : 'DELETE' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível curtir agora.');
       if (typeof payload?.likeCount === 'number') setLikeCount(payload.likeCount);
     } catch (error) {
+      setLikers(article.recentLikers);
       setLiked(!nextLiked);
       setLikeCount((count) => Math.max(0, count + (nextLiked ? -1 : 1)));
       showToast(error instanceof Error ? error.message : 'Não foi possível curtir agora.', 'error');
     } finally {
       setLikeBusy(false);
+    }
+  };
+
+  const openLikers = async () => {
+    setLikersOpen(true);
+    if (likersList) return;
+    try {
+      const response = await fetch(`/api/news/${article.id}/likes`);
+      const payload = await response.json().catch(() => null);
+      setLikersList(response.ok && Array.isArray(payload?.users) ? payload.users : []);
+    } catch {
+      setLikersList([]);
     }
   };
 
@@ -124,19 +153,36 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
             onClick={() => void handleLike()}
             aria-pressed={liked}
             aria-label={liked ? 'Remover curtida' : 'Curtir notícia'}
-            className={`inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            title={liked ? 'Remover curtida' : 'Curtir'}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
           >
-            <Heart size={17} fill={liked ? 'currentColor' : 'none'} aria-hidden />
-            {likeCount > 0 ? likeCount : 'Curtir'}
+            <Heart size={18} fill={liked ? 'currentColor' : 'none'} aria-hidden />
           </button>
+          {likeCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => void openLikers()}
+              aria-label={`Ver quem curtiu (${likeCount})`}
+              className="flex min-w-0 items-center gap-2 rounded-full py-1 pr-2 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            >
+              <span className="flex -space-x-2">
+                {likers.map((person) => (
+                  <Avatar key={person.id} src={person.image} name={person.name || person.username || 'Membro'} size="xs" />
+                ))}
+              </span>
+              <span className="truncate text-xs font-semibold text-slate-600">
+                {likeCount === 1 ? '1 curtida' : `${likeCount} curtidas`}
+              </span>
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleShare()}
             aria-label="Compartilhar notícia"
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-4"
           >
             <Share2 size={17} aria-hidden />
-            Compartilhar
+            <span className="hidden sm:inline">Compartilhar</span>
           </button>
           <a
             href={article.externalUrl}
@@ -150,6 +196,42 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
           </a>
         </div>
       </div>
+      <Modal open={likersOpen} onClose={() => setLikersOpen(false)} title="Quem curtiu" className="max-w-md">
+        {likersList === null ? (
+          <div className="space-y-3" role="status" aria-label="Carregando curtidas">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        ) : likersList.length === 0 ? (
+          <p className="py-4 text-center text-sm text-slate-500">Ninguém curtiu ainda.</p>
+        ) : (
+          <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
+            {likersList.map((person) => {
+              const name = person.name || person.username || 'Membro da comunidade';
+              const row = (
+                <>
+                  <Avatar src={person.image} name={name} size="sm" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-slate-800">{name}</span>
+                    {person.username ? <span className="block truncate text-xs text-slate-400">@{person.username}</span> : null}
+                  </span>
+                </>
+              );
+              return (
+                <li key={person.id}>
+                  {person.username ? (
+                    <Link href={`/${person.username}`} className="flex items-center gap-3 rounded-xl px-1 py-2.5 transition hover:bg-slate-50">
+                      {row}
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-3 px-1 py-2.5">{row}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Modal>
     </article>
   );
 };

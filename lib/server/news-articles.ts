@@ -9,14 +9,18 @@ const PUBLIC_PAGE_SIZE = 10;
 const ADMIN_PAGE_SIZE = 20;
 
 type ArticleRow = Prisma.NewsArticleGetPayload<{ include: { author: { select: { id: true; name: true } } } }> & {
-  likes?: { userId: string }[];
+  likes?: { user: { id: string; name: string | null; username: string | null; image: string | null } }[];
   _count?: { likes: number };
 };
 
-/** Inclui contagem de curtidas e se a pessoa logada já curtiu (consulta leve, limitada a 1 linha). */
-const likeInclude = (viewerId?: string | null) => ({
+/** Contagem de curtidas e as 3 mais recentes (para mostrar quem curtiu). */
+const likeInclude = () => ({
   _count: { select: { likes: true } },
-  likes: { where: { userId: viewerId ?? '__anonymous__' }, select: { userId: true }, take: 1 },
+  likes: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 3,
+    select: { user: { select: { id: true, name: true, username: true, image: true } } },
+  },
 });
 
 const encodeCursor = (publishedAt: Date, id: string) =>
@@ -40,7 +44,7 @@ async function regionLabels(keys: Array<string | null>): Promise<Map<string, str
   return new Map(regions.map((region) => [region.key, region.label]));
 }
 
-const toContract = (row: ArticleRow, labels: Map<string, string>): NewsArticleContract => ({
+const toContract = (row: ArticleRow, labels: Map<string, string>, likedIds?: Set<string>): NewsArticleContract => ({
   id: row.id,
   title: row.title,
   subtitle: row.subtitle,
@@ -52,7 +56,8 @@ const toContract = (row: ArticleRow, labels: Map<string, string>): NewsArticleCo
   externalUrl: row.externalUrl,
   publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
   likeCount: row._count?.likes ?? 0,
-  viewerLiked: (row.likes?.length ?? 0) > 0,
+  viewerLiked: likedIds?.has(row.id) ?? false,
+  recentLikers: (row.likes ?? []).map((like) => like.user),
 });
 
 export type PublicNewsFilters = {
@@ -101,16 +106,25 @@ export async function listPublishedNews(filters: PublicNewsFilters) {
     },
     orderBy: [{ publishedAt: oldestFirst ? 'asc' : 'desc' }, { id: oldestFirst ? 'asc' : 'desc' }],
     take: limit + 1,
-    include: { author: { select: { id: true, name: true } }, ...likeInclude(filters.viewerId) },
+    include: { author: { select: { id: true, name: true } }, ...likeInclude() },
   });
 
   const hasMore = rows.length > limit;
   const page = hasMore ? rows.slice(0, limit) : rows;
   const labels = await regionLabels(page.map((row) => row.regionKey));
   const last = page[page.length - 1];
+  // Quais destas notícias a pessoa logada já curtiu (uma consulta só para a página inteira).
+  const likedIds = new Set<string>();
+  if (filters.viewerId && page.length > 0) {
+    const liked = await prisma.newsArticleLike.findMany({
+      where: { userId: filters.viewerId, articleId: { in: page.map((row) => row.id) } },
+      select: { articleId: true },
+    });
+    liked.forEach((like) => likedIds.add(like.articleId));
+  }
 
   return {
-    items: page.map((row) => toContract(row, labels)),
+    items: page.map((row) => toContract(row, labels, likedIds)),
     hasMore,
     nextCursor: hasMore && last?.publishedAt ? encodeCursor(last.publishedAt, last.id) : null,
   };

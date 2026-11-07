@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Heart, MapPin, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { Avatar } from '@/components/ui/Avatar';
 import type { MarketplaceItemContract } from '@/lib/content-contracts';
 
 export const formatPrice = (priceCents: number | null, isFree: boolean): string => {
@@ -103,6 +104,18 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           </p>
         </div>
       </Link>
+
+      {/* Anunciante: avatar e nome levam ao perfil público (fora do link principal do cartão). */}
+      {item.sellerUsername && !isMine ? (
+        <Link
+          href={`/${item.sellerUsername}`}
+          aria-label={`Ver perfil de ${item.sellerName ?? item.sellerUsername}`}
+          className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full text-xs text-slate-500 transition hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+        >
+          <Avatar src={item.sellerImage} name={item.sellerName ?? item.sellerUsername} size="xs" />
+          <span className="truncate">{item.sellerName ?? `@${item.sellerUsername}`}</span>
+        </Link>
+      ) : null}
 
       {showFavorite ? (
         <button

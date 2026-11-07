@@ -8,6 +8,7 @@ import {
   Heart,
   Images,
   MapPin,
+  MessageCircle,
   MoreHorizontal,
   PencilLine,
   Share2,
@@ -26,7 +27,8 @@ import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
-import { BackButton } from '../components/ui/BackButton';
+import { BackBar } from '../components/ui/BackBar';
+import { useMessaging } from '../lib/MessagingProvider';
 import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
@@ -60,6 +62,8 @@ type EventDetailState = {
   canRate: boolean;
   createdByName: string;
   publisher?: Publisher | null;
+  organizerId?: string | null;
+  isOwner?: boolean;
   canEdit: boolean;
   publicPath: string;
   status: string;
@@ -113,6 +117,7 @@ type EventDetailsDraft = Pick<EventDetailState, 'title' | 'description' | 'venue
 
 const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }) => {
   const { showToast } = useToast();
+  const { startDirectConversation } = useMessaging();
   const initialState: EventDetailState = initialEvent
     ? {
         id: initialEvent.id,
@@ -137,6 +142,8 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         canRate: Boolean(initialEvent.canRate),
         createdByName: initialEvent.createdByName || 'Comunidade Gringoou',
         publisher: (initialEvent as { publisher?: Publisher | null }).publisher ?? null,
+        organizerId: (initialEvent as { organizerId?: string | null }).organizerId ?? null,
+        isOwner: Boolean((initialEvent as { isOwner?: boolean }).isOwner),
         canEdit: Boolean(initialEvent.canEdit),
         publicPath: initialEvent.publicPath || `/events/${initialEvent.slug || initialEvent.id}`,
         status: initialEvent.status || 'PUBLISHED',
@@ -204,6 +211,8 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             canRate: Boolean(payload.event.canRate),
             createdByName: payload.event.createdByName || payload.event.createdBy?.name || 'Comunidade Gringoou',
             publisher: payload.event.publisher ?? null,
+            organizerId: payload.event.organizerId ?? null,
+            isOwner: Boolean(payload.event.isOwner),
             canEdit: Boolean(payload.event.canEdit),
             publicPath: payload.event.publicPath || `/events/${payload.event.slug || payload.event.id}`,
             status: payload.event.status || 'PUBLISHED',
@@ -464,13 +473,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   return (
     <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500">
+      <BackBar fallbackHref="/events" label="Eventos" />
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        <BackButton fallbackHref="/events" />
-
-        {event.canEdit ? <div className="absolute left-16 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
+        {event.canEdit ? <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
 
         <div className="absolute right-4 top-4 flex gap-2">
           {event.canEdit ? <Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações do evento', items: [
@@ -527,6 +535,16 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               </div>
               <p className="break-all text-sm text-slate-600">{publicUrl}</p>
               <PublisherSignature publisher={event.publisher ?? { name: event.createdByName, image: null, href: null, kind: 'USER' }} />
+              {!event.isOwner && event.organizerId ? (
+                <button
+                  type="button"
+                  onClick={() => startDirectConversation(event.organizerId as string)}
+                  className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-4 text-sm font-bold text-brand-600 transition hover:bg-brand-50"
+                >
+                  <MessageCircle size={16} aria-hidden />
+                  Enviar mensagem
+                </button>
+              ) : null}
             </div>
 
             <button

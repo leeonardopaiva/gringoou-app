@@ -2,8 +2,41 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit } from '@/lib/rate-limit';
+import { isBlockedBetween, listBlockedIds } from '@/lib/server/blocks';
 
 const MAX_MESSAGE_LENGTH = 2000;
+const BLOCKED_MESSAGE = 'Não é possível enviar mensagem para esta pessoa.';
+
+/** Campos de uma conversa na lista da Inbox (usados no GET e ao devolver a conversa recém-aberta). */
+const conversationSelect = {
+  id: true,
+  itemId: true,
+  lastMessageAt: true,
+  createdAt: true,
+  updatedAt: true,
+  item: {
+    select: { id: true, title: true, imageUrl: true, priceCents: true, isFree: true },
+  },
+  buyer: { select: { id: true, name: true, image: true, username: true } },
+  seller: { select: { id: true, name: true, image: true, username: true } },
+  messages: {
+    take: 1,
+    orderBy: { createdAt: 'desc' as const },
+    select: { id: true, content: true, senderId: true, createdAt: true },
+  },
+} as const;
+
+async function loadConversation(id: string, viewerId: string) {
+  const conversation = await prisma.marketplaceConversation.findUnique({ where: { id }, select: conversationSelect });
+  if (!conversation) return null;
+  const blocked = await listBlockedIds(viewerId);
+  const otherId = conversation.buyer.id === viewerId ? conversation.seller.id : conversation.buyer.id;
+  return {
+    ...conversation,
+    blockedByViewer: blocked.has(otherId),
+    item: conversation.item ? { ...conversation.item, publicPath: `/marketplace/${conversation.item.id}` } : null,
+  };
+}
 
 /** Busca as conversas do usuário logado. */
 export async function GET() {
@@ -24,28 +57,15 @@ export async function GET() {
       status: 'ACTIVE',
     },
     orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      itemId: true,
-      lastMessageAt: true,
-      createdAt: true,
-      updatedAt: true,
-      item: {
-        select: { id: true, title: true, imageUrl: true, priceCents: true, isFree: true },
-      },
-      buyer: { select: { id: true, name: true, image: true, username: true } },
-      seller: { select: { id: true, name: true, image: true, username: true } },
-      messages: {
-        take: 1,
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, content: true, senderId: true, createdAt: true },
-      },
-    },
+    select: conversationSelect,
   });
+
+  const blocked = await listBlockedIds(userId);
 
   // Adiciona publicPath derivado
   const result = conversations.map((conv) => ({
     ...conv,
+    blockedByViewer: blocked.has(conv.buyer.id === userId ? conv.seller.id : conv.buyer.id),
     // Conversas diretas entre pessoas não têm anúncio (item = null).
     item: conv.item ? { ...conv.item, publicPath: `/marketplace/${conv.item.id}` } : null,
   }));
@@ -87,6 +107,9 @@ export async function POST(request: Request) {
     if (!recipient) {
       return NextResponse.json({ error: 'Pessoa não encontrada.' }, { status: 404 });
     }
+    if (await isBlockedBetween(viewerId, recipient.id)) {
+      return NextResponse.json({ error: BLOCKED_MESSAGE }, { status: 403 });
+    }
 
     const existingDirect = await prisma.marketplaceConversation.findFirst({
       where: {
@@ -107,7 +130,7 @@ export async function POST(request: Request) {
           data: { lastMessageAt: new Date(), status: 'ACTIVE', messages: { create: { senderId: viewerId, content } } },
         });
       }
-      return NextResponse.json({ conversationId: existingDirect.id, existing: true });
+      return NextResponse.json({ conversationId: existingDirect.id, existing: true, conversation: await loadConversation(existingDirect.id, viewerId) });
     }
 
     const direct = await prisma.marketplaceConversation.create({
@@ -118,7 +141,7 @@ export async function POST(request: Request) {
       },
       select: { id: true },
     });
-    return NextResponse.json({ conversationId: direct.id, message: 'Conversa iniciada.' });
+    return NextResponse.json({ conversationId: direct.id, message: 'Conversa iniciada.', conversation: await loadConversation(direct.id, viewerId) });
   }
 
   if (!body?.itemId || !content) {
@@ -136,6 +159,9 @@ export async function POST(request: Request) {
   }
   if (item.createdById === viewerId) {
     return NextResponse.json({ error: 'Você não pode iniciar uma conversa com você mesmo.' }, { status: 400 });
+  }
+  if (await isBlockedBetween(viewerId, item.createdById)) {
+    return NextResponse.json({ error: BLOCKED_MESSAGE }, { status: 403 });
   }
 
   // Verifica se já existe conversa
