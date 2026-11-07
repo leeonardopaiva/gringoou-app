@@ -32,3 +32,6 @@ test-results
 .agents/
 skills-lock.json
 tsconfig.tsbuildinfo
+
+# local dev database
+.local-db/
