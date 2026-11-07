@@ -15,6 +15,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
 import { Dropdown, DropdownItem, DropdownSection } from '../components/ui/Dropdown';
 import { useToast } from '../components/feedback/ToastProvider';
+import { useMessaging } from '../lib/MessagingProvider';
 import { useActiveRegion } from '../components/RegionContext';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
@@ -36,6 +37,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   const { data: session } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
+  const { startConversation } = useMessaging();
   const contextRegionKey = useActiveRegion();
   const activeRegionKey = contextRegionKey || session?.user?.regionKey || user.regionKey || '';
 
@@ -161,27 +163,9 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   const handleContactSeller = async () => {
     if (!item) return;
     setContacting(true);
-    try {
-      const response = await fetch('/api/marketplace/messages', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          itemId: item.id,
-          content: `Olá! Tenho interesse no anúncio "${item.title}".`,
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok && response.status !== 409) {
-        showToast(payload?.error ?? 'Não foi possível iniciar a conversa.', 'error');
-        return;
-      }
-      // 201 = criada; 409 = já existe
-      router.push(`/inbox?conversation=${payload?.conversationId}`);
-    } catch {
-      showToast('Não foi possível iniciar a conversa.', 'error');
-    } finally {
-      setContacting(false);
-    }
+    const contactError = await startConversation(item.id, item.sellerUsername, `Olá! Tenho interesse no anúncio "${item.title}".`);
+    if (contactError) showToast(contactError, 'error');
+    setContacting(false);
   };
 
   const handleDelete = async () => {

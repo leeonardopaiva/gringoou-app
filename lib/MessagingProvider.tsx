@@ -35,6 +35,8 @@ type MessagingContextType = {
   unreadCount: number;
   floatingChatOpen: boolean;
   floatingChatMinimized: boolean;
+  /** O chat flutuante está abrindo uma conversa (mostra carregamento). */
+  floatingChatOpening: boolean;
   loading: boolean;
   selectConversation: (id: string) => Promise<void>;
   /** Retorna `null` se enviou, ou a mensagem de erro se falhou. */
@@ -42,7 +44,8 @@ type MessagingContextType = {
   setFloatingChatOpen: (open: boolean) => void;
   setFloatingChatMinimized: (minimized: boolean) => void;
   refreshConversations: () => Promise<void>;
-  startConversation: (itemId: string, sellerUsername: string | null, defaultMessage?: string) => Promise<void>;
+  /** Retorna `null` se deu certo, ou a mensagem de erro. */
+  startConversation: (itemId: string, sellerUsername: string | null, defaultMessage?: string) => Promise<string | null>;
   /** Abre (ou cria) a conversa direta com outra pessoa e leva para a Inbox. Retorna false se falhar. */
   startDirectConversation: (recipientId: string) => void;
   /** Cria/abre a conversa direta, adiciona na lista e seleciona. Retorna o id (ou null se falhar). */
@@ -65,6 +68,7 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
   const router = useRouter();
   const [floatingChatOpen, setFloatingChatOpen] = useState(false);
   const [floatingChatMinimized, setFloatingChatMinimized] = useState(false);
+  const [floatingChatOpening, setFloatingChatOpening] = useState(false);
   const [loading, setLoading] = useState(true);
   const ablyChannelRef = useRef<any>(null);
   const ablyClientRef = useRef<any>(null);
@@ -165,27 +169,42 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     }
   }, [activeConversationId, refreshConversations]);
 
-  const startConversation = useCallback(async (itemId: string, _sellerUsername: string | null, defaultMessage?: string) => {
-    if (!user) return;
+  /** Chat flutuante só existe no desktop (lg+) e fora da própria Inbox; no celular a Inbox é a tela de conversa. */
+  const canUseFloatingChat = () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(min-width: 1024px)').matches &&
+    !window.location.pathname.startsWith('/inbox');
+
+  /** Mostra a conversa: no chat flutuante (desktop) ou na Inbox (celular / já dentro da Inbox). */
+  const showConversation = useCallback(async (conversationId: string) => {
+    if (canUseFloatingChat()) {
+      setFloatingChatOpen(true);
+      await selectConversation(conversationId);
+    } else {
+      router.push(`/inbox?conversation=${conversationId}`);
+    }
+  }, [router, selectConversation]);
+
+  const startConversation = useCallback(async (itemId: string, _sellerUsername: string | null, defaultMessage?: string): Promise<string | null> => {
+    if (!user) return 'Entre na sua conta para enviar mensagens.';
     try {
       const res = await fetch('/api/marketplace/messages', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ itemId, content: defaultMessage || 'Olá! Tenho interesse no anúncio.' }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (res.ok || res.status === 409) {
         await refreshConversations();
-        // Toda conversa (anúncio ou direta) abre na Inbox unificada.
-        router.push(data.conversationId ? `/inbox?conversation=${data.conversationId}` : '/inbox');
+        if (data?.conversationId) await showConversation(data.conversationId);
+        else router.push('/inbox');
+        return null;
       }
-    } catch { /* */ }
-  }, [user, refreshConversations, router]);
-
-  /** Leva para a Inbox na hora; a própria Inbox abre a conversa (sem esperar a rede antes de navegar). */
-  const startDirectConversation = useCallback((recipientId: string) => {
-    router.push(`/inbox?to=${encodeURIComponent(recipientId)}`);
-  }, [router]);
+      return data?.error ?? 'Não foi possível iniciar a conversa.';
+    } catch {
+      return 'Não foi possível iniciar a conversa. Verifique sua conexão.';
+    }
+  }, [user, refreshConversations, showConversation, router]);
 
   const openDirectConversation = useCallback(async (recipientId: string) => {
     if (!user) return null;
@@ -207,9 +226,29 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     }
   }, [user]);
 
+  /**
+   * "Enviar mensagem" em qualquer tela: no desktop abre o chat flutuante já na conversa
+   * (a Inbox só abre se a pessoa clicar em "Abrir na Inbox"); no celular leva à Inbox na hora.
+   */
+  const startDirectConversation = useCallback((recipientId: string) => {
+    if (!canUseFloatingChat()) {
+      router.push(`/inbox?to=${encodeURIComponent(recipientId)}`);
+      return;
+    }
+    setFloatingChatOpen(true);
+    setActiveConversationId(null);
+    setFloatingChatOpening(true);
+    void openDirectConversation(recipientId).then(async (conversationId) => {
+      if (conversationId) await selectConversation(conversationId);
+      setFloatingChatOpening(false);
+      // Falhou: a Inbox repete a tentativa e mostra o motivo.
+      if (!conversationId) router.push(`/inbox?to=${encodeURIComponent(recipientId)}`);
+    });
+  }, [openDirectConversation, selectConversation, router]);
+
   const value: MessagingContextType = {
     conversations, activeConversationId, messages, unreadCount,
-    floatingChatOpen, floatingChatMinimized, loading,
+    floatingChatOpen, floatingChatMinimized, floatingChatOpening, loading,
     selectConversation, sendMessage,
     setFloatingChatOpen, setFloatingChatMinimized, refreshConversations, startConversation, startDirectConversation, openDirectConversation,
   };

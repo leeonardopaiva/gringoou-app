@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ExternalLink, Heart, MapPin, Newspaper, Search, Share2 } from 'lucide-react';
+import { ExternalLink, MapPin, Newspaper, Search, Share2, ThumbsUp } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -154,9 +154,9 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
             aria-pressed={liked}
             aria-label={liked ? 'Remover curtida' : 'Curtir notícia'}
             title={liked ? 'Remover curtida' : 'Curtir'}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-brand-50 text-brand-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
           >
-            <Heart size={18} fill={liked ? 'currentColor' : 'none'} aria-hidden />
+            <ThumbsUp size={18} fill={liked ? 'currentColor' : 'none'} aria-hidden />
           </button>
           {likeCount > 0 ? (
             <button

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { MessageCircle, ChevronLeft, ChevronUp, ChevronDown, Send, Package, Mail, ExternalLink } from 'lucide-react';
+import { MessageCircle, ChevronLeft, ChevronUp, ChevronDown, Send, Package, Mail, ExternalLink, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { useMessaging } from '@/lib/MessagingProvider';
@@ -32,6 +32,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
     messages,
     unreadCount,
     floatingChatOpen,
+    floatingChatOpening,
     selectConversation,
     sendMessage,
     setFloatingChatOpen,
@@ -119,11 +120,12 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           )}
           <Link
             href={activeConv ? `/inbox?conversation=${activeConv.id}` : '/inbox'}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-50"
             aria-label="Abrir na Inbox"
             title="Abrir na Inbox"
           >
-            <ExternalLink size={17} />
+            <ExternalLink size={14} aria-hidden />
+            Inbox
           </Link>
           <button
             type="button"
@@ -136,7 +138,11 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           </button>
         </div>
 
-        {activeConv ? (
+        {floatingChatOpening && !activeConv ? (
+          <div className="flex flex-1 items-center justify-center" role="status" aria-label="Abrindo conversa">
+            <Loader2 size={22} className="animate-spin text-brand-500" aria-hidden />
+          </div>
+        ) : activeConv ? (
           <>
             {activeConv.item ? (
               <Link
