@@ -97,7 +97,7 @@ export const getRegionByLabel = (
 
 const toRadians = (value: number) => (value * Math.PI) / 180;
 
-const calculateDistanceKm = (fromLat: number, fromLng: number, toLat: number, toLng: number) => {
+export const calculateDistanceKm = (fromLat: number, fromLng: number, toLat: number, toLng: number) => {
   const earthRadiusKm = 6371;
   const deltaLat = toRadians(toLat - fromLat);
   const deltaLng = toRadians(toLng - fromLng);

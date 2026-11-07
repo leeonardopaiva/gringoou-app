@@ -7,7 +7,7 @@ import RegionSelector from '../components/RegionSelector';
 import { Logo } from '../components/Layout';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import { GringoouLogo } from '../components/icons/GringoouLogo';
-import { Autocomplete } from '../components/ui/Autocomplete';
+import { CityAutocomplete } from '../components/ui/CityAutocomplete';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import {
   COUNTRY_CALLING_CODE_OPTIONS,
@@ -87,12 +87,6 @@ const fieldLabel = 'text-xs font-semibold uppercase tracking-wide text-slate-500
 const inputClass =
   'h-14 min-h-14 w-full min-w-0 rounded-full border border-input bg-surface px-5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200';
 const secondaryCardClass = 'border border-slate-200 bg-slate-50 shadow-none';
-const birthCityOptions = [
-  'Sao Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Salvador, BA',
-  'Brasilia, DF', 'Fortaleza, CE', 'Recife, PE', 'Porto Alegre, RS',
-  'Curitiba, PR', 'Manaus, AM', 'Belem, PA', 'Goiania, GO', 'Campinas, SP',
-  'Florianopolis, SC', 'Vitoria, ES', 'Natal, RN', 'Joao Pessoa, PB',
-];
 
 const Registration: React.FC<RegistrationProps> = ({
   mode,
@@ -753,6 +747,10 @@ const Registration: React.FC<RegistrationProps> = ({
                         captchaAnswer: passwordSignUp.captchaAnswer,
                         inviteCode,
                       });
+                      // O desafio vence em 10 minutos: após cada envio, gera um novo e limpa a resposta,
+                      // para uma nova tentativa nunca usar um captcha vencido.
+                      setPasswordSignUp((current) => ({ ...current, captchaAnswer: '' }));
+                      void loadCaptcha();
                     }}
                   >
                     <div className="flex items-center justify-between gap-3 pb-1">
@@ -1399,7 +1397,7 @@ const Registration: React.FC<RegistrationProps> = ({
               </div>
             ) : (
               <form
-                className="space-y-5"
+                className="mx-auto w-full max-w-[460px] space-y-5"
                 onSubmit={async (event) => {
                   event.preventDefault();
 
@@ -1514,8 +1512,8 @@ const Registration: React.FC<RegistrationProps> = ({
                     />
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-[170px_1fr]">
-                    <label className="flex min-h-14 items-center rounded-2xl border border-slate-200 bg-white px-3 shadow-sm">
+                  <div className="space-y-3">
+                    <label className="flex h-14 items-center rounded-full border border-slate-200 bg-white px-5 shadow-sm">
                       <div className="flex w-full items-center gap-2">
                         <img
                           src={selectedCountry.flagUrl}
@@ -1579,6 +1577,8 @@ const Registration: React.FC<RegistrationProps> = ({
 
                   <RegionSelector
                     value={formValues.regionKey}
+                    citySearch
+                    label="Cidade atual (EUA)"
                     autoDetect
                     onChange={(region) => {
                       clearFieldError('regionKey');
@@ -1590,12 +1590,12 @@ const Registration: React.FC<RegistrationProps> = ({
                     hint={
                       formValues.regionKey
                         ? 'Sua região inicial foi sugerida pela geolocalização, mas você pode trocar.'
-                        : 'Selecione uma região existente para receber conteúdo local.'
+                        : 'Busque sua cidade nos EUA ou escolha uma região para receber conteúdo local.'
                     }
                   />
                   <FieldErrorMessage message={fieldErrors.regionKey} />
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <p className={fieldLabel}>Genero</p>
                       <select
@@ -1655,10 +1655,10 @@ const Registration: React.FC<RegistrationProps> = ({
 
                   <div className="space-y-2">
                     <p className={fieldLabel}>Cidade onde nasceu</p>
-                    <Autocomplete
+                    <CityAutocomplete
                       value={formValues.birthCity}
-                      options={birthCityOptions}
-                      placeholder="Busque ou informe sua cidade natal"
+                      scope="world"
+                      placeholder="Digite sua cidade natal (qualquer país)"
                       error={fieldErrors.birthCity}
                       onChange={(birthCity) => {
                         clearFieldError('birthCity');
@@ -1679,7 +1679,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   size="lg"
                   variant="primary"
                   isDisabled={submitting || onboardingBlocked}
-                  className="rounded-full bg-brand-500 py-2 px-5 font-semibold shadow-sm"
+                  className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                 >
                   {submitting
                     ? 'Salvando...'

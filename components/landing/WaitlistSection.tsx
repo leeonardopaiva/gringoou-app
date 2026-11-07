@@ -222,18 +222,12 @@ export function WaitlistSection() {
           </form>
         )}
 
-        <div className="flex flex-col items-center gap-2 border-t border-[#eef1f7] pt-5">
+        <div className="flex justify-center border-t border-[#eef1f7] pt-5">
           <Link
             href="/login"
             className="text-sm font-bold text-[#0086ff] transition hover:text-[#006ed4]"
           >
-            Ja tem um convite? Entrar
-          </Link>
-          <Link
-            href="/login"
-            className="text-xs font-medium text-[#4a5672] transition hover:text-[#0f2b63]"
-          >
-            Ja e cadastrado? Fazer login
+            Já tem convite ou conta? Entrar
           </Link>
         </div>
       </div>

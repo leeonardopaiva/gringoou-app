@@ -2,8 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Crosshair, MapPin, Search } from 'lucide-react';
+import type { CitySuggestion } from '@/components/ui/CityAutocomplete';
 import {
   DEFAULT_REGION_OPTIONS,
+  calculateDistanceKm,
   findNearestRegion,
   getRegionByKey,
   type RegionOption,
@@ -20,6 +22,11 @@ interface RegionSelectorProps {
   label?: string;
   hint?: string;
   inlineMenu?: boolean;
+  /**
+   * Habilita a busca por cidades dos EUA no menu. A cidade escolhida é ligada à região
+   * mais próxima, que é o que define o conteúdo local exibido.
+   */
+  citySearch?: boolean;
 }
 
 let cachedRegions: RegionOption[] | null = null;
@@ -54,6 +61,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   label = 'Regiao',
   hint,
   inlineMenu = false,
+  citySearch = false,
 }) => {
   const [regions, setRegions] = useState<RegionOption[]>(cachedRegions ?? []);
   const [regionsLoaded, setRegionsLoaded] = useState(Boolean(cachedRegions));
@@ -62,6 +70,9 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   const [locationNotice, setLocationNotice] = useState<string | null>(null);
   const [hasAttemptedAutoDetect, setHasAttemptedAutoDetect] = useState(false);
   const [open, setOpen] = useState(false);
+  const [cityResults, setCityResults] = useState<CitySuggestion[]>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [cityNotice, setCityNotice] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,6 +92,35 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [open]);
+
+  useEffect(() => {
+    const query = search.trim();
+    if (!citySearch || !open || query.length < 2) {
+      setCityResults([]);
+      setCityLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setCityLoading(true);
+      try {
+        const params = new URLSearchParams({ q: query, scope: 'us' });
+        const response = await fetch(`/api/places/cities?${params.toString()}`, { signal: controller.signal });
+        const payload = await response.json().catch(() => null);
+        setCityResults(response.ok && Array.isArray(payload?.cities) ? payload.cities : []);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') setCityResults([]);
+      } finally {
+        if (!controller.signal.aborted) setCityLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [citySearch, open, search]);
 
   useEffect(() => {
     let ignore = false;
@@ -161,6 +201,19 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
   const regionPool = regionsLoaded ? regions : DEFAULT_REGION_OPTIONS;
 
+  const pickCity = (city: CitySuggestion) => {
+    const nearest = findNearestRegion(city.lat, city.lng, regionPool);
+    const miles = Math.round(calculateDistanceKm(city.lat, city.lng, nearest.lat, nearest.lng) * 0.621371);
+    onChange(nearest);
+    setCityNotice(
+      miles <= 40
+        ? `${city.label}: você verá o conteúdo da região ${nearest.label}.`
+        : `Ainda não temos uma região em ${city.label}. Você verá o conteúdo de ${nearest.label} (cerca de ${miles} milhas) e poderá trocar quando quiser.`,
+    );
+    setOpen(false);
+    setSearch('');
+  };
+
   const filteredRegions = regionPool.filter((region) => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -202,6 +255,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
+      {cityNotice && !open ? (
+        <p className="rounded-xl bg-brand-100 px-3 py-2 text-caption font-medium text-brand-600" role="status">{cityNotice}</p>
+      ) : null}
+
       {open ? (
         <div className={`${inlineMenu ? 'relative' : 'absolute left-0 top-full z-[140]'} mt-2 w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-lg`}>
           <div className="relative">
@@ -209,7 +266,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar regiao"
+              placeholder={citySearch ? 'Buscar cidade dos EUA ou região' : 'Buscar regiao'}
               autoFocus
               className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-white pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
@@ -227,6 +284,30 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
           </button>
 
           <div className="mt-2 max-h-56 overflow-y-auto" role="listbox">
+            {citySearch && search.trim().length >= 2 ? (
+              <div className="mb-1" role="group" aria-label="Cidades dos EUA">
+                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Cidades dos EUA</p>
+                {cityResults.map((city) => (
+                  <button
+                    key={city.id}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onClick={() => pickCity(city)}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-body-sm text-foreground transition hover:bg-brand-100"
+                  >
+                    <MapPin size={14} className="shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 truncate">{city.label}</span>
+                  </button>
+                ))}
+                {cityResults.length === 0 ? (
+                  <p className="px-3 py-2 text-caption text-muted-foreground">{cityLoading ? 'Buscando cidades...' : 'Nenhuma cidade encontrada.'}</p>
+                ) : null}
+              </div>
+            ) : null}
+            {citySearch && search.trim().length >= 2 && visibleRegions.length > 0 ? (
+              <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Regiões</p>
+            ) : null}
             {allowEmpty ? (
               <button
                 type="button"
@@ -245,14 +326,14 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
                 type="button"
                 role="option"
                 aria-selected={region.key === value}
-                onClick={() => { onChange(region); setOpen(false); setSearch(''); }}
+                onClick={() => { setCityNotice(null); onChange(region); setOpen(false); setSearch(''); }}
                 className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-body-sm transition hover:bg-brand-100 ${region.key === value ? 'bg-brand-100 font-semibold text-brand-600' : 'text-foreground'}`}
               >
                 <span className="min-w-0 flex-1 truncate">{region.label}</span>
                 {region.key === value ? <Check size={15} className="text-brand-500" /> : null}
               </button>
             ))}
-            {visibleRegions.length === 0 ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">Nenhuma regiao encontrada.</p> : null}
+            {visibleRegions.length === 0 && !(citySearch && cityResults.length > 0) ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">Nenhuma regiao encontrada.</p> : null}
           </div>
 
           {locationNotice ? <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-caption font-medium text-brand-600">{locationNotice}</p> : null}

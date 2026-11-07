@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   }
 
   if (!verifySimpleCaptcha(parsed.data.captchaToken, parsed.data.captchaAnswer)) {
-    return NextResponse.json({ error: 'Captcha invalido ou expirado.' }, { status: 400 });
+    return NextResponse.json({ error: 'Verificacao incorreta ou expirada. Resolva a nova conta mostrada e tente novamente.' }, { status: 400 });
   }
 
   const passwordIssues = getPasswordValidationIssues(parsed.data.password);

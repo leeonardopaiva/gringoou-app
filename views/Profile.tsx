@@ -7,6 +7,7 @@ import { getClientAppBaseUrl } from '../lib/client-app-url';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import RegionSelector from '../components/RegionSelector';
+import { CityAutocomplete } from '../components/ui/CityAutocomplete';
 import { formatLoosePhoneInput } from '../lib/forms/phone';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
 import { normalizeUsernameInput } from '../lib/username';
@@ -614,7 +615,7 @@ const Profile: React.FC<{
                       <Input value={profileEditDraft.username} onChange={(username) => setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null)} placeholder="Nome publico" icon={<Globe size={16} />} />
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Input value={profileEditDraft.phone} onChange={(phone) => setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null)} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
-                        <Input value={profileEditDraft.birthCity} onChange={(birthCity) => setProfileEditDraft((c) => c ? { ...c, birthCity } : null)} placeholder="Cidade natal" icon={<MapPin size={16} />} />
+                        <CityAutocomplete value={profileEditDraft.birthCity} scope="world" onChange={(birthCity) => setProfileEditDraft((c) => c ? { ...c, birthCity } : null)} placeholder="Cidade natal" />
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Input value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => setProfileEditDraft((c) => c ? { ...c, age: value ? Number(value) : null } : null)} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
@@ -650,7 +651,7 @@ const Profile: React.FC<{
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
-                    <RegionSelector value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negocios e eventos priorizam esta regiao." />
+                    <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negocios e eventos priorizam esta regiao." />
                   </div>
 
                   <ActionRow>
@@ -684,7 +685,7 @@ const Profile: React.FC<{
             </div>
             <textarea rows={4} value={accountDraft.bio} onChange={(event) => setAccountDraft((c) => ({ ...c, bio: event.target.value }))} placeholder="Escreva uma frase curta sobre voce" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
             <div className="grid gap-3 sm:grid-cols-2">
-              <Input value={accountDraft.birthCity} onChange={(value) => setAccountDraft((c) => ({ ...c, birthCity: value }))} placeholder="Cidade natal" icon={<MapPin size={16} />} />
+              <CityAutocomplete value={accountDraft.birthCity} scope="world" onChange={(value) => setAccountDraft((c) => ({ ...c, birthCity: value }))} placeholder="Cidade natal" />
               <Input value={accountDraft.age ? String(accountDraft.age) : ''} onChange={(value) => setAccountDraft((c) => ({ ...c, age: value ? Number(value) : null }))} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
               <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={accountDraft.gender} onChange={(event) => setAccountDraft((c) => ({ ...c, gender: event.target.value as ProfileState['gender'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
               <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={accountDraft.timeAbroad} onChange={(event) => setAccountDraft((c) => ({ ...c, timeAbroad: event.target.value as ProfileState['timeAbroad'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
@@ -782,7 +783,7 @@ const Profile: React.FC<{
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Regiao ativa" description="Comunidade, negocios e eventos priorizam esta regiao." editing={editing.region} onToggle={() => setEditing((c) => ({ ...c, region: !c.region }))}>
         {editing.region ? (
           <EditorCard>
-            <RegionSelector value={selectedRegionKey} onChange={(region) => setSelectedRegionKey(region.key)} hint="Voce pode manter sua localizacao atual ou trocar manualmente para outra regiao existente." />
+            <RegionSelector citySearch label="Cidade atual (EUA)" value={selectedRegionKey} onChange={(region) => setSelectedRegionKey(region.key)} hint="Voce pode manter sua localizacao atual ou trocar manualmente para outra regiao existente." />
             <ActionRow>
               <PrimaryButton className={primaryButtonClass} label={savingKey === 'region' ? 'Salvando...' : 'Salvar regiao'} onClick={() => void saveRegion()} disabled={savingKey === 'region'} />
               <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, region: false }))} disabled={savingKey === 'region'} />
