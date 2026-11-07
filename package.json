@@ -9,6 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "db:local": "node scripts/local-db.mjs",
+    "dev:local": "node scripts/local-db.mjs --with-dev",
     "db:local:reset": "node scripts/local-db.mjs --reset",
     "regions:normalize": "node scripts/normalize-regions.mjs",
     "regions:normalize:dry-run": "node scripts/normalize-regions.mjs --dry-run",

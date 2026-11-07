@@ -9,6 +9,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import net from 'node:net';
 import { spawn } from 'node:child_process';
 import EmbeddedPostgres from 'embedded-postgres';
 
@@ -19,6 +20,32 @@ const DB_NAME = 'gringoou';
 export const LOCAL_URL = `postgresql://postgres:postgres@localhost:${PORT}/${DB_NAME}`;
 
 const reset = process.argv.includes('--reset');
+const withDev = process.argv.includes('--with-dev');
+let devProcess = null;
+
+/** Verdadeiro se já existe algo aceitando conexões na porta do banco local. */
+const isPortOpen = () =>
+  new Promise((resolve) => {
+    const socket = net.connect({ port: PORT, host: '127.0.0.1' });
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.once('error', () => resolve(false));
+    socket.setTimeout(1500, () => {
+      socket.destroy();
+      resolve(false);
+    });
+  });
+
+// Se o banco já estiver rodando (ex.: outro terminal), reaproveita em vez de subir outro.
+const alreadyRunning = await isPortOpen();
+let startedByUs = false;
+
+if (reset && alreadyRunning) {
+  console.error('[db:local] O banco local está em execução. Pare-o (Ctrl+C no terminal dele) e rode o reset de novo.');
+  process.exit(1);
+}
 
 if (reset && fs.existsSync(DATA_DIR)) {
   fs.rmSync(DATA_DIR, { recursive: true, force: true });
@@ -50,23 +77,33 @@ const run = (command, args, extraEnv = {}) =>
   });
 
 const stop = async () => {
-  console.log('\n[db:local] Encerrando Postgres local...');
-  await pg.stop().catch(() => {});
+  console.log('\n[db:local] Encerrando...');
+  if (devProcess && !devProcess.killed) {
+    if (process.platform === 'win32') spawn('taskkill', ['/pid', String(devProcess.pid), '/T', '/F']);
+    else devProcess.kill('SIGTERM');
+  }
+  // Só para o Postgres se foi este processo que o iniciou.
+  if (startedByUs) await pg.stop().catch(() => {});
   process.exit(0);
 };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
 
 try {
-  if (!fs.existsSync(path.join(DATA_DIR, 'PG_VERSION'))) {
-    console.log('[db:local] Inicializando cluster (primeira vez)...');
-    await pg.initialise();
-  }
-  await pg.start();
-  try {
-    await pg.createDatabase(DB_NAME);
-  } catch {
-    // já existe
+  if (alreadyRunning) {
+    console.log(`[db:local] Banco já está rodando na porta ${PORT}; reaproveitando.`);
+  } else {
+    if (!fs.existsSync(path.join(DATA_DIR, 'PG_VERSION'))) {
+      console.log('[db:local] Inicializando cluster (primeira vez)...');
+      await pg.initialise();
+    }
+    await pg.start();
+    startedByUs = true;
+    try {
+      await pg.createDatabase(DB_NAME);
+    } catch {
+      // já existe
+    }
   }
 
   console.log('[db:local] Aplicando migrations...');
@@ -76,10 +113,21 @@ try {
   await run('node', ['scripts/seed-local.mjs']);
 
   console.log(`\n[db:local] Pronto em ${LOCAL_URL.replace(/:postgres@/, ':***@')}`);
-  console.log('[db:local] Deixe este terminal aberto e rode "npm run dev" em outro. Ctrl+C para parar.');
+  if (withDev) {
+    console.log('[db:local] Iniciando o app (next dev)... Ctrl+C encerra app e banco.');
+    devProcess = spawn('npx', ['next', 'dev'], {
+      cwd: ROOT,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+      env: { ...process.env, DATABASE_URL: LOCAL_URL, DIRECT_URL: LOCAL_URL },
+    });
+    devProcess.on('exit', () => void stop());
+  } else {
+    console.log('[db:local] Deixe este terminal aberto e rode "npm run dev" em outro. Ctrl+C para parar.');
+  }
   await new Promise(() => {});
 } catch (error) {
   console.error('[db:local] Falhou:', error instanceof Error ? error.message : error);
-  await pg.stop().catch(() => {});
+  if (startedByUs) await pg.stop().catch(() => {});
   process.exit(1);
 }
