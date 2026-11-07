@@ -21,6 +21,9 @@ export const BUSINESS_PROFILE_STORAGE_KEY = 'gringoou:business-profile-id';
 export const RESERVED_PUBLIC_ROUTES = new Set([
   'admin',
   'inicio',
+  'home',
+  'news',
+  'invites',
   'community',
   'marketplace',
   'moradia',
@@ -34,6 +37,12 @@ export const RESERVED_PUBLIC_ROUTES = new Set([
   'vagas',
   'convite',
   'grupos',
+  'businesses',
+  'events',
+  'jobs',
+  'housing',
+  'groups',
+  'search',
 ]);
 
 // ─── Middleware ────────────────────────────────────────────

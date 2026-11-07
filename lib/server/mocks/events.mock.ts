@@ -152,7 +152,7 @@ export function getMockEventsPage(regionKey?: string | null): EventsPage {
     interestPreview: [],
     canViewInterestedUsers: false,
     canUnlockInterestedUsers: false,
-    publicPath: `/eventos/${event.slug}`,
+    publicPath: `/events/${event.slug}`,
   }));
 
   return { events, scope: 'local' };
@@ -187,7 +187,7 @@ export function getMockEventDetail(idOrSlug: string) {
       canRate: true,
       isFavorite: event.isFavorite,
       viewerRating: null,
-      publicPath: `/eventos/${event.slug}`,
+      publicPath: `/events/${event.slug}`,
     },
   };
 }

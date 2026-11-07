@@ -98,8 +98,8 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
-    ? 'mx-auto w-full max-w-[600px]'
-    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-6xl items-start justify-center';
+    ? 'mx-auto w-full min-w-0 max-w-[620px] [&_img]:max-w-full'
+    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
   const isOwnProfile = viewer?.username === profile.username;
 
   if (loading) {
@@ -158,7 +158,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/10 to-transparent" />
-              <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+              <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                 <BriefcaseBusiness size={14} />
                 Vitrine profissional
               </div>
@@ -180,7 +180,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                   <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">{profile.name}</h1>
                   <BadgeCheck size={28} className="text-brand-500" />
                 </div>
-                <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
                   @{profile.username}
                 </p>
                 <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-700">{profile.headline}</p>
@@ -225,7 +225,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
           </section>
 
           <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <BriefcaseBusiness size={16} />
               Negócios em destaque
             </div>
@@ -240,14 +240,14 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                     />
                     <div className="min-w-0 flex-1">
                       <p className="text-body-lg font-bold text-foreground">{business.name}</p>
-                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{business.category}</p>
+                      <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-400">{business.category}</p>
                       {business.locationLabel ? <p className="mt-2 text-sm text-slate-500">{business.locationLabel}</p> : null}
                       <div className="mt-3">
                         <StarRating average={business.ratingAverage} count={business.ratingCount} compact />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Link href={`/negocios/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Ver página</Link>
-                        {isOwnProfile ? <Link href={`/negocios/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">Gerenciar</Link> : null}
+                        <Link href={`/businesses/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Ver página</Link>
+                        {isOwnProfile ? <Link href={`/businesses/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">Gerenciar</Link> : null}
                         {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />Promover</Link> : null}
                       </div>
                     </div>
@@ -260,14 +260,14 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
           </section>
 
           <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <CalendarDays size={16} />
               Agenda profissional
             </div>
             {profile.events.length > 0 ? (
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 {profile.events.map((event) => (
-                  <Link key={event.id} href={`/eventos/${event.slug}`} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
+                  <Link key={event.id} href={`/events/${event.slug}`} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
                     <img
                       src={event.imageUrl || `https://picsum.photos/seed/${event.id}/320`}
                       alt={event.title}
@@ -276,7 +276,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                     <div className="min-w-0 flex-1">
                       <p className="text-body-lg font-bold text-foreground">{event.title}</p>
                       <p className="mt-1 text-sm text-slate-500">{formatDate(event.startsAt)}</p>
-                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{event.venueName}</p>
+                      <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-400">{event.venueName}</p>
                       <div className="mt-3">
                         <StarRating average={event.ratingAverage} count={event.ratingCount} compact />
                       </div>

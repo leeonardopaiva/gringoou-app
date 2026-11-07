@@ -27,6 +27,11 @@
   --color-brand: var(--color-brand-500);
 
   /* Gringoou design system — tipografia (fonte Sora, ver app/layout.tsx) */
+  /* Tracking suave: títulos/labels em caixa alta não devem ter espaçamento artificial entre letras. */
+  --tracking-wide: 0.01em;
+  --tracking-wider: 0.015em;
+  --tracking-widest: 0.02em;
+
   --text-display-xl: 48px;
   --text-display-xl--line-height: 1.1;
   --text-h1: 36px;

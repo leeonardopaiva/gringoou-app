@@ -87,7 +87,7 @@ export async function GET() {
     accounts: memberships.map(({ role, adAccount }) => ({
       ...adAccount,
       role,
-      publicPath: adAccount.business ? `/negocios/${adAccount.business.slug}` : null,
+      publicPath: adAccount.business ? `/businesses/${adAccount.business.slug}` : null,
       businessStatus: adAccount.business?.status ?? null,
     })),
     selectedAccountId: selected?.adAccountId ?? null,
@@ -97,8 +97,8 @@ export async function GET() {
       id: business.id,
       name: business.name,
       imageUrl: business.imageUrl,
-      publicPath: `/negocios/${business.slug || business.id}`,
-      managementPath: `/negocios/${business.slug || business.id}/gerenciar`,
+      publicPath: `/businesses/${business.slug || business.id}`,
+      managementPath: `/businesses/${business.slug || business.id}/gerenciar`,
       adAccountId: business.adAccount?.users.length ? business.adAccount.id : null,
     })),
   });

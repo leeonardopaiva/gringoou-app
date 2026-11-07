@@ -69,8 +69,8 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
                 {
                   heading: 'Publicações',
                   items: [
-                    { label: 'Cadastrar negócio', icon: <Plus size={16} />, onClick: () => navigate('/negocios?create=1') },
-                    { label: 'Abrir eventos', icon: <CalendarDays size={16} />, onClick: () => navigate('/eventos') },
+                    { label: 'Cadastrar negócio', icon: <Plus size={16} />, onClick: () => navigate('/businesses?create=1') },
+                    { label: 'Abrir eventos', icon: <CalendarDays size={16} />, onClick: () => navigate('/events') },
                   ],
                 },
               ]}
@@ -80,7 +80,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
       </section>
 
       <section>
-        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
           <BriefcaseBusiness size={16} />
           Negócios
         </div>
@@ -103,7 +103,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
                   trigger={menuTrigger(`Ações de ${business.name}`)}
                   sections={[{ items: [
                     { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => navigate(business.publicPath) },
-                    { label: 'Gerenciar negócio', icon: <BriefcaseBusiness size={16} />, onClick: () => navigate(`/negocios/${business.slug || business.id}/gerenciar`) },
+                    { label: 'Gerenciar negócio', icon: <BriefcaseBusiness size={16} />, onClick: () => navigate(`/businesses/${business.slug || business.id}/gerenciar`) },
                     ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => navigate(`/ads/promover/${business.id}`) }] : []),
                   ]}]}
                 />
@@ -114,7 +114,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
       </section>
 
       <section>
-        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+        <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
           <CalendarDays size={16} />
           Eventos profissionais
         </div>

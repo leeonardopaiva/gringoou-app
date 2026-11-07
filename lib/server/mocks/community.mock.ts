@@ -51,7 +51,7 @@ const MOCK_POSTS: Post[] = [
     {
       id: 'mock-post-2',
       author: mockAuthor('mock-business-1', 'Sabor Brasil Mercado', 'sabor.brasil'),
-      authorHref: '/negocios/sabor-brasil',
+      authorHref: '/businesses/sabor-brasil',
       authorType: 'BUSINESS',
       content: 'Chegou pão de queijo fresquinho! Passa lá na loja até domingo com desconto para a comunidade. 🇧🇷',
       createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),

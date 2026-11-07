@@ -180,7 +180,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
     post.likeCount > 0 ? (
       <div className="space-y-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
             Curtiram este post
           </p>
           <p className="mt-1 text-sm font-medium text-slate-500">
@@ -200,7 +200,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
             </div>
           ))}
           {hiddenLikesCount > 0 ? (
-            <p className="pt-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            <p className="pt-1 text-xs font-bold uppercase tracking-wide text-slate-400">
               +{hiddenLikesCount} pessoas
             </p>
           ) : null}

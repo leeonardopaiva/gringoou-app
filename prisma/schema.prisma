@@ -267,6 +267,7 @@ model User {
   referrals                 User[]                 @relation("UserReferrals")
   phoneVerificationCodes    PhoneVerificationCode[]
   marketplaceItems          MarketplaceItem[]        @relation("MarketplaceItemCreator")
+  newsArticles              NewsArticle[]            @relation("NewsArticleAuthor")
   marketplaceFavorites      MarketplaceFavorite[]    @relation("MarketplaceFavoriteUser")
   createdInvites            Invite[]                 @relation("InviteCreator")
   revokedInvites            Invite[]                 @relation("InviteRevoker")
@@ -1145,4 +1146,32 @@ model MarketplaceModerationLog {
 
   @@index([itemId, createdAt])
   @@index([moderatorId])
+}
+
+enum NewsArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// Notícia editorial curada por MODERATOR/ADMIN (sem integração automática com RSS/API).
+model NewsArticle {
+  id          String            @id @default(cuid())
+  title       String
+  subtitle    String?
+  imageUrl    String?
+  category    String
+  regionKey   String?
+  source      String
+  externalUrl String
+  status      NewsArticleStatus @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  author      User?             @relation("NewsArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt, id])
+  @@index([status, regionKey, publishedAt])
+  @@index([status, category, publishedAt])
+  @@index([authorId, createdAt])
 }

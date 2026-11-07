@@ -489,7 +489,7 @@ const Profile: React.FC<{
   };
 
   const avatarImage = profile.image || DEFAULT_AVATAR_URL;
-  const referralUrl = referralSummary.referralUrl || `${getClientAppBaseUrl()}/convite/${profile.username || 'seu-nome-publico'}`;
+  const referralUrl = referralSummary.referralUrl || `${getClientAppBaseUrl()}/invites/${profile.username || 'seu-nome-publico'}`;
   const professionalIdentity = professionalProfile.identity;
   const isProfessionalView =
     canUseProfessionalMode && personaMode === 'professional' && Boolean(professionalIdentity);
@@ -838,7 +838,7 @@ const Input: React.FC<{ value: string; onChange: (value: string) => void; placeh
 
 const Meta: React.FC<{ label: string; value: string; icon: React.ReactNode }> = ({ label, value, icon }) => (
   <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
-    <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+    <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-400">
       {icon}
       {label}
     </div>

@@ -131,7 +131,7 @@ export async function GET(request: Request) {
         image: membership.user.image,
         locationLabel: membership.user.locationLabel,
       })),
-      publicPath: `/grupos/${group.slug}`,
+      publicPath: `/groups/${group.slug}`,
     })),
     hasMore,
     nextOffset: offset + pageGroups.length,
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     group: {
       ...group,
-      publicPath: `/grupos/${group.slug}`,
+      publicPath: `/groups/${group.slug}`,
     },
     message: 'Grupo criado.',
   });

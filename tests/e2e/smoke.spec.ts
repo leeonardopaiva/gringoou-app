@@ -14,7 +14,7 @@ test('public entry renders with security headers', async ({ page }) => {
 });
 
 test('protected page redirects anonymous visitors to login', async ({ page }) => {
-  await page.goto('/inicio');
+  await page.goto('/home');
   await expect(page).toHaveURL(/\/login/);
 });
 

@@ -22,7 +22,7 @@ export function CreativeStep({ state, errors, patch }: { state: AdWizardData; er
         <label className="block space-y-2"><span className="text-body-sm font-bold">{destinationLabel}</span><Input value={state.destination} placeholder={state.goal === 'WHATSAPP' ? '15551234567' : state.goal === 'EXTERNAL_URL' ? 'https://seusite.com' : 'ID do item no marketplace'} onChange={(event) => patch({ destination: event.target.value })} state={errors.destination ? 'error' : 'default'} helperText={errors.destination} /></label>
       </Card>
       <div className="lg:sticky lg:top-8 lg:self-start">
-        <p className="mb-3 text-center text-[9px] font-extrabold uppercase tracking-[0.12em] text-slate-400">Preview no app</p>
+        <p className="mb-3 text-center text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Preview no app</p>
         <div className="mx-auto max-w-[220px] rounded-[2rem] bg-[#102f40] p-2 shadow-xl">
           <Card className="rounded-[1.5rem] p-3" aria-label="Preview do anuncio">
             <Badge tone="neutro">Patrocinado</Badge>

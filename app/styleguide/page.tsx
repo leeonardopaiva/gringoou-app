@@ -47,7 +47,7 @@ const Section: React.FC<{
   children: React.ReactNode;
 }> = ({ index, eyebrow, title, code, children }) => (
   <section className="mx-auto max-w-4xl px-6 py-10">
-    <p className="text-caption font-bold uppercase tracking-[0.2em] text-brand-500">
+    <p className="text-caption font-bold uppercase tracking-wide text-brand-500">
       {index} — {eyebrow}
     </p>
     <h2 className="mb-5 mt-1 text-h2 font-extrabold text-text">{title}</h2>
@@ -562,9 +562,9 @@ import { Dropdown } from '@/components/ui/Dropdown';
         <div className="space-y-6">
           <TrendsCarousel
             items={[
-              { href: '/negocios', category: 'Negócios', title: 'Mercado Brasileiro Central', description: 'Alimentação · Boston', icon: Building2 },
+              { href: '/businesses', category: 'Negócios', title: 'Mercado Brasileiro Central', description: 'Alimentação · Boston', icon: Building2 },
               { href: '/community', category: 'Comunidade', title: 'Dicas para quem acabou de chegar', description: 'Por Maria Souza', icon: Users },
-              { href: '/eventos', category: 'Eventos', title: 'Encontro da comunidade', description: 'Sábado · 18h', icon: CalendarDays },
+              { href: '/events', category: 'Eventos', title: 'Encontro da comunidade', description: 'Sábado · 18h', icon: CalendarDays },
             ]}
           />
           <Button variant="secondary" onClick={() => setFullscreenOpen(true)}>Abrir busca fullscreen</Button>

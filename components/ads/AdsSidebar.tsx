@@ -33,7 +33,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose }: AdsSidebarProps) {
         <GringoouLogo size={34} />
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-5" aria-label="Menu de anúncios">
-        <p className="px-3 pb-3 pt-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Anuncios</p>
+        <p className="px-3 pb-3 pt-1 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Anuncios</p>
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname?.startsWith(item.href);
@@ -53,7 +53,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose }: AdsSidebarProps) {
           );
         })}
         <div className="my-5 border-t border-slate-200" />
-        <p className="px-3 pb-3 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Conta</p>
+        <p className="px-3 pb-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Conta</p>
         {accountItems.map((item) => {
           const Icon = item.icon;
           const active = pathname?.startsWith(item.href);

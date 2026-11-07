@@ -60,13 +60,13 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
           initialData={initialCommunityData}
         />
       );
-    case 'buscar':
+    case 'search':
       return <SearchResults />;
-    case 'noticias':
+    case 'news':
       return <NewsList initialData={initialNewsData} />;
-    case 'vagas':
+    case 'jobs':
       return segments[1] ? <JobDetail jobId={decodeURIComponent(segments[1])} /> : <JobList user={currentUser} initialData={initialJobsData} />;
-    case 'moradia':
+    case 'housing':
       return segments[1] ? <HousingDetail housingId={decodeURIComponent(segments[1])} /> : <HousingList user={currentUser} />;
     case 'profile':
       return (
@@ -78,7 +78,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
           initialData={initialProfileData}
         />
       );
-    case 'grupos':
+    case 'groups':
       return <GroupsDirectory user={currentUser} />;
     default:
       return <Home user={currentUser} initialData={initialHomeData} />;

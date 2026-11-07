@@ -84,7 +84,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
         <button
           type="button"
           onClick={() => setOpen((current) => !current)}
-          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] transition ${
+          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-wide transition ${
             isProfessional
               ? 'bg-brand-100 text-brand-600'
               : 'bg-bg text-muted-foreground'
@@ -110,7 +110,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
           />
           {businesses.length ? (
             <>
-              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Negócios</p>
+              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Negócios</p>
               {businesses.map((business) => (
                 <PersonaMenuOption
                   key={business.id}

@@ -83,7 +83,7 @@ type RegistrationField =
 
 type PasswordAuthView = 'none' | 'signin' | 'signup' | 'forgot' | 'reset';
 
-const fieldLabel = 'text-xs font-semibold uppercase tracking-[0.22em] text-slate-500';
+const fieldLabel = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
 const inputClass =
   'h-14 min-h-14 w-full min-w-0 rounded-full border border-input bg-surface px-5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200';
 const secondaryCardClass = 'border border-slate-200 bg-slate-50 shadow-none';
@@ -487,7 +487,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
               {inviteRequired ? (
                 <div className="mt-8 w-full max-w-[360px] mx-auto">
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Codigo de convite
                   </label>
                   <Input
@@ -589,7 +589,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                 {passwordAuthView === 'signin' ? (
                   <form
-                    className="w-full max-w-[360px] space-y-3 pt-2"
+                    className="w-full max-w-[360px] space-y-4 pt-4"
                     onSubmit={async (event) => {
                       event.preventDefault();
 
@@ -623,7 +623,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     }}
                   >
                     <div className="flex items-center justify-between gap-3 pb-1">
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-lg font-semibold leading-snug text-slate-900">
                         {passwordEnabled ? 'Entrar com senha' : 'Entrar com email'}
                       </p>
                       <Button
@@ -677,7 +677,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       size="lg"
                       variant="primary"
                       isDisabled={submitting}
-                      className="h-14 rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
+                      className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                     >
                       {submitting ? 'Entrando...' : passwordEnabled ? 'Entrar' : 'Receber link'}
                     </Button>
@@ -704,7 +704,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   <div className="w-full max-w-[360px] space-y-4 pt-2">
                     <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
                     {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
                     {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                   </div>
                 ) : null}
@@ -854,7 +854,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       size="lg"
                       variant="primary"
                       isDisabled={submitting || loadingCaptcha}
-                      className="h-14 rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
+                      className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                     >
                       {submitting ? 'Criando conta...' : 'Criar conta'}
                     </Button>
@@ -903,13 +903,13 @@ const Registration: React.FC<RegistrationProps> = ({
         <div className="hidden">
           <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/80 bg-white/70 px-4 py-2 shadow-sm backdrop-blur">
             <GringoouLogo size={22} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               Gringoou
             </span>
           </div>
 
           <div className="max-w-2xl space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-brand-500">
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-500">
               Comunidade brasileira no exterior
             </p>
             <h1 className="max-w-xl text-5xl font-black leading-[0.96] tracking-tight text-slate-950">
@@ -993,7 +993,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                 <div className="flex items-center gap-3">
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-400">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                     ou
                   </span>
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
@@ -1186,7 +1186,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       <div className="space-y-4">
                         <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
                         {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
                         {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                       </div>
                     ) : null}
@@ -1712,7 +1712,7 @@ const Registration: React.FC<RegistrationProps> = ({
             <Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>
               <Card.Content className="flex items-center gap-3 p-4">
                 <Shield size={18} className="flex-shrink-0 text-brand-500" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   Ambiente seguro, com autenticação e conteúdo local.
                 </p>
               </Card.Content>

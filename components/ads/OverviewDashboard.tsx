@@ -111,7 +111,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     <div className="mx-auto w-full max-w-[1380px] space-y-7">
       {!account?.businessId ? (
         <Alert tone="atencao" title="Crie a página do negócio para começar a promover." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
-          <button type="button" onClick={() => router.push(`/negocios?create=1&adAccountId=${encodeURIComponent(account?.id || '')}`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Criar página</button>
+          <button type="button" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account?.id || '')}`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Criar página</button>
         </Alert>
       ) : account.businessStatus !== 'PUBLISHED' ? (
         <Alert tone="atencao" title="Página em análise. Após a aprovação, você poderá continuar e concluir a campanha." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
@@ -132,7 +132,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.label} className="min-h-[150px] rounded-[22px] border border-slate-200 px-7 py-6 shadow-sm">
-            <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-slate-400">{stat.label}</p>
+            <p className="text-[12px] font-extrabold uppercase tracking-wide text-slate-400">{stat.label}</p>
             <p className={`mt-6 text-[34px] font-extrabold leading-none ${stat.accent ? 'text-brand-500' : 'text-[#132f40]'}`}>{stat.value}</p>
             <p className="mt-3 text-[13px] text-slate-400">{stat.caption}</p>
           </Card>
@@ -158,7 +158,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1100px] border-collapse text-left">
-            <thead><tr className="border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-[0.06em] text-slate-400">
+            <thead><tr className="border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
               {['Nome', 'On/Off', 'Status', 'Inicio', 'Fim', 'Impressoes', 'Cliques', 'Conv.', 'Gasto', 'CTR', 'CPC'].map((label) => <th key={label} className="px-5 py-4">{label}</th>)}
             </tr></thead>
             <tbody>

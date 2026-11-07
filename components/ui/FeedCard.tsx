@@ -137,7 +137,7 @@ const Footer: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...
 );
 
 const SponsoredBadge: React.FC = () => (
-  <span className="inline-flex shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700">
+  <span className="inline-flex shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-700">
     Patrocinado
   </span>
 );

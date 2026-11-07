@@ -133,7 +133,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         canRate: Boolean(initialEvent.canRate),
         createdByName: initialEvent.createdByName || 'Comunidade Gringoou',
         canEdit: Boolean(initialEvent.canEdit),
-        publicPath: initialEvent.publicPath || `/eventos/${initialEvent.slug || initialEvent.id}`,
+        publicPath: initialEvent.publicPath || `/events/${initialEvent.slug || initialEvent.id}`,
         status: initialEvent.status || 'PUBLISHED',
         ownershipVerifiedAt: initialEvent.ownershipVerifiedAt || null,
       }
@@ -199,7 +199,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             canRate: Boolean(payload.event.canRate),
             createdByName: payload.event.createdByName || payload.event.createdBy?.name || 'Comunidade Gringoou',
             canEdit: Boolean(payload.event.canEdit),
-            publicPath: payload.event.publicPath || `/eventos/${payload.event.slug || payload.event.id}`,
+            publicPath: payload.event.publicPath || `/events/${payload.event.slug || payload.event.id}`,
             status: payload.event.status || 'PUBLISHED',
             ownershipVerifiedAt: payload.event.ownershipVerifiedAt || null,
           };
@@ -257,6 +257,24 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
     await handleCopyUrl();
   };
+
+  // Deep link vindo do menu do card (?editar=info|imagens): abre o editor correspondente uma única vez.
+  const deepLinkHandled = React.useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current || !event.canEdit || typeof window === 'undefined') return;
+    const mode = new URLSearchParams(window.location.search).get('editar');
+    if (!mode) return;
+    deepLinkHandled.current = true;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (mode === 'imagens') {
+      setCoverDraft(event.imageUrl);
+      setGalleryDraft(event.galleryUrls);
+      setEditingMedia(true);
+    } else if (mode === 'info') {
+      openDetailsEditor();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event.canEdit]);
 
   const openDetailsEditor = () => {
     setDetailsDraft({
@@ -474,7 +492,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
         <div className="absolute bottom-6 left-5 right-5">
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-white backdrop-blur-sm">
+            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
               Evento
             </div>
 
@@ -545,7 +563,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 <CalendarDays size={19} />
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Inicio</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Inicio</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">{formatEventDateTime(event.startsAt)}</p>
               </div>
             </div>
@@ -555,7 +573,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 <Clock3 size={19} />
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Encerramento</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Encerramento</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">
                   {event.endsAt ? formatEventDateTime(event.endsAt) : 'Nao informado'}
                 </p>
@@ -566,7 +584,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
         <section className="space-y-3 border-b border-slate-100 pb-7">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <MapPin size={16} />
               Local
             </div>
@@ -593,7 +611,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <Images size={16} />
               Galeria
             </div>

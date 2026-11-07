@@ -5,7 +5,7 @@ import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { MessageCircle, Plus, Search, ShoppingBag, X, Send } from 'lucide-react';
+import { MessageCircle, Plus, Search, ShoppingBag, X } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { MarketplaceCard } from '../components/marketplace/MarketplaceCard';
 import { Button } from '../components/ui/Button';
@@ -287,22 +287,19 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
     <ContentColumn size="wide" className="pb-20 pt-2">
       <PageHeader
         title="Marketplace"
-        backHref="/inicio"
+        backHref="/home"
         action={
           <div className="flex items-center gap-2">
             <Link
-              href="/marketplace/conversacoes"
+              href="/inbox"
               aria-label="Minhas mensagens"
               title="Minhas mensagens"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200"
             >
               <MessageCircle size={18} />
             </Link>
-            <Button size="sm" variant="secondary" iconLeft={<Send size={16} />} onClick={() => window.location.href = '/inbox'}>
-              Nova mensagem
-            </Button>
-            <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
-              Anunciar
+            <Button size="sm" iconLeft={<Plus size={16} />} aria-label="Anunciar" onClick={() => setShowCreate(true)}>
+              <span className="hidden sm:inline">Anunciar</span>
             </Button>
           </div>
         }

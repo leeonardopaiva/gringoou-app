@@ -1,14 +1,15 @@
 import React, { startTransition, useEffect, useState } from 'react';
 import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import FieldErrorMessage from '../components/forms/FieldErrorMessage';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
-import { Check, Heart, MapPin, Plus, Search } from 'lucide-react';
+import { Check, Heart, Images, MapPin, MoreHorizontal, PencilLine, Plus, Search } from 'lucide-react';
+import { Dropdown } from '../components/ui/Dropdown';
 import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
 import { CompactActionCard } from '../components/ui/CompactActionCard';
@@ -122,6 +123,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 }) => {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('Proximos');
   const [search, setSearch] = useState('');
@@ -573,13 +575,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             }
             interestLoading={togglingInterestId === item.id}
             item={item}
-            href={`/eventos/${item.slug || item.id}`}
+            href={`/events/${item.slug || item.id}`}
             title={item.title}
             date={formatEventDate(item.startsAt)}
             location={item.venueName}
             region={item.locationLabel}
             img={item.imageUrl || `https://picsum.photos/seed/${item.id}/300`}
             onToggleFavorite={() => void handleFavoriteToggle(item)}
+            onEdit={(mode) => router.push(`/events/${item.slug || item.id}?editar=${mode}`)}
           />
         ))}
         </ListingGrid>
@@ -608,6 +611,7 @@ const EventCard: React.FC<{
   region: string;
   img: string;
   onToggleFavorite: () => void;
+  onEdit: (mode: 'info' | 'imagens') => void;
 }> = ({
   item,
   interestExpanded,
@@ -620,28 +624,54 @@ const EventCard: React.FC<{
   region,
   img,
   onToggleFavorite,
+  onEdit,
 }) => (
     <div
-      className={`relative flex min-h-32 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:border-slate-200 ${
+      className={`relative flex min-h-32 rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:border-slate-200 ${
         item.status === 'PENDING_REVIEW' || item.isPendingReview ? 'bg-slate-50 opacity-65 grayscale' : ''
       }`}
     >
         <Link href={href} className="absolute inset-0 z-20" aria-label={`Abrir ${title}`} />
-        <img src={img} className="w-28 shrink-0 self-stretch object-cover" alt={title} />
-        <div className="relative z-10 flex flex-1 flex-col justify-between p-4">
+        <img src={img} className="w-28 shrink-0 self-stretch rounded-l-2xl object-cover" alt={title} />
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-between p-4">
             <div>
                 <div className="flex items-start justify-between gap-3">
-                    <h4 className="font-bold theme-text text-sm leading-tight">{title}</h4>
-                    {item.status === 'PENDING_REVIEW' || item.isPendingReview ? null : (
-                      <button
+                    <h4 className="min-w-0 break-words font-bold theme-text text-sm leading-tight">{title}</h4>
+                    <div className="relative z-30 flex shrink-0 items-center gap-1.5">
+                      {item.canEdit ? (
+                        <Dropdown
+                          align="right"
+                          trigger={
+                            <span
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200"
+                              role="img"
+                              aria-label="Mais ações do evento"
+                            >
+                              <MoreHorizontal size={16} />
+                            </span>
+                          }
+                          sections={[
+                            {
+                              heading: 'Ações do evento',
+                              items: [
+                                { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => onEdit('info') },
+                                { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => onEdit('imagens') },
+                              ],
+                            },
+                          ]}
+                        />
+                      ) : null}
+                      {item.status === 'PENDING_REVIEW' || item.isPendingReview ? null : (
+                        <button
                           type="button"
                           onClick={onToggleFavorite}
-                          className={`relative z-30 rounded-full p-2 ${item.isFavorite ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'}`}
+                          className={`flex h-8 w-8 items-center justify-center rounded-full ${item.isFavorite ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'}`}
                           aria-label={item.isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-                      >
+                        >
                           <Heart size={14} fill={item.isFavorite ? 'currentColor' : 'none'} />
-                      </button>
-                    )}
+                        </button>
+                      )}
+                    </div>
                 </div>
                 {item.status === 'PENDING_REVIEW' || item.isPendingReview ? (
                   <span className="mt-2 inline-flex w-fit rounded-xl border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
@@ -658,38 +688,21 @@ const EventCard: React.FC<{
                 <div className="mt-2">
                     <StarRating average={item.ratingAverage ?? 0} count={item.ratingCount ?? 0} compact />
                 </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={onToggleInterestPreview}
-                    className="relative z-30 flex items-center rounded-full border border-slate-200 bg-white px-2 py-1"
-                    aria-label="Ver interessados"
-                  >
-                    {(item.interestPreview ?? []).slice(0, 4).map((person, index) => (
-                      <img
-                        key={person.id}
-                        src={person.image || `https://picsum.photos/seed/${person.id}/40`}
-                        alt={item.canViewInterestedUsers ? person.name || 'Participante' : 'Participante'}
-                        className={`h-6 w-6 rounded-full border-2 border-white object-cover ${item.canViewInterestedUsers ? '' : 'blur-[2px]'}`}
-                        style={{ marginLeft: index === 0 ? 0 : -8 }}
-                      />
-                    ))}
-                    <span className="ml-2 text-[11px] font-bold text-slate-600">
-                      {item.interestCount ?? 0}
-                    </span>
-                  </button>
+                <div className="mt-3">
                   <button
                     type="button"
                     onClick={onToggleFavorite}
                     disabled={interestLoading}
-                    title={item.isFavorite ? 'Interessados' : 'Confirmar interesse'}
-                    className={`relative z-30 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-bold disabled:opacity-60 ${
+                    title={item.isFavorite ? 'Remover interesse' : 'Marcar interesse'}
+                    aria-pressed={Boolean(item.isFavorite)}
+                    className={`relative z-30 inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold disabled:opacity-60 ${
                       item.isFavorite
-                        ? 'h-8 w-8 justify-center bg-emerald-600 p-0 text-white shadow-md shadow-emerald-600/25'
-                        : 'border border-slate-200 bg-white text-slate-700'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 bg-white text-slate-700'
                     }`}
                   >
-                    {interestLoading ? '...' : item.isFavorite ? <Check size={16} className="text-white" /> : 'Confirmar interesse'}
+                    {item.isFavorite ? <Check size={13} aria-hidden /> : null}
+                    {interestLoading ? '...' : 'Interessado'}
                   </button>
                 </div>
                 {interestExpanded ? (
@@ -702,9 +715,26 @@ const EventCard: React.FC<{
                   </p>
                 ) : null}
             </div>
-            <span className="theme-bg mt-3 self-end px-4 py-1.5 rounded-xl text-[10px] font-bold text-white shadow-sm">
-                {item.canEdit ? 'Editar evento' : 'Ver evento'}
-            </span>
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={onToggleInterestPreview}
+                className="relative z-30 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-500"
+                aria-label={`${item.interestCount ?? 0} interessados. Ver detalhes`}
+              >
+                <span
+                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${
+                    item.isFavorite ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'
+                  }`}
+                >
+                  {item.interestCount ?? 0}
+                </span>
+                <span className="truncate">interessados</span>
+              </button>
+              <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-brand-600" aria-hidden="true">
+                Ver mais
+              </span>
+            </div>
         </div>
     </div>
 );

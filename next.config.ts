@@ -11,7 +11,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "connect-src 'self' https: wss:",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://accounts.google.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://accounts.google.com https://www.openstreetmap.org",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -28,6 +28,28 @@ const nextConfig: NextConfig = {
       config.externals = [...(config.externals || []), { ably: 'Ably' }];
     }
     return config;
+  },
+  // URLs antigas (pt-BR) -> novas (en). Permanentes para preservar links já compartilhados.
+  async redirects() {
+    return [
+      { source: '/inicio', destination: '/home', permanent: true },
+      { source: '/noticias', destination: '/news', permanent: true },
+      { source: '/convite/:username', destination: '/invites/:username', permanent: true },
+      { source: '/admin/noticias', destination: '/admin/news', permanent: true },
+      { source: '/admin/convites', destination: '/admin/invites', permanent: true },
+      { source: '/negocios', destination: '/businesses', permanent: true },
+      { source: '/negocios/:path*', destination: '/businesses/:path*', permanent: true },
+      { source: '/eventos', destination: '/events', permanent: true },
+      { source: '/eventos/:path*', destination: '/events/:path*', permanent: true },
+      { source: '/vagas', destination: '/jobs', permanent: true },
+      { source: '/vagas/:path*', destination: '/jobs/:path*', permanent: true },
+      { source: '/moradia', destination: '/housing', permanent: true },
+      { source: '/moradia/:path*', destination: '/housing/:path*', permanent: true },
+      { source: '/grupos', destination: '/groups', permanent: true },
+      { source: '/grupos/:path*', destination: '/groups/:path*', permanent: true },
+      { source: '/buscar', destination: '/search', permanent: true },
+      { source: '/buscar/:path*', destination: '/search/:path*', permanent: true },
+    ];
   },
   async headers() {
     return [

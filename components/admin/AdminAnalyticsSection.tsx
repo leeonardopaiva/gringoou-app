@@ -113,7 +113,7 @@ export default function AdminAnalyticsSection({ data, loading, days, regionFilte
     <section className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Admin · Analytics</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Analytics</p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Analytics da Plataforma</h1>
           <p className="mt-1 text-sm text-slate-500">Analise uso, buscas, campanhas e interacoes com dados reais da plataforma.</p>
         </div>
@@ -145,7 +145,7 @@ export default function AdminAnalyticsSection({ data, loading, days, regionFilte
             { label: 'Buscas feitas', value: data.summary.searchQueries, icon: Search, color: '#EC3F9F', bars: activity.slice(-10).map((item) => item.searchQueries) },
           ].map(({ label, value, icon: Icon, color, bars }) => {
             const barsMax = Math.max(...bars, 1);
-            return <Card key={label} className="min-h-40 p-5"><div className="flex items-center justify-between"><p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-400">{label}</p><Icon size={17} style={{ color }} /></div><p className="mt-2 text-3xl font-extrabold text-slate-900">{value.toLocaleString('pt-BR')}</p>{bars.length ? <div className="mt-5 flex h-9 items-end gap-1.5" aria-hidden>{bars.map((count, index) => <span key={index} className="flex-1 rounded-t" style={{ height: `${Math.max(8, count / barsMax * 100)}%`, backgroundColor: `${color}2e` }} />)}</div> : <div className="mt-5 h-9 border-b-2 border-dashed border-slate-100" />}<p className="mt-2 text-xs text-slate-400">Total no periodo</p></Card>;
+            return <Card key={label} className="min-h-40 p-5"><div className="flex items-center justify-between"><p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{label}</p><Icon size={17} style={{ color }} /></div><p className="mt-2 text-3xl font-extrabold text-slate-900">{value.toLocaleString('pt-BR')}</p>{bars.length ? <div className="mt-5 flex h-9 items-end gap-1.5" aria-hidden>{bars.map((count, index) => <span key={index} className="flex-1 rounded-t" style={{ height: `${Math.max(8, count / barsMax * 100)}%`, backgroundColor: `${color}2e` }} />)}</div> : <div className="mt-5 h-9 border-b-2 border-dashed border-slate-100" />}<p className="mt-2 text-xs text-slate-400">Total no periodo</p></Card>;
           })}
         </div>
 

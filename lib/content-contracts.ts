@@ -4,7 +4,7 @@ export interface HomeInitialData {
   latestPost: Post | null;
   latestBusiness: Business | null;
   latestEvent: EventItem | null;
-  latestNews: NewsItemContract | null;
+  latestNews: NewsArticleContract | null;
 }
 
 export interface CommunityInitialData {
@@ -71,25 +71,32 @@ export interface MarketplaceInitialData {
   total: number;
 }
 
-export interface NewsItemContract {
+export interface NewsArticleContract {
   id: string;
   title: string;
-  source: string;
-  publishedAt: string;
-  url: string;
+  subtitle: string | null;
   imageUrl: string | null;
-  description: string | null;
-  category: 'for-you' | 'region' | 'immigration' | 'community' | 'headlines';
-  language: 'pt' | 'en';
+  category: string;
   regionKey: string | null;
+  regionLabel: string | null;
+  source: string;
+  externalUrl: string;
+  publishedAt: string;
+}
+
+export interface NewsAdminArticleContract extends NewsArticleContract {
+  status: 'DRAFT' | 'PUBLISHED';
+  authorId: string | null;
+  authorName: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface NewsInitialData {
-  items: NewsItemContract[];
+  items: NewsArticleContract[];
+  hasMore: boolean;
+  nextCursor: string | null;
   regionKey: string | null;
-  regionLabel: string | null;
-  provider: string;
-  fetchedAt: string;
 }
 
 export interface ProfileInitialData {

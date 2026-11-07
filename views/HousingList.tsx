@@ -3,7 +3,7 @@
 import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { MapPin, Plus } from "lucide-react";
+import { Home, MapPin, Plus } from "lucide-react";
 import {
   Button,
   Card,
@@ -189,7 +189,11 @@ export default function HousingList({ user }: { user: User }) {
                   className="h-44 w-full object-cover"
                   alt={item.title}
                 />
-              ) : null}
+              ) : (
+                <div className="flex h-44 w-full items-center justify-center bg-slate-100 text-slate-300" aria-hidden>
+                  <Home size={40} />
+                </div>
+              )}
             <div className="p-4">
                 <h3 className="text-body-sm font-bold">{item.title}</h3>
                 <p className="mt-1 flex items-center gap-1 text-caption text-muted-foreground">
@@ -197,7 +201,7 @@ export default function HousingList({ user }: { user: User }) {
                 </p>
                 <p className="mt-2 font-bold">{formatPrice(item.price)}</p>
                 <Link
-                  href={`/moradia/${item.id}`}
+                  href={`/housing/${item.id}`}
                   className="mt-3 inline-flex rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white"
                 >
                   Ver detalhes

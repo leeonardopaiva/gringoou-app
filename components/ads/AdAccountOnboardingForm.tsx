@@ -97,7 +97,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
                   : 'Crie primeiro a página pública gratuita do negócio. Depois da aprovação, volte aqui para promovê-la.'}
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Link href="/negocios?create=1" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-bold text-white">Cadastrar negócio gratuitamente</Link>
+              <Link href="/businesses?create=1" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-bold text-white">Cadastrar negócio gratuitamente</Link>
               {businesses.some((business) => business.linkedAdAccountId) ? <Link href="/ads/overview" className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700">Ir para o painel Ads</Link> : null}
             </div>
           </div>

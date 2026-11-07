@@ -121,7 +121,7 @@ const SuggestionButton: React.FC = () => {
           </>
         }
       >
-        <div className="theme-soft-surface inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]">
+        <div className="theme-soft-surface inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
           <Lightbulb size={14} />
           Sugestao
         </div>
@@ -149,7 +149,7 @@ const SuggestionButton: React.FC = () => {
         </div>
 
         <div className="mt-4">
-          <p className="mb-2 text-caption font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="mb-2 text-caption font-bold uppercase tracking-wide text-slate-400">
             {selectedCategory.label}
           </p>
           <Textarea

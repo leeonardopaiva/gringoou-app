@@ -301,7 +301,7 @@ export async function GET(_request: Request, context: RouteContext) {
         isPublic: membership.group.isPublic,
         role: membership.role,
         memberCount: membership.group._count.members,
-        publicPath: `/grupos/${membership.group.slug}`,
+        publicPath: `/groups/${membership.group.slug}`,
       })),
       businesses,
       events,

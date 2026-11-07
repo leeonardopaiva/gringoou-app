@@ -102,6 +102,8 @@ const normalizeWhatsappLink = (value: string) => {
   return digits ? `https://wa.me/${digits}` : '';
 };
 
+const GALLERY_PREVIEW_LIMIT = 8;
+
 const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
   const { showToast } = useToast();
   const { startConversation } = useMessaging();
@@ -167,7 +169,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             locationLabel: payload.business.locationLabel || '',
             createdByName: payload.business.createdBy?.name || 'Comunidade local',
             canEdit: Boolean(payload.business.canEdit),
-            publicPath: payload.business.publicPath || `/negocios/${payload.business.slug || payload.business.id}`,
+            publicPath: payload.business.publicPath || `/businesses/${payload.business.slug || payload.business.id}`,
             status: payload.business.status || 'PUBLISHED',
             ownershipVerifiedAt: payload.business.ownershipVerifiedAt || null,
           };
@@ -391,12 +393,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   const whatsappHref = normalizeWhatsappLink(business.whatsapp || business.phone);
   const galleryImages = [business.imageUrl, ...business.galleryUrls].filter(Boolean);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showAllGallery, setShowAllGallery] = useState(false);
   const mapQuery = encodeURIComponent(business.address || business.locationLabel);
   const isPendingReview = business.status === 'PENDING_REVIEW';
 
   if (loading) {
     return (
-      <ContentColumn className="animate-in space-y-5 pb-6 fade-in duration-500">
+      <ContentColumn size="compact" className="animate-in space-y-5 pb-6 fade-in duration-500">
         <div className="h-64 animate-pulse rounded-[28px] bg-slate-100" />
         <div className="space-y-3">
           <div className="h-8 w-2/3 animate-pulse rounded-full bg-slate-100" />
@@ -409,7 +412,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   if (managementMode && !business.canEdit) {
     return (
-      <ContentColumn className="pb-8">
+      <ContentColumn size="compact" className="pb-8">
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-6 text-center">
           <h1 className="text-xl font-bold text-red-700">Acesso não autorizado</h1>
           <p className="mt-2 text-sm text-red-600">Somente proprietários e administradores podem gerenciar esta página.</p>
@@ -422,7 +425,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   }
 
   return (
-    <ContentColumn size="reading" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card">
+    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card">
       {managementMode ? (
         <div className="border-b border-slate-100 bg-white px-5 py-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
@@ -473,7 +476,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
         <div className="absolute bottom-6 left-5 right-5">
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-white backdrop-blur-sm">
+            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
               {business.category}
             </div>
 
@@ -510,7 +513,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           {business.canEdit && !managementMode ? (
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
               <span className="inline-flex items-center gap-2 text-xs font-bold text-brand-700"><BadgeCheck size={16} /> Você é proprietário</span>
-              <Dropdown align="right" trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do negócio', items: [{ label: 'Gerenciar página', icon: <PencilLine size={16} />, onClick: () => window.location.assign(`/negocios/${business.slug || business.id}/gerenciar`) }] }]} />
+              <Dropdown align="right" trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do negócio', items: [{ label: 'Gerenciar página', icon: <PencilLine size={16} />, onClick: () => window.location.assign(`/businesses/${business.slug || business.id}/gerenciar`) }] }]} />
             </div>
           ) : null}
         </div>
@@ -565,7 +568,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
         <section className="space-y-4 border-b border-slate-100 pb-7">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="text-sm font-bold uppercase tracking-wide text-slate-400">
               Contato
             </div>
 
@@ -577,7 +580,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 <Phone size={19} />
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Telefone</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Telefone</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">{business.phone}</p>
               </div>
             </a>
@@ -594,7 +597,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 <MessageCircle size={19} />
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">WhatsApp</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">WhatsApp</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">{business.whatsapp}</p>
               </div>
             </a>
@@ -620,7 +623,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
         <section className="space-y-3 border-b border-slate-100 pb-7">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <MapPin size={16} />
               Endereço
             </div>
@@ -666,7 +669,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <Images size={16} />
               Galeria
             </div>
@@ -678,16 +681,32 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               Nenhuma imagem adicional cadastrada ainda.
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {galleryImages.map((imageUrl, index) => (
-                <button key={`${imageUrl}-${index}`} type="button" onClick={() => setSelectedImage(imageUrl)} className="overflow-hidden rounded-[24px] bg-slate-50" aria-label={`Ampliar imagem ${index + 1}`}>
-                  <img
-                    src={imageUrl}
-                    className="aspect-square w-full object-cover"
-                    alt={`${business.name} - imagem ${index + 1}`}
-                  />
-                </button>
-              ))}
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+              {(showAllGallery ? galleryImages : galleryImages.slice(0, GALLERY_PREVIEW_LIMIT)).map((imageUrl, index) => {
+                const hiddenCount = galleryImages.length - GALLERY_PREVIEW_LIMIT;
+                const isMoreTile = !showAllGallery && hiddenCount > 0 && index === GALLERY_PREVIEW_LIMIT - 1;
+                return (
+                  <button
+                    key={`${imageUrl}-${index}`}
+                    type="button"
+                    onClick={() => (isMoreTile ? setShowAllGallery(true) : setSelectedImage(imageUrl))}
+                    className="relative overflow-hidden rounded-xl bg-slate-100"
+                    aria-label={isMoreTile ? `Ver mais ${hiddenCount + 1} imagens` : `Ampliar imagem ${index + 1}`}
+                  >
+                    <img
+                      src={imageUrl}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover"
+                      alt={`${business.name} - imagem ${index + 1}`}
+                    />
+                    {isMoreTile ? (
+                      <span className="absolute inset-0 flex items-center justify-center bg-slate-900/55 text-sm font-bold text-white">
+                        +{hiddenCount + 1}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
           )}
         </section>
@@ -772,7 +791,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               {editModalTab === 'info' ? (
                 <>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Nome
                     </label>
                     <input
@@ -784,16 +803,16 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">URL da página</label>
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">URL da página</label>
                     <div className="flex overflow-hidden rounded-full border border-input bg-surface text-sm">
-                      <span className="shrink-0 px-4 py-3 text-slate-400">/negocios/</span>
+                      <span className="shrink-0 px-4 py-3 text-slate-400">/businesses/</span>
                       <input value={slugDraft} onChange={(event) => setSlugDraft(event.target.value)} className="min-w-0 flex-1 bg-transparent py-3 pr-4 font-medium text-foreground outline-none" placeholder="trustapizzashop" />
                     </div>
                     <p className="text-xs text-slate-500">Use letras, números e hífens. Links antigos continuarão funcionando.</p>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Categoria
                     </label>
                     <input
@@ -805,14 +824,14 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Endereço
                     </label>
                     <AddressAutocomplete value={addressDraft} onChange={setAddressDraft} />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Descricao
                     </label>
                     <textarea
@@ -831,7 +850,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               {editModalTab === 'contact' ? (
                 <>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Telefone
                     </label>
                     <input
@@ -843,7 +862,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       WhatsApp
                     </label>
                     <input
@@ -855,7 +874,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Website
                     </label>
                     <input
@@ -867,7 +886,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
                       Instagram
                     </label>
                     <input

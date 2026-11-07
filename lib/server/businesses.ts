@@ -63,7 +63,7 @@ export async function getBusinessesPage({
       isFavorite: favorites.length > 0,
       canEdit: isAdmin || createdById === viewerId || members.length > 0,
       isPendingReview: business.status === BusinessStatus.PENDING_REVIEW,
-      publicPath: `/negocios/${business.slug || business.id}`,
+      publicPath: `/businesses/${business.slug || business.id}`,
     })),
     scope: regionKey && businesses.some((business) => business.visibilityScope !== VisibilityScope.GLOBAL) ? 'local' : 'global',
   };

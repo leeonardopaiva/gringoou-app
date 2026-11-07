@@ -122,6 +122,10 @@ const listSelect = {
 
 type ListRaw = Prisma.MarketplaceItemGetPayload<{ select: typeof listSelect }>;
 
+/** Arredonda para 2 casas decimais (~1 km) para não revelar a localização exata. */
+const coarsenCoordinate = (value: number | null | undefined) =>
+  typeof value === 'number' && Number.isFinite(value) ? Math.round(value * 100) / 100 : null;
+
 function mapListItem(raw: ListRaw, viewerId: string | null, isAdmin: boolean): MarketplaceListItem {
   const canEdit = isAdmin || raw.createdById === viewerId;
   return {
@@ -230,8 +234,9 @@ export function makePrismaMarketplaceRepository(prisma: PrismaClient): Marketpla
         sellerUsername: item.createdBy?.username ?? null,
         sellerImage: item.createdBy?.image ?? null,
         sellerLocationLabel: item.createdBy?.locationLabel ?? null,
-        latitude: item.latitude ?? null,
-        longitude: item.longitude ?? null,
+        // Privacidade: só o dono/admin recebe a coordenada exata (necessária para editar); os demais, ~1 km.
+        latitude: canEdit ? (item.latitude ?? null) : coarsenCoordinate(item.latitude),
+        longitude: canEdit ? (item.longitude ?? null) : coarsenCoordinate(item.longitude),
       };
     },
 

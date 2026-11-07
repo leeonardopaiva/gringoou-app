@@ -11,6 +11,8 @@ type PageHeaderProps = {
   backHref?: string;
   /** Oculta o botão Voltar em páginas raiz. */
   hideBack?: boolean;
+  /** Handler opcional (ex.: voltar no histórico); `backHref` continua sendo o fallback. */
+  onBack?: () => void;
   /** Subtítulo opcional exibido abaixo do título. */
   description?: React.ReactNode;
   /** Ações contextuais alinhadas à direita. */
@@ -22,8 +24,9 @@ type PageHeaderProps = {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
-  backHref = '/inicio',
+  backHref = '/home',
   hideBack = false,
+  onBack,
   description,
   action,
   tabs,
@@ -34,6 +37,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       {hideBack ? null : (
         <Link
           href={backHref}
+          onClick={
+            onBack
+              ? (event) => {
+                  event.preventDefault();
+                  onBack();
+                }
+              : undefined
+          }
           aria-label="Voltar"
           title="Voltar"
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"

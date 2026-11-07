@@ -223,7 +223,7 @@ export async function POST(request: Request) {
       locationLabel: post.locationLabel,
       author: displayAuthor,
       authorHref: post.businessAuthor
-        ? `/negocios/${post.businessAuthor.slug || post.businessAuthor.id}`
+        ? `/businesses/${post.businessAuthor.slug || post.businessAuthor.id}`
         : post.author.username
           ? `/${post.author.username}`
           : undefined,

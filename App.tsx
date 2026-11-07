@@ -72,7 +72,7 @@ const App: React.FC<{
     sessionRole === UserRole.COMPANY ||
     sessionRole === UserRole.ADMIN ||
     hasProfessionalBusinesses;
-  const authCallbackUrl = pathname === '/login' ? '/inicio' : pathname || '/inicio';
+  const authCallbackUrl = pathname === '/login' ? '/home' : pathname || '/home';
   const inviteRequired = process.env.NEXT_PUBLIC_INVITE_ONLY_REGISTRATION === 'true';
   const phoneVerificationEnabled = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
 
@@ -377,7 +377,7 @@ const App: React.FC<{
     if (result.url) {
       window.location.assign(result.url);
     } else {
-      window.location.assign(pathname === '/login' ? '/inicio' : pathname || '/inicio');
+      window.location.assign(pathname === '/login' ? '/home' : pathname || '/home');
     }
 
     return { ok: true };

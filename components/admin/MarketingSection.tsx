@@ -125,7 +125,7 @@ const MarketingSection: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div>
-        <p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Admin · Marketing</p>
+        <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Marketing</p>
         <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40]">E-mail marketing</h1>
         <p className="mt-1 text-sm text-slate-400">
           Crie e edite templates de e-mail. O envio em massa requer um serviço de e-mail transacional/bulk.

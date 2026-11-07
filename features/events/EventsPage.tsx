@@ -11,7 +11,7 @@ type EventsPageProps = {
 /**
  * Container da página de listagem de eventos.
  * Delega a renderização para o Marketplace (única view de listagem de eventos).
- * Rota: /eventos
+ * Rota: /events
  */
 const EventsPage: React.FC<EventsPageProps> = ({ initialData }) => {
   return <Marketplace initialData={initialData} />;

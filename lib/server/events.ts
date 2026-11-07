@@ -68,7 +68,7 @@ export async function getEventsPage({ session, regionKey, category }: { session:
         canUnlockInterestedUsers: !isAdmin && canEdit && Boolean(businessId),
         canEdit,
         isPendingReview: event.status === EventStatus.PENDING_REVIEW,
-        publicPath: `/eventos/${event.slug || event.id}`,
+        publicPath: `/events/${event.slug || event.id}`,
       };
     }),
     scope: regionKey && events.some((event) => event.visibilityScope !== VisibilityScope.GLOBAL) ? 'local' : 'global',

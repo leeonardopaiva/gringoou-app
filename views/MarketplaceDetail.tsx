@@ -175,7 +175,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         return;
       }
       // 201 = criada; 409 = já existe
-      router.push(`/marketplace/conversacoes?conversation=${payload?.conversationId}`);
+      router.push(`/inbox?conversation=${payload?.conversationId}`);
     } catch {
       showToast('Não foi possível iniciar a conversa.', 'error');
     } finally {
@@ -412,7 +412,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             <span className="shrink-0">{formatRelativeTime(item.createdAt)}</span>
           </div>
 
-            <h1 className="mt-3 text-lg font-bold leading-snug text-text">{item.title}</h1>
+            <h1 className="mt-3 break-words text-lg font-bold leading-snug text-text">{item.title}</h1>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge tone="neutro">{item.category}</Badge>
@@ -520,21 +520,22 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   iconLeft={<MessageCircle size={14} />}
                   loading={contacting}
                   onClick={() => void handleContactSeller()}
+                  aria-label="Enviar mensagem ao anunciante"
                   className="shrink-0"
                 >
-                  Enviar Mensagem
+                  <span className="hidden sm:inline">Mensagem</span>
                 </Button>
               ) : null}
             </div>
 
             {/* Mapa compacto da localização aproximada */}
-            {(item.latitude && item.longitude) ? (
+            {item.latitude != null && item.longitude != null ? (
               <div className="mt-4 border-t border-slate-100 pt-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
-                <div className="mt-2 relative h-32 w-full rounded-xl overflow-hidden bg-slate-100">
+                <div className="relative mt-2 h-40 w-full overflow-hidden rounded-xl bg-slate-100">
                   <iframe
-                    title="Localização aproximada do anúncio"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${item.longitude - 0.01}%2C${item.latitude - 0.01}%2C${item.longitude + 0.01}%2C${item.latitude + 0.01}&layer=mapnik&marker=${item.latitude}%2C${item.longitude}`}
+                    title="Região aproximada do anúncio"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${item.longitude - 0.03}%2C${item.latitude - 0.02}%2C${item.longitude + 0.03}%2C${item.latitude + 0.02}&layer=mapnik`}
                     className="h-full w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
@@ -546,17 +547,10 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             ) : (item.city || item.state) ? (
               <div className="mt-4 border-t border-slate-100 pt-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
-                <div className="mt-2 relative h-32 w-full rounded-xl overflow-hidden bg-slate-100">
-                  <iframe
-                    title="Localização aproximada do anúncio"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=-180%2C-90%2C180%2C90&layer=mapnik`}
-                    className="h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    sandbox="allow-scripts allow-same-origin"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-slate-400">Mapa aproximado — localização exata não é exibida por privacidade.</p>
+                <p className="mt-2 flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600">
+                  <MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />
+                  {sellerLocation}
+                </p>
               </div>
             ) : null}
 

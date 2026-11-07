@@ -3,7 +3,7 @@ import 'server-only';
 import { BusinessStatus, CommunityPostStatus, EventStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getVisibilityFilter } from '@/lib/visibility';
-import { newsUseCases } from '@/lib/server/news-usecases';
+import { getLatestPublishedNews } from '@/lib/server/news-articles';
 import type { HomeInitialData } from '@/lib/content-contracts';
 
 const EMPTY_HOME_DATA: HomeInitialData = {
@@ -46,10 +46,7 @@ export async function getHomeInitialData(regionKey?: string | null): Promise<Hom
         orderBy: { startsAt: 'asc' },
         select: { id: true, slug: true, title: true, venueName: true, startsAt: true, locationLabel: true, imageUrl: true },
       }),
-      newsUseCases
-        .listNews({ regionKey, category: 'for-you', limit: 1 })
-        .then((feed) => feed.items[0] ?? null)
-        .catch(() => null),
+      getLatestPublishedNews().catch(() => null),
     ]);
 
     return {
@@ -69,9 +66,9 @@ export async function getHomeInitialData(regionKey?: string | null): Promise<Hom
             comments: [],
           }
         : null,
-      latestBusiness: business ? { ...business, publicPath: `/negocios/${business.slug || business.id}` } : null,
+      latestBusiness: business ? { ...business, publicPath: `/businesses/${business.slug || business.id}` } : null,
       latestEvent: event
-        ? { ...event, startsAt: event.startsAt.toISOString(), publicPath: `/eventos/${event.slug || event.id}` }
+        ? { ...event, startsAt: event.startsAt.toISOString(), publicPath: `/events/${event.slug || event.id}` }
         : null,
       latestNews,
     };

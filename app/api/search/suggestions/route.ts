@@ -23,10 +23,10 @@ export async function GET(request: Request) {
   ]);
 
   const suggestions = [
-    ...regions.map((item) => ({ id: `region-${item.key}`, label: item.label, meta: 'Região', href: `/buscar?q=${encodeURIComponent(item.label)}` })),
-    ...events.map((item) => ({ id: `event-${item.id}`, label: item.title, meta: `Evento · ${item.locationLabel}`, href: `/eventos/${item.slug || item.id}` })),
-    ...businesses.map((item) => ({ id: `business-${item.id}`, label: item.name, meta: `Negócio · ${item.category}`, href: `/negocios/${item.slug || item.id}` })),
-    ...groups.map((item) => ({ id: `group-${item.id}`, label: item.name, meta: `Grupo${item.category ? ` · ${item.category}` : ''}`, href: `/grupos/${item.slug}` })),
+    ...regions.map((item) => ({ id: `region-${item.key}`, label: item.label, meta: 'Região', href: `/search?q=${encodeURIComponent(item.label)}` })),
+    ...events.map((item) => ({ id: `event-${item.id}`, label: item.title, meta: `Evento · ${item.locationLabel}`, href: `/events/${item.slug || item.id}` })),
+    ...businesses.map((item) => ({ id: `business-${item.id}`, label: item.name, meta: `Negócio · ${item.category}`, href: `/businesses/${item.slug || item.id}` })),
+    ...groups.map((item) => ({ id: `group-${item.id}`, label: item.name, meta: `Grupo${item.category ? ` · ${item.category}` : ''}`, href: `/groups/${item.slug}` })),
     ...people.map((item) => ({ id: `person-${item.id}`, label: item.name || `@${item.username}`, meta: item.locationLabel || 'Pessoa', href: `/${item.username}` })),
     ...posts.map((item) => ({ id: `post-${item.id}`, label: item.content.slice(0, 72), meta: `Comunidade · ${item.locationLabel}`, href: `/community?post=${item.id}` })),
   ].slice(0, 8);

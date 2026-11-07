@@ -7,6 +7,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import GroupReportsSection from '@/components/admin/GroupReportsSection';
 import InvitesSection from '@/components/admin/InvitesSection';
 import MarketingSection from '@/components/admin/MarketingSection';
+import NewsEditorialSection from '@/components/admin/NewsEditorialSection';
 import { UserRole, type User } from '@/types';
 
 type AdminWorkspaceProps = {
@@ -35,12 +36,16 @@ const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }
   }
 
   const segment = pathname.split('/')[2] || '';
+  if (segment === 'news') {
+    return <AdminShell user={currentUser}><NewsEditorialSection /></AdminShell>;
+  }
+
   if (isModerator) {
     if (segment !== 'moderation') return <AdminAccessDenied />;
     return <AdminShell user={currentUser}><div className="mx-auto max-w-6xl p-5 sm:p-8"><GroupReportsSection /></div></AdminShell>;
   }
 
-  if (segment === 'convites') {
+  if (segment === 'invites') {
     return <AdminShell user={currentUser}><InvitesSection /></AdminShell>;
   }
 

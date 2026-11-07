@@ -42,11 +42,11 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   const latestHousing = STATIC_HOUSING[0];
   const trendItems: TrendItem[] = [
     { href: latestPost ? `/community?post=${encodeURIComponent(latestPost.id)}` : '/community', category: 'Comunidade', title: latestPost?.content || 'Participe das conversas da comunidade', description: latestPost ? `Por ${latestPost.author.name}` : 'Veja as publicações mais recentes', icon: Users, imageUrl: latestPost?.imageUrl },
-    { href: latestBusiness?.publicPath || (latestBusiness ? `/negocios/${latestBusiness.slug || latestBusiness.id}` : '/negocios'), category: 'Negócios', title: latestBusiness?.name || 'Descubra negócios brasileiros', description: latestBusiness?.category || 'Serviços perto de você', icon: Building2, imageUrl: latestBusiness?.imageUrl },
-    { href: latestEvent?.publicPath || (latestEvent ? `/eventos/${latestEvent.slug || latestEvent.id}` : '/eventos'), category: 'Eventos', title: latestEvent?.title || 'Veja os próximos eventos', description: latestEvent?.venueName || 'Agenda da sua região', icon: CalendarDays, imageUrl: latestEvent?.imageUrl },
-    { href: '/vagas', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
-    { href: '/moradia', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
-    { href: '/noticias', category: 'Notícias', title: latestNews?.title || 'Últimas notícias da comunidade', description: 'Veja as notícias mais recentes', icon: Newspaper, imageUrl: latestNews?.imageUrl },
+    { href: latestBusiness?.publicPath || (latestBusiness ? `/businesses/${latestBusiness.slug || latestBusiness.id}` : '/businesses'), category: 'Negócios', title: latestBusiness?.name || 'Descubra negócios brasileiros', description: latestBusiness?.category || 'Serviços perto de você', icon: Building2, imageUrl: latestBusiness?.imageUrl },
+    { href: latestEvent?.publicPath || (latestEvent ? `/events/${latestEvent.slug || latestEvent.id}` : '/events'), category: 'Eventos', title: latestEvent?.title || 'Veja os próximos eventos', description: latestEvent?.venueName || 'Agenda da sua região', icon: CalendarDays, imageUrl: latestEvent?.imageUrl },
+    { href: '/jobs', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
+    { href: '/housing', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
+    { href: '/news', category: 'Notícias', title: latestNews?.title || 'Últimas notícias da comunidade', description: 'Veja as notícias mais recentes', icon: Newspaper, imageUrl: latestNews?.imageUrl },
   ];
 
   // Evita fetch no mount inicial — o servidor já forneceu initialData.
@@ -159,20 +159,20 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
     <ContentColumn size="compact" className="animate-in space-y-5 pb-28 fade-in slide-in-from-bottom-4 duration-500 md:pb-8">
       <div className="flex items-center justify-between">
         <h3 className="text-body-sm font-bold text-text">Categorias</h3>
-        <button type="button" onClick={() => router.push('/buscar?browse=1')} className="text-body-sm font-semibold text-brand-500">
+        <button type="button" onClick={() => router.push('/search?browse=1')} className="text-body-sm font-semibold text-brand-500">
           Ver todas
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <ServiceCard href="/negocios" icon={Building2} label="Negocios" onActivate={() => router.push('/negocios')} />
+        <ServiceCard href="/businesses" icon={Building2} label="Negocios" onActivate={() => router.push('/businesses')} />
         <ServiceCard href="/community" icon={Users} label="Comunidade" onActivate={() => router.push('/community')} />
-        <ServiceCard href="/eventos" icon={CalendarDays} label="Eventos" onActivate={() => router.push('/eventos')} />
+        <ServiceCard href="/events" icon={CalendarDays} label="Eventos" onActivate={() => router.push('/events')} />
         <ServiceCard
-          href="/vagas"
+          href="/jobs"
           icon={Briefcase}
           label="Vagas"
-          onActivate={() => router.push('/vagas')}
+          onActivate={() => router.push('/jobs')}
         />
         <ServiceCard
           href="/marketplace"
@@ -181,10 +181,10 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
           onActivate={() => router.push('/marketplace')}
         />
         <ServiceCard
-          href="/moradia"
+          href="/housing"
           icon={House}
           label="Moradia"
-          onActivate={() => router.push('/moradia')}
+          onActivate={() => router.push('/housing')}
         />
       </div>
 
@@ -207,7 +207,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                       <>
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover" />
                         <div className="flex items-center justify-between gap-3 px-4 py-3">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Publicidade</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Publicidade</span>
                           <Button
                             size="sm"
                             iconLeft={<UserPlus size={16} />}
@@ -221,7 +221,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                     ) : (
                       <button type="button" onClick={() => handleBannerLinkClick(banner)} className="group relative block w-full text-left">
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover transition duration-300 group-hover:scale-[1.01]" />
-                        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur">Publicidade</span>
+                        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur">Publicidade</span>
                         <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm"><ExternalLink size={15} /></span>
                       </button>
                     )}

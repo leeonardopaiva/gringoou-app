@@ -1,34 +1,28 @@
 import { NextResponse } from 'next/server';
-import { getServerAuthSession } from '@/lib/auth';
-import { newsUseCases } from '@/lib/server/news-usecases';
-import { findRegionByKey } from '@/lib/region-store';
+import { listPublishedNews, listPublishedNewsSources } from '@/lib/server/news-articles';
 
+/** Feed público de Notícias editoriais (somente publicadas), com paginação por cursor. */
 export async function GET(request: Request) {
-  const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
+  const sort = searchParams.get('sort') === 'oldest' ? 'oldest' : 'recent';
+  const wantsSources = searchParams.get('sources') === '1';
 
-  const regionKey = searchParams.get('region') ?? session?.user?.regionKey ?? null;
-  const category = searchParams.get('category') || undefined;
-  const query = searchParams.get('q') || undefined;
-
-  const region = regionKey ? await findRegionByKey(regionKey) : null;
-
-  const feed = await newsUseCases.listNews({
-    regionKey,
-    regionLabel: region?.label ?? null,
-    city: region?.city ?? null,
-    state: region?.state ?? null,
-    countryCode: region?.countryCode ?? null,
-    category: (category as 'for-you' | 'region' | 'immigration' | 'community' | 'headlines') ?? 'region',
-    query,
-    limit: 30,
-  });
-
-  return NextResponse.json({
-    items: feed.items,
-    regionKey: feed.regionKey,
-    regionLabel: feed.regionLabel,
-    provider: feed.provider,
-    fetchedAt: feed.fetchedAt,
-  });
+  try {
+    const [feed, sources] = await Promise.all([
+      listPublishedNews({
+        regionKey: searchParams.get('region')?.trim() || null,
+        category: searchParams.get('category')?.trim() || null,
+        source: searchParams.get('source')?.trim() || null,
+        query: searchParams.get('q')?.trim() || null,
+        cursor: searchParams.get('cursor'),
+        sort,
+        limit: Number(searchParams.get('limit')) || undefined,
+      }),
+      wantsSources ? listPublishedNewsSources() : Promise.resolve(undefined),
+    ]);
+    return NextResponse.json({ ...feed, ...(sources ? { sources } : {}) });
+  } catch (error) {
+    console.error('Failed to list news:', error);
+    return NextResponse.json({ error: 'Não foi possível carregar as notícias.' }, { status: 500 });
+  }
 }

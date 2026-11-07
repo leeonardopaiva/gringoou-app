@@ -49,7 +49,7 @@ const AppContent: React.FC<AppContentProps> = ({
     return <AdminWorkspace currentUser={currentUser} pathname={pathname} />;
   }
 
-  if (rootSegment === 'negocios' || rootSegment === 'eventos' || rootSegment === 'marketplace') {
+  if (rootSegment === 'businesses' || rootSegment === 'events' || rootSegment === 'marketplace') {
     return (
       <BusinessWorkspace
         currentUser={currentUser}

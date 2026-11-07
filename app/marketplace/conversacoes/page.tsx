@@ -1,18 +1,11 @@
-import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import App from '../../../App';
-import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 
-export const metadata: Metadata = {
-  title: 'Conversas do Marketplace — Gringoou',
-};
-
-export default async function MarketplaceConversationsRoute() {
-  const session = await getCachedServerAuthSession();
-
-  if (!session?.user?.id) {
-    redirect('/login');
-  }
-
-  return <App />;
+/** Rota legada: as conversas do Marketplace vivem na Inbox unificada. */
+export default async function MarketplaceConversationsRoute({
+  searchParams,
+}: {
+  searchParams: Promise<{ conversation?: string }>;
+}) {
+  const { conversation } = await searchParams;
+  redirect(conversation ? `/inbox?conversation=${encodeURIComponent(conversation)}` : '/inbox');
 }

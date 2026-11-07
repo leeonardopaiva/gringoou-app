@@ -73,7 +73,7 @@ export async function POST(request: Request, context: RouteContext) {
     bannerId,
     userId: session.user.id,
     placement: parsed.data.placement,
-    sourcePath: parsed.data.placement === 'FEED' ? '/community' : '/inicio',
+    sourcePath: parsed.data.placement === 'FEED' ? '/community' : '/home',
     sourceSection: parsed.data.placement === 'FEED' ? 'community_feed_banner' : 'home_banner',
     regionKey: session.user.regionKey ?? null,
     matchedBy: parsed.data.matchedBy,

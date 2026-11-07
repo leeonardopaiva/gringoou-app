@@ -15,7 +15,7 @@ export default function LegalPage({ title, updatedAt, sections }: { title: strin
         <Card className="border border-border bg-surface shadow-sm">
           <div className="space-y-8 p-1 sm:p-5">
             <header className="border-b border-border pb-6">
-              <p className="text-caption font-bold uppercase tracking-[0.2em] text-brand-500">Gringoou</p>
+              <p className="text-caption font-bold uppercase tracking-wide text-brand-500">Gringoou</p>
               <h1 className="mt-2 text-h1 font-extrabold text-foreground">{title}</h1>
               <p className="mt-2 text-body-sm text-muted-foreground">Ultima atualizacao: {updatedAt}</p>
             </header>

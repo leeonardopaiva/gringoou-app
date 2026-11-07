@@ -6,8 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Gringoou',
     description:
       'Uma plataforma completa para a comunidade brasileira no exterior, oferecendo servicos de moradia, empregos, negocios locais, noticias e rede social.',
-    id: '/inicio',
-    start_url: '/inicio',
+    id: '/home',
+    start_url: '/home',
     scope: '/',
     display: 'standalone',
     background_color: '#f9f9f9',

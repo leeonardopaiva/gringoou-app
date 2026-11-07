@@ -196,8 +196,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
-    ? 'mx-auto w-full max-w-[600px]'
-    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl items-start justify-center';
+    ? 'mx-auto w-full min-w-0 max-w-[620px] [&_img]:max-w-full'
+    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
 
@@ -407,16 +407,13 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <Link2 size={13} />
                   {profile.username}
                 </span>
-                {profile.locationLabel ? (
-                  <>
-                    <span aria-hidden className="text-slate-300">|</span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={13} />
-                      {profile.locationLabel}
-                    </span>
-                  </>
-                ) : null}
               </p>
+              {profile.locationLabel ? (
+                <p className="mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full bg-brand-50 px-3.5 py-1.5 text-sm font-semibold text-brand-700">
+                  <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden />
+                  <span className="truncate">{profile.locationLabel}</span>
+                </p>
+              ) : null}
 
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {isOwnProfile ? (
@@ -465,13 +462,15 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </div>
 
             <div className="mt-6 border-t border-slate-100 pt-1">
-              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+              <div className="flex w-full items-center overflow-x-auto scrollbar-hide" role="tablist">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative whitespace-nowrap px-3.5 py-3 text-sm font-semibold transition ${
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    className={`relative flex-1 whitespace-nowrap px-3 py-3 text-center text-sm font-semibold transition ${
                       activeTab === tab.id ? 'text-brand-500' : 'text-muted-foreground'
                     }`}
                   >
@@ -497,13 +496,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   {profile.stats.postCount} publicaç{profile.stats.postCount === 1 ? 'ão' : 'ões'} visíve{profile.stats.postCount === 1 ? 'l' : 'is'} na comunidade.
                 </p> */}
 
-                <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100 pt-4">
-                  {profile.locationLabel ? (
-                    <div className="px-2 text-center">
-                      <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><MapPin size={13} className="text-brand-500" /> Região atual</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-700">{profile.locationLabel}</p>
-                    </div>
-                  ) : null}
+                <div className="mt-5 grid grid-cols-1 border-t border-slate-100 pt-4 empty:hidden">
                   {profile.birthCity ? (
                     <div className="px-2 text-center">
                       <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> Cidade natal</p>
@@ -586,7 +579,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     <CreateGroupModal
                       open={groupModalOpen}
                       onClose={() => setGroupModalOpen(false)}
-                      onCreated={(group) => router.push(group?.publicPath || '/grupos')}
+                      onCreated={(group) => router.push(group?.publicPath || '/groups')}
                     />
                   </div>
                 ) : null}
@@ -703,7 +696,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       {profile.businesses.slice(0, 3).map((business) => (
                         <Link
                           key={business.id}
-                          href={`/negocios/${business.slug}`}
+                          href={`/businesses/${business.slug}`}
                           className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
@@ -713,7 +706,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           />
                           <div className="min-w-0 flex-1">
                             <p className="text-body-lg font-bold text-foreground">{business.name}</p>
-                            <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-400">
                               {business.category}
                             </p>
                             {business.locationLabel ? (
@@ -736,7 +729,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       {profile.events.slice(0, 3).map((event) => (
                         <Link
                           key={event.id}
-                          href={`/eventos/${event.slug}`}
+                          href={`/events/${event.slug}`}
                           className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
@@ -747,7 +740,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           <div className="min-w-0 flex-1">
                             <p className="text-body-lg font-bold text-foreground">{event.title}</p>
                             <p className="mt-1 text-sm text-slate-500">{formatEventDate(event.startsAt)}</p>
-                            <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-400">
                               {event.venueName}
                             </p>
                             <div className="mt-3">

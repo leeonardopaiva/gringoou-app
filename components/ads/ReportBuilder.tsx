@@ -169,7 +169,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
     <div className="mx-auto w-full max-w-[1360px]">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-slate-400">Build Report</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">Build Report</p>
           <h1 className="mt-1 text-[34px] font-extrabold leading-none text-[#132f40]">Build Report</h1>
         </div>
         <Button iconLeft={<Play size={18} />} onClick={() => void downloadReport()} loading={exporting}>
@@ -186,11 +186,11 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
             </div>
             <div className="space-y-4 px-5 py-5">
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Report name</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Report name</p>
                 <Input value={state.reportName} onChange={(event) => setState((current) => ({ ...current, reportName: event.target.value }))} placeholder="Report Name" />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Email report to (optional)</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Email report to (optional)</p>
                 <Input
                   value={state.emails}
                   onChange={(event) => setState((current) => ({ ...current, emails: event.target.value }))}
@@ -204,7 +204,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 label={<span className="text-[14px] font-medium text-[#243b53]">Lead Gen Report</span>}
               />
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Output format</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Output format</p>
                 <div className="flex gap-4">
                   {(['CSV', 'XLSX'] as const).map((option) => (
                     <label key={option} className="flex items-center gap-2 text-[14px] font-medium text-[#243b53]">
@@ -239,7 +239,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 <span className="font-bold text-brand-500">{Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Start date</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Start date</p>
                 <Input
                   type="date"
                   value={state.startDate}
@@ -247,7 +247,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">End date</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">End date</p>
                 <Input
                   type="date"
                   value={state.endDate}
@@ -255,7 +255,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Campaigns / groups / ads</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Campaigns / groups / ads</p>
                 <div className="flex gap-2">
                   <Select
                     value={state.scope}
@@ -275,7 +275,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-400">Attribution window</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Attribution window</p>
                 <Select value="7d">
                   <option value="7d">7 dias apos clique</option>
                 </Select>
@@ -318,7 +318,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.08em] text-slate-400">Selected dimensions</p>
+                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected dimensions</p>
                   <p className="text-[12px] text-slate-400">Seu relatorio vai baixar nesta ordem de coluna.</p>
                   <div className="mt-4 space-y-2">
                     {selectedDimensionItems.map((item) => (
@@ -372,7 +372,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.08em] text-slate-400">Selected metrics</p>
+                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected metrics</p>
                   <p className="text-[12px] text-slate-400">Seu relatorio vai baixar nesta ordem de coluna.</p>
                   <div className="mt-4 space-y-2">
                     {selectedMetricItems.map((item) => (

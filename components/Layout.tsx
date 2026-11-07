@@ -39,6 +39,7 @@ import { CommunityAccountMenu } from './account/CommunityAccountMenu';
 import UnifiedSearchInput from './search/UnifiedSearchInput';
 import CommunityAssistantModal from './search/CommunityAssistantModal';
 import { MarketplaceChatBubble } from './marketplace/MarketplaceChatBubble';
+import { useMessaging } from '@/lib/MessagingProvider';
 import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
@@ -91,15 +92,15 @@ type NavigationItem = {
 };
 
 const navigationItems: NavigationItem[] = [
-  { href: '/inicio', label: 'Home', icon: <HomeIcon size={22} /> },
-  { href: '/negocios', label: 'Negócios', icon: <Store size={18} /> },
+  { href: '/home', label: 'Home', icon: <HomeIcon size={22} /> },
+  { href: '/businesses', label: 'Negócios', icon: <Store size={18} /> },
   { href: '/community', label: 'Comunidade', icon: <Users size={18} /> },
-  { href: '/grupos', label: 'Grupos', icon: <MessageCircle size={18} /> },
-  { href: '/eventos', label: 'Eventos', icon: <Calendar size={18} /> },
-  { href: '/vagas', label: 'Vagas', icon: <Briefcase size={18} /> },
-  { href: '/moradia', label: 'Moradia', icon: <House size={18} /> },
+  { href: '/groups', label: 'Grupos', icon: <MessageCircle size={18} /> },
+  { href: '/events', label: 'Eventos', icon: <Calendar size={18} /> },
+  { href: '/jobs', label: 'Vagas', icon: <Briefcase size={18} /> },
+  { href: '/housing', label: 'Moradia', icon: <House size={18} /> },
   { href: '/marketplace', label: 'Marketplace', icon: <ShoppingBag size={18} /> },
-  { href: '/noticias', label: 'Notícias', icon: <Newspaper size={18} /> },
+  { href: '/news', label: 'Notícias', icon: <Newspaper size={18} /> },
 ];
 
 const SidebarContent: React.FC<{
@@ -150,11 +151,11 @@ const SidebarContent: React.FC<{
         <div className="mb-5 space-y-4">
           <div className={`flex items-center gap-1 ${collapsed ? 'justify-center' : 'justify-start'}`}>
           {collapsed ? (
-            <Link href="/inicio" aria-label="Ir para a Home" title="Home" className="flex h-9 w-9 items-center justify-center">
+            <Link href="/home" aria-label="Ir para a Home" title="Home" className="flex h-9 w-9 items-center justify-center">
               <img src="/assets/logo_simbolo.svg" alt="Gringoou" className="h-8 w-8 object-contain" />
             </Link>
           ) : (
-            <Logo size="lg" href="/inicio" />
+            <Logo size="lg" href="/home" />
           )}
           <button
             type="button"
@@ -216,9 +217,9 @@ const SidebarContent: React.FC<{
             <SidebarMenuItem
               label="Página de negócio"
               icon={<Store size={18} />}
-              active={isActive('/negocios') && sourcePath.includes('/gerenciar')}
+              active={isActive('/businesses') && sourcePath.includes('/gerenciar')}
               collapsed={collapsed}
-              onClick={() => onNavigate(`/negocios/${professionalBusinesses[0].slug || professionalBusinesses[0].id}/gerenciar`)}
+              onClick={() => onNavigate(`/businesses/${professionalBusinesses[0].slug || professionalBusinesses[0].id}/gerenciar`)}
             />
           ) : null}
         </SidebarMenu>
@@ -265,6 +266,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   onSignOut,
 }) => {
   const { showToast } = useToast();
+  const { unreadCount } = useMessaging();
   const { update: updateSession } = useSession();
   const pathname = usePathname() || '/';
   const router = useRouter();
@@ -316,7 +318,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
     if (connection?.saveData) return;
 
     const prefetchCoreRoutes = () => {
-      ['/inicio', '/community', '/negocios', '/eventos', '/vagas', '/moradia'].forEach((href) => router.prefetch(href));
+      ['/home', '/community', '/businesses', '/events', '/jobs', '/housing'].forEach((href) => router.prefetch(href));
     };
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
@@ -331,7 +333,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   }, [router]);
 
   React.useEffect(() => {
-    if (pathname === '/buscar') {
+    if (pathname === '/search') {
       setHeaderSearch(searchParams?.get('q') ?? '');
     }
   }, [pathname, searchParams]);
@@ -365,7 +367,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const handleHeaderSearch = () => {
     const query = headerSearch.trim();
     if (!query) return;
-    startNavigation(() => router.push(`/buscar?q=${encodeURIComponent(query)}`));
+    startNavigation(() => router.push(`/search?q=${encodeURIComponent(query)}`));
   };
 
   const openRegionSelector = () => {
@@ -454,7 +456,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   <Menu size={24} />
                 </button>
                 <span className="flex h-9 items-center">
-                  <Logo size="sm" professional={isProfessionalTheme} href="/inicio" />
+                  <Logo size="sm" professional={isProfessionalTheme} href="/home" />
                 </span>
               </div>
 
@@ -470,12 +472,12 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                     }}
                     onVoiceResult={(query) => {
                       setHeaderSearch(query);
-                      startNavigation(() => router.push(`/buscar?q=${encodeURIComponent(query)}`));
+                      startNavigation(() => router.push(`/search?q=${encodeURIComponent(query)}`));
                     }}
                     onVoiceError={(message) => showToast(message, 'error')}
                     animatedTerms={['Negócios', 'Eventos', 'Vagas']}
                     animatedIndex={searchTermIndex}
-                    className="h-11 shadow-none"
+                    className="h-12 shadow-none"
                   />
                 </div>
               </div>
@@ -553,7 +555,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               ) : null}
 
               <nav className="flex h-[52px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
-                <NavItem label="Home" icon={<HomeIcon size={18} />} active={isActive('/inicio')} onNavigate={() => handleNavigate('/inicio')} />
+                <NavItem label="Home" icon={<HomeIcon size={18} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
                 <NavItem
                   label="Buscar"
                   icon={<SearchIcon size={18} />}
@@ -574,12 +576,13 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   {isQuickMenuOpen ? <X size={19} /> : <Plus size={21} />}
                 </button>
 
-                <NavItem label="Comunidade" icon={<MessageCircle size={18} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
+                <NavItem label="Comunidade" icon={<Users size={18} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
                 <NavItem
-                  label="Perfil"
-                  icon={<Avatar src={activeAvatar} name={activeName} size="xs" />}
-                  active={isActive('/profile') || isActive('/perfil')}
-                  onNavigate={() => handleNavigate(publicProfileHref)}
+                  label="Mensagens"
+                  icon={<MessageCircle size={18} />}
+                  active={isActive('/inbox')}
+                  badge={unreadCount}
+                  onNavigate={() => handleNavigate('/inbox')}
                 />
               </nav>
             </div>
@@ -631,14 +634,21 @@ const NavItem: React.FC<{
   icon: React.ReactNode;
   active: boolean;
   onNavigate: () => void;
-}> = ({ label, icon, active, onNavigate }) => (
-  <button type="button" onClick={onNavigate} className="flex w-12 flex-col items-center gap-0.5 py-1">
+  badge?: number;
+}> = ({ label, icon, active, onNavigate, badge = 0 }) => (
+  <button
+    type="button"
+    onClick={onNavigate}
+    aria-label={badge > 0 ? `${label}, ${badge} novas` : label}
+    className="flex w-12 flex-col items-center gap-0.5 py-1"
+  >
     <span
-      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+      className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
         active ? 'bg-brand-100 text-brand-500' : 'text-slate-400'
       }`}
     >
       {icon}
+      {badge > 0 ? <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" aria-hidden /> : null}
     </span>
     <span className={`text-[9px] leading-none ${active ? 'font-bold text-brand-500' : 'font-medium text-slate-400'}`}>
       {label}

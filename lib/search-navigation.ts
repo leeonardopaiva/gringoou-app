@@ -9,5 +9,5 @@ export const buildSearchPath = (query: string, params?: URLSearchParams) => {
   }
 
   const queryString = nextParams.toString();
-  return queryString ? `/buscar?${queryString}` : '/buscar';
+  return queryString ? `/search?${queryString}` : '/search';
 };

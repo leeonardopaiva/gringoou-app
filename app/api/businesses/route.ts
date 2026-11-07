@@ -170,7 +170,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     business,
-    publicPath: `/negocios/${business.slug}`,
+    publicPath: `/businesses/${business.slug}`,
     linkedAdAccountId: parsed.data.adAccountId ?? null,
     message: 'Business submitted for review',
   });

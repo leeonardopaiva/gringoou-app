@@ -241,7 +241,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
       >
         <form id={BANNER_FORM_ID} onSubmit={submitBanner} className="max-h-[68vh] space-y-5 overflow-y-auto pr-1">
           <section className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Conteudo</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Conteudo</p>
             <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(180px,1fr)]">
               <label className="space-y-2">
                 <span className="text-xs font-bold text-slate-600">Nome interno</span>
@@ -303,7 +303,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
           </section>
 
           <section className="space-y-4 border-t border-slate-100 pt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Publicacao</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Publicacao</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <RegionSelector

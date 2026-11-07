@@ -178,7 +178,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                       </Link>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold text-slate-900">{requesterName}</p>
-                        <p className="truncate text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <p className="truncate text-xs font-semibold uppercase tracking-wide text-slate-400">
                           @{request.requester.username || 'perfil'}
                         </p>
                       </div>

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getAppBaseUrl } from '@/lib/app-url';
 import { normalizeUsernameInput, validateUsernameValue } from '@/lib/username';
 
-export const buildReferralPath = (username: string) => `/convite/${normalizeUsernameInput(username)}`;
+export const buildReferralPath = (username: string) => `/invites/${normalizeUsernameInput(username)}`;
 
 export const buildReferralUrl = (username: string, request?: Request) =>
   `${getAppBaseUrl(request)}${buildReferralPath(username)}`;

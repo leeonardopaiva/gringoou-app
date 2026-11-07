@@ -96,7 +96,7 @@ export function getMockGroupsPage(limit = 24, offset = 0) {
     memberCount: group.members.length,
     createdAt: group.createdAt,
     memberPreviews: group.members.slice(0, 4).map(toMemberPreview),
-    publicPath: `/grupos/${group.slug}`,
+    publicPath: `/groups/${group.slug}`,
   }));
 
   return { groups, hasMore: false, nextOffset: groups.length };
@@ -121,7 +121,7 @@ export function getMockGroupDetail(idOrSlug: string) {
       createdAt: group.createdAt,
       memberCount: group.members.length,
       postCount: 1,
-      publicPath: `/grupos/${group.slug}`,
+      publicPath: `/groups/${group.slug}`,
       canViewContent: true,
       canManage: false,
       canManageAdmins: false,

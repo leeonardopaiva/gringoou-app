@@ -221,7 +221,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
                   {job.salary || "Salario a combinar"}
                 </p>
                 <Link
-                  href={`/vagas/${job.id}`}
+                  href={`/jobs/${job.id}`}
                   className="mt-3 inline-flex rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white"
                 >
                   Ver vaga
@@ -270,7 +270,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
               {businesses.map((business) => <option key={business.id} value={business.id}>{business.name}</option>)}
             </Select>
           ) : (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Você ainda não possui negócio cadastrado. <Link className="font-bold underline" href="/negocios?create=1">Criar negócio</Link></div>
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Você ainda não possui negócio cadastrado. <Link className="font-bold underline" href="/businesses?create=1">Criar negócio</Link></div>
           ) : null}
           <CloudinaryImageField
             value={draft.imageUrl}

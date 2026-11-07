@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { Skeleton } from '@/components/ui/Skeleton';
+import PageHeader from '@/components/navigation/PageHeader';
+import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMessaging, type Conversation as MessagingConversation } from '@/lib/MessagingProvider';
 import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Archive, Bell, Flag, Trash2, X, Send, Loader2 } from 'lucide-react';
@@ -33,20 +35,33 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const [sending, setSending] = useState(false);
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const refreshedForRef = useRef<string | null>(null);
+  const { ref: messagesRef, onScroll: onMessagesScroll, scrollToBottom } = useStickToBottom<HTMLDivElement>(
+    messages,
+    activeConversationId,
+  );
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, activeConversationId]);
+    const query = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
 
-  // Handle URL conversation parameter
+  // Handle URL conversation parameter (conversa recém-criada pode ainda não estar na lista)
   useEffect(() => {
     const convId = searchParams?.get('conversation');
-    if (convId && conversations.some((c) => c.id === convId)) {
-      selectConversation(convId);
+    if (!convId) return;
+    if (conversations.some((c) => c.id === convId)) {
+      if (activeConversationId !== convId) void selectConversation(convId);
       setMobileView('chat');
+    } else if (!loading && refreshedForRef.current !== convId) {
+      refreshedForRef.current = convId;
+      void refreshConversations();
     }
-  }, [searchParams, conversations, selectConversation]);
+  }, [searchParams, conversations, selectConversation, refreshConversations, activeConversationId, loading]);
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
   const filtered = conversations.filter((c) =>
@@ -60,10 +75,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     setDraft('');
     try {
       await sendMessage(text);
+      scrollToBottom(true);
     } finally {
       setSending(false);
     }
-  }, [activeConversationId, draft, sendMessage, sending]);
+  }, [activeConversationId, draft, scrollToBottom, sendMessage, sending]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -89,14 +105,24 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     return conv.messages.filter((m) => m.senderId !== user.id).length;
   };
 
+  /** Sai da Inbox: volta no histórico interno; em acesso direto, cai na Comunidade. */
+  const exitInbox = () => {
+    let sameOrigin = false;
+    try {
+      sameOrigin = Boolean(document.referrer) && new URL(document.referrer).origin === window.location.origin;
+    } catch {
+      sameOrigin = false;
+    }
+    if (sameOrigin && window.history.length > 1) router.back();
+    else router.push('/community');
+  };
+
   const handleBack = () => {
-    if (window.innerWidth < 768) {
+    if (isMobile && mobileView === 'chat') {
       setMobileView('list');
       router.push('/inbox');
-    } else if (activeConv) {
-      selectConversation('');
     } else {
-      router.back();
+      exitInbox();
     }
   };
 
@@ -106,106 +132,67 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     diretas: { label: 'Diretas', icon: UserIconLucide, count: conversations.filter((c) => !c.itemId).length },
   };
 
+  const renderTabs = (variant: 'desktop' | 'mobile') => (
+    <div
+      className={cn(
+        variant === 'desktop'
+          ? 'flex items-center gap-1 rounded-xl bg-slate-100 p-1'
+          : 'flex gap-1 overflow-x-auto pb-2',
+      )}
+      role="tablist"
+      aria-label="Filtrar conversas"
+    >
+      {(['todas', 'marketplace', 'diretas'] as const).map((t) => {
+        const info = tabLabels[t];
+        const Icon = info.icon;
+        return (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={cn(
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+              variant === 'desktop'
+                ? tab === t
+                  ? 'bg-white text-brand-600 shadow-sm'
+                  : 'text-slate-500 hover:bg-white/50 hover:text-slate-700'
+                : tab === t
+                  ? 'border border-brand-200 bg-brand-50 text-brand-600'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+            )}
+          >
+            <Icon size={16} />
+            {info.label}
+            {info.count > 0 && (
+              <span
+                className={cn(
+                  'flex h-5 min-w-[18px] items-center justify-center rounded-full text-[10px] font-bold',
+                  tab === t ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-500',
+                )}
+              >
+                {info.count > 99 ? '99+' : info.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto max-w-[1120px] px-4">
-          <div className="flex h-16 items-center justify-between gap-4">
-            {/* Back button - visible on mobile when in chat view, and on desktop when conversation selected */}
-            {((window.innerWidth < 768 && mobileView === 'chat') || (window.innerWidth >= 768 && activeConv)) && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors"
-                aria-label="Voltar"
-              >
-                <ChevronLeft size={22} />
-              </button>
-            )}
-
-            <div className="flex-1 flex items-center justify-between gap-4 min-w-0">
-              <h1 className="text-xl font-bold text-slate-900 truncate">Caixa de Entrada</h1>
-
-              {/* Desktop tabs */}
-              <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-                {(['todas', 'marketplace', 'diretas'] as const).map((t) => {
-                  const info = tabLabels[t];
-                  const Icon = info.icon;
-                  return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTab(t)}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                        tab === t
-                          ? 'bg-white text-brand-600 shadow-sm'
-                          : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
-                      )}
-                    >
-                      <Icon size={16} />
-                      {info.label}
-                      {info.count > 0 && (
-                        <span className={cn(
-                          'flex h-5 min-w-[18px] items-center justify-center rounded-full text-[10px] font-bold',
-                          tab === t ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-500'
-                        )}>
-                          {info.count > 99 ? '99+' : info.count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Mobile tabs dropdown or actions */}
-            <div className="md:hidden flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setTab(tab === 'todas' ? 'marketplace' : tab === 'marketplace' ? 'diretas' : 'todas')}
-                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
-                aria-label="Alternar aba"
-              >
-                <MoreHorizontal size={22} />
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile tabs */}
-          <div className="md:hidden border-t border-slate-200 mt-2 pt-2">
-            <div className="flex overflow-x-auto gap-1 pb-2 -mx-4 px-4">
-              {(['todas', 'marketplace', 'diretas'] as const).map((t) => {
-                const info = tabLabels[t];
-                const Icon = info.icon;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTab(t)}
-                    className={cn(
-                        'flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap',
-                        tab === t
-                          ? 'bg-brand-50 text-brand-600 border border-brand-200'
-                          : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                      )}
-                  >
-                    <Icon size={16} />
-                    {info.label}
-                    {info.count > 0 && (
-                      <span className={cn(
-                        'flex h-5 min-w-[18px] items-center justify-center rounded-full text-[10px] font-bold',
-                        tab === t ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-500'
-                      )}>
-                        {info.count > 99 ? '99+' : info.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <div className="mx-auto max-w-[1120px] px-4 py-1">
+          <PageHeader
+            title="INBOX"
+            backHref="/community"
+            onBack={handleBack}
+            action={<div className="hidden md:block">{renderTabs('desktop')}</div>}
+          />
+          <div className="md:hidden">{renderTabs('mobile')}</div>
         </div>
       </header>
 
@@ -282,9 +269,9 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             {/* Conversations List */}
             <aside className={cn(
               'flex flex-col gap-2',
-              window.innerWidth < 768 && mobileView === 'chat' && 'hidden'
+              isMobile && mobileView === 'chat' && 'hidden'
             )}>
-              <div className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto pr-1">
+              <div className="flex max-h-[calc(100dvh-12rem)] flex-col gap-2 overflow-y-auto pr-1">
                 {filtered.map((conv) => {
                   const other = getOtherUser(conv);
                   const otherName = other.name || 'Membro da comunidade';
@@ -298,7 +285,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       type="button"
                       onClick={() => {
                         selectConversation(conv.id);
-                        if (window.innerWidth < 768) setMobileView('chat');
+                        if (isMobile) setMobileView('chat');
                       }}
                       className={cn(
                         'flex w-full items-center gap-3 rounded-2xl border bg-white p-3 text-left transition-colors',
@@ -341,11 +328,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             </aside>
 
             {/* Chat Panel */}
-            <div className="flex min-h-[500px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-[70vh]', isMobile && mobileView !== 'chat' && 'hidden')}>
               {activeConv ? (
                 <>
                   {/* Chat Header */}
-                  <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+                  <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
                     <button
                       type="button"
                       onClick={handleBack}
@@ -413,7 +400,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   )}
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+                  <div ref={messagesRef} onScroll={onMessagesScroll} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-white p-4">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 mb-3">
@@ -457,11 +444,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         );
                       })
                     )}
-                    <div ref={messagesEndRef} />
                   </div>
 
                   {/* Input Area */}
-                  <div className="border-t border-slate-200 bg-white px-4 py-3">
+                  <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
                     <div className="flex items-end gap-2">
                       <textarea
                         value={draft}

@@ -241,10 +241,10 @@ export const AdWizard: React.FC = () => {
   if (!account.businessId) {
     return (
       <div className="mx-auto max-w-[720px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Antes de promover</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-wide text-brand-500">Antes de promover</p>
         <h1 className="mt-2 text-2xl font-extrabold text-[#132f40]">Ative a página do seu negócio</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">Revise os dados públicos de <strong>{account.name}</strong>. A página será vinculada a esta conta Ads e enviada para aprovação.</p>
-        <Button className="mt-6" onClick={() => router.push(`/negocios?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>Criar página do negócio</Button>
+        <Button className="mt-6" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>Criar página do negócio</Button>
       </div>
     );
   }

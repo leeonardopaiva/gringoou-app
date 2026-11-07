@@ -162,7 +162,7 @@ export function getMockBusinessesPage(regionKey?: string | null): BusinessesPage
     isFavorite: business.isFavorite,
     canEdit: false,
     isPendingReview: false,
-    publicPath: `/negocios/${business.slug}`,
+    publicPath: `/businesses/${business.slug}`,
   }));
 
   return { businesses, scope: 'local' };
@@ -197,7 +197,7 @@ export function getMockBusinessDetail(idOrSlug: string) {
       canRate: true,
       isFavorite: business.isFavorite,
       viewerRating: null,
-      publicPath: `/negocios/${business.slug}`,
+      publicPath: `/businesses/${business.slug}`,
     },
   };
 }

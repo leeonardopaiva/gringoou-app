@@ -15,7 +15,7 @@ type EventDetailPageProps = {
  * Container da página de detalhe de evento.
  * Se `initialEvent` for fornecido, o EventDetail já terá os dados básicos
  * sem precisar da chamada de API inicial.
- * Rota: /eventos/[id]
+ * Rota: /events/[id]
  */
 const EventDetailPage: React.FC<EventDetailPageProps> = ({
   eventId,

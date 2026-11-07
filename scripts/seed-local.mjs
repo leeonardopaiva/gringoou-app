@@ -254,6 +254,7 @@ async function main() {
         title, company, employmentType,
         description: `${title} na ${company}. Vaga fictícia para desenvolvimento local, com benefícios e horário flexível.`,
         locationLabel: 'Orlando, FL',
+        regionKey: 'orlando-fl',
         createdById: carla.id,
       },
     });
@@ -268,13 +269,59 @@ async function main() {
     ['Vaga em quarto compartilhado', 'Quarto', '$ 500/mês'],
     ['Townhouse 3 quartos', 'Casa', '$ 2.900/mês'],
   ];
-  for (const [title, propertyType, price] of housing) {
+  for (const [index, [title, propertyType, price]] of housing.entries()) {
     await prisma.housing.create({
       data: {
         title, propertyType, price,
         description: `${title}. Anúncio fictício de desenvolvimento local.`,
         locationLabel: 'Orlando, FL',
+        regionKey: 'orlando-fl',
+        imageUrl: `https://picsum.photos/seed/gringoou-housing-${index + 1}/600/400`,
         createdById: ana.id,
+      },
+    });
+  }
+
+  // ---------- Notícias editoriais ----------
+  const news = [
+    ['Novas regras de visto para trabalhadores sazonais', 'Mudanças podem facilitar a entrada de brasileiros no próximo ano fiscal.', 'immigration', 'orlando-fl', 'Portal Imigrante', 1],
+    ['Feira brasileira reúne milhares de pessoas', 'Evento reuniu comida, música e negócios da comunidade em Orlando.', 'community', 'orlando-fl', 'Gringoou Notícias', 5],
+    ['Dólar fecha a semana em alta frente ao real', 'Entenda o impacto para quem envia dinheiro ao Brasil.', 'economy', null, 'Mercado & Câmbio', 9],
+    ['Festival de cinema brasileiro chega a Boston', 'Programação inclui clássicos e estreias com debates.', 'culture', 'boston-ma', 'Cultura BR', 26],
+    ['Guia: como renovar a carteira de motorista na Flórida', 'Passo a passo com documentos exigidos e prazos.', 'headlines', 'orlando-fl', 'Portal Imigrante', 50],
+  ];
+  for (const [title, subtitle, category, regionKey, source, hoursAgo] of news) {
+    await prisma.newsArticle.create({
+      data: {
+        title, subtitle, category, regionKey, source,
+        externalUrl: 'https://example.com/noticia-ficticia',
+        status: 'PUBLISHED',
+        publishedAt: new Date(Date.now() - hoursAgo * 3600 * 1000),
+        authorId: moderator.id,
+      },
+    });
+  }
+  await prisma.newsArticle.create({
+    data: {
+      title: 'Rascunho: nova linha de ônibus ligará bairros brasileiros',
+      subtitle: 'Matéria ainda em edição.', category: 'community', regionKey: 'orlando-fl', source: 'Gringoou Notícias',
+      externalUrl: 'https://example.com/rascunho-ficticio', status: 'DRAFT', authorId: moderator.id,
+    },
+  });
+
+  // ---------- Banners fixos da Home ----------
+  const banners = [
+    ['Bem-vindo ao Gringoou', 'Conecte-se com a comunidade brasileira perto de você.', 'Conhecer', '/community', null],
+    ['Feira Brasileira de Orlando', 'Comida, música e negócios da comunidade neste fim de semana.', 'Ver eventos', '/events', 'orlando-fl'],
+    ['Venda e compre no Marketplace', 'Anuncie o que você não usa mais e encontre ofertas na sua região.', 'Abrir Marketplace', '/marketplace', null],
+  ];
+  for (const [index, [name, description, ctaLabel, targetUrl, regionKey]] of banners.entries()) {
+    await prisma.banner.create({
+      data: {
+        name, headline: name, description, ctaLabel, targetUrl, regionKey,
+        imageUrl: `https://picsum.photos/seed/gringoou-banner-${index + 1}/1200/480`,
+        type: 'LINK', placement: 'HOME',
+        isActive: true, campaignStatus: 'ACTIVE', moderationStatus: 'APPROVED',
       },
     });
   }

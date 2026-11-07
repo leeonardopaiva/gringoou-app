@@ -35,13 +35,13 @@ export async function getProfileData(userId: string): Promise<ProfileInitialData
       identity: businesses[0] ? {
         id: businesses[0].id, name: businesses[0].name, slug: businesses[0].slug || businesses[0].id,
         imageUrl: businesses[0].imageUrl, locationLabel: businesses[0].locationLabel,
-        regionKey: businesses[0].regionKey, publicPath: `/negocios/${businesses[0].slug || businesses[0].id}`,
+        regionKey: businesses[0].regionKey, publicPath: `/businesses/${businesses[0].slug || businesses[0].id}`,
       } : null,
       businesses: businesses.map(({ updatedAt, ...business }) => ({
-        ...business, updatedAt: updatedAt.toISOString(), publicPath: `/negocios/${business.slug || business.id}`,
+        ...business, updatedAt: updatedAt.toISOString(), publicPath: `/businesses/${business.slug || business.id}`,
       })),
       events: events.map(({ startsAt, updatedAt, ...event }) => ({
-        ...event, startsAt: startsAt.toISOString(), updatedAt: updatedAt.toISOString(), publicPath: `/eventos/${event.slug || event.id}`,
+        ...event, startsAt: startsAt.toISOString(), updatedAt: updatedAt.toISOString(), publicPath: `/events/${event.slug || event.id}`,
       })),
     },
   };

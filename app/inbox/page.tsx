@@ -5,7 +5,7 @@ import { InboxClient } from './InboxClient';
 import type { User } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'Caixa de Entrada — Gringoou',
+  title: 'Inbox — Gringoou',
   description: 'Gerencie suas conversas do Marketplace e mensagens diretas.',
 };
 

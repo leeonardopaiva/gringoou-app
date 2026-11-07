@@ -197,7 +197,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
       <div className="whitespace-pre-wrap px-0 pb-0 text-[13px] leading-5 text-slate-700">
         {content.split(/(#[\p{L}\p{N}_-]+)/gu).map((part, index) =>
           /^#[\p{L}\p{N}_-]+$/u.test(part) ? (
-            <Link key={`${part}-${index}`} href={`/buscar?q=${encodeURIComponent(part)}`} className="font-semibold text-brand-600 hover:underline">
+            <Link key={`${part}-${index}`} href={`/search?q=${encodeURIComponent(part)}`} className="font-semibold text-brand-600 hover:underline">
               {part}
             </Link>
           ) : part,
@@ -223,7 +223,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
           rel="noreferrer"
           className="block rounded-3xl border border-slate-100 bg-slate-50 p-4 transition hover:bg-slate-100"
         >
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-400">
             <LinkIcon size={14} />
             Link externo
           </div>

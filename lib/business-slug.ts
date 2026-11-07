@@ -1,7 +1,7 @@
 import { slugify } from '@/lib/slug';
 
 const RESERVED_BUSINESS_SLUGS = new Set([
-  'admin', 'api', 'ads', 'buscar', 'community', 'eventos', 'grupos', 'inicio', 'login',
+  'admin', 'api', 'ads', 'buscar', 'community', 'eventos', 'grupos', 'businesses', 'events', 'jobs', 'housing', 'groups', 'search', 'inicio', 'home', 'news', 'invites', 'login',
   'marketplace', 'moradia', 'negocios', 'perfil', 'profile', 'profissional', 'vagas',
 ]);
 

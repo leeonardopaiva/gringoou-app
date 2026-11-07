@@ -43,7 +43,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
     }
   }
 
-  if (slug.length === 1 && slug[0] === 'negocios' && session?.user?.regionKey) {
+  if (slug.length === 1 && slug[0] === 'businesses' && session?.user?.regionKey) {
     try {
       const page = await getBusinessesPage({ session, regionKey: session.user.regionKey });
       initialBusinessesData = { ...page, regionKey: session.user.regionKey };
@@ -52,7 +52,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
     }
   }
 
-  if (slug.length === 1 && (slug[0] === 'eventos' || slug[0] === 'marketplace') && session?.user?.regionKey) {
+  if (slug.length === 1 && (slug[0] === 'events' || slug[0] === 'marketplace') && session?.user?.regionKey) {
     try {
       const page = await getEventsPage({ session, regionKey: session.user.regionKey });
       initialEventsData = { ...page, regionKey: session.user.regionKey };
@@ -61,7 +61,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
     }
   }
 
-  if (slug.length === 1 && slug[0] === 'vagas') {
+  if (slug.length === 1 && slug[0] === 'jobs') {
     try {
       initialJobsData = await getJobsPage(session?.user?.regionKey);
     } catch (error) {

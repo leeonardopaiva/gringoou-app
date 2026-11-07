@@ -1232,7 +1232,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     <div className="mx-auto max-w-[1500px] animate-in space-y-6 px-4 py-7 fade-in duration-500 sm:px-7 lg:px-8">
       {activeSection !== 'analytics' ? <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Admin · {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</p>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</h1>
           <p className="mt-1 text-sm text-slate-400">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description}</p>
         </div>
@@ -1242,7 +1242,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         <div className="rounded-[32px] bg-gradient-to-br from-[#345CFF] via-[#5B4BFF] to-[#7A54F5] p-5 text-white shadow-xl">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em]">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
                 <ShieldCheck size={14} />
                 Admin
               </div>
@@ -1265,13 +1265,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div className="rounded-3xl bg-white/12 p-4 backdrop-blur-sm">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/70">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
                 Aguardando revisão
               </p>
               <p className="mt-2 text-3xl font-bold">{totalPending}</p>
             </div>
             <div className="rounded-3xl bg-white/12 p-4 backdrop-blur-sm">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/70">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
                 Responsável logado
               </p>
               <p className="mt-2 text-sm font-bold leading-tight">{user.name}</p>
@@ -1304,7 +1304,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         </div>
 
         <div className="hidden">
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
             Seção do painel
           </label>
           <select
@@ -1619,7 +1619,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                     <p className="text-lg font-bold theme-text">{region.label}</p>
                     <StatusBadge label={region.isActive ? 'Ativa' : 'Inativa'} tone={region.isActive ? 'success' : 'neutral'} />
                   </div>
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                     {region.key}
                   </p>
                 </div>
@@ -1830,7 +1830,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">{business.name}</p>
-                          <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                             {business.category}
                           </p>
                         </div>
@@ -1839,7 +1839,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{business.locationLabel}</p>
                         <p>{business.address}</p>
-                        <p>/negocios/{business.slug}</p>
+                        <p>/businesses/{business.slug}</p>
                         <p>
                           Visibilidade: {formatVisibilityScopeLabel(business.visibilityScope)}
                           {business.visibilityRegion?.label ? ` (${business.visibilityRegion.label})` : ''}
@@ -2053,7 +2053,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">{event.title}</p>
-                          <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                             {event.venueName}
                           </p>
                         </div>
@@ -2061,7 +2061,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{event.locationLabel}</p>
-                        <p>/eventos/{event.slug}</p>
+                        <p>/events/{event.slug}</p>
                         <p>Inicio: {formatDateTime(event.startsAt)}</p>
                         <p>
                           Visibilidade: {formatVisibilityScopeLabel(event.visibilityScope)}
@@ -2572,7 +2572,7 @@ const SupportText: React.FC<{ text: string }> = ({ text }) => (
 const ImportMetric: React.FC<{ label: string; value: number }> = ({ label, value }) => (
   <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] px-4 py-4 text-center">
     <p className="text-2xl font-bold text-slate-900">{value}</p>
-    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+    <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
   </div>
 );
 
@@ -2640,7 +2640,7 @@ const QueueCard: React.FC<{
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0 flex-1">
         <p className="text-lg font-bold theme-text">{title}</p>
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">{subtitle}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{subtitle}</p>
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
           {lines.map((line) => (
             <p key={line}>{line}</p>

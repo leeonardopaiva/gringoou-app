@@ -15,6 +15,7 @@ import {
   LayoutGrid,
   LogOut,
   Mail,
+  Newspaper,
   MapPin,
   Menu,
   Megaphone,
@@ -35,6 +36,7 @@ const navigation = [
   { href: '/admin', label: 'Visao Geral', icon: LayoutGrid, exact: true },
   { href: '/admin/ads', label: 'Anuncios Pagos', icon: Megaphone },
   { href: '/admin/moderation', label: 'Moderacao', icon: ShieldCheck },
+  { href: '/admin/news', label: 'Noticias', icon: Newspaper },
   { href: '/admin/businesses', label: 'Negocios', icon: BriefcaseBusiness },
   { href: '/admin/events', label: 'Eventos', icon: CalendarDays },
   { href: '/admin/users', label: 'Usuarios', icon: Users },
@@ -42,13 +44,13 @@ const navigation = [
   { href: '/admin/imports', label: 'Importacoes', icon: CloudUpload },
   { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/convites', label: 'Convites', icon: Ticket },
+  { href: '/admin/invites', label: 'Convites', icon: Ticket },
   { href: '/admin/marketing', label: 'Marketing', icon: Mail },
 ];
 
 const labels: Record<string, string> = {
-  ads: 'Anuncios', moderation: 'Moderacao', businesses: 'Negocios', events: 'Eventos', users: 'Usuarios',
-  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', convites: 'Convites', marketing: 'Marketing',
+  ads: 'Anuncios', moderation: 'Moderacao', news: 'Noticias', businesses: 'Negocios', events: 'Eventos', users: 'Usuarios',
+  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', invites: 'Convites', marketing: 'Marketing',
 };
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {
@@ -89,9 +91,9 @@ export default function AdminShell({ user, children }: { user: User; children: R
     <div className="flex h-full flex-col bg-white">
       <div className="flex h-[74px] items-center border-b border-slate-200 px-6"><GringoouLogo size={25} /></div>
       <div className="flex-1 overflow-y-auto px-3 py-5">
-        <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Principal</p>
+        <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Principal</p>
         <nav className="space-y-1" aria-label="Navegacao administrativa">
-          {navigation.filter((item) => user.role !== UserRole.MODERATOR || item.href === '/admin/moderation').map((item) => {
+          {navigation.filter((item) => user.role !== UserRole.MODERATOR || item.href === '/admin/moderation' || item.href === '/admin/news').map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
@@ -108,7 +110,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
           <Avatar src={user.avatar} name={user.name} size="sm" />
           <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">{user.role === UserRole.MODERATOR ? 'Moderador' : 'Administrador'}</p></div>
         </div>
-        <Link href="/inicio" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar a comunidade</Link>
+        <Link href="/home" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar a comunidade</Link>
         <button type="button" onClick={() => signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><LogOut size={14} />Sair</button>
       </div>
     </div>
@@ -132,7 +134,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
                 <div className="absolute right-0 top-[calc(100%+10px)] z-[80] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10">
                   <Link href={profileHref} onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="sm" /><span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Administrador'}</span></span></Link>
                   <div className="my-1 border-t border-slate-100" />
-                  <Link href="/inicio" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />Voltar a comunidade</Link>
+                  <Link href="/home" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />Voltar a comunidade</Link>
                   <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={16} />Sair</button>
                 </div>
               ) : null}

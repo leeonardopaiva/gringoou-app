@@ -5,7 +5,7 @@ import { Logo } from '@/components/Layout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
-const DEFAULT_NEXT_PATH = '/inicio';
+const DEFAULT_NEXT_PATH = '/home';
 
 // Only allow same-origin, relative redirects to avoid open-redirect abuse via
 // a crafted `?next=` value.

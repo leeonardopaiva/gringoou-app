@@ -81,7 +81,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
 
       {account.business ? (
         <PublicLinksBlock
-          links={[{ id: account.business.id, label: `Página pública de ${account.business.name}`, path: `/negocios/${account.business.slug}` }]}
+          links={[{ id: account.business.id, label: `Página pública de ${account.business.name}`, path: `/businesses/${account.business.slug}` }]}
         />
       ) : null}
 

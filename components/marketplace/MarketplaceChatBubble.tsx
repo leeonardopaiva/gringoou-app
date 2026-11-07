@@ -1,11 +1,30 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { MessageCircle, X, ChevronLeft, Send, MoreHorizontal, Package, Mail, Minus } from 'lucide-react';
+import { MessageCircle, ChevronLeft, ChevronUp, ChevronDown, Send, Package, Mail, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { useMessaging } from '@/lib/MessagingProvider';
+import { useStickToBottom } from '@/hooks/useStickToBottom';
 
+const formatTime = (dateString: string) => {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'agora';
+  if (diffMins < 60) return `${diffMins}min`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+};
+
+/**
+ * Chat flutuante (somente desktop). Começa minimizado como uma barra compacta
+ * "Mensagens"; o mesmo controle abre e recolhe. No mobile a Inbox é acessada pelo
+ * item "Mensagens" do menu inferior.
+ */
 export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user }) => {
   const {
     conversations,
@@ -13,251 +32,133 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
     messages,
     unreadCount,
     floatingChatOpen,
-    floatingChatMinimized,
     selectConversation,
     sendMessage,
     setFloatingChatOpen,
-    setFloatingChatMinimized,
-    startConversation,
-    refreshConversations,
   } = useMessaging();
 
   const [tab, setTab] = useState<'todas' | 'marketplace' | 'diretas'>('todas');
   const [draft, setDraft] = useState('');
-  const [showMenu, setShowMenu] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, activeConversationId]);
+  const { ref: messagesRef, onScroll, scrollToBottom } = useStickToBottom<HTMLDivElement>(messages, activeConversationId);
 
   if (!user) return null;
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
-  const filtered = conversations.filter((c) =>
-    tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true
-  );
+  const filtered = conversations.filter((c) => (tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true));
+  const getOtherUser = (conv: (typeof conversations)[0]) => (conv.buyer.id === user.id ? conv.seller : conv.buyer);
+  const getUnread = (conv: (typeof conversations)[0]) => conv.messages.filter((m) => m.senderId !== user.id).length;
 
   const handleSend = async () => {
     if (!draft.trim() || !activeConversationId) return;
     const text = draft.trim();
     setDraft('');
     await sendMessage(text);
+    scrollToBottom(true);
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  const unreadBadge =
+    unreadCount > 0 ? (
+      <span
+        className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+        aria-label={`${unreadCount} mensagens novas`}
+      >
+        {unreadCount > 9 ? '9+' : unreadCount}
+      </span>
+    ) : null;
 
-    if (diffMins < 1) return 'agora';
-    if (diffMins < 60) return `${diffMins}min`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-  };
-
-  const getOtherUser = (conv: typeof conversations[0]) => {
-    const isBuyer = conv.buyer.id === user.id;
-    return isBuyer ? conv.seller : conv.buyer;
-  };
-
-  const getUnreadCount = (conv: typeof conversations[0]) => {
-    return conv.messages.filter((m) => m.senderId !== user.id).length;
-  };
-
-  // Closed state - floating action button (always visible)
-  if (!floatingChatOpen && !floatingChatMinimized) {
+  // Minimizado: barra compacta.
+  if (!floatingChatOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-[60]">
+      <div className="fixed bottom-4 right-4 z-[60] hidden lg:block">
         <button
           type="button"
-          onClick={() => {
-            setFloatingChatOpen(true);
-            setFloatingChatMinimized(false);
-          }}
-          aria-label="Abrir chat"
-          className="relative flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-xl hover:bg-brand-700 transition-colors focus-visible:ring-4 focus-visible:ring-brand-200"
+          onClick={() => setFloatingChatOpen(true)}
+          aria-expanded={false}
+          aria-label={unreadCount > 0 ? `Abrir mensagens, ${unreadCount} novas` : 'Abrir mensagens'}
+          className="flex h-12 w-60 items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
         >
-          <MessageCircle size={22} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
+          <MessageCircle size={18} className="text-brand-600" aria-hidden />
+          <span className="flex-1 text-left">Mensagens</span>
+          {unreadBadge}
+          <ChevronUp size={18} className="text-slate-400" aria-hidden />
         </button>
       </div>
     );
   }
 
-  // Minimized state - pill button
-  if (floatingChatMinimized && !floatingChatOpen) {
-    return (
-      <div className="fixed bottom-4 right-4 z-[60]">
-        <button
-          type="button"
-          onClick={() => setFloatingChatMinimized(false)}
-          className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-xl hover:bg-slate-50 transition-colors"
-          aria-label="Abrir conversas"
-        >
-          <MessageCircle size={18} className="text-brand-600" />
-          <span>Conversas</span>
-          {unreadCount > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
-      </div>
-    );
-  }
-
-  // Open state - mini chat panel
   return (
-    <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end">
-      <div className="flex w-96 max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+    <div className="fixed bottom-4 right-4 z-[60] hidden lg:block">
+      <div
+        className="flex h-[min(560px,calc(100dvh-6rem))] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        role="dialog"
+        aria-label="Mensagens"
+      >
+        {/* Header: o controle de recolher é o mesmo que abriu o chat. */}
+        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5">
           {activeConv ? (
             <>
               <button
                 type="button"
-                onClick={() => selectConversation('')}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                onClick={() => void selectConversation('')}
+                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 aria-label="Voltar à lista de conversas"
               >
                 <ChevronLeft size={20} />
               </button>
-              <div className="flex-1 min-w-0 flex items-center gap-3">
-                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100">
-                  {activeConv.item ? (
-                    <Package size={18} className="text-brand-600" />
-                  ) : (
-                    <Mail size={18} className="text-brand-600" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">
-                    {getOtherUser(activeConv).name || 'Membro da comunidade'}
-                  </p>
-                  {activeConv.item && (
-                    <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setShowMenu(activeConv.id)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Mais opções"
-                >
-                  <MoreHorizontal size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFloatingChatMinimized(true)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Minimizar"
-                >
-                  <Minus size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFloatingChatOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Fechar"
-                >
-                  <X size={18} />
-                </button>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900">{getOtherUser(activeConv).name || 'Membro da comunidade'}</p>
+                {activeConv.item ? <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p> : null}
               </div>
             </>
           ) : (
-            <>
-              <div className="flex-1" />
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                  <MessageCircle size={18} className="text-brand-600" />
-                  Mensagens
-                </span>
-                <button
-                  type="button"
-                  onClick={() => window.location.href = '/inbox'}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Ver caixa de entrada completa"
-                >
-                  <MoreHorizontal size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFloatingChatMinimized(true)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Minimizar"
-                >
-                  <Minus size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFloatingChatOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                  aria-label="Fechar"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </>
+            <span className="flex min-w-0 flex-1 items-center gap-2 pl-1 text-sm font-semibold text-slate-900">
+              <MessageCircle size={18} className="text-brand-600" aria-hidden />
+              Mensagens
+              {unreadBadge}
+            </span>
           )}
+          <Link
+            href={activeConv ? `/inbox?conversation=${activeConv.id}` : '/inbox'}
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            aria-label="Abrir na Inbox"
+            title="Abrir na Inbox"
+          >
+            <ExternalLink size={17} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setFloatingChatOpen(false)}
+            aria-expanded
+            aria-label="Recolher mensagens"
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+          >
+            <ChevronDown size={20} />
+          </button>
         </div>
 
-        {/* Conversation List / Chat Area */}
         {activeConv ? (
           <>
-            {/* Item Context Bar */}
-            {activeConv.item && (
+            {activeConv.item ? (
               <Link
                 href={activeConv.item.publicPath}
-                className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
+                className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm transition-colors hover:bg-slate-50"
               >
                 {activeConv.item.imageUrl ? (
-                  <img
-                    src={activeConv.item.imageUrl}
-                    alt={activeConv.item.title}
-                    className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                  />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={activeConv.item.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
                 ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                    <Package size={20} className="text-slate-400" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <Package size={18} className="text-slate-400" />
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-slate-900">{activeConv.item.title}</p>
-                  <p className="truncate text-xs text-slate-500">
-                    {activeConv.item.priceCents && !activeConv.item.isFree
-                      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(activeConv.item.priceCents / 100)
-                      : 'Grátis'}
-                  </p>
-                </div>
+                <p className="min-w-0 flex-1 truncate font-medium text-slate-900">{activeConv.item.title}</p>
                 <span className="text-xs font-medium text-brand-600">Ver anúncio</span>
               </Link>
-            )}
+            ) : null}
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+            <div ref={messagesRef} onScroll={onScroll} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 mb-3">
-                    {activeConv.item ? (
-                      <Package size={28} className="text-brand-600" />
-                    ) : (
-                      <MessageCircle size={28} className="text-brand-600" />
-                    )}
-                  </div>
-                  <p className="text-slate-500 text-sm">Nenhuma mensagem ainda</p>
-                  <p className="text-slate-400 text-xs mt-1">Comece a conversa sobre o anúncio</p>
-                </div>
+                <p className="py-12 text-center text-sm text-slate-400">Nenhuma mensagem ainda</p>
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.senderId === user.id;
@@ -265,19 +166,12 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                     <div key={msg.id} className={cn('flex', isMine ? 'justify-end' : 'justify-start')}>
                       <div
                         className={cn(
-                          'max-w-[75%] rounded-2xl px-4 py-2',
-                          isMine
-                            ? 'rounded-br-md bg-brand-600 text-white shadow-sm'
-                            : 'rounded-bl-md bg-slate-100 text-slate-900 shadow-sm'
+                          'max-w-[75%] rounded-2xl px-4 py-2 shadow-sm',
+                          isMine ? 'rounded-br-md bg-brand-600 text-white' : 'rounded-bl-md bg-slate-100 text-slate-900',
                         )}
                       >
                         <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
-                        <p
-                          className={cn(
-                            'mt-1.5 text-right text-[10px]',
-                            isMine ? 'text-brand-100' : 'text-slate-400'
-                          )}
-                        >
+                        <p className={cn('mt-1 text-right text-[10px]', isMine ? 'text-brand-100' : 'text-slate-400')}>
                           {formatTime(msg.createdAt)}
                         </p>
                       </div>
@@ -285,11 +179,9 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                   );
                 })
               )}
-              <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="border-t border-slate-200 bg-white px-4 py-3">
+            <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3">
               <div className="flex items-end gap-2">
                 <textarea
                   value={draft}
@@ -303,14 +195,14 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                   placeholder="Escreva uma mensagem..."
                   rows={1}
                   maxLength={2000}
-                  className="flex-1 min-h-[44px] max-h-32 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400"
+                  className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                   aria-label="Mensagem"
                 />
                 <button
                   type="button"
                   onClick={() => void handleSend()}
                   disabled={!draft.trim()}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brand-300"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Enviar mensagem"
                 >
                   <Send size={18} />
@@ -320,63 +212,32 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           </>
         ) : (
           <>
-            {/* Tabs */}
-            <div className="flex border-b border-slate-200 bg-white">
+            <div className="flex shrink-0 border-b border-slate-200 bg-white" role="tablist" aria-label="Filtrar conversas">
               {(['todas', 'marketplace', 'diretas'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
+                  role="tab"
+                  aria-selected={tab === t}
                   onClick={() => setTab(t)}
                   className={cn(
-                    'flex-1 py-3 text-sm font-semibold capitalize transition-colors relative',
-                    tab === t
-                      ? 'text-brand-600'
-                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                    'flex-1 py-2.5 text-sm font-semibold transition-colors',
+                    tab === t ? 'text-brand-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                   )}
                 >
-                  {t === 'todas' && <MessageCircle size={16} className="inline-block mr-1" />}
-                  {t === 'marketplace' && <Package size={16} className="inline-block mr-1" />}
-                  {t === 'diretas' && <Mail size={16} className="inline-block mr-1" />}
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t === 'todas' ? 'Todas' : t === 'marketplace' ? 'Marketplace' : 'Diretas'}
                 </button>
               ))}
             </div>
 
-            {/* Conversation List */}
-            <div className="flex-1 overflow-y-auto max-h-[500px]">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-12 px-6 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-3">
-                    {tab === 'marketplace' ? (
-                      <Package size={28} className="text-slate-400" />
-                    ) : tab === 'diretas' ? (
-                      <Mail size={28} className="text-slate-400" />
-                    ) : (
-                      <MessageCircle size={28} className="text-slate-400" />
-                    )}
+                <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+                    {tab === 'diretas' ? <Mail size={24} className="text-slate-400" /> : <Package size={24} className="text-slate-400" />}
                   </div>
-                  <p className="text-slate-500 text-sm font-medium">
-                    {tab === 'marketplace'
-                      ? 'Nenhuma conversa do Marketplace'
-                      : tab === 'diretas'
-                      ? 'Nenhuma conversa direta'
-                      : 'Nenhuma conversa por aqui'}
-                  </p>
-                  <p className="text-slate-400 text-xs mt-1 max-w-xs">
-                    {tab === 'marketplace'
-                      ? 'Quando você envia uma mensagem sobre um anúncio, a conversa aparece aqui'
-                      : tab === 'diretas'
-                      ? 'Conversas diretas com outros membros aparecerão aqui'
-                      : 'Suas conversas aparecerão aqui quando você começar a conversar'}
-                  </p>
-                  {tab === 'todas' && (
-                    <Link
-                      href="/marketplace"
-                      className="mt-4 inline-flex items-center rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-                    >
-                      Explorar anúncios
-                    </Link>
-                  )}
+                  <p className="text-sm font-medium text-slate-500">Nenhuma conversa por aqui</p>
+                  <p className="mt-1 max-w-xs text-xs text-slate-400">Suas conversas aparecerão aqui quando você começar a conversar.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
@@ -384,47 +245,35 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                     const other = getOtherUser(conv);
                     const otherName = other.name || 'Membro da comunidade';
                     const lastMsg = conv.messages[0];
-                    const convUnread = getUnreadCount(conv);
-                    const isActive = conv.id === activeConversationId;
-
+                    const convUnread = getUnread(conv);
                     return (
                       <button
                         key={conv.id}
                         type="button"
-                        onClick={() => selectConversation(conv.id)}
-                        className={cn(
-                          'w-full flex items-center gap-3 p-3 text-left transition-colors',
-                          isActive ? 'bg-brand-50 border-l-2 border-brand-600' : 'hover:bg-slate-50'
-                        )}
+                        onClick={() => void selectConversation(conv.id)}
+                        className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-slate-50"
                       >
-                        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100">
+                        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100">
                           {other.image ? (
-                            <img src={other.image} alt={otherName} className="h-full w-full object-cover" />
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={other.image} alt="" className="h-full w-full object-cover" />
                           ) : (
                             <span className="text-sm font-bold text-brand-600">{otherName.slice(0, 1).toUpperCase()}</span>
                           )}
-                          {convUnread > 0 && (
-                            <span className="absolute -bottom-1 -right-1 flex h-5 min-w-[18px] items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white px-1">
-                              {convUnread > 9 ? '9+' : convUnread}
-                            </span>
-                          )}
+                          {convUnread > 0 ? <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" aria-hidden /> : null}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="truncate font-medium text-slate-900">{otherName}</p>
+                            <p className="truncate text-sm font-medium text-slate-900">{otherName}</p>
                             <p className="shrink-0 text-[10px] text-slate-400">{formatTime(conv.updatedAt)}</p>
                           </div>
-                          {conv.item && (
-                            <p className="mt-0.5 truncate text-xs text-slate-500 flex items-center gap-1">
-                              <Package size={10} className="text-slate-400" />
-                              {conv.item.title}
-                            </p>
-                          )}
-                          {lastMsg && (
+                          {conv.item ? <p className="mt-0.5 truncate text-xs text-slate-500">{conv.item.title}</p> : null}
+                          {lastMsg ? (
                             <p className="mt-0.5 truncate text-[11px] text-slate-400">
-                              {lastMsg.senderId === user.id ? 'Você: ' : ''}{lastMsg.content}
+                              {lastMsg.senderId === user.id ? 'Você: ' : ''}
+                              {lastMsg.content}
                             </p>
-                          )}
+                          ) : null}
                         </div>
                       </button>
                     );
@@ -432,84 +281,9 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                 </div>
               )}
             </div>
-
-            {/* CTA to Inbox */}
-            <div className="border-t border-slate-200 bg-white px-4 py-3">
-              <button
-                type="button"
-                onClick={() => window.location.href = '/inbox'}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-              >
-                <MessageCircle size={18} className="text-brand-600" />
-                Ver caixa de entrada completa
-              </button>
-            </div>
           </>
         )}
-
-        {/* Context Menu */}
-        {showMenu && activeConv && (
-          <div
-            className="fixed bottom-20 right-4 z-60 w-56 rounded-xl border border-slate-200 bg-white shadow-xl"
-            role="menu"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setShowMenu(null);
-              }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              role="menuitem"
-            >
-              <Mail size={16} />
-              Arquivar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowMenu(null);
-              }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              role="menuitem"
-            >
-              <Mail size={16} />
-              Marcar como não lida
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowMenu(null);
-              }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              role="menuitem"
-            >
-              <Mail size={16} />
-              Denunciar
-            </button>
-            <hr className="my-1 border-slate-100" />
-            <button
-              type="button"
-              onClick={() => {
-                setShowMenu(null);
-              }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-              role="menuitem"
-            >
-              <Mail size={16} />
-              Excluir conversa
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* Click outside to close menu - only render when menu is open */}
-      {showMenu && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowMenu(null)}
-          aria-hidden="true"
-        />
-      )}
     </div>
   );
 };

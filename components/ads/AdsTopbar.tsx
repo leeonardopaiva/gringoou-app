@@ -67,7 +67,7 @@ export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
                 </div>
                 <div className="border-t border-slate-100 p-2">
                   <Link href="/ads/settings" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Settings size={17} />Configurações do negócio</Link>
-                  <Link href="/inicio" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Users size={17} />Voltar à comunidade</Link>
+                  <Link href="/home" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Users size={17} />Voltar à comunidade</Link>
                   <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={17} />Sair</button>
                 </div>
               </div>

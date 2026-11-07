@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { User } from '@/types';
 
 export type Conversation = {
@@ -53,6 +54,7 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const router = useRouter();
   const [floatingChatOpen, setFloatingChatOpen] = useState(false);
   const [floatingChatMinimized, setFloatingChatMinimized] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -161,11 +163,11 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
       const data = await res.json();
       if (res.ok || res.status === 409) {
         await refreshConversations();
-        setFloatingChatOpen(true);
-        if (data.conversationId) await selectConversation(data.conversationId);
+        // Toda conversa (anúncio ou direta) abre na Inbox unificada.
+        router.push(data.conversationId ? `/inbox?conversation=${data.conversationId}` : '/inbox');
       }
     } catch { /* */ }
-  }, [user, refreshConversations, selectConversation]);
+  }, [user, refreshConversations, router]);
 
   const value: MessagingContextType = {
     conversations, activeConversationId, messages, unreadCount,

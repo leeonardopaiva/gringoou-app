@@ -119,7 +119,7 @@ export async function GET(_request: Request, context: RouteContext) {
       canRate,
       isFavorite: business.favorites.length > 0,
       viewerRating: business.ratings[0]?.stars ?? null,
-      publicPath: `/negocios/${business.slug}`,
+      publicPath: `/businesses/${business.slug}`,
     },
   });
 }

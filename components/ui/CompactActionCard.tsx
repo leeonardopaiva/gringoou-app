@@ -19,7 +19,7 @@ export function CompactActionCard({ icon, eyebrow, title, description, trailing,
   const content = <>
     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm">{icon}</span>
     <span className="min-w-0 flex-1 text-left">
-      {eyebrow ? <span className="block text-[9px] font-bold uppercase tracking-[0.14em] text-white/70">{eyebrow}</span> : null}
+      {eyebrow ? <span className="block text-[9px] font-bold uppercase tracking-wide text-white/70">{eyebrow}</span> : null}
       <span className="block truncate text-xs font-bold text-white">{title}</span>
       {description ? <span className="mt-0.5 block truncate text-[10px] text-white/75">{description}</span> : null}
     </span>

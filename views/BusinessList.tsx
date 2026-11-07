@@ -412,7 +412,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
               avatarAlt={business.name}
               title={business.name}
               subtitle={`${business.category} · ${business.locationLabel || business.address}`}
-              href={`/negocios/${business.slug || business.id}`}
+              href={`/businesses/${business.slug || business.id}`}
               badge={isPendingReview ? <Badge tone="destaque">Em analise</Badge> : <Badge tone="primary">Negocio</Badge>}
               action={!isPendingReview ? (
                 <button
@@ -426,7 +426,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
               ) : undefined}
             />
             {business.description ? <FeedCard.Content text={business.description} /> : null}
-            <Link href={`/negocios/${business.slug || business.id}`} aria-label={`Abrir ${business.name}`}>
+            <Link href={`/businesses/${business.slug || business.id}`} aria-label={`Abrir ${business.name}`}>
               <FeedCard.Media
                 src={business.imageUrl || `https://picsum.photos/seed/${business.id}/800/600`}
                 alt={business.name}
@@ -440,7 +440,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 </p>
               </div>
               <Link
-                href={business.canEdit ? `/negocios/${business.slug || business.id}/gerenciar` : `/negocios/${business.slug || business.id}`}
+                href={business.canEdit ? `/businesses/${business.slug || business.id}/gerenciar` : `/businesses/${business.slug || business.id}`}
                 className="shrink-0 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
               >
                 {business.canEdit ? 'Gerenciar' : 'Ver negócio'}

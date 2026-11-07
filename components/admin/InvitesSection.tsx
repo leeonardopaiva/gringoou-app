@@ -246,7 +246,7 @@ const InvitesSection: React.FC = () => {
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Admin · Convites</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Convites</p>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40]">Convites e lista de espera</h1>
           <p className="mt-1 text-sm text-slate-400">Gerencie o acesso ao Private Beta.</p>
         </div>

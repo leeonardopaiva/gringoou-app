@@ -91,7 +91,7 @@ function mapEventListItem(
     isFavorite: Boolean(viewerId && raw.favorites.some((f) => f.userId === viewerId)),
     canEdit,
     isPendingReview: raw.status === EventStatus.PENDING_REVIEW,
-    publicPath: `/eventos/${raw.slug || raw.id}`,
+    publicPath: `/events/${raw.slug || raw.id}`,
     interestCount: raw._count.favorites,
     interestPreview: canViewInterestedUsers
       ? raw.favorites.map((f) => f.user).filter((u): u is { id: string; name: string | null; image: string | null } => Boolean(u))
@@ -213,7 +213,7 @@ export function makePrismaEventRepository(prisma: PrismaClient): EventRepository
         canEdit,
         canRate,
         createdByName: event.createdBy?.name ?? 'Comunidade Gringoou',
-        publicPath: `/eventos/${event.slug || event.id}`,
+        publicPath: `/events/${event.slug || event.id}`,
         status: event.status,
         ownershipVerifiedAt: event.ownershipVerifiedAt?.toISOString() ?? null,
         businessId: event.businessId,
