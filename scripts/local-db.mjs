@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import net from 'node:net';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import EmbeddedPostgres from 'embedded-postgres';
 
 const ROOT = process.cwd();
@@ -38,8 +38,59 @@ const isPortOpen = () =>
     });
   });
 
-// Se o banco já estiver rodando (ex.: outro terminal), reaproveita em vez de subir outro.
-const alreadyRunning = await isPortOpen();
+/** PID do processo principal gravado pelo Postgres (ou null se não houver). */
+const readPostmasterPid = () => {
+  try {
+    const first = fs.readFileSync(path.join(DATA_DIR, 'postmaster.pid'), 'utf8').split(/\r?\n/)[0];
+    const pid = Number(first);
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch {
+    return null;
+  }
+};
+
+const isPidAlive = (pid) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code === 'EPERM';
+  }
+};
+
+/**
+ * Encerra processos postgres.exe do binário embutido DESTE projeto que ficaram órfãos
+ * (ex.: o principal morreu mas um worker segurou o socket). Não toca em outros Postgres.
+ */
+const killOrphanedProjectPostgres = () => {
+  if (process.platform !== 'win32') return;
+  const root = ROOT.replace(/\\/g, '/').toLowerCase();
+  const script = `
+    $root = '${root.replace(/'/g, "''")}'
+    Get-CimInstance Win32_Process -Filter "Name='postgres.exe'" |
+      Where-Object { ($_.CommandLine -replace '\\\\','/').ToLower() -like "*$root/node_modules/@embedded-postgres*" } |
+      ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  `;
+  spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], { stdio: 'ignore' });
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// "Rodando" = o processo principal gravado em postmaster.pid está vivo E a porta responde.
+// Só a porta aberta não basta: um worker órfão pode manter o socket aceitando conexões sem ninguém atendendo.
+const postmasterPid = readPostmasterPid();
+let alreadyRunning = postmasterPid !== null && isPidAlive(postmasterPid) && (await isPortOpen());
+
+if (!alreadyRunning && (postmasterPid !== null || (await isPortOpen()))) {
+  console.log('[db:local] Restos de uma execução anterior detectados; limpando...');
+  killOrphanedProjectPostgres();
+  for (let i = 0; i < 10 && (await isPortOpen()); i++) await sleep(500);
+  if (await isPortOpen()) {
+    console.error(`[db:local] A porta ${PORT} está ocupada por outro programa. Libere-a ou defina LOCAL_DB_PORT.`);
+    process.exit(1);
+  }
+  fs.rmSync(path.join(DATA_DIR, 'postmaster.pid'), { force: true });
+}
 let startedByUs = false;
 
 if (reset && alreadyRunning) {
