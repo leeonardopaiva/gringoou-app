@@ -5,6 +5,7 @@ import {
   Copy,
   ExternalLink,
   Globe2,
+  ArrowLeft,
   Heart,
   Images,
   Instagram,
@@ -18,6 +19,7 @@ import {
   X,
   Send,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -105,6 +107,19 @@ const normalizeWhatsappLink = (value: string) => {
 const GALLERY_PREVIEW_LIMIT = 8;
 
 const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
+  const router = useRouter();
+  /** Volta no histórico interno; em acesso direto (link externo), cai na lista de negócios. */
+  const handleGoBack = () => {
+    let sameOrigin = false;
+    try {
+      sameOrigin = Boolean(document.referrer) && new URL(document.referrer).origin === window.location.origin;
+    } catch {
+      sameOrigin = false;
+    }
+    if (sameOrigin && window.history.length > 1) router.back();
+    else router.push('/businesses');
+  };
+
   const { showToast } = useToast();
   const { startConversation } = useMessaging();
 
@@ -451,6 +466,16 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+        <button
+          type="button"
+          onClick={handleGoBack}
+          aria-label="Voltar"
+          title="Voltar"
+          className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur transition hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <ArrowLeft size={18} aria-hidden />
+        </button>
 
         <div className="absolute right-4 top-4 flex gap-2">
           <button

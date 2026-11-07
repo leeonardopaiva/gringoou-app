@@ -13,9 +13,11 @@ import {
   Plus,
   UserCheck,
   UserPlus,
+  UserX,
   Users,
   UsersRound,
 } from 'lucide-react';
+import { StatusPage } from '../components/ui/StatusPage';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
@@ -311,10 +313,13 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <Logo size="lg" />
               </div>
             ) : null}
-            <div className="rounded-[32px] border border-red-100 bg-red-50 p-6 text-center">
-              <h1 className="text-xl font-bold text-red-700">Perfil indisponivel</h1>
-              <p className="mt-3 text-sm text-red-600">{error}</p>
-            </div>
+            <StatusPage
+              icon={<UserX size={30} />}
+              title="Perfil indisponível"
+              description={error}
+              actions={[{ label: 'Ir para o início', href: viewer ? '/home' : '/login' }]}
+              className="!px-0 !py-6"
+            />
           </div>
         </div>
       </div>

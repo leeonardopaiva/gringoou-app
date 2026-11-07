@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ExternalLink, Newspaper, Pencil, Plus, RefreshCcw, Trash2 } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { Badge, Button, Modal } from '@/components/ui';
+import { Badge, Button, Modal, Skeleton } from '@/components/ui';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@/lib/news';
 import type { NewsAdminArticleContract } from '@/lib/content-contracts';
 
@@ -241,7 +241,7 @@ export default function NewsEditorialSection() {
         </div>
 
         {loading ? (
-          <p className="py-8 text-sm text-slate-500">Carregando notícias...</p>
+          <div className="mt-5 space-y-3" role="status" aria-label="Carregando notícias"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>
         ) : items.length === 0 ? (
           <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Nenhuma notícia encontrada.</div>
         ) : (

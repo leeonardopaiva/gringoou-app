@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Layout from './components/Layout';
+import { PageLoader } from './components/ui/PageLoader';
 import AppContent from './components/app/AppContent';
 import AuthWorkspace from './components/app/AuthWorkspace';
 import { PhoneVerificationGate } from './components/app/PhoneVerificationGate';
@@ -495,7 +496,7 @@ const App: React.FC<{
   // Only hide the app before the first session read. A background session refresh
   // must not unmount the profile wizard, which keeps its answers in local state.
   if (status === 'loading' && !session) {
-    return null;
+    return <PageLoader />;
   }
 
   if (accountDeleted) {

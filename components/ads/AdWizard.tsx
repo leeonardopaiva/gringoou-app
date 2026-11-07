@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui';
+import { Button, Skeleton } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { adCreativeStepSchema, adGoalStepSchema, adReachStepSchema, type AdWizardData } from '@/lib/ads/validation';
 import { CheckoutStep, AD_PAYMENT_FORM_ID } from './steps/CheckoutStep';
@@ -235,7 +235,7 @@ export const AdWizard: React.FC = () => {
   };
 
   if (accountLoading || !account || !hydrated) {
-    return <div className="mx-auto max-w-[1080px] rounded-3xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Carregando conta comercial...</div>;
+    return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-white p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
   }
 
   if (!account.businessId) {

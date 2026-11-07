@@ -13,6 +13,8 @@ import Profile from '@/views/Profile';
 import SearchResults from '@/views/SearchResults';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
 import { parseAppRoute } from '@/lib/app-route';
+import { Compass } from 'lucide-react';
+import { StatusPage } from '@/components/ui/StatusPage';
 import type { CommunityInitialData, HomeInitialData, JobsInitialData, NewsInitialData, ProfileInitialData } from '@/lib/content-contracts';
 
 type UserWorkspaceProps = {
@@ -80,8 +82,22 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
       );
     case 'groups':
       return <GroupsDirectory user={currentUser} />;
-    default:
+    case 'home':
+    case 'invites':
       return <Home user={currentUser} initialData={initialHomeData} />;
+    default:
+      return (
+        <StatusPage
+          icon={<Compass size={30} />}
+          code="404"
+          title="Página não encontrada"
+          description="O endereço que você tentou acessar não existe ou foi movido."
+          actions={[
+            { label: 'Ir para o início', href: '/home' },
+            { label: 'Ver a comunidade', href: '/community', variant: 'secondary' },
+          ]}
+        />
+      );
   }
 };
 

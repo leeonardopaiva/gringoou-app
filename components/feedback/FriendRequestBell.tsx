@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell, Check, X } from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
@@ -154,8 +155,8 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
 
           <div className="max-h-[360px] space-y-1.5 overflow-y-auto">
             {loading && notificationCount === 0 ? (
-              <div className="rounded-xl px-4 py-5 text-center text-sm font-medium text-slate-500">
-                Carregando...
+              <div className="flex justify-center rounded-xl px-4 py-5" role="status" aria-label="Carregando notificações">
+                <Spinner size="sm" />
               </div>
             ) : notificationCount === 0 ? (
               <div className="rounded-xl px-4 py-5 text-center text-sm font-medium text-slate-500">

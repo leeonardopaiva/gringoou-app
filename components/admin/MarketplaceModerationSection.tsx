@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, RefreshCcw, ShoppingBag, XCircle } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { Badge, Button } from '@/components/ui';
+import { Badge, Button, Skeleton } from '@/components/ui';
 import type {
   MarketplaceModerationDecision,
   MarketplaceModerationItem,
@@ -117,7 +117,7 @@ export default function MarketplaceModerationSection() {
       </div>
 
       {loading ? (
-        <p className="py-8 text-sm text-slate-500">Carregando anúncios...</p>
+        <div className="mt-5 space-y-3" role="status" aria-label="Carregando anúncios"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>
       ) : items.length === 0 ? (
         <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
           Nenhum anúncio nesta lista.

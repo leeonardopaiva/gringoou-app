@@ -1,44 +1,23 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Logo } from '@/components/Layout';
+import { ShieldAlert } from 'lucide-react';
+import { StatusPage } from '@/components/ui/StatusPage';
 
 export const metadata: Metadata = {
   title: 'Gringoou - acesso bloqueado',
-  description: 'Seu acesso esta bloqueado no momento.',
+  description: 'Seu acesso está bloqueado no momento.',
 };
 
 export default function AccessBlockedPage() {
   return (
-    <main className="min-h-screen bg-bg px-6 py-10">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-2xl items-center justify-center">
-        <div className="w-full max-w-lg rounded-[32px] bg-white px-8 py-10 text-center shadow-sm sm:px-10 sm:py-12">
-          <div className="flex justify-center">
-            <Logo size="lg" />
-          </div>
-
-          <p className="mt-8 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-            Acesso bloqueado
-          </p>
-          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-slate-500 sm:text-base">
-            Sua conta nao esta liberada para acessar o aplicativo neste momento.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <Link
-              href="/login"
-              className="inline-flex h-12 w-full max-w-[280px] items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-semibold text-white shadow-sm"
-            >
-              Voltar ao login
-            </Link>
-            <Link
-              href="/login?switchAccount=1"
-              className="inline-flex h-12 w-full max-w-[280px] items-center justify-center rounded-full border border-brand-100 bg-surface px-6 text-sm font-semibold text-brand-500 hover:bg-brand-100"
-            >
-              Trocar conta Google
-            </Link>
-          </div>
-        </div>
-      </div>
-    </main>
+    <StatusPage
+      fullScreen
+      icon={<ShieldAlert size={30} />}
+      title="Acesso bloqueado"
+      description="Sua conta não está liberada para acessar o aplicativo neste momento. Se acredita que é um engano, entre em contato com o suporte."
+      actions={[
+        { label: 'Voltar ao login', href: '/login' },
+        { label: 'Trocar conta Google', href: '/login?switchAccount=1', variant: 'secondary' },
+      ]}
+    />
   );
 }
