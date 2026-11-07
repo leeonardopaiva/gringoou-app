@@ -5,7 +5,6 @@ import {
   Copy,
   ExternalLink,
   Globe2,
-  ArrowLeft,
   Heart,
   Images,
   Instagram,
@@ -19,7 +18,7 @@ import {
   X,
   Send,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { BackButton } from '../components/ui/BackButton';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -63,6 +62,9 @@ type BusinessDetailState = {
   canRate: boolean;
   locationLabel: string;
   createdByName: string;
+  /** Id da pessoa dona do negócio (destino das mensagens). */
+  ownerId: string;
+  isOwner: boolean;
   canEdit: boolean;
   publicPath: string;
   status: string;
@@ -89,6 +91,8 @@ const defaultBusiness: BusinessDetailState = {
   canRate: false,
   locationLabel: '',
   createdByName: 'Comunidade local',
+  ownerId: '',
+  isOwner: false,
   canEdit: false,
   publicPath: '',
   status: 'PUBLISHED',
@@ -107,21 +111,8 @@ const normalizeWhatsappLink = (value: string) => {
 const GALLERY_PREVIEW_LIMIT = 8;
 
 const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
-  const router = useRouter();
-  /** Volta no histórico interno; em acesso direto (link externo), cai na lista de negócios. */
-  const handleGoBack = () => {
-    let sameOrigin = false;
-    try {
-      sameOrigin = Boolean(document.referrer) && new URL(document.referrer).origin === window.location.origin;
-    } catch {
-      sameOrigin = false;
-    }
-    if (sameOrigin && window.history.length > 1) router.back();
-    else router.push('/businesses');
-  };
-
   const { showToast } = useToast();
-  const { startConversation } = useMessaging();
+  const { startDirectConversation } = useMessaging();
 
   const [business, setBusiness] = useState<BusinessDetailState>(defaultBusiness);
   const [loading, setLoading] = useState(true);
@@ -183,6 +174,8 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             canRate: Boolean(payload.business.canRate),
             locationLabel: payload.business.locationLabel || '',
             createdByName: payload.business.createdBy?.name || 'Comunidade local',
+            ownerId: payload.business.createdById || '',
+            isOwner: Boolean(payload.business.isOwner),
             canEdit: Boolean(payload.business.canEdit),
             publicPath: payload.business.publicPath || `/businesses/${payload.business.slug || payload.business.id}`,
             status: payload.business.status || 'PUBLISHED',
@@ -467,15 +460,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        <button
-          type="button"
-          onClick={handleGoBack}
-          aria-label="Voltar"
-          title="Voltar"
-          className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur transition hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-        >
-          <ArrowLeft size={18} aria-hidden />
-        </button>
+        <BackButton fallbackHref="/businesses" className="h-9 w-9" />
 
         <div className="absolute right-4 top-4 flex gap-2">
           <button
@@ -628,22 +613,30 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             </a>
           ) : null}
 
-          {/* Mensagem interna do Gringoou */}
-          <button
-            type="button"
-            onClick={() => {
-              startConversation(business.id, null, `Olá! Tenho interesse no negócio "${business.name}".`);
-            }}
-            disabled={contacting}
-            className="w-full flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send size={18} />
-            <span>Enviar mensagem pelo Gringoou</span>
-            {contacting && <span className="animate-spin">⏳</span>}
-          </button>
-          <p className="text-center text-[11px] text-slate-400">
-            A conversa acontece dentro do Gringoou, sem abrir seus contatos.
-          </p>
+          {/* Mensagem interna: qualquer pessoa (inclusive administradores) pode conversar; só o dono não fala consigo mesmo. */}
+          {!business.isOwner && business.ownerId ? (
+            <>
+              <button
+                type="button"
+                onClick={async () => {
+                  setContacting(true);
+                  const started = await startDirectConversation(business.ownerId);
+                  if (!started) {
+                    setContacting(false);
+                    showToast('Não foi possível iniciar a conversa agora. Tente novamente.', 'error');
+                  }
+                }}
+                disabled={contacting}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Send size={18} />
+                <span>{contacting ? 'Abrindo conversa...' : 'Iniciar conversa'}</span>
+              </button>
+              <p className="text-center text-[11px] text-slate-400">
+                A conversa acontece dentro do Gringoou, sem abrir seus contatos.
+              </p>
+            </>
+          ) : null}
         </section>
 
         <section className="space-y-3 border-b border-slate-100 pb-7">

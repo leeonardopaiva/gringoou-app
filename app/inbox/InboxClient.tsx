@@ -129,15 +129,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const tabLabels = {
     todas: { label: 'Todas', icon: MessageCircle, count: conversations.length },
     marketplace: { label: 'Marketplace', icon: Package, count: conversations.filter((c) => c.itemId).length },
-    diretas: { label: 'Diretas', icon: UserIconLucide, count: conversations.filter((c) => !c.itemId).length },
+    diretas: { label: 'Pessoas', icon: UserIconLucide, count: conversations.filter((c) => !c.itemId).length },
   };
 
   const renderTabs = (variant: 'desktop' | 'mobile') => (
     <div
       className={cn(
-        variant === 'desktop'
-          ? 'flex items-center gap-1 rounded-xl bg-slate-100 p-1'
-          : 'flex gap-1 overflow-x-auto pb-2',
+        'flex items-center gap-2',
+        variant === 'mobile' && 'overflow-x-auto pb-2',
       )}
       role="tablist"
       aria-label="Filtrar conversas"
@@ -153,14 +152,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             aria-selected={tab === t}
             onClick={() => setTab(t)}
             className={cn(
-              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-              variant === 'desktop'
-                ? tab === t
-                  ? 'bg-white text-brand-600 shadow-sm'
-                  : 'text-slate-500 hover:bg-white/50 hover:text-slate-700'
-                : tab === t
-                  ? 'border border-brand-200 bg-brand-50 text-brand-600'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200',
+              tab === t
+                ? 'bg-brand-500 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
             )}
           >
             <Icon size={16} />
@@ -169,7 +164,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               <span
                 className={cn(
                   'flex h-5 min-w-[18px] items-center justify-center rounded-full text-[10px] font-bold',
-                  tab === t ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-500',
+                  tab === t ? 'bg-white/25 text-white' : 'bg-white text-slate-500',
                 )}
               >
                 {info.count > 99 ? '99+' : info.count}
@@ -188,6 +183,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
         <div className="mx-auto max-w-[1120px] px-4 py-1">
           <PageHeader
             title="INBOX"
+            titleClassName="text-brand-600"
             backHref="/community"
             onBack={handleBack}
             action={<div className="hidden md:block">{renderTabs('desktop')}</div>}
@@ -240,14 +236,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   tab === 'marketplace'
                     ? 'Nenhuma conversa do Marketplace'
                     : tab === 'diretas'
-                    ? 'Nenhuma conversa direta'
+                    ? 'Nenhuma conversa com pessoas'
                     : 'Nenhuma conversa por aqui'
                 }
                 description={
                   tab === 'marketplace'
                     ? 'Quando você envia uma mensagem sobre um anúncio, a conversa aparece aqui — tanto para comprador quanto para vendedor.'
                     : tab === 'diretas'
-                    ? 'Conversas diretas com outros membros aparecerão aqui.'
+                    ? 'Para conversar com alguém, abra o perfil da pessoa e toque em "Enviar mensagem".'
                     : 'Suas conversas aparecerão aqui quando você começar a conversar.'
                 }
                 action={
@@ -341,22 +337,42 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     >
                       <ChevronLeft size={20} />
                     </button>
-                    <div className="flex-1 min-w-0 flex items-center gap-3">
-                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100">
-                        {activeConv.item ? (
-                          <Package size={18} className="text-brand-600" />
+                    <div className="flex-1 min-w-0">
+                      {(() => {
+                        const other = getOtherUser(activeConv);
+                        const otherName = other.name || 'Membro da comunidade';
+                        const headerContent = (
+                          <>
+                            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100">
+                              {other.image ? (
+                                <img src={other.image} alt={otherName} className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="text-sm font-bold text-brand-600">{otherName.slice(0, 1).toUpperCase()}</span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-900">{otherName}</p>
+                              {activeConv.item ? (
+                                <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p>
+                              ) : other.username ? (
+                                <p className="truncate text-xs text-slate-500">@{other.username}</p>
+                              ) : null}
+                            </div>
+                          </>
+                        );
+                        // Avatar e nome levam ao perfil público da pessoa.
+                        return other.username ? (
+                          <Link
+                            href={`/${other.username}`}
+                            aria-label={`Ver perfil de ${otherName}`}
+                            className="flex min-w-0 items-center gap-3 rounded-xl transition hover:opacity-80"
+                          >
+                            {headerContent}
+                          </Link>
                         ) : (
-                          <MessageCircle size={18} className="text-brand-600" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">
-                          {getOtherUser(activeConv).name || 'Membro da comunidade'}
-                        </p>
-                        {activeConv.item && (
-                          <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p>
-                        )}
-                      </div>
+                          <div className="flex min-w-0 items-center gap-3">{headerContent}</div>
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-1">
                       <button

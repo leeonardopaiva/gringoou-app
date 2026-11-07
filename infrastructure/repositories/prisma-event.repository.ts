@@ -1,4 +1,5 @@
 import 'server-only';
+import { buildPublisher } from '@/lib/publisher';
 
 import { EventStatus, Prisma, UserRole, VisibilityScope } from '@prisma/client';
 import type { PrismaClient } from '@prisma/client';
@@ -157,7 +158,8 @@ export function makePrismaEventRepository(prisma: PrismaClient): EventRepository
           ownershipVerifiedAt: true,
           createdById: true,
           businessId: true,
-          createdBy: { select: { id: true, name: true } },
+          createdBy: { select: { id: true, name: true, username: true, image: true } },
+          business: { select: { id: true, slug: true, name: true, imageUrl: true } },
           favorites: {
             where: viewerId ? { userId: viewerId } : undefined,
             select: { userId: true },
@@ -213,6 +215,7 @@ export function makePrismaEventRepository(prisma: PrismaClient): EventRepository
         canEdit,
         canRate,
         createdByName: event.createdBy?.name ?? 'Comunidade Gringoou',
+        publisher: buildPublisher(event.createdBy, event.business),
         publicPath: `/events/${event.slug || event.id}`,
         status: event.status,
         ownershipVerifiedAt: event.ownershipVerifiedAt?.toISOString() ?? null,

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { buildPublisher } from '@/lib/publisher';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jobSchema } from '@/lib/validators';
@@ -16,10 +17,13 @@ export async function GET(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
   const job = await prisma.job.findUnique({
     where: { id: jobId },
-    include: { createdBy: { select: { id: true, name: true, username: true } } },
+    include: {
+      createdBy: { select: { id: true, name: true, username: true, image: true } },
+      business: { select: { id: true, slug: true, name: true, imageUrl: true } },
+    },
   });
   return job
-    ? NextResponse.json({ job: { ...job, canEdit: session?.user?.id === job.createdById || session?.user?.role === 'ADMIN' } })
+    ? NextResponse.json({ job: { ...job, publisher: buildPublisher(job.createdBy, job.business, job.company), canEdit: session?.user?.id === job.createdById || session?.user?.role === 'ADMIN' } })
     : NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
 }
 

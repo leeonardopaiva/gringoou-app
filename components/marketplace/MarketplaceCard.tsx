@@ -41,7 +41,8 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   className,
 }) => {
   const showFavorite = Boolean(onToggleFavorite);
-  const isMine = item.canEdit === true;
+  // "Meu anúncio" vale só para o anunciante; administradores editam, mas não são donos.
+  const isMine = item.isOwner === true;
 
   return (
     <div className={cn('relative', className)}>

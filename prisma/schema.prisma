@@ -268,6 +268,7 @@ model User {
   phoneVerificationCodes    PhoneVerificationCode[]
   marketplaceItems          MarketplaceItem[]        @relation("MarketplaceItemCreator")
   newsArticles              NewsArticle[]            @relation("NewsArticleAuthor")
+  newsLikes                 NewsArticleLike[]
   marketplaceFavorites      MarketplaceFavorite[]    @relation("MarketplaceFavoriteUser")
   createdInvites            Invite[]                 @relation("InviteCreator")
   revokedInvites            Invite[]                 @relation("InviteRevoker")
@@ -1096,14 +1097,15 @@ model MarketplaceFavorite {
 
 model MarketplaceConversation {
   id        String               @id @default(cuid())
-  itemId    String
+  /// Nulo em conversas diretas entre duas pessoas (sem anúncio).
+  itemId    String?
   buyerId   String
   sellerId  String
   status    MarketplaceConversationStatus @default(ACTIVE)
   lastMessageAt DateTime?
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
-  item      MarketplaceItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  item      MarketplaceItem?       @relation(fields: [itemId], references: [id], onDelete: Cascade)
   buyer     User                   @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   seller    User                   @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
   messages  MarketplaceMessage[]
@@ -1169,9 +1171,21 @@ model NewsArticle {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   author      User?             @relation("NewsArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  likes       NewsArticleLike[]
 
   @@index([status, publishedAt, id])
   @@index([status, regionKey, publishedAt])
   @@index([status, category, publishedAt])
   @@index([authorId, createdAt])
+}
+
+model NewsArticleLike {
+  userId    String
+  articleId String
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+  @@index([articleId])
 }

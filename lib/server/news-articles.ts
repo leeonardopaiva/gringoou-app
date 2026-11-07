@@ -8,7 +8,16 @@ import type { NewsArticleContract, NewsAdminArticleContract } from '@/lib/conten
 const PUBLIC_PAGE_SIZE = 10;
 const ADMIN_PAGE_SIZE = 20;
 
-type ArticleRow = Prisma.NewsArticleGetPayload<{ include: { author: { select: { id: true; name: true } } } }>;
+type ArticleRow = Prisma.NewsArticleGetPayload<{ include: { author: { select: { id: true; name: true } } } }> & {
+  likes?: { userId: string }[];
+  _count?: { likes: number };
+};
+
+/** Inclui contagem de curtidas e se a pessoa logada já curtiu (consulta leve, limitada a 1 linha). */
+const likeInclude = (viewerId?: string | null) => ({
+  _count: { select: { likes: true } },
+  likes: { where: { userId: viewerId ?? '__anonymous__' }, select: { userId: true }, take: 1 },
+});
 
 const encodeCursor = (publishedAt: Date, id: string) =>
   Buffer.from(`${publishedAt.toISOString()}|${id}`).toString('base64url');
@@ -42,6 +51,8 @@ const toContract = (row: ArticleRow, labels: Map<string, string>): NewsArticleCo
   source: row.source,
   externalUrl: row.externalUrl,
   publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
+  likeCount: row._count?.likes ?? 0,
+  viewerLiked: (row.likes?.length ?? 0) > 0,
 });
 
 export type PublicNewsFilters = {
@@ -52,6 +63,8 @@ export type PublicNewsFilters = {
   sort?: 'recent' | 'oldest';
   cursor?: string | null;
   limit?: number;
+  /** Pessoa logada (para saber se já curtiu). */
+  viewerId?: string | null;
 };
 
 /** Feed público: somente PUBLISHED com data de publicação já vencida, paginado por cursor. */
@@ -88,7 +101,7 @@ export async function listPublishedNews(filters: PublicNewsFilters) {
     },
     orderBy: [{ publishedAt: oldestFirst ? 'asc' : 'desc' }, { id: oldestFirst ? 'asc' : 'desc' }],
     take: limit + 1,
-    include: { author: { select: { id: true, name: true } } },
+    include: { author: { select: { id: true, name: true } }, ...likeInclude(filters.viewerId) },
   });
 
   const hasMore = rows.length > limit;

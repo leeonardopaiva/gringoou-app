@@ -47,7 +47,10 @@ export interface MarketplaceListItem {
   galleryUrls: string[];
   status: MarketplaceStatus;
   isFavorite: boolean;
+  /** Pode editar: dono ou administrador. */
   canEdit: boolean;
+  /** É o anunciante (só o dono; administrador NÃO é dono dos anúncios dos outros). */
+  isOwner: boolean;
   isPendingReview: boolean;
   /** Motivo da rejeição/remoção — visível apenas para dono e moderadores. */
   moderationReason: string | null;

@@ -26,6 +26,9 @@ import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
+import { BackButton } from '../components/ui/BackButton';
+import { PublisherSignature } from '../components/ui/PublisherSignature';
+import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
 
 interface EventDetailProps {
@@ -56,6 +59,7 @@ type EventDetailState = {
   isFavorite: boolean;
   canRate: boolean;
   createdByName: string;
+  publisher?: Publisher | null;
   canEdit: boolean;
   publicPath: string;
   status: string;
@@ -132,6 +136,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         isFavorite: Boolean(initialEvent.isFavorite),
         canRate: Boolean(initialEvent.canRate),
         createdByName: initialEvent.createdByName || 'Comunidade Gringoou',
+        publisher: (initialEvent as { publisher?: Publisher | null }).publisher ?? null,
         canEdit: Boolean(initialEvent.canEdit),
         publicPath: initialEvent.publicPath || `/events/${initialEvent.slug || initialEvent.id}`,
         status: initialEvent.status || 'PUBLISHED',
@@ -198,6 +203,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             isFavorite: Boolean(payload.event.isFavorite),
             canRate: Boolean(payload.event.canRate),
             createdByName: payload.event.createdByName || payload.event.createdBy?.name || 'Comunidade Gringoou',
+            publisher: payload.event.publisher ?? null,
             canEdit: Boolean(payload.event.canEdit),
             publicPath: payload.event.publicPath || `/events/${payload.event.slug || payload.event.id}`,
             status: payload.event.status || 'PUBLISHED',
@@ -462,7 +468,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        {event.canEdit ? <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
+        <BackButton fallbackHref="/events" />
+
+        {event.canEdit ? <div className="absolute left-16 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
 
         <div className="absolute right-4 top-4 flex gap-2">
           {event.canEdit ? <Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações do evento', items: [
@@ -518,7 +526,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 URL publica
               </div>
               <p className="break-all text-sm text-slate-600">{publicUrl}</p>
-              <p className="text-xs text-slate-400">Publicado por {event.createdByName}</p>
+              <PublisherSignature publisher={event.publisher ?? { name: event.createdByName, image: null, href: null, kind: 'USER' }} />
             </div>
 
             <button
@@ -539,20 +547,15 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               interactive={event.canRate && event.viewerRating === null}
               disabled={!event.canRate || event.viewerRating !== null}
               onRate={(stars) => void handleRateEvent(stars)}
+              onBlockedClick={() =>
+                showToast(
+                  !event.canRate
+                    ? 'Organizadores e administradores não podem avaliar este evento.'
+                    : 'Você já avaliou este evento. Cada pessoa avalia uma única vez.',
+                  'info',
+                )
+              }
             />
-            {!event.canRate ? (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Organizadores e administradores nao podem avaliar este evento.
-              </p>
-            ) : event.viewerRating ? (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Sua avaliacao ja foi registrada com {event.viewerRating} estrela{event.viewerRating > 1 ? 's' : ''}.
-              </p>
-            ) : (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Cada usuario pode avaliar este evento uma unica vez.
-              </p>
-            )}
           </div>
         </section>
 

@@ -143,6 +143,7 @@ function mapListItem(raw: ListRaw, viewerId: string | null, isAdmin: boolean): M
     status: mapStatus(raw.status),
     isFavorite: Boolean(viewerId && raw.favorites.some((f) => f.userId === viewerId)),
     canEdit,
+    isOwner: Boolean(viewerId) && raw.createdById === viewerId,
     isPendingReview: raw.status === MarketplaceStatus.PENDING_REVIEW,
     moderationReason: canEdit ? raw.moderationReason : null,
     publicPath: `/marketplace/${raw.id}`,

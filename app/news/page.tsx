@@ -22,7 +22,7 @@ export default async function NewsRoute() {
 
   const regionKey = session.user.regionKey ?? null;
 
-  const initialNewsData: NewsInitialData | undefined = await listPublishedNews({ regionKey })
+  const initialNewsData: NewsInitialData | undefined = await listPublishedNews({ regionKey, viewerId: session.user.id })
     .then((feed) => ({ ...feed, regionKey }))
     .catch(() => undefined);
 

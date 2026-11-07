@@ -288,7 +288,7 @@ export async function GET(request: Request) {
     posts: posts.map(({ businessAuthor, author, ...post }) => ({
       ...post,
       author: businessAuthor ? { id: businessAuthor.id, name: businessAuthor.name, username: null, image: businessAuthor.imageUrl } : author,
-      authorHref: businessAuthor ? `/negocios/${businessAuthor.slug || businessAuthor.id}` : author.username ? `/${author.username}` : '/community',
+      authorHref: businessAuthor ? `/businesses/${businessAuthor.slug || businessAuthor.id}` : author.username ? `/${author.username}` : '/community',
       authorType: businessAuthor ? 'BUSINESS' : 'USER',
     })),
     counts: { ...counts, total: Object.values(counts).reduce((sum, count) => sum + count, 0) },

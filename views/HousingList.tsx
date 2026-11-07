@@ -1,6 +1,7 @@
 "use client";
 
 import { ListingGrid } from '@/components/ui/ListingGrid';
+import { Skeleton } from '@/components/ui/Skeleton';
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Home, MapPin, Plus } from "lucide-react";
@@ -172,9 +173,17 @@ export default function HousingList({ user }: { user: User }) {
           </FilterPopover>
         </SectionHeader>
         {loading ? (
-          <p className="text-sm text-muted-foreground">
-            Atualizando resultados...
-          </p>
+          <div className="space-y-3" role="status" aria-label="Carregando moradias" aria-busy="true">
+            {[0, 1, 2].map((key) => (
+              <div key={key} className="overflow-hidden rounded-2xl border border-border bg-surface">
+                <Skeleton className="h-28 w-full rounded-none" />
+                <div className="space-y-2 p-4">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : items.length ? (
           <ListingGrid variant="row">
           {items.map((item) => (

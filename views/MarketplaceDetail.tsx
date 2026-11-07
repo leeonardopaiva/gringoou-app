@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -474,7 +475,10 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   </div>
                 )}
               </div>
-            ) : (
+            ) : null}
+
+            {/* Mensagem: qualquer pessoa pode negociar, inclusive administradores. Só o anunciante não conversa consigo mesmo. */}
+            {!item.isOwner ? (
               <div className="mt-4">
                 {item.sellerUsername ? (
                   <Button
@@ -495,9 +499,12 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   A conversa acontece dentro do Gringoou, sem abrir seus contatos.
                 </p>
               </div>
-            )}
+            ) : null}
 
             <div className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
+              {(() => {
+                const sellerContent = (
+                  <>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-50">
                 {item.sellerImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -513,7 +520,17 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   Localização aproximada: {item.sellerLocationLabel ?? sellerLocation}
                 </p>
               </div>
-              {!item.canEdit && item.sellerUsername ? (
+                  </>
+                );
+                return item.sellerUsername ? (
+                  <Link href={`/${item.sellerUsername}`} aria-label={`Ver perfil de ${item.sellerName ?? item.sellerUsername}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl transition hover:opacity-80">
+                    {sellerContent}
+                  </Link>
+                ) : (
+                  <div className="flex min-w-0 flex-1 items-center gap-3">{sellerContent}</div>
+                );
+              })()}
+              {!item.isOwner && item.sellerUsername ? (
                 <Button
                   size="sm"
                   variant="primary"

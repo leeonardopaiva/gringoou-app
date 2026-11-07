@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ExternalLink, MapPin, Newspaper, Search } from 'lucide-react';
+import { ExternalLink, Heart, MapPin, Newspaper, Search, Share2 } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -10,6 +10,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { SectionTabs } from '../components/ui/SectionTabs';
 import { Button } from '../components/ui';
 import { formatRelativeTime } from '../components/marketplace/MarketplaceCard';
+import { useToast } from '../components/feedback/ToastProvider';
 import { useActiveRegion } from '../components/RegionContext';
 import { useLanguage } from '../components/i18n/LanguageProvider';
 import { useIntersectionTrigger } from '../hooks/useIntersectionTrigger';
@@ -30,8 +31,47 @@ const formatPublishedAt = (iso: string) =>
   );
 
 const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
+  const { showToast } = useToast();
   const [imageFailed, setImageFailed] = useState(false);
+  const [liked, setLiked] = useState(article.viewerLiked);
+  const [likeCount, setLikeCount] = useState(article.likeCount);
+  const [likeBusy, setLikeBusy] = useState(false);
   const showImage = Boolean(article.imageUrl) && !imageFailed;
+
+  /** Curtir com atualização imediata; desfaz se o servidor recusar. */
+  const handleLike = async () => {
+    if (likeBusy) return;
+    const nextLiked = !liked;
+    setLikeBusy(true);
+    setLiked(nextLiked);
+    setLikeCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
+    try {
+      const response = await fetch(`/api/news/${article.id}/like`, { method: nextLiked ? 'POST' : 'DELETE' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível curtir agora.');
+      if (typeof payload?.likeCount === 'number') setLikeCount(payload.likeCount);
+    } catch (error) {
+      setLiked(!nextLiked);
+      setLikeCount((count) => Math.max(0, count + (nextLiked ? -1 : 1)));
+      showToast(error instanceof Error ? error.message : 'Não foi possível curtir agora.', 'error');
+    } finally {
+      setLikeBusy(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: article.title, text: article.subtitle ?? undefined, url: article.externalUrl });
+        return;
+      }
+      await navigator.clipboard.writeText(article.externalUrl);
+      showToast('Link da notícia copiado.', 'success');
+    } catch (error) {
+      // Cancelar o menu de compartilhamento não é erro.
+      if ((error as Error)?.name !== 'AbortError') showToast('Não foi possível compartilhar agora.', 'error');
+    }
+  };
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
@@ -76,13 +116,35 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
               </p>
             ) : null}
           </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+          <button
+            type="button"
+            onClick={() => void handleLike()}
+            aria-pressed={liked}
+            aria-label={liked ? 'Remover curtida' : 'Curtir notícia'}
+            className={`inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            <Heart size={17} fill={liked ? 'currentColor' : 'none'} aria-hidden />
+            {likeCount > 0 ? likeCount : 'Curtir'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleShare()}
+            aria-label="Compartilhar notícia"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+          >
+            <Share2 size={17} aria-hidden />
+            Compartilhar
+          </button>
           <a
             href={article.externalUrl}
             target="_blank"
             rel="noopener noreferrer nofollow"
             aria-label={`Ler matéria original em ${article.source} (abre em nova aba)`}
             title="Ler matéria original"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
           >
             <ExternalLink size={18} aria-hidden />
           </a>

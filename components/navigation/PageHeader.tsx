@@ -19,6 +19,8 @@ type PageHeaderProps = {
   action?: React.ReactNode;
   /** Navegação por abas exibida abaixo do título. */
   tabs?: React.ReactNode;
+  /** Classes extras do título (ex.: cor da marca). */
+  titleClassName?: string;
   className?: string;
 };
 
@@ -30,6 +32,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   description,
   action,
   tabs,
+  titleClassName,
   className,
 }) => (
   <header className={cn('min-w-0', className)}>
@@ -53,7 +56,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </Link>
       )}
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-xl font-bold tracking-tight text-foreground">{title}</h1>
+        <h1 className={cn('truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
         {description ? <p className="truncate text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {action ? <div className="ml-auto shrink-0">{action}</div> : null}

@@ -86,6 +86,8 @@ export interface EventDetailItem {
   canEdit: boolean;
   canRate: boolean;
   createdByName: string;
+  /** Quem publicou (negócio tem prioridade sobre pessoa). */
+  publisher?: { name: string; image: string | null; href: string | null; kind: 'USER' | 'BUSINESS' } | null;
   publicPath: string;
   status: string;
   ownershipVerifiedAt: string | null;

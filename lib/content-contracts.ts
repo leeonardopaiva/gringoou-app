@@ -82,6 +82,9 @@ export interface NewsArticleContract {
   source: string;
   externalUrl: string;
   publishedAt: string;
+  likeCount: number;
+  /** A pessoa logada já curtiu esta notícia. */
+  viewerLiked: boolean;
 }
 
 export interface NewsAdminArticleContract extends NewsArticleContract {

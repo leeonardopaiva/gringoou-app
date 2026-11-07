@@ -8,6 +8,7 @@ import {
   Images,
   Link2,
   MapPin,
+  MessageCircle,
   MessageSquareText,
   MoreHorizontal,
   Plus,
@@ -20,6 +21,7 @@ import {
 import { StatusPage } from '../components/ui/StatusPage';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
+import { useMessaging } from '../lib/MessagingProvider';
 import { Logo } from '../components/Layout';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
@@ -111,7 +113,9 @@ const uniqueStrings = (values: Array<string | null | undefined>) =>
 
 const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedded = false }) => {
   const { showToast } = useToast();
+  const { startDirectConversation } = useMessaging();
   const router = useRouter();
+  const [messageLoading, setMessageLoading] = useState(false);
   const [profile, setProfile] = useState<PublicUserProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -454,6 +458,24 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexão' : 'Adicionar'}
                   </button>
                 )}
+                {!isOwnProfile && friendStatus !== 'signed_out' ? (
+                  <button
+                    type="button"
+                    disabled={messageLoading}
+                    onClick={async () => {
+                      setMessageLoading(true);
+                      const started = await startDirectConversation(profile.id);
+                      if (!started) {
+                        setMessageLoading(false);
+                        showToast('Não foi possível abrir a conversa agora. Tente novamente.', 'error');
+                      }
+                    }}
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-5 text-sm font-bold text-brand-600 transition hover:bg-brand-50 disabled:opacity-60"
+                  >
+                    <MessageCircle size={16} aria-hidden />
+                    {messageLoading ? 'Abrindo...' : 'Enviar mensagem'}
+                  </button>
+                ) : null}
                 {profile.stats.businessCount > 0 || profile.stats.eventCount > 0 ? (
                   <button
                     type="button"

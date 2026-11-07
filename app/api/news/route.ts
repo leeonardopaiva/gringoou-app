@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getServerAuthSession } from '@/lib/auth';
 import { listPublishedNews, listPublishedNewsSources } from '@/lib/server/news-articles';
 
 /** Feed público de Notícias editoriais (somente publicadas), com paginação por cursor. */
@@ -6,6 +7,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sort = searchParams.get('sort') === 'oldest' ? 'oldest' : 'recent';
   const wantsSources = searchParams.get('sources') === '1';
+  const session = await getServerAuthSession();
 
   try {
     const [feed, sources] = await Promise.all([
@@ -17,6 +19,7 @@ export async function GET(request: Request) {
         cursor: searchParams.get('cursor'),
         sort,
         limit: Number(searchParams.get('limit')) || undefined,
+        viewerId: session?.user?.id ?? null,
       }),
       wantsSources ? listPublishedNewsSources() : Promise.resolve(undefined),
     ]);

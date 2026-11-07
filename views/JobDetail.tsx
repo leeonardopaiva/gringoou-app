@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, ExternalLink, MapPin, MoreHorizontal, PencilLine, Phone, WalletCards } from 'lucide-react';
+import { Briefcase, ExternalLink, MapPin, MoreHorizontal, PencilLine, Phone, WalletCards } from 'lucide-react';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import ImageGalleryField from '@/components/forms/ImageGalleryField';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
@@ -11,6 +11,9 @@ import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { notifyContentUpdated } from '@/lib/content-refresh';
 import { Dropdown } from '@/components/ui/Dropdown';
+import { BackButton } from '@/components/ui/BackButton';
+import { PublisherSignature } from '@/components/ui/PublisherSignature';
+import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
 
 type Job = {
@@ -28,6 +31,7 @@ type Job = {
   businessId?: string | null;
   canEdit?: boolean;
   createdBy?: { name?: string | null };
+  publisher?: Publisher | null;
 };
 
 export default function JobDetail({ jobId }: { jobId: string }) {
@@ -126,7 +130,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(45,212,191,0.28),_transparent_40%)]" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <Link href="/jobs" className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur"><ArrowLeft size={18} /></Link>
+        <BackButton fallbackHref="/jobs" />
         {job.canEdit ? <div className="absolute right-4 top-4 z-20"><Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /></div> : null}
         <div className="relative">
           <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>
@@ -143,7 +147,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         <section className="border-t border-border pt-6">
           <h2 className="text-h3 font-bold">Sobre a vaga</h2>
           <p className="mt-3 whitespace-pre-wrap text-body-sm leading-7 text-muted-foreground">{job.description}</p>
-          <p className="mt-4 text-xs text-slate-400">Publicado por {job.createdBy?.name || job.company}</p>{job.canEdit ? <span className="mt-3 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">Você é proprietário</span> : null}
+          <PublisherSignature className="mt-4" publisher={job.publisher ?? { name: job.createdBy?.name || job.company, image: null, href: null, kind: 'USER' }} />{job.canEdit ? <span className="mt-3 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">Você é proprietário</span> : null}
         </section>
         {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
         <CommentWall endpoint={`/api/jobs/${jobId}/comments`} title="Comentários sobre a vaga" />

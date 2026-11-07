@@ -9,6 +9,8 @@ type StarRatingProps = {
   disabled?: boolean;
   compact?: boolean;
   onRate?: (stars: number) => void;
+  /** Quando as estrelas nao sao clicaveis, clicar nelas chama isto (ex.: mostrar aviso). */
+  onBlockedClick?: () => void;
 };
 
 const StarRating: React.FC<StarRatingProps> = ({
@@ -19,13 +21,30 @@ const StarRating: React.FC<StarRatingProps> = ({
   disabled = false,
   compact = false,
   onRate,
+  onBlockedClick,
 }) => {
   const displayValue = viewerRating ?? average;
   const filledStars = Math.round(displayValue);
 
   return (
     <div className={compact ? 'space-y-1' : 'space-y-2'}>
-      <div className="flex items-center gap-1">
+      <div
+        className={`flex items-center gap-1 ${!interactive && onBlockedClick ? 'cursor-pointer' : ''}`}
+        {...(!interactive && onBlockedClick
+          ? {
+              onClick: onBlockedClick,
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': 'Avaliar',
+              onKeyDown: (event: React.KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onBlockedClick();
+                }
+              },
+            }
+          : {})}
+      >
         {Array.from({ length: 5 }).map((_, index) => {
           const starValue = index + 1;
           const filled = starValue <= filledStars;

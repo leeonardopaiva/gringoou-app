@@ -116,6 +116,8 @@ export async function GET(_request: Request, context: RouteContext) {
       favorites: undefined,
       ratings: undefined,
       canEdit,
+      // Dono do negócio (administrador NÃO é dono): é quem não conversa consigo mesmo.
+      isOwner: Boolean(session?.user?.id) && session?.user?.id === business.createdById,
       canRate,
       isFavorite: business.favorites.length > 0,
       viewerRating: business.ratings[0]?.stars ?? null,

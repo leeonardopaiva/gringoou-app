@@ -6,11 +6,12 @@ import type { User } from '@/types';
 
 export type Conversation = {
   id: string;
-  itemId: string;
+  /** Nulo em conversas diretas entre pessoas. */
+  itemId: string | null;
   lastMessageAt: string | null;
   createdAt: string;
   updatedAt: string;
-  item: { id: string; title: string; imageUrl: string | null; priceCents: number | null; isFree: boolean; publicPath: string };
+  item: { id: string; title: string; imageUrl: string | null; priceCents: number | null; isFree: boolean; publicPath: string } | null;
   buyer: { id: string; name: string | null; image: string | null; username: string | null };
   seller: { id: string; name: string | null; image: string | null; username: string | null };
   messages: Array<{ id: string; content: string; senderId: string; createdAt: string }>;
@@ -39,6 +40,8 @@ type MessagingContextType = {
   setFloatingChatMinimized: (minimized: boolean) => void;
   refreshConversations: () => Promise<void>;
   startConversation: (itemId: string, sellerUsername: string | null, defaultMessage?: string) => Promise<void>;
+  /** Abre (ou cria) a conversa direta com outra pessoa e leva para a Inbox. Retorna false se falhar. */
+  startDirectConversation: (recipientId: string) => Promise<boolean>;
 };
 
 const MessagingContext = createContext<MessagingContextType | null>(null);
@@ -169,11 +172,29 @@ export const MessagingProvider: React.FC<{ user: User | null; children: React.Re
     } catch { /* */ }
   }, [user, refreshConversations, router]);
 
+  const startDirectConversation = useCallback(async (recipientId: string) => {
+    if (!user) return false;
+    try {
+      const res = await fetch('/api/marketplace/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ recipientId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.conversationId) return false;
+      await refreshConversations();
+      router.push(`/inbox?conversation=${data.conversationId}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [user, refreshConversations, router]);
+
   const value: MessagingContextType = {
     conversations, activeConversationId, messages, unreadCount,
     floatingChatOpen, floatingChatMinimized, loading,
     selectConversation, sendMessage,
-    setFloatingChatOpen, setFloatingChatMinimized, refreshConversations, startConversation,
+    setFloatingChatOpen, setFloatingChatMinimized, refreshConversations, startConversation, startDirectConversation,
   };
 
   return <MessagingContext.Provider value={value}>{children}</MessagingContext.Provider>;
