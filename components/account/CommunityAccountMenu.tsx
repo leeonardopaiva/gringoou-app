@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, Store, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, ShieldCheck, Store } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { Popover } from '@/components/ui/Popover';
+import { MessagePrivacyModal } from '@/components/profile/MessagePrivacySection';
 
 type ManagedBusiness = {
   id: string;
@@ -51,6 +52,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [businesses, setBusinesses] = useState<ManagedBusiness[]>(() => mapKnownBusinesses(knownBusinesses));
   const [hasAdAccounts, setHasAdAccounts] = useState(false);
   const [isLoadingBusinesses, setIsLoadingBusinesses] = useState(true);
@@ -161,11 +163,11 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
               <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Conta pessoal'}</span></span>
             </div>
             {[
-              { label: 'Editar perfil', icon: <Settings size={16} />, href: '/profile' },
+              { label: 'Editar perfil', icon: <Settings size={16} />, href: '/profile?edit=profile' },
               { label: 'Perfil público', icon: <ExternalLink size={16} />, href: profileHref },
-              { label: 'Conta e privacidade', icon: <UserRound size={16} />, href: '/profile?edit=profile' },
+              { label: 'Privacidade', icon: <ShieldCheck size={16} />, href: null },
             ].map((item) => (
-              <button key={item.label} type="button" onClick={() => { setOpen(false); router.push(item.href); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"><span className="text-slate-400">{item.icon}</span>{item.label}</button>
+              <button key={item.label} type="button" onClick={() => { setOpen(false); if (item.href) router.push(item.href); else setPrivacyOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"><span className="text-slate-400">{item.icon}</span>{item.label}</button>
             ))}
           </div>
           <div className="border-t border-slate-100 px-4 py-3">
@@ -198,6 +200,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
           </div>
         </div>
       </Popover>
+      <MessagePrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
     </div>
   );
 }
