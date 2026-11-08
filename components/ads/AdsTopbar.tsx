@@ -36,11 +36,12 @@ export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white">
-      <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:justify-end md:px-7 md:pl-[calc(1.75rem+272px)]">
+      <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:justify-between md:px-7 md:pl-[calc(1.75rem+272px)]">
         <div className="flex items-center gap-3 md:hidden">
           <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-[#132f40]"><Menu size={21} /></button>
           <GringoouLogo size={28} />
         </div>
+        <div className="hidden items-center gap-2 md:flex"><span className="rounded-md bg-[#0B1B2E] px-2 py-1 text-[11px] font-extrabold uppercase tracking-wider text-teal-300">Ads</span><span className="text-sm font-bold text-[#132f40]">Gerenciador de anúncios</span></div>
         <div className="flex items-center gap-3">
           <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"><Bell size={18} /></button>
           <div ref={menuRef} className="relative">

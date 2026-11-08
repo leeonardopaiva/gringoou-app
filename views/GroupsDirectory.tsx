@@ -177,7 +177,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
   );
 
   return (
-    <ContentColumn size="standard" className="animate-in pb-20 fade-in slide-in-from-bottom-4 duration-500">
+    <ContentColumn size="compact" className="animate-in pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <PageHeader
         title="Grupos"
         action={

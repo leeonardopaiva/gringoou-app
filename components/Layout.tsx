@@ -188,6 +188,11 @@ const SidebarContent: React.FC<{
               onClick={item.disabled ? () => handleDisabledNavigation(item) : () => onNavigate(item.href)}
             />
           ))}
+        </SidebarMenu>
+
+        <div className="my-3 border-t border-slate-200" role="separator" />
+
+        <SidebarMenu label="Acessos restritos e perfil">
           {user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR ? (
             <>
               <SidebarMenuItem
@@ -225,31 +230,34 @@ const SidebarContent: React.FC<{
         </SidebarMenu>
       </div>
 
-      {!collapsed && onSignOut ? (
-        <Button
-          variant="primary"
-          fullWidth
-          onClick={() => {
-            onItemClick?.();
-            onSignOut();
-          }}
-        >
-          Sair
-        </Button>
+      {!collapsed ? (
+        <div className="space-y-2">
+          <Button
+            variant="ghost"
+            fullWidth
+            className="border-2 border-slate-200 text-slate-700"
+            iconLeft={<MessageSquarePlus size={16} />}
+            onClick={() => {
+              onItemClick?.();
+              window.dispatchEvent(new CustomEvent('gringoou:open-suggestion-modal'));
+            }}
+          >
+            Enviar sugestão
+          </Button>
+          {onSignOut ? (
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => {
+                onItemClick?.();
+                onSignOut();
+              }}
+            >
+              Sair
+            </Button>
+          ) : null}
+        </div>
       ) : null}
-
-      {!collapsed ? <Button
-        variant="ghost"
-        fullWidth
-        className="mt-3 border-2 border-slate-200 text-slate-700"
-        iconLeft={<MessageSquarePlus size={16} />}
-        onClick={() => {
-          onItemClick?.();
-          window.dispatchEvent(new CustomEvent('gringoou:open-suggestion-modal'));
-        }}
-      >
-        Enviar sugestao
-      </Button> : null}
     </div>
   );
 };

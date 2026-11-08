@@ -466,7 +466,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             type="button"
             onClick={() => void handleFavoriteToggle()}
             className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${
-              business.isFavorite ? 'bg-red-600 text-white' : 'bg-surface text-foreground hover:bg-brand-100'
+              business.isFavorite ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-700 hover:bg-white'
             }`}
             aria-label="Favoritar negócio"
           >
@@ -476,8 +476,8 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           <button
             type="button"
             onClick={() => void handleShare()}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-transparent text-slate-600 transition hover:bg-slate-50"
-            aria-label="Compartilhar negocio"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+            aria-label="Compartilhar negócio"
           >
             <Share2 size={19} />
           </button>
@@ -496,204 +496,111 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         </div>
       </div>
 
-      <div className="space-y-8 px-5 pt-8">
+      <div className="space-y-6 px-5 pt-6">
         {isPendingReview ? (
           <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
             Este negócio está aguardando aprovação e fica visível apenas para você e administradores.
           </div>
         ) : null}
 
-        <div className="border-b border-slate-100 pb-7">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500">
-              <BadgeCheck size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-bold text-slate-900">Página do negócio na comunidade</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">Conheça os serviços, veja avaliações de membros e fale diretamente com o responsável.</p>
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {callHref ? <a href={callHref} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Phone size={14} />Ligar</a> : null}
-            {whatsappHref ? <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm"><MessageCircle size={14} />WhatsApp</a> : null}
-            <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 text-xs font-bold text-slate-600 hover:bg-slate-50"><Share2 size={14} />Compartilhar</button>
-            <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
-          </div>
-          {business.canEdit && !managementMode ? (
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-              <span className="inline-flex items-center gap-2 text-xs font-bold text-brand-700"><BadgeCheck size={16} /> Você é proprietário</span>
-              <Dropdown align="right" trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do negócio', items: [{ label: 'Gerenciar página', icon: <PencilLine size={16} />, onClick: () => window.location.assign(`/businesses/${business.slug || business.id}/gerenciar`) }] }]} />
-            </div>
+        {/* Ações principais: uma única linha, com o contato direto em destaque. */}
+        <div className="flex flex-wrap items-center gap-2">
+          {!business.isOwner && business.ownerId ? (
+            <button
+              type="button"
+              onClick={() => {
+                setContacting(true);
+                startDirectConversation(business.ownerId, { type: 'business', id: business.id });
+              }}
+              disabled={contacting}
+              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+            >
+              <Send size={16} />
+              {contacting ? 'Abrindo conversa...' : 'Enviar mensagem'}
+            </button>
+          ) : null}
+          {whatsappHref ? (
+            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+              <MessageCircle size={16} />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </a>
+          ) : null}
+          {callHref ? (
+            <a href={callHref} aria-label="Ligar" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+              <Phone size={16} />
+              <span className="hidden sm:inline">Ligar</span>
+            </a>
           ) : null}
         </div>
 
-        <section className="space-y-4 border-b border-slate-100 pb-7">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 space-y-2">
-              <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
-                <Globe2 size={16} />
-                Página pública
-              </div>
-              <p className="break-all text-sm text-slate-600">{publicUrl}</p>
-              <p className="text-xs text-slate-400">Página administrada por {business.createdByName}</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void handleCopyUrl()}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-200"
+        <div className="flex items-center justify-between gap-3">
+          <StarRating
+            average={business.ratingAverage}
+            count={business.ratingCount}
+            viewerRating={business.viewerRating}
+            interactive={business.canRate && business.viewerRating === null}
+            disabled={!business.canRate || business.viewerRating !== null}
+            onRate={(stars) => void handleRateBusiness(stars)}
+          />
+          {business.canEdit && !managementMode ? (
+            <Link
+              href={`/businesses/${business.slug || business.id}/gerenciar`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 transition hover:bg-brand-100"
             >
-              <Copy size={14} />
-              Copiar
-            </button>
-          </div>
+              <PencilLine size={14} /> Gerenciar
+            </Link>
+          ) : null}
+        </div>
 
-          <div className="pt-1">
-            <StarRating
-              average={business.ratingAverage}
-              count={business.ratingCount}
-              viewerRating={business.viewerRating}
-              interactive={business.canRate && business.viewerRating === null}
-              disabled={!business.canRate || business.viewerRating !== null}
-              onRate={(stars) => void handleRateBusiness(stars)}
-            />
+        {business.description ? (
+          <section aria-label="Sobre o negócio">
+            <h2 className="text-sm font-bold text-slate-900">Sobre</h2>
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">{business.description}</p>
+          </section>
+        ) : null}
 
-            {!business.canRate ? (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Proprietários e administradores não podem avaliar este negócio.
-              </p>
-            ) : business.viewerRating ? (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Sua avaliação já foi registrada com {business.viewerRating} estrela
-                {business.viewerRating > 1 ? 's' : ''}.
-              </p>
-            ) : (
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                Cada usuário pode avaliar este negócio uma única vez.
-              </p>
-            )}
-          </div>
-        </section>
-
-        <section className="space-y-4 border-b border-slate-100 pb-7">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-bold uppercase tracking-wide text-slate-400">
-              Contato
+        <section aria-label="Informações de contato" className="divide-y divide-slate-100 border-y border-slate-100">
+          {business.address ? (
+            <div className="flex items-start gap-3 py-3.5">
+              <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-900">{business.address}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold text-brand-600">
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="hover:underline">Google Maps</a>
+                  <a href={`https://waze.com/ul?q=${mapQuery}&navigate=yes`} target="_blank" rel="noreferrer" className="hover:underline">Waze</a>
+                </div>
+              </div>
             </div>
-
-          </div>
-
+          ) : null}
           {business.phone ? (
-            <a href={callHref || undefined} className="flex items-center gap-4">
-              <div className="theme-icon-surface flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
-                <Phone size={19} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Telefone</p>
-                <p className="mt-1 text-sm font-bold text-slate-700">{business.phone}</p>
-              </div>
+            <a href={callHref || undefined} className="flex items-center gap-3 py-3.5 text-sm font-semibold text-slate-800 hover:text-brand-600">
+              <Phone size={18} className="shrink-0 text-brand-500" aria-hidden />
+              {business.phone}
             </a>
           ) : null}
-
           {business.whatsapp ? (
-            <a
-              href={whatsappHref || undefined}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-4"
-            >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-                <MessageCircle size={19} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">WhatsApp</p>
-                <p className="mt-1 text-sm font-bold text-slate-700">{business.whatsapp}</p>
-              </div>
+            <a href={whatsappHref || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-3 py-3.5 text-sm font-semibold text-slate-800 hover:text-emerald-700">
+              <MessageCircle size={18} className="shrink-0 text-emerald-600" aria-hidden />
+              {business.whatsapp}
             </a>
           ) : null}
-
-          {/* Mensagem interna: qualquer pessoa (inclusive administradores) pode conversar; só o dono não fala consigo mesmo. */}
-          {!business.isOwner && business.ownerId ? (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setContacting(true);
-                  startDirectConversation(business.ownerId, { type: 'business', id: business.id });
-                }}
-                disabled={contacting}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Send size={18} />
-                <span>{contacting ? 'Abrindo conversa...' : 'Iniciar conversa'}</span>
-              </button>
-              <p className="text-center text-[11px] text-slate-400">
-                A conversa acontece dentro do Gringoou, sem abrir seus contatos.
-              </p>
-            </>
+          {business.website ? (
+            <a href={business.website} target="_blank" rel="noreferrer" className="flex items-center gap-3 py-3.5 text-sm font-semibold text-slate-800 hover:text-brand-600">
+              <Globe2 size={18} className="shrink-0 text-brand-500" aria-hidden />
+              <span className="truncate">{business.website.replace(/^https?:\/\//, '')}</span>
+            </a>
+          ) : null}
+          {business.instagram ? (
+            <a href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 py-3.5 text-sm font-semibold text-slate-800 hover:text-brand-600">
+              <Instagram size={18} className="shrink-0 text-brand-500" aria-hidden />
+              {business.instagram}
+            </a>
           ) : null}
         </section>
 
-        <section className="space-y-3 border-b border-slate-100 pb-7">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
-              <MapPin size={16} />
-              Endereço
-            </div>
-
-          </div>
-
-          <p className="theme-text text-base font-bold">{business.address}</p>
-          <p className="text-sm leading-relaxed text-slate-600">{business.description}</p>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200"><MapPin size={14} /> Google Maps</a>
-            <a href={`https://waze.com/ul?q=${mapQuery}&navigate=yes`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200">Waze</a>
-          </div>
-
-          {business.website || business.instagram ? (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {business.website ? (
-                <a
-                  href={business.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200"
-                >
-                  <Globe2 size={14} />
-                  Website
-                </a>
-              ) : null}
-
-              {business.instagram ? (
-                <a
-                  href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200"
-                >
-                  <Instagram size={14} />
-                  {business.instagram}
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-        </section>
-
-        <section className="space-y-4 pb-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
-              <Images size={16} />
-              Galeria
-            </div>
-
-          </div>
-
-          {galleryImages.length === 0 ? (
-            <div className="rounded-3xl bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-              Nenhuma imagem adicional cadastrada ainda.
-            </div>
-          ) : (
+        {galleryImages.length > 0 ? (
+          <section aria-label="Galeria" className="space-y-3">
+            <h2 className="text-sm font-bold text-slate-900">Fotos</h2>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {(showAllGallery ? galleryImages : galleryImages.slice(0, GALLERY_PREVIEW_LIMIT)).map((imageUrl, index) => {
                 const hiddenCount = galleryImages.length - GALLERY_PREVIEW_LIMIT;
@@ -706,23 +613,25 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     className="relative overflow-hidden rounded-xl bg-slate-100"
                     aria-label={isMoreTile ? `Ver mais ${hiddenCount + 1} imagens` : `Ampliar imagem ${index + 1}`}
                   >
-                    <img
-                      src={imageUrl}
-                      loading="lazy"
-                      className="aspect-square w-full object-cover"
-                      alt={`${business.name} - imagem ${index + 1}`}
-                    />
+                    <img src={imageUrl} loading="lazy" className="aspect-square w-full object-cover" alt={`${business.name} - imagem ${index + 1}`} />
                     {isMoreTile ? (
-                      <span className="absolute inset-0 flex items-center justify-center bg-slate-900/55 text-sm font-bold text-white">
-                        +{hiddenCount + 1}
-                      </span>
+                      <span className="absolute inset-0 flex items-center justify-center bg-slate-900/55 text-sm font-bold text-white">+{hiddenCount + 1}</span>
                     ) : null}
                   </button>
                 );
               })}
             </div>
-          )}
-        </section>
+          </section>
+        ) : null}
+
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+          <span>Página administrada por {business.createdByName}</span>
+          {managementMode ? (
+            <button type="button" onClick={() => void handleCopyUrl()} className="inline-flex items-center gap-1.5 font-semibold text-slate-500 hover:text-slate-700">
+              <Copy size={13} /> Copiar link da página
+            </button>
+          ) : null}
+        </p>
       </div>
 
       <div className="px-5 pb-8">

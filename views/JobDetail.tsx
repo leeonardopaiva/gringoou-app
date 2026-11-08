@@ -143,22 +143,18 @@ export default function JobDetail({ jobId }: { jobId: string }) {
       </header>
 
       <div className="space-y-7 px-5 pt-8">
-        <section aria-label="Resumo da vaga" className="divide-y divide-border rounded-2xl border border-border">
-          <div className="flex items-center gap-3 px-4 py-3.5">
+        <dl aria-label="Resumo da vaga" className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+          <div className="flex items-center gap-2">
+            <dt className="sr-only">Localização</dt>
             <MapPin size={18} className="shrink-0 text-brand-500" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-muted-foreground">Localização</p>
-              <p className="truncate text-sm font-semibold text-foreground">{job.locationLabel}</p>
-            </div>
+            <dd className="font-semibold text-foreground">{job.locationLabel}</dd>
           </div>
-          <div className="flex items-center gap-3 px-4 py-3.5">
+          <div className="flex items-center gap-2">
+            <dt className="sr-only">Salário</dt>
             <WalletCards size={18} className="shrink-0 text-brand-500" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-muted-foreground">Salário</p>
-              <p className="truncate text-sm font-semibold text-foreground">{job.salary || 'A combinar'}</p>
-            </div>
+            <dd className="font-semibold text-foreground">{job.salary || 'A combinar'}</dd>
           </div>
-        </section>
+        </dl>
         {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3.5 text-sm font-bold text-white transition hover:brightness-105">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
         <section>
           <h2 className="text-h3 font-bold">Sobre a vaga</h2>

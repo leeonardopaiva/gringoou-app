@@ -46,6 +46,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [showMenu, setShowMenu] = useState<string | null>(null);
+  /** Posição do botão ⋯ que abriu o menu (no desktop o menu abre logo abaixo dele). */
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number } | null>(null);
+  const openMenu = (id: string, trigger: HTMLElement) => {
+    const rect = trigger.getBoundingClientRect();
+    const width = 240;
+    setMenuAnchor({ top: rect.bottom + 6, left: Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8)) });
+    setShowMenu(id);
+  };
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<string>('');
   const [reportDetails, setReportDetails] = useState('');
@@ -256,7 +264,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       role="tablist"
       aria-label="Filtrar conversas"
     >
-      {(['todas', 'marketplace', 'diretas', 'arquivadas'] as const).filter((t) => t !== 'arquivadas' || archivedConversations.length > 0 || tab === 'arquivadas').map((t) => {
+      {(['todas', 'marketplace', 'diretas', 'arquivadas'] as const).map((t) => {
         const info = tabLabels[t];
         const Icon = info.icon;
         return (
@@ -444,7 +452,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowMenu(conv.id)}
+                      onClick={(event) => openMenu(conv.id, event.currentTarget)}
                       className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
                       aria-label={`Opções da conversa com ${otherName}`}
                     >
@@ -526,7 +534,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => setShowMenu(activeConv.id)}
+                        onClick={(event) => openMenu(activeConv.id, event.currentTarget)}
                         className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                         aria-label="Mais opções"
                       >
@@ -685,7 +693,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
           <>
             <div className="fixed inset-0 z-[70] bg-slate-950/30 md:bg-transparent" onClick={() => setShowMenu(null)} aria-hidden="true" />
             <div
-              className="fixed inset-x-0 bottom-0 z-[75] rounded-t-2xl border border-slate-200 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-xl md:inset-x-auto md:bottom-auto md:right-8 md:top-28 md:w-60 md:rounded-xl"
+              className="fixed inset-x-0 bottom-0 z-[75] rounded-t-2xl border border-slate-200 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-xl md:inset-x-auto md:bottom-auto md:w-60 md:rounded-xl"
+              style={!isMobile && menuAnchor ? { top: menuAnchor.top, left: menuAnchor.left } : undefined}
               role="menu"
             >
               {(() => {
