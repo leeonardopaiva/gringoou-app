@@ -3,14 +3,17 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit } from '@/lib/rate-limit';
 import { isBlockedBetween, listBlockedIds } from '@/lib/server/blocks';
+import { resolveDirectAccess, reviveConversationFor } from '@/lib/server/message-access';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const BLOCKED_MESSAGE = 'Não é possível enviar mensagem para esta pessoa.';
+const NOT_RECEIVING_MESSAGE = 'Esta pessoa não está recebendo mensagens.';
 
 /** Campos de uma conversa na lista da Inbox (usados no GET e ao devolver a conversa recém-aberta). */
 const conversationSelect = {
   id: true,
   itemId: true,
+  requestStatus: true,
   lastMessageAt: true,
   createdAt: true,
   updatedAt: true,
@@ -31,8 +34,14 @@ async function loadConversation(id: string, viewerId: string) {
   if (!conversation) return null;
   const blocked = await listBlockedIds(viewerId);
   const otherId = conversation.buyer.id === viewerId ? conversation.seller.id : conversation.buyer.id;
+  const state = await prisma.conversationState.findUnique({
+    where: { conversationId_userId: { conversationId: id, userId: viewerId } },
+    select: { archivedAt: true, mutedAt: true },
+  });
   return {
     ...conversation,
+    archived: Boolean(state?.archivedAt),
+    muted: Boolean(state?.mutedAt),
     blockedByViewer: blocked.has(otherId),
     item: conversation.item ? { ...conversation.item, publicPath: `/marketplace/${conversation.item.id}` } : null,
   };
@@ -61,10 +70,22 @@ export async function GET() {
   });
 
   const blocked = await listBlockedIds(userId);
+  const states = await prisma.conversationState.findMany({
+    where: { userId, conversationId: { in: conversations.map((conv) => conv.id) } },
+    select: { conversationId: true, archivedAt: true, mutedAt: true, deletedAt: true },
+  });
+  const stateById = new Map(states.map((state) => [state.conversationId, state]));
 
-  // Adiciona publicPath derivado
-  const result = conversations.map((conv) => ({
+  // Adiciona publicPath derivado; esconde excluídas e solicitações pendentes recebidas (ficam nos Alertas).
+  const visible = conversations.filter((conv) => {
+    if (stateById.get(conv.id)?.deletedAt) return false;
+    if (conv.requestStatus === 'PENDING' && conv.seller.id === userId) return false;
+    return true;
+  });
+  const result = visible.map((conv) => ({
     ...conv,
+    archived: Boolean(stateById.get(conv.id)?.archivedAt),
+    muted: Boolean(stateById.get(conv.id)?.mutedAt),
     blockedByViewer: blocked.has(conv.buyer.id === userId ? conv.seller.id : conv.buyer.id),
     // Conversas diretas entre pessoas não têm anúncio (item = null).
     item: conv.item ? { ...conv.item, publicPath: `/marketplace/${conv.item.id}` } : null,
@@ -103,7 +124,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const recipient = await prisma.user.findUnique({ where: { id: body.recipientId }, select: { id: true } });
+    const recipient = await prisma.user.findUnique({ where: { id: body.recipientId }, select: { id: true, messagePolicy: true } });
     if (!recipient) {
       return NextResponse.json({ error: 'Pessoa não encontrada.' }, { status: 404 });
     }
@@ -111,6 +132,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: BLOCKED_MESSAGE }, { status: 403 });
     }
 
+    let directRequestStatus: 'ACCEPTED' | 'PENDING' = 'ACCEPTED';
     const existingDirect = await prisma.marketplaceConversation.findFirst({
       where: {
         itemId: null,
@@ -120,15 +142,26 @@ export async function POST(request: Request) {
         ],
       },
       orderBy: { createdAt: 'asc' },
-      select: { id: true },
+      select: { id: true, requestStatus: true },
     });
 
+    if (!existingDirect) {
+      const access = await resolveDirectAccess(viewerId, recipient, body.context);
+      if (access === 'DENY') {
+        return NextResponse.json({ error: NOT_RECEIVING_MESSAGE }, { status: 403 });
+      }
+      directRequestStatus = access === 'REQUEST' ? 'PENDING' : 'ACCEPTED';
+    }
+
     if (existingDirect) {
+      // Quem abre a conversa de novo a recupera da lista; quem recebe só a vê de volta se ela já foi aceita.
+      await reviveConversationFor(existingDirect.id, viewerId);
       if (content) {
         await prisma.marketplaceConversation.update({
           where: { id: existingDirect.id },
           data: { lastMessageAt: new Date(), status: 'ACTIVE', messages: { create: { senderId: viewerId, content } } },
         });
+        if (existingDirect.requestStatus === 'ACCEPTED') await reviveConversationFor(existingDirect.id, recipient.id);
       }
       return NextResponse.json({ conversationId: existingDirect.id, existing: true, conversation: await loadConversation(existingDirect.id, viewerId) });
     }
@@ -137,6 +170,7 @@ export async function POST(request: Request) {
       data: {
         buyerId: viewerId,
         sellerId: recipient.id,
+        requestStatus: directRequestStatus,
         ...(content ? { lastMessageAt: new Date(), messages: { create: { senderId: viewerId, content } } } : {}),
       },
       select: { id: true },

@@ -538,7 +538,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               {!event.isOwner && event.organizerId ? (
                 <button
                   type="button"
-                  onClick={() => startDirectConversation(event.organizerId as string)}
+                  onClick={() => startDirectConversation(event.organizerId as string, { type: 'event', id: event.id })}
                   className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-4 text-sm font-bold text-brand-600 transition hover:bg-brand-50"
                 >
                   <MessageCircle size={16} aria-hidden />

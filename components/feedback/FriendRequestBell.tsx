@@ -7,7 +7,6 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
 
 type PendingFriendRequest = {
   id: string;
@@ -34,11 +33,18 @@ type PendingCommunityPost = {
   };
 };
 
+type PendingMessageRequest = {
+  id: string;
+  preview: string;
+  sender: { id: string; name?: string | null; username?: string | null; image?: string | null };
+};
+
 const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = false }) => {
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [requests, setRequests] = useState<PendingFriendRequest[]>([]);
   const [pendingPosts, setPendingPosts] = useState<PendingCommunityPost[]>([]);
+  const [messageRequests, setMessageRequests] = useState<PendingMessageRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -46,10 +52,13 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
     setLoading(true);
 
     try {
-      const [friendResponse, postResponse] = await Promise.all([
+      const [friendResponse, postResponse, messageResponse] = await Promise.all([
         fetch('/api/friends/requests', { cache: 'no-store' }),
         fetch('/api/admin/community/posts', { cache: 'no-store' }),
+        fetch('/api/messages/requests', { cache: 'no-store' }),
       ]);
+      const messagePayload = messageResponse.ok ? await messageResponse.json().catch(() => null) : null;
+      setMessageRequests(Array.isArray(messagePayload?.requests) ? messagePayload.requests : []);
       const payload = await friendResponse.json().catch(() => null);
 
       if (!friendResponse.ok) {
@@ -95,7 +104,31 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
     }
   };
 
-  const notificationCount = requests.length + pendingPosts.length;
+  const notificationCount = requests.length + pendingPosts.length + messageRequests.length;
+
+  const handleMessageRequest = async (conversationId: string, action: 'accept' | 'delete' | 'block') => {
+    setProcessingId(conversationId);
+
+    try {
+      const response = await fetch(`/api/messages/requests/${conversationId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'Nao foi possivel responder a mensagem.');
+      }
+
+      setMessageRequests((current) => current.filter((request) => request.id !== conversationId));
+      showToast(payload?.message ?? 'Pronto.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Nao foi possivel responder a mensagem.', 'error');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   useEffect(() => {
     void loadRequests();
@@ -134,7 +167,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
-        aria-label={adminMode ? 'Notificacoes administrativas' : 'Solicitacoes de amizade'}
+        aria-label={adminMode ? 'Alertas' : 'Alertas'}
       >
         <Bell size={18} />
         {notificationCount > 0 ? (
@@ -162,6 +195,54 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
               </div>
             ) : (
               <ul className="divide-y divide-slate-100">
+                {messageRequests.map((request) => {
+                  const senderName = request.sender.name || request.sender.username || 'Membro da comunidade';
+
+                  return (
+                    <li key={request.id} className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={request.sender.username ? `/${request.sender.username}` : '/'}
+                          onClick={() => setOpen(false)}
+                          className="shrink-0"
+                        >
+                          <Avatar src={request.sender.image} name={senderName} size="lg" />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-900">{senderName}</p>
+                          <p className="truncate text-xs text-slate-500">quer enviar uma mensagem</p>
+                        </div>
+                      </div>
+                      {request.preview ? <p className="mt-2 line-clamp-2 pl-[3.25rem] text-xs leading-5 text-slate-600">{request.preview}</p> : null}
+                      <div className="mt-2.5 flex flex-wrap gap-2 pl-[3.25rem]">
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'accept')}
+                          className="rounded-full bg-brand-500 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:brightness-105 disabled:opacity-50"
+                        >
+                          Aceitar
+                        </button>
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'delete')}
+                          className="rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'block')}
+                          className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Bloquear
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
                 {requests.map((request) => {
                   const requesterName = request.requester.name || 'Usuario da comunidade';
 

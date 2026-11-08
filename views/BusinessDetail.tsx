@@ -619,7 +619,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 type="button"
                 onClick={() => {
                   setContacting(true);
-                  startDirectConversation(business.ownerId);
+                  startDirectConversation(business.ownerId, { type: 'business', id: business.id });
                 }}
                 disabled={contacting}
                 className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"

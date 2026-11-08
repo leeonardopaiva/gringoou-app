@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { MessagePrivacySection } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -793,6 +794,8 @@ const Profile: React.FC<{
           <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
         )}
       </Section>
+
+      <MessagePrivacySection />
         </>
       )}
     </ContentColumn>

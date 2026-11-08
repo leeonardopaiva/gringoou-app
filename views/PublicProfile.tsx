@@ -466,7 +466,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexão' : 'Adicionar'}
                   </button>
                 )}
-                {!isOwnProfile && friendStatus !== 'signed_out' ? (
+                {!isOwnProfile && friendStatus !== 'signed_out' && profile.acceptsMessages !== false ? (
                   <button
                     type="button"
                     disabled={messageLoading}

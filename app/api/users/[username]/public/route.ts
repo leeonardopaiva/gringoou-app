@@ -27,6 +27,7 @@ export async function GET(_request: Request, context: RouteContext) {
     },
     select: {
       id: true,
+      messagePolicy: true,
       name: true,
       username: true,
       image: true,
@@ -261,6 +262,7 @@ export async function GET(_request: Request, context: RouteContext) {
       birthCity: user.birthCity,
       joinedAt: user.createdAt,
       publicPath: `/${user.username}`,
+      acceptsMessages: user.messagePolicy !== 'NOBODY',
       friendFeature: {
         available: true,
         canRequest: friendshipStatus === 'none',
