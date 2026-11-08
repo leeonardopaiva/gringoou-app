@@ -1,5 +1,7 @@
 'use client';
 
+import { MentionInput } from '@/components/community/MentionInput';
+import { MentionText } from '@/components/community/MentionText';
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Loader2, MessageCircle, Send } from 'lucide-react';
@@ -152,7 +154,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
                     ) : (
                       <span className="font-semibold text-slate-900">{name}</span>
                     )}{' '}
-                    <span className={comment.isHidden ? 'italic text-slate-400' : 'text-slate-700'}>{comment.content}</span>
+                    <span className={comment.isHidden ? 'italic text-slate-400' : 'text-slate-700'}><MentionText text={comment.content} /></span>
                   </p>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[11px] text-slate-400">
                     <span>{formatRelativeTime(comment.createdAt)}</span>
@@ -192,14 +194,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
         }}
       >
         <MessageCircle size={16} className="shrink-0 text-slate-400" aria-hidden />
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          maxLength={500}
-          placeholder="Escreva um comentário"
-          aria-label="Escreva um comentário"
-          className="h-10 min-w-0 flex-1 rounded-full border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-        />
+        <MentionInput value={draft} onChange={setDraft} maxLength={500} placeholder="Escreva um comentário (use @ para marcar)" ariaLabel="Escreva um comentário" className="w-full rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400" />
         <button
           type="submit"
           disabled={draft.trim().length < 2 || sending}
