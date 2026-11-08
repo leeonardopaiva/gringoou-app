@@ -85,6 +85,9 @@ export interface NewsArticleContract {
   likeCount: number;
   /** A pessoa logada já curtiu esta notícia. */
   viewerLiked: boolean;
+  /** Endereço da página da notícia no Gringoou (para compartilhar). */
+  path: string;
+  commentCount: number;
   /** Últimas pessoas que curtiram (até 3), para o grupo de avatares. */
   recentLikers: Array<{ id: string; name: string | null; username: string | null; image: string | null }>;
 }

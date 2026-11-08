@@ -9,6 +9,7 @@ import JobList from '@/views/JobList';
 import JobDetail from '@/views/JobDetail';
 import HousingDetail from '@/views/HousingDetail';
 import NewsList from '@/views/NewsList';
+import NewsDetail from '@/views/NewsDetail';
 import Profile from '@/views/Profile';
 import SearchResults from '@/views/SearchResults';
 import type { PersonaMode, ProfessionalProfileIdentity, User } from '@/types';
@@ -65,7 +66,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
     case 'search':
       return <SearchResults />;
     case 'news':
-      return <NewsList initialData={initialNewsData} />;
+      return segments[1] ? <NewsDetail slug={decodeURIComponent(segments[1])} /> : <NewsList initialData={initialNewsData} />;
     case 'jobs':
       return segments[1] ? <JobDetail jobId={decodeURIComponent(segments[1])} /> : <JobList user={currentUser} initialData={initialJobsData} />;
     case 'housing':

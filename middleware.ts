@@ -38,6 +38,8 @@ const PUBLIC_AUTH_PATHS = [
   '/api/auth',
   '/login',
   '/landing',
+  // Página pública de uma notícia (link compartilhado); a lista /news continua exigindo login.
+  '/news/',
   '/access-blocked',
   '/maintenance',
   '/styleguide',

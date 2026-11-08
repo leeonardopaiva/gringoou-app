@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Avatar } from '../components/ui/Avatar';
 import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
+import { NewsComments } from '../components/news/NewsComments';
 import { SectionTabs } from '../components/ui/SectionTabs';
 import { Button } from '../components/ui';
 import { formatRelativeTime } from '../components/marketplace/MarketplaceCard';
@@ -33,7 +34,8 @@ const formatPublishedAt = (iso: string) =>
     new Date(iso),
   );
 
-const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
+/** Cartão da notícia: na lista mostra a prévia; na página da notícia (`detail`) abre os comentários completos. */
+export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean }> = ({ article, detail = false }) => {
   const { showToast } = useToast();
   const [imageFailed, setImageFailed] = useState(false);
   const [liked, setLiked] = useState(article.viewerLiked);
@@ -89,12 +91,14 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
   };
 
   const handleShare = async () => {
+    // Compartilha a página da notícia no Gringoou, não o link da matéria original.
+    const shareUrl = `${window.location.origin}${article.path}`;
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({ title: article.title, text: article.subtitle ?? undefined, url: article.externalUrl });
+        await navigator.share({ title: article.title, text: article.subtitle ?? undefined, url: shareUrl });
         return;
       }
-      await navigator.clipboard.writeText(article.externalUrl);
+      await navigator.clipboard.writeText(shareUrl);
       showToast('Link da notícia copiado.', 'success');
     } catch (error) {
       // Cancelar o menu de compartilhamento não é erro.
@@ -125,7 +129,13 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
       </div>
 
       <div className="p-4">
-        <h2 className="text-base font-bold leading-snug text-foreground">{article.title}</h2>
+        {detail ? (
+          <h1 className="text-lg font-bold leading-snug text-foreground">{article.title}</h1>
+        ) : (
+          <h2 className="text-base font-bold leading-snug text-foreground">
+            <Link href={article.path} className="transition hover:text-brand-600">{article.title}</Link>
+          </h2>
+        )}
         {article.subtitle ? <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{article.subtitle}</p> : null}
 
         <div className="mt-3 flex items-end justify-between gap-3">
@@ -194,6 +204,9 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
           >
             <ExternalLink size={18} aria-hidden />
           </a>
+        </div>
+        <div className="mt-3">
+          <NewsComments articleId={article.id} initialCount={article.commentCount} expanded={detail} />
         </div>
       </div>
       <Modal open={likersOpen} onClose={() => setLikersOpen(false)} title="Quem curtiu" className="max-w-md">
