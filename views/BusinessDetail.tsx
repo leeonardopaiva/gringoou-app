@@ -402,6 +402,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   const galleryImages = [business.imageUrl, ...business.galleryUrls].filter(Boolean);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showAllGallery, setShowAllGallery] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
   const mapQuery = encodeURIComponent(business.address || business.locationLabel);
   const isPendingReview = business.status === 'PENDING_REVIEW';
 
@@ -457,10 +458,15 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         </div>
       ) : null}
       <BackBar fallbackHref="/businesses" label="Negócios" />
-      <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
-        <img src={business.imageUrl} className="h-full w-full object-cover" alt={business.name} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
+      <div className={`relative h-56 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-64 ${isPendingReview ? 'grayscale' : ''}`}>
+        {business.imageUrl && !coverFailed ? (
+          <img src={business.imageUrl} className="h-full w-full object-cover" alt="" onError={() => setCoverFailed(true)} />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center" aria-hidden>
+            <span className="text-6xl font-extrabold text-white/30">{business.name.trim().charAt(0).toUpperCase() || 'N'}</span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
         <div className="absolute right-4 top-4 flex gap-2">
           <button
             type="button"
@@ -472,7 +478,6 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           >
             <Heart size={19} fill={business.isFavorite ? 'currentColor' : 'none'} />
           </button>
-
           <button
             type="button"
             onClick={() => void handleShare()}
@@ -482,63 +487,34 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             <Share2 size={19} />
           </button>
         </div>
-
-        <div className="absolute bottom-6 left-5 right-5">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-              {business.category}
-            </div>
-
-          </div>
-
-          <h1 className="mt-3 flex items-center gap-2 text-3xl font-bold leading-tight text-white">{business.name}{business.ownershipVerifiedAt ? <BadgeCheck size={22} aria-label="Propriedade verificada pela equipe" /> : null}</h1>
-          <p className="mt-2 text-sm text-white/85">{business.locationLabel}</p>
-        </div>
       </div>
 
-      <div className="space-y-6 px-5 pt-6">
+      <div className="space-y-7 px-5 pb-2 pt-6 sm:px-7">
         {isPendingReview ? (
           <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
             Este negócio está aguardando aprovação e fica visível apenas para você e administradores.
           </div>
         ) : null}
 
-        {/* Ações principais: uma única linha, com o contato direto em destaque. */}
-        <div className="flex flex-wrap items-center gap-2">
-          {!business.isOwner && business.ownerId ? (
-            <button
-              type="button"
-              onClick={() => {
-                setContacting(true);
-                startDirectConversation(business.ownerId, { type: 'business', id: business.id });
-              }}
-              disabled={contacting}
-              className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
-            >
-              <Send size={16} />
-              {contacting ? 'Abrindo conversa...' : 'Falar com o negócio'}
-            </button>
-          ) : business.isOwner ? (
-            <Link href="/ads/inbox" className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105 sm:flex-none">
-              <Send size={16} />
-              Ver mensagens do negócio
-            </Link>
-          ) : null}
-          {whatsappHref ? (
-            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
-              <MessageCircle size={16} />
-              <span className="hidden sm:inline">WhatsApp</span>
-            </a>
-          ) : null}
-          {callHref ? (
-            <a href={callHref} aria-label="Ligar" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-              <Phone size={16} />
-              <span className="hidden sm:inline">Ligar</span>
-            </a>
-          ) : null}
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
+        <header className="space-y-3">
+          <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">{business.category}</span>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1.5">
+              <h1 className="flex items-center gap-2 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+                <span className="min-w-0 break-words">{business.name}</span>
+                {business.ownershipVerifiedAt ? <BadgeCheck size={22} className="shrink-0 text-brand-500" aria-label="Propriedade verificada pela equipe" /> : null}
+              </h1>
+              <p className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />{business.locationLabel}</p>
+            </div>
+            {business.canEdit && !managementMode ? (
+              <Link
+                href={`/businesses/${business.slug || business.id}/gerenciar`}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+              >
+                <PencilLine size={14} /> Gerenciar
+              </Link>
+            ) : null}
+          </div>
           <StarRating
             average={business.ratingAverage}
             count={business.ratingCount}
@@ -547,24 +523,49 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             disabled={!business.canRate || business.viewerRating !== null}
             onRate={(stars) => void handleRateBusiness(stars)}
           />
-          {business.canEdit && !managementMode ? (
-            <Link
-              href={`/businesses/${business.slug || business.id}/gerenciar`}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 transition hover:bg-brand-100"
+        </header>
+
+        {/* Ações de contato: a principal ocupa o espaço, as demais são ícones. */}
+        <div className="flex items-stretch gap-2.5">
+          {!business.isOwner && business.ownerId ? (
+            <button
+              type="button"
+              onClick={() => {
+                setContacting(true);
+                startDirectConversation(business.ownerId, { type: 'business', id: business.id });
+              }}
+              disabled={contacting}
+              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <PencilLine size={14} /> Gerenciar
+              <MessageCircle size={18} />
+              {contacting ? 'Abrindo conversa...' : 'Falar com o negócio'}
+            </button>
+          ) : business.isOwner ? (
+            <Link href="/ads/inbox" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105">
+              <MessageCircle size={18} />
+              Ver mensagens do negócio
             </Link>
+          ) : null}
+          {whatsappHref ? (
+            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" title="WhatsApp" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-emerald-600 transition hover:bg-emerald-50">
+              <Send size={18} />
+            </a>
+          ) : null}
+          {callHref ? (
+            <a href={callHref} aria-label="Ligar" title="Ligar" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50">
+              <Phone size={18} />
+            </a>
           ) : null}
         </div>
 
         {business.description ? (
           <section aria-label="Sobre o negócio">
-            <h2 className="text-sm font-bold text-slate-900">Sobre</h2>
+            <h2 className="text-base font-bold text-slate-900">Sobre</h2>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">{business.description}</p>
           </section>
         ) : null}
 
-        <section aria-label="Informações de contato" className="divide-y divide-slate-100 border-y border-slate-100">
+        <section aria-label="Informações de contato" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-4">
           {business.address ? (
             <div className="flex items-start gap-3 py-3.5">
               <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
@@ -605,7 +606,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
         {galleryImages.length > 0 ? (
           <section aria-label="Galeria" className="space-y-3">
-            <h2 className="text-sm font-bold text-slate-900">Fotos</h2>
+            <h2 className="text-base font-bold text-slate-900">Fotos</h2>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {(showAllGallery ? galleryImages : galleryImages.slice(0, GALLERY_PREVIEW_LIMIT)).map((imageUrl, index) => {
                 const hiddenCount = galleryImages.length - GALLERY_PREVIEW_LIMIT;
