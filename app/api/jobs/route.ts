@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jobSchema } from '@/lib/validators';
@@ -11,15 +12,17 @@ export async function GET(request: Request) {
   const location = searchParams.get('location')?.trim();
   const salary = searchParams.get('salary')?.trim();
   const country = searchParams.get('country')?.trim().toUpperCase();
-  const region = searchParams.get('region')?.trim();
+  const requestedRegion = searchParams.get('region')?.trim();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(24, Math.max(1, Number(searchParams.get('pageSize')) || 8));
+  const regionScope = resolveRegionScope(await getServerAuthSession(), requestedRegion);
+  const region = regionScope.enforced ? regionScope.regionKey ?? undefined : requestedRegion;
   if (USE_MOCKS) {
     return NextResponse.json(getMockJobsResponse(page, pageSize, region));
   }
   const where = {
     isActive: true,
-    ...(region ? { regionKey: region } : {}),
+    ...regionWhereFor(regionScope, requestedRegion),
     ...(employmentType ? { employmentType: { equals: employmentType, mode: 'insensitive' as const } } : {}),
     ...(location ? { locationLabel: { contains: location, mode: 'insensitive' as const } } : {}),
     ...(salary ? { salary: { contains: salary, mode: 'insensitive' as const } } : {}),

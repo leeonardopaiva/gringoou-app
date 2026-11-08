@@ -1,4 +1,5 @@
 import { CommunityGroupMemberRole, CommunityGroupMembershipStatus, CommunityPostStatus } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -13,7 +14,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const businessId = searchParams.get('businessId');
   const groupId = searchParams.get('groupId');
-  const regionKey = searchParams.get('region') ?? (businessId || groupId ? undefined : session?.user?.regionKey);
+  const regionScope = resolveRegionScope(session, searchParams.get('region'));
+  const regionKey = regionScope.enforced ? (regionScope.regionKey ?? '__sem_regiao__') : (searchParams.get('region') ?? (businessId || groupId ? undefined : session?.user?.regionKey));
   const manageBusiness = searchParams.get('manage') === '1';
 
   if (USE_MOCKS) {

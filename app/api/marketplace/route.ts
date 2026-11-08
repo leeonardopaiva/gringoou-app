@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   const isAdmin = session?.user?.role === 'ADMIN';
   const { searchParams } = new URL(request.url);
 
-  const regionKey = searchParams.get('region') ?? session?.user?.regionKey ?? null;
+  const regionKey = resolveRegionScope(session, searchParams.get('region')).regionKey;
   const category = searchParams.get('category') || undefined;
   const query = searchParams.get('q') || undefined;
   const sort = searchParams.get('sort') as 'recent' | 'price_asc' | 'price_desc' | null;

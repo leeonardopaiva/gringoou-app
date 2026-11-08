@@ -1,4 +1,5 @@
 import { AdAccountRole, BusinessStatus, BusinessMemberRole, UserRole, VisibilityScope } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
   }
   const category = searchParams.get('category');
   const search = searchParams.get('search');
-  const viewerRegionKey = searchParams.get('region') ?? session?.user?.regionKey;
+  const viewerRegionKey = resolveRegionScope(session, searchParams.get('region')).regionKey;
   return NextResponse.json(await getBusinessesPage({ session, regionKey: viewerRegionKey, category, search }));
 }
 

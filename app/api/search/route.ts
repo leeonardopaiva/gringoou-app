@@ -1,4 +1,5 @@
 import { BusinessStatus, CommunityGroupMembershipStatus, CommunityPostStatus, EventStatus, Prisma } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -63,7 +64,10 @@ export async function GET(request: Request) {
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const limit = Math.min(MAX_LIMIT, Math.max(1, Number(searchParams.get('pageSize')) || DEFAULT_LIMIT));
   const skip = (page - 1) * limit;
-  const explicitRegion = searchParams.has('region') ? searchParams.get('region')?.trim() || null : undefined;
+  const requestedRegion = searchParams.has('region') ? searchParams.get('region')?.trim() || null : undefined;
+  // Isolamento por região: quem está logado só busca na própria região, ignorando region/country/city do navegador.
+  const regionScope = resolveRegionScope(session, requestedRegion);
+  const explicitRegion = regionScope.enforced ? regionScope.regionKey : requestedRegion;
   const country = searchParams.get('country')?.trim().toUpperCase().slice(0, 2) || '';
   const city = searchParams.get('city')?.trim().slice(0, 80) || '';
   const businessType = searchParams.get('businessType')?.trim().slice(0, 80) || '';
@@ -85,7 +89,7 @@ export async function GET(request: Request) {
           ? { OR: [{ endsAt: { lt: now } }, { endsAt: null, startsAt: { lt: now } }] }
           : dateScope === 'any' ? {} : { startsAt: { gte: now } };
 
-  const matchingRegions = country || city
+  const matchingRegions = !regionScope.enforced && (country || city)
     ? await prisma.region.findMany({
         where: {
           isActive: true,
@@ -103,7 +107,9 @@ export async function GET(request: Request) {
     : [];
   const filteredRegionKeys = matchingRegions.map((region) => region.key);
   const viewerRegionKey = explicitRegion === undefined ? session?.user?.regionKey : explicitRegion;
-  const regionWhere = explicitRegion
+  const regionWhere = regionScope.enforced
+    ? { regionKey: regionScope.regionKey ?? '__sem_regiao__' }
+    : explicitRegion
     ? { regionKey: explicitRegion }
     : filteredRegionKeys.length > 0
       ? { regionKey: { in: filteredRegionKeys } }
@@ -213,6 +219,7 @@ export async function GET(request: Request) {
   };
   const jobWhere: Prisma.JobWhereInput = {
     isActive: true,
+    ...regionWhere,
     ...(country ? { countryCode: country } : {}),
     ...(terms.length ? { OR: terms.flatMap((term) => [
       { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
@@ -224,6 +231,7 @@ export async function GET(request: Request) {
   };
   const housingWhere: Prisma.HousingWhereInput = {
     isActive: true,
+    ...regionWhere,
     ...(terms.length ? { OR: terms.flatMap((term) => [
       { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
       { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
@@ -265,7 +273,7 @@ export async function GET(request: Request) {
       prisma.housing.count({ where: housingWhere }),
     ]) : emptyPage<never>(),
     wantsCategory(category, 'interests') && query
-      ? prisma.user.findMany({ where: { onboardingCompleted: true, interests: { isEmpty: false } }, take: 100, select: { interests: true } })
+      ? prisma.user.findMany({ where: { onboardingCompleted: true, interests: { isEmpty: false }, ...regionWhere }, take: 100, select: { interests: true } })
       : Promise.resolve([]),
   ]);
 
