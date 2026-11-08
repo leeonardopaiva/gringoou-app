@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
 import {
   CalendarDays,
   Clock3,
@@ -475,6 +476,21 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
     <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
       <BackBar fallbackHref="/events" label="Eventos" />
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
+        {event.canEdit ? (
+          <ImageUploadButton
+            folder="events"
+            label="Atualizar capa"
+            className="absolute bottom-3 right-3"
+            onUploaded={async (url) => {
+              const response = await fetch(`/api/events/${event.slug || event.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
+              const payload = await response.json().catch(() => null);
+              if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+              setEvent((current) => ({ ...current, imageUrl: payload.event?.imageUrl || url }));
+              notifyContentUpdated();
+              showToast('Capa atualizada.', 'success');
+            }}
+          />
+        ) : null}
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 

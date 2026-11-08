@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
 import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
@@ -568,6 +569,7 @@ const Profile: React.FC<{
     <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
+          <ImageUploadButton folder="profiles" label="Atualizar capa" className="absolute bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
           {profile.coverImageUrl ? (
             <img src={profile.coverImageUrl} alt="Capa do perfil" className="h-full w-full object-cover object-center" />
           ) : (
@@ -578,9 +580,6 @@ const Profile: React.FC<{
             <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-white/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
               <PencilLine size={16} />
               Editar perfil
-            </button>
-            <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600" aria-label="Editar capa">
-              <PencilLine size={16} />
             </button>
           </div>
         </div>
@@ -594,9 +593,7 @@ const Profile: React.FC<{
                   {getInitials(activeHeaderName)}
                 </div>
               )}
-              <button type="button" onClick={() => { setEditing((c) => ({ ...c, avatar: !c.avatar })); setAvatarDraft(profile.image); }} className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-white p-2 text-brand-500" aria-label="Editar foto do perfil">
-                <PencilLine size={14} />
-              </button>
+              <ImageUploadButton folder="profiles" size="sm" label="Atualizar foto" className="absolute bottom-1 right-1" onUploaded={async (url) => { await saveAvatar(url); }} />
             </div>
             <div className="relative mt-4">
               {canUseProfessionalMode ? (
