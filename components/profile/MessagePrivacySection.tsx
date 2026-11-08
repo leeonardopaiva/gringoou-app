@@ -12,6 +12,38 @@ const OPTIONS: Array<{ value: Policy; title: string; description: string }> = [
   { value: 'NOBODY', title: 'Ninguém', description: 'Ninguém inicia conversa nova. As conversas que você já tem continuam.' },
 ];
 
+export type MessagePolicy = Policy;
+
+/** Opções de privacidade de mensagens, controladas por quem usa (sem salvar sozinho). */
+export function MessagePolicyOptions({ value, onChange, disabled }: { value: Policy | null; onChange: (next: Policy) => void; disabled?: boolean }) {
+  return (
+    <div className="space-y-2" role="radiogroup" aria-label="Quem pode me enviar mensagens">
+      {OPTIONS.map((option) => {
+        const selected = value === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            disabled={disabled || value === null}
+            onClick={() => onChange(option.value)}
+            className={cn('flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition disabled:opacity-60', selected ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-white hover:bg-slate-50')}
+          >
+            <span className={cn('mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2', selected ? 'border-brand-500' : 'border-slate-300')} aria-hidden>
+              {selected ? <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> : null}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-slate-900">{option.title}</span>
+              <span className="mt-0.5 block text-xs leading-5 text-slate-500">{option.description}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Quem pode me enviar mensagem direta. Negócios e organizadores de evento continuam recebendo contatos. */
 export function MessagePrivacySection() {
   const { showToast } = useToast();

@@ -163,7 +163,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
             {[
               { label: 'Editar perfil', icon: <Settings size={16} />, href: '/profile' },
               { label: 'Perfil público', icon: <ExternalLink size={16} />, href: profileHref },
-              { label: 'Conta e privacidade', icon: <UserRound size={16} />, href: '/profile?tab=conta' },
+              { label: 'Conta e privacidade', icon: <UserRound size={16} />, href: '/profile?edit=profile' },
             ].map((item) => (
               <button key={item.label} type="button" onClick={() => { setOpen(false); router.push(item.href); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"><span className="text-slate-400">{item.icon}</span>{item.label}</button>
             ))}
