@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
-import { BriefcaseBusiness, CalendarDays, ExternalLink, ImagePlus, Megaphone, MoreHorizontal, Plus } from 'lucide-react';
+import { BriefcaseBusiness, CalendarDays, ExternalLink, Megaphone, MoreHorizontal, Plus } from 'lucide-react';
 import { Dropdown } from '../ui/Dropdown';
 import type { ProfessionalProfileSummary } from '../../types';
 
@@ -34,11 +34,9 @@ const menuTrigger = (label: string) => (
 type ProfessionalModePanelProps = {
   professionalProfile: ProfessionalProfileSummary;
   username: string;
-  onEditAvatar: () => void;
-  onEditCover: () => void;
 };
 
-const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professionalProfile, username, onEditAvatar, onEditCover }) => {
+const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professionalProfile, username }) => {
   const navigate = (path: string) => window.location.assign(path);
 
   return (
@@ -63,8 +61,6 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
                   heading: 'Perfil profissional',
                   items: [
                     { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => navigate(`/profissional/${username}`) },
-                    { label: 'Editar foto', icon: <ImagePlus size={16} />, onClick: onEditAvatar },
-                    { label: 'Editar capa', icon: <ImagePlus size={16} />, onClick: onEditCover },
                   ],
                 },
                 {

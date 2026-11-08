@@ -251,12 +251,7 @@ const Profile: React.FC<{
       return;
     }
 
-    if (editSection === 'cover') {
-      setEditing((current) => ({ ...current, cover: true }));
-      setCoverDraft(profile.coverImageUrl);
-    }
-
-    if (editSection === 'region' || editSection === 'profile') {
+    if (editSection === 'cover' || editSection === 'region' || editSection === 'profile') {
       setProfileEditDraft(profile);
       setEditing((current) => ({ ...current, profile: true }));
     }
@@ -620,26 +615,6 @@ const Profile: React.FC<{
             </p>
           </div>
 
-          <Modal open={editing.cover} onClose={() => setEditing((c) => ({ ...c, cover: false }))} title="Editar capa" description="Selecione uma imagem horizontal para o seu perfil profissional.">
-            <EditorCard>
-              <CloudinaryImageField value={coverDraft} onChange={setCoverDraft} folder="profiles" placeholder="Link da capa do perfil" hint="Use uma imagem horizontal para destacar seu perfil publico." />
-              <ActionRow>
-                <PrimaryButton className={primaryButtonClass} label={savingKey === 'cover' ? 'Salvando...' : 'Salvar capa'} onClick={() => void saveProfile({ coverImageUrl: coverDraft }, 'Capa atualizada com sucesso.', 'cover')} disabled={savingKey === 'cover'} />
-                <SecondaryButton className={secondaryButtonClass} label={coverDraft ? 'Limpar' : 'Cancelar'} onClick={() => { if (coverDraft) { setCoverDraft(''); return; } setEditing((c) => ({ ...c, cover: false })); }} disabled={savingKey === 'cover'} />
-              </ActionRow>
-            </EditorCard>
-          </Modal>
-
-          <Modal open={editing.avatar} onClose={() => setEditing((c) => ({ ...c, avatar: false }))} title="Editar foto" description="Selecione uma nova foto para o seu perfil profissional.">
-            <EditorCard>
-              <CloudinaryImageField value={avatarDraft} onChange={setAvatarDraft} folder="profiles" placeholder="Link da foto do perfil" hint="Envie sua foto pela Cloudinary ou cole uma URL publica." />
-              <ActionRow>
-                <PrimaryButton className={primaryButtonClass} label={savingKey === 'avatar' ? 'Salvando...' : 'Salvar foto'} onClick={() => void saveAvatar()} disabled={savingKey === 'avatar'} />
-                <SecondaryButton className={secondaryButtonClass} label={avatarDraft ? 'Limpar' : 'Cancelar'} onClick={() => { if (avatarDraft) { setAvatarDraft(''); return; } setEditing((c) => ({ ...c, avatar: false })); }} disabled={savingKey === 'avatar'} />
-              </ActionRow>
-            </EditorCard>
-          </Modal>
-
           <Modal open={editing.profile} onClose={closeEditProfileModal} title="Editar perfil" description="Atualize todos os seus dados pessoais em um único lugar." className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
             {profileEditDraft && (
               <EditorCard>
@@ -735,8 +710,6 @@ const Profile: React.FC<{
         <ProfessionalModePanel
           professionalProfile={professionalProfile}
           username={profile.username}
-          onEditAvatar={() => { setAvatarDraft(profile.image); setEditing((current) => ({ ...current, avatar: true })); }}
-          onEditCover={() => { setCoverDraft(profile.coverImageUrl); setEditing((current) => ({ ...current, cover: true })); }}
         />
       ) : (
         <>

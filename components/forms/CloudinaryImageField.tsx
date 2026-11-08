@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { ImagePlus, LoaderCircle, Pencil, Trash2, UploadCloud } from 'lucide-react';
+import { ImagePlus, LoaderCircle, Pencil, Trash2 } from 'lucide-react';
 import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type CloudinaryFolder } from '@/lib/cloudinary';
 import { isValidHttpUrl } from '@/lib/url';
 import FieldErrorMessage from './FieldErrorMessage';
@@ -138,27 +138,27 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
             void uploadFile(event.dataTransfer.files?.[0]);
           }}
           style={{ width, height }}
-          className={`group relative block max-w-full cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed bg-slate-50 text-slate-600 outline-none transition focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${dragging ? 'border-brand-400 bg-brand-50' : 'border-slate-200'}`}
+          className={`group relative block max-w-full cursor-pointer overflow-hidden rounded-2xl border bg-slate-50 text-slate-600 outline-none transition focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${currentImageUrl ? 'border-slate-200' : 'border-dashed'} ${dragging ? 'border-brand-400 bg-brand-50' : currentImageUrl ? '' : 'border-slate-300 hover:border-brand-300'}`}
         >
           {currentImageUrl && isValidHttpUrl(currentImageUrl) ? (
             <img
               src={currentImageUrl}
               alt="Imagem atual"
-              className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02] group-active:scale-[1.02]"
+              className="h-full w-full object-cover"
             />
           ) : (
             <span className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-sm font-bold">
               <ImagePlus size={24} />
-              Clique ou arraste uma imagem
+              Escolher imagem
             </span>
           )}
 
-          <span className={`absolute inset-0 flex items-center justify-center transition duration-200 group-hover:bg-slate-950/35 group-active:bg-slate-950/35 group-focus-visible:bg-slate-950/35 ${uploading ? 'bg-slate-950/35' : 'bg-slate-950/0'}`}>
-            <span className={`flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-bold text-slate-800 shadow-lg transition duration-200 group-hover:scale-100 group-hover:opacity-100 group-active:scale-100 group-active:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 ${uploading ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
-              {uploading ? <LoaderCircle size={17} className="animate-spin" /> : currentImageUrl ? <Pencil size={17} /> : <UploadCloud size={17} />}
-              {uploading ? 'Enviando...' : currentImageUrl ? 'Alterar imagem' : 'Adicionar imagem'}
+          {currentImageUrl || uploading ? (
+            <span className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition group-hover:bg-black/70">
+              {uploading ? <LoaderCircle size={14} className="animate-spin" /> : <Pencil size={14} />}
+              {uploading ? 'Enviando...' : 'Alterar'}
             </span>
-          </span>
+          ) : null}
         </button>
 
         {currentImageUrl && !disabled ? (
