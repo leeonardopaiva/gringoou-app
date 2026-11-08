@@ -14,8 +14,10 @@ export type RegionScope = {
 export function resolveRegionScope(session: SessionLike, requested?: string | null): RegionScope {
   const user = session?.user;
   const privileged = user?.role === 'ADMIN' || user?.role === 'MODERATOR';
-  if (user?.id && !privileged) return { regionKey: user.regionKey || null, enforced: true };
-  return { regionKey: requested || user?.regionKey || null, enforced: false };
+  // Visitantes sem conta nunca escolhem região: não há ambiente aberto fora do login.
+  if (!user?.id) return { regionKey: null, enforced: true };
+  if (!privileged) return { regionKey: user.regionKey || null, enforced: true };
+  return { regionKey: requested || user.regionKey || null, enforced: false };
 }
 
 /** Filtro Prisma de região: com escopo imposto, quem não tem região não vê nada de nenhuma região. */

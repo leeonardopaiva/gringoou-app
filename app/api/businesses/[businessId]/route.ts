@@ -1,4 +1,5 @@
 import { BusinessStatus } from '@prisma/client';
+import { isValidPhone } from '@/lib/forms/phone';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -164,6 +165,13 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!canEdit) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  for (const field of ['phone', 'whatsapp'] as const) {
+    const value = body[field];
+    if (typeof value === 'string' && value.trim() && !isValidPhone(value)) {
+      return NextResponse.json({ error: 'Informe um telefone válido, com DDD ou código do país.' }, { status: 400 });
+    }
   }
 
   let nextSlug: string | undefined;

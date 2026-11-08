@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
+import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import {
   CalendarDays,
   Clock3,
@@ -477,10 +477,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       <BackBar fallbackHref="/events" label="Eventos" />
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         {event.canEdit ? (
-          <ImageUploadButton
+          <ImageEditMenu
             folder="events"
-            label="Atualizar capa"
-            className="absolute bottom-3 right-3"
+            kind="cover"
+            src={event.imageUrl}
+            className="bottom-3 right-3"
             onUploaded={async (url) => {
               const response = await fetch(`/api/events/${event.slug || event.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
               const payload = await response.json().catch(() => null);
