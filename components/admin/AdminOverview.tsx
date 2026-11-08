@@ -2,6 +2,7 @@
 
 import { CalendarDays, CheckCircle2, Clock3, MessageCircle, Megaphone, RefreshCcw, Store, Users } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
+import { InfoTip } from '@/components/ui/InfoTip';
 
 type Section = 'ads' | 'moderation' | 'businesses' | 'events' | 'users' | 'regions' | 'imports' | 'banners' | 'analytics';
 type Actor = { name: string | null; email: string | null };
@@ -43,8 +44,8 @@ export default function AdminOverview({ dashboard, loading, refreshing, onRefres
   return (
     <div className="mx-auto max-w-[1500px] space-y-7 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><h1 className="text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Painel operacional</h1><p className="mt-1 text-sm text-slate-400">Acompanhe pendencias, modere conteudos e gerencie os recursos da plataforma.</p></div>
-        <div className="flex gap-3"><select aria-label="Periodo" className="h-11 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium outline-none"><option>Esta semana</option><option>Este mes</option></select><Button iconLeft={<RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />} disabled={refreshing} onClick={onRefresh}>Atualizar painel</Button></div>
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Visão geral<InfoTip text="Pendências, moderação e atalhos para os recursos da plataforma." /></h1>
+        <div className="flex gap-3"><button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing} onClick={onRefresh} className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button></div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 2xl:grid-cols-6">

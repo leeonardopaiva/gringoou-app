@@ -19,6 +19,7 @@ import {
   MapPin,
   Menu,
   Megaphone,
+  Plug,
   Search,
   ShieldCheck,
   Ticket,
@@ -33,25 +34,21 @@ import type { User } from '@/types';
 import { UserRole } from '@/types';
 
 const navigation = [
-  { href: '/admin', label: 'Visao Geral', icon: LayoutGrid, exact: true },
-  { href: '/admin/ads', label: 'Anuncios Pagos', icon: Megaphone },
-  { href: '/admin/moderation', label: 'Moderacao', icon: ShieldCheck },
-  { href: '/admin/news', label: 'Noticias', icon: Newspaper },
-  { href: '/admin/businesses', label: 'Negocios', icon: BriefcaseBusiness },
+  { href: '/admin', label: 'Visão geral', icon: LayoutGrid, exact: true },
+  { href: '/admin/ads', label: 'Anúncios pagos', icon: Megaphone },
+  { href: '/admin/moderation', label: 'Moderação', icon: ShieldCheck },
+  { href: '/admin/news', label: 'Notícias', icon: Newspaper },
+  { href: '/admin/businesses', label: 'Negócios', icon: BriefcaseBusiness },
   { href: '/admin/events', label: 'Eventos', icon: CalendarDays },
-  { href: '/admin/users', label: 'Usuarios', icon: Users },
-  { href: '/admin/regions', label: 'Regioes', icon: MapPin },
-  { href: '/admin/imports', label: 'Importacoes', icon: CloudUpload },
+  { href: '/admin/users', label: 'Usuários', icon: Users },
+  { href: '/admin/regions', label: 'Regiões', icon: MapPin },
+  { href: '/admin/imports', label: 'Importação', icon: CloudUpload },
   { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/invites', label: 'Convites', icon: Ticket },
   { href: '/admin/marketing', label: 'Marketing', icon: Mail },
+  { href: '/admin/integrations', label: 'Integrações', icon: Plug },
 ];
-
-const labels: Record<string, string> = {
-  ads: 'Anuncios', moderation: 'Moderacao', news: 'Noticias', businesses: 'Negocios', events: 'Eventos', users: 'Usuarios',
-  regions: 'Regioes', imports: 'Importacoes', banners: 'Banners', analytics: 'Analytics', invites: 'Convites', marketing: 'Marketing',
-};
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {
   const pathname = usePathname() || '/admin';
@@ -62,7 +59,6 @@ export default function AdminShell({ user, children }: { user: User; children: R
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') ?? '');
   const segment = pathname.split('/')[2] || '';
-  const sectionLabel = labels[segment] || 'Visao Geral';
 
   useEffect(() => {
     setSearchQuery(searchParams?.get('q') ?? '');
@@ -110,7 +106,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
           <Avatar src={user.avatar} name={user.name} size="sm" />
           <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">{user.role === UserRole.MODERATOR ? 'Moderador(a)' : 'Administrador(a)'}</p></div>
         </div>
-        <Link href="/home" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar a comunidade</Link>
+        <Link href="/home" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar à comunidade</Link>
         <button type="button" onClick={() => signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><LogOut size={14} />Sair</button>
       </div>
     </div>
@@ -122,7 +118,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-slate-950/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label="Fechar" className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
       <div className="lg:pl-56">
         <header className="sticky top-0 z-40 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-7">
-          <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{user.role === UserRole.MODERATOR ? 'Moderação' : 'Administração'}</span><span className="text-slate-300">›</span><span className="text-sm font-bold">{sectionLabel}</span></div>
+          <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{user.role === UserRole.MODERATOR ? 'Moderação' : 'Administração'}</span></div>
           <div className="flex items-center gap-2">
             <form onSubmit={submitSearch} role="search" className="hidden w-56 sm:block"><div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-[#F8FAFC] px-4 focus-within:border-[#2B5DF5]/40 focus-within:ring-2 focus-within:ring-[#2B5DF5]/10"><Search size={16} className="text-slate-400" /><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label="Buscar no painel" placeholder="Buscar..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></form>
             <div className="[&_button:first-child]:h-10 [&_button:first-child]:w-10 [&_button:first-child]:rounded-full [&_button:first-child]:border [&_button:first-child]:border-slate-200 [&_button:first-child]:p-0 [&_button:first-child]:text-slate-400">

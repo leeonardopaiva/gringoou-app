@@ -166,6 +166,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
               <button type="button" onClick={() => { setOpen(false); router.push('/profile'); }} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"><Settings size={14} className="mr-1 inline" />Editar perfil</button>
               <button type="button" onClick={() => { setOpen(false); router.push(profileHref); }} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50"><ExternalLink size={14} className="mr-1 inline" />Perfil público</button>
             </div>
+            <button type="button" onClick={() => { setOpen(false); router.push('/profile?tab=conta'); }} className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50"><Settings size={14} />Conta e privacidade</button>
           </div>
           <div className="border-t border-slate-100 p-4">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Meus negócios</p>
@@ -173,15 +174,17 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
               <div className="mt-3 h-12 animate-pulse rounded-xl bg-slate-100" aria-label="Carregando negócios" />
             ) : businesses.length ? <>
               {businesses.map((business) => (
-                <div key={business.id} className="mt-2 flex w-full items-center gap-2 rounded-xl p-2 hover:bg-brand-50">
-                  <Avatar src={business.imageUrl} name={business.name} size="md" />
-                  <button type="button" onClick={() => void openBusinessManagement(business)} className="min-w-0 flex-1 text-left">
-                    <strong className="block truncate text-sm text-slate-900">{business.name}</strong>
-                    <span className="block truncate text-xs text-slate-500">{business.adsOnly ? 'Gerenciar anúncios' : 'Gerenciar negócio'}</span>
-                  </button>
-                  {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-brand-500" aria-label={`Abrir página pública de ${business.name}`} title="Abrir página pública"><ExternalLink size={16} /></button> : null}
-                  {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white hover:text-brand-500" aria-label={`Criar página pública para ${business.name}`} title="Criar página de negócio"><Store size={17} /></button> : null}
-                  {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-500 shadow-sm" aria-label={`Promover ${business.name}`} title="Promover negócio"><Megaphone size={17} /></button> : null}
+                <div key={business.id} className="mt-2 rounded-xl border border-slate-100 p-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar src={business.imageUrl} name={business.name} size="md" />
+                    <strong className="min-w-0 flex-1 truncate text-sm text-slate-900">{business.name}</strong>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button type="button" onClick={() => void openBusinessManagement(business)} className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-bold text-white transition hover:brightness-105"><Settings size={13} />{business.adsOnly ? 'Gerenciar anúncios' : 'Gerenciar'}</button>
+                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"><ExternalLink size={13} />Ver página</button> : null}
+                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"><Store size={13} />Criar página</button> : null}
+                    {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"><Megaphone size={13} />Promover</button> : null}
+                  </div>
                 </div>
               ))}
               <button type="button" onClick={() => { setOpen(false); router.push('/businesses?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />Cadastrar negócio</button>

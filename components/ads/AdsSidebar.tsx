@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn';
 
 const items = [
   { href: '/ads/overview', label: 'Visão geral', icon: LayoutDashboard },
-  { href: '/ads/wizard', label: 'Criar anúncio', icon: CirclePlus },
+  { href: '/ads/wizard', label: 'Promover', icon: CirclePlus },
   { href: '/ads/reports', label: 'Relatórios', icon: BarChart3 },
 ];
 
@@ -27,13 +27,13 @@ export function AdsSidebar({ mobileOpen, onMobileClose }: AdsSidebarProps) {
   return (
     <>
     {mobileOpen && <button type="button" aria-label="Fechar menu" onClick={onMobileClose} className="fixed inset-0 top-[72px] z-30 bg-slate-950/30 md:hidden" />}
-    <aside className={cn('fixed left-0 top-[72px] z-40 h-[calc(100vh-72px)] w-[272px] flex-col border-r border-white/5 bg-[#0B1B2E] text-white transition-transform duration-200 md:flex md:translate-x-0', mobileOpen ? 'flex translate-x-0' : 'flex -translate-x-full')}>
+    <aside className={cn('fixed left-0 top-[72px] z-40 h-[calc(100vh-72px)] w-[272px] flex-col border-r border-white/5 bg-gradient-to-b from-[#26364B] to-[#1B2738] text-white transition-transform duration-200 md:flex md:translate-x-0', mobileOpen ? 'flex translate-x-0' : 'flex -translate-x-full')}>
       <div className="flex items-center gap-3 px-7 pb-9 pt-8">
         <img src="/assets/logo_simbolo.svg" alt="" className="h-9 w-9 object-contain" />
-        <div className="leading-tight"><p className="text-[15px] font-extrabold tracking-tight text-white">Gringoou Ads</p><p className="text-[11px] font-medium text-slate-400">Gerenciador de anúncios</p></div>
+        <div className="leading-tight"><p className="text-[15px] font-extrabold tracking-tight text-white">Painel do negócio</p><p className="text-[11px] font-medium text-slate-400">Gringoou</p></div>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 px-5" aria-label="Menu de anúncios">
-        <p className="px-3 pb-3 pt-1 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">Campanhas</p>
+      <nav className="flex flex-1 flex-col gap-1 px-5" aria-label="Menu do painel do negócio">
+        <p className="px-3 pb-3 pt-1 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">Negócio</p>
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname?.startsWith(item.href);

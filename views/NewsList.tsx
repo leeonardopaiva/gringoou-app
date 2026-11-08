@@ -108,7 +108,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-      <div className="relative aspect-[16/9] w-full bg-slate-100">
+      <div className={`relative aspect-[16/9] w-full bg-slate-100 ${detail ? 'sm:aspect-[2/1]' : ''}`}>
         {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -127,17 +127,21 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-brand-700 shadow-sm backdrop-blur">
           {getNewsCategoryLabel(article.category)}
         </span>
+        {detail ? (
+          <>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" aria-hidden />
+            <h1 className="absolute inset-x-4 bottom-4 text-xl font-bold leading-snug text-white sm:inset-x-6 sm:bottom-6 sm:text-2xl">{article.title}</h1>
+          </>
+        ) : null}
       </div>
 
-      <div className="p-4">
-        {detail ? (
-          <h1 className="text-lg font-bold leading-snug text-foreground">{article.title}</h1>
-        ) : (
+      <div className={detail ? 'p-5 sm:p-6' : 'p-4'}>
+        {detail ? null : (
           <h2 className="text-base font-bold leading-snug text-foreground">
             <Link href={article.path} className="transition hover:text-brand-600">{article.title}</Link>
           </h2>
         )}
-        {article.subtitle ? <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{article.subtitle}</p> : null}
+        {article.subtitle ? <p className={detail ? 'text-base leading-relaxed text-slate-700' : 'mt-1.5 text-sm leading-relaxed text-slate-500'}>{article.subtitle}</p> : null}
 
         <div className="mt-3 flex items-end justify-between gap-3">
           <div className="min-w-0 space-y-1 text-xs text-slate-400">
@@ -201,12 +205,24 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
             rel="noopener noreferrer nofollow"
             aria-label={`Ler matéria original em ${article.source} (abre em nova aba)`}
             title="Ler matéria original"
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            className={`ml-auto h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${detail ? 'hidden' : 'flex'}`}
           >
             <ExternalLink size={18} aria-hidden />
           </a>
         </div>
-        <div className="mt-3">
+        {detail ? (
+          <a
+            href={article.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105"
+          >
+            Ler matéria completa em {article.source}
+            <ExternalLink size={16} aria-hidden />
+          </a>
+        ) : null}
+        <div className={detail ? 'mt-6' : 'mt-3'}>
+          {detail ? <h2 className="mb-3 text-base font-bold text-slate-900">Comentários{article.commentCount > 0 ? ` (${article.commentCount})` : ''}</h2> : null}
           <NewsComments articleId={article.id} initialCount={article.commentCount} expanded={detail} />
         </div>
       </div>

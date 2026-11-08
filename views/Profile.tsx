@@ -89,6 +89,11 @@ const Profile: React.FC<{
   const { update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [profileTab, setProfileTab] = useState<'perfil' | 'conta'>(() => (searchParams?.get('tab') === 'conta' ? 'conta' : 'perfil'));
+  const selectProfileTab = (tab: 'perfil' | 'conta') => {
+    setProfileTab(tab);
+    window.history.replaceState(null, '', tab === 'conta' ? '/profile?tab=conta' : '/profile');
+  };
   const { showToast } = useToast();
   const initialProfile: ProfileState = initialData?.user
     ? {
@@ -675,6 +680,23 @@ const Profile: React.FC<{
         />
       ) : (
         <>
+      <nav aria-label="Seções do perfil" className="flex gap-2" role="tablist">
+        {([['perfil', 'Perfil'], ['conta', 'Conta e privacidade']] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={profileTab === value}
+            onClick={() => selectProfileTab(value)}
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${profileTab === value ? 'bg-brand-500 text-white shadow-sm' : 'bg-white text-slate-600 shadow-sm hover:bg-slate-50'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {profileTab === 'perfil' ? (
+        <>
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={editing.account} onToggle={() => { setEditing((c) => ({ ...c, account: !c.account })); setAccountDraft({ name: profile.name, username: profile.username, email: profile.email, phone: profile.phone, bio: profile.bio, gender: profile.gender, age: profile.age, timeAbroad: profile.timeAbroad, birthCity: profile.birthCity }); }}>
         {editing.account ? (
           <EditorCard>
@@ -762,6 +784,25 @@ const Profile: React.FC<{
         )}
       </Section>
 
+        </>
+      ) : (
+        <>
+      <MessagePrivacySection />
+
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Regiao ativa" description="Comunidade, negocios e eventos priorizam esta regiao." editing={editing.region} onToggle={() => setEditing((c) => ({ ...c, region: !c.region }))}>
+        {editing.region ? (
+          <EditorCard>
+            <RegionSelector citySearch label="Cidade atual (EUA)" value={selectedRegionKey} onChange={(region) => setSelectedRegionKey(region.key)} hint="Voce pode manter sua localizacao atual ou trocar manualmente para outra regiao existente." />
+            <ActionRow>
+              <PrimaryButton className={primaryButtonClass} label={savingKey === 'region' ? 'Salvando...' : 'Salvar regiao'} onClick={() => void saveRegion()} disabled={savingKey === 'region'} />
+              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, region: false }))} disabled={savingKey === 'region'} />
+            </ActionRow>
+          </EditorCard>
+        ) : (
+          <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
+        )}
+      </Section>
+
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Troca de email" description="Informe o novo email. Vamos enviar um link para confirmar a alteracao com seguranca." editing={false} onToggle={() => undefined} hideAction>
         <EditorCard>
           <Input value={requestedEmail} onChange={setRequestedEmail} placeholder="Novo email" icon={<Mail size={16} />} type="email" />
@@ -781,21 +822,8 @@ const Profile: React.FC<{
         </div>
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Regiao ativa" description="Comunidade, negocios e eventos priorizam esta regiao." editing={editing.region} onToggle={() => setEditing((c) => ({ ...c, region: !c.region }))}>
-        {editing.region ? (
-          <EditorCard>
-            <RegionSelector citySearch label="Cidade atual (EUA)" value={selectedRegionKey} onChange={(region) => setSelectedRegionKey(region.key)} hint="Voce pode manter sua localizacao atual ou trocar manualmente para outra regiao existente." />
-            <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'region' ? 'Salvando...' : 'Salvar regiao'} onClick={() => void saveRegion()} disabled={savingKey === 'region'} />
-              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, region: false }))} disabled={savingKey === 'region'} />
-            </ActionRow>
-          </EditorCard>
-        ) : (
-          <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
-        )}
-      </Section>
-
-      <MessagePrivacySection />
+        </>
+      )}
         </>
       )}
     </ContentColumn>

@@ -9,6 +9,7 @@ import MessageReportsSection from '@/components/admin/MessageReportsSection';
 import NewsCommentReportsSection from '@/components/admin/NewsCommentReportsSection';
 import InvitesSection from '@/components/admin/InvitesSection';
 import MarketingSection from '@/components/admin/MarketingSection';
+import IntegrationsSection from '@/components/admin/IntegrationsSection';
 import NewsEditorialSection from '@/components/admin/NewsEditorialSection';
 import { UserRole, type User } from '@/types';
 
@@ -49,6 +50,10 @@ const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }
 
   if (segment === 'invites') {
     return <AdminShell user={currentUser}><InvitesSection /></AdminShell>;
+  }
+
+  if (segment === 'integrations') {
+    return <AdminShell user={currentUser}><IntegrationsSection /></AdminShell>;
   }
 
   if (segment === 'marketing') {
