@@ -516,8 +516,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             >
               <Send size={16} />
-              {contacting ? 'Abrindo conversa...' : 'Enviar mensagem'}
+              {contacting ? 'Abrindo conversa...' : 'Falar com o negócio'}
             </button>
+          ) : business.isOwner ? (
+            <Link href="/ads/inbox" className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105 sm:flex-none">
+              <Send size={16} />
+              Ver mensagens do negócio
+            </Link>
           ) : null}
           {whatsappHref ? (
             <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">

@@ -3,12 +3,13 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { BarChart3, ChevronLeft, ChevronRight, CircleHelp, CirclePlus, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
+import { BarChart3, ChevronLeft, ChevronRight, CircleHelp, CirclePlus, LayoutDashboard, LogOut, MessageCircle, Settings, Users } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem } from '@/components/navigation/SidebarMenu';
 import { cn } from '@/lib/cn';
 
 const items = [
   { href: '/ads/overview', label: 'Visão geral', icon: LayoutDashboard },
+  { href: '/ads/inbox', label: 'Mensagens', icon: MessageCircle },
   { href: '/ads/wizard', label: 'Promover', icon: CirclePlus },
   { href: '/ads/reports', label: 'Relatórios', icon: BarChart3 },
 ];
