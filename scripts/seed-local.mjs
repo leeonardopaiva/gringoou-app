@@ -211,6 +211,22 @@ async function main() {
     });
   }
 
+  // Conta de anúncios da Carla (para testar o painel do negócio sem passar pelo cadastro).
+  const carlaBusiness = await prisma.business.findFirst({ where: { createdById: carla.id }, orderBy: { createdAt: 'asc' } });
+  if (carlaBusiness) {
+    await prisma.adAccount.create({
+      data: {
+        name: carlaBusiness.name,
+        businessId: carlaBusiness.id,
+        businessAddress: carlaBusiness.address,
+        businessCategory: carlaBusiness.category,
+        subcategories: [],
+        country: 'US', currency: 'USD', timezone: 'America/New_York',
+        users: { create: { userId: carla.id, role: 'BUSINESS_ADMIN' } },
+      },
+    });
+  }
+
   // ---------- Eventos ----------
   const events = [
     ['Feira Brasileira de Orlando', 'Feira', 3],

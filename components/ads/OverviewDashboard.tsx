@@ -120,7 +120,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       ) : null}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-[34px] font-extrabold leading-none text-[#132f40]">Overview</h1>
+        <h1 className="text-2xl font-extrabold leading-none text-[#132f40] sm:text-[34px]">Visão geral</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Select value={data.range.key} prefixIcon={<CalendarDays size={17} />} onChange={(event) => router.push(`/ads/overview?range=${event.target.value}`)} className="min-w-[150px]">
             <option value="7d">Ultimos 7 dias</option><option value="month">Este mes</option><option value="all">Total</option>
@@ -129,12 +129,13 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="min-h-[150px] rounded-[22px] border border-slate-200 px-7 py-6 shadow-sm">
-            <p className="text-[12px] font-extrabold uppercase tracking-wide text-slate-400">{stat.label}</p>
-            <p className={`mt-6 text-[34px] font-extrabold leading-none ${stat.accent ? 'text-brand-500' : 'text-[#132f40]'}`}>{stat.value}</p>
-            <p className="mt-3 text-[13px] text-slate-400">{stat.caption}</p>
+          <Card key={stat.label} className="relative min-h-[104px] overflow-hidden rounded-2xl border border-slate-200 px-4 py-4 shadow-sm sm:min-h-[150px] sm:px-7 sm:py-6">
+            <span className={`absolute inset-x-0 top-0 h-1 ${stat.accent ? 'bg-[#339eff]' : 'bg-slate-200'}`} aria-hidden />
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[12px]">{stat.label}</p>
+            <p className={`mt-3 text-2xl font-extrabold leading-none sm:mt-6 sm:text-[34px] ${stat.accent ? 'text-brand-500' : 'text-[#132f40]'}`}>{stat.value}</p>
+            <p className="mt-2 truncate text-[11px] text-slate-400 sm:mt-3 sm:text-[13px]">{stat.caption}</p>
           </Card>
         ))}
       </div>

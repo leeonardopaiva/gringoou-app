@@ -1,4 +1,5 @@
 import React, { startTransition, useEffect, useState } from 'react';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -12,7 +13,6 @@ import { Check, Heart, Images, MapPin, MoreHorizontal, PencilLine, Plus, Search 
 import { Dropdown } from '../components/ui/Dropdown';
 import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
-import { CompactActionCard } from '../components/ui/CompactActionCard';
 import { FilterPopover } from '../components/ui/FilterPopover';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { SectionTabs } from '../components/ui/SectionTabs';
@@ -28,35 +28,11 @@ import { parseDateTimeInputPtBr } from '../lib/forms/datetime';
 import { EventItem, PersonaMode, ProfessionalProfileIdentity } from '../types';
 import type { EventsInitialData } from '../lib/content-contracts';
 import { ContentColumn } from '../components/ui/ContentColumn';
+import { DateTimeField } from '../components/ui/DateTimeField';
 import { useActiveRegion } from '../components/RegionContext';
 
-const SAMPLE_EVENTS: EventItem[] = [
-  {
-    id: 'sample-event-1',
-    title: 'Torneio de Futebol Brasileiro',
-    startsAt: new Date(Date.now() + 2 * 86400000).toISOString(),
-    venueName: 'Everett Soccer Field',
-    locationLabel: 'Boston, 02108',
-    imageUrl: 'https://picsum.photos/seed/soccer/300',
-  },
-  {
-    id: 'sample-event-2',
-    title: 'Feira Gastronômica Brasileira',
-    startsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
-    venueName: 'Charles River Park',
-    locationLabel: 'Boston, 02108',
-    imageUrl: 'https://picsum.photos/seed/foodfest/300',
-  },
-];
-
-const EVENT_TABS = ['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros'];
+const EVENT_TABS = ['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros', 'Passados'];
 const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
-
-const composeLocalDateTime = (datePart: string, timePart: string) => (datePart ? `${datePart}T${timePart || '00:00'}` : '');
-const splitLocalDateTime = (value: string): [string, string] => {
-  const [datePart = '', timePart = ''] = value.split('T');
-  return [datePart, timePart];
-};
 
 const isSameLocalDay = (left: Date, right: Date) =>
   left.getFullYear() === right.getFullYear() &&
@@ -126,6 +102,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const router = useRouter();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('Proximos');
+  const isPastTab = activeTab === 'Passados';
   const [search, setSearch] = useState('');
   const [events, setEvents] = useState<EventItem[]>(initialData?.events ?? []);
   const [resultScope, setResultScope] = useState<'local' | 'global'>(initialData?.scope ?? 'local');
@@ -171,7 +148,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   }, [session?.user?.regionKey]);
 
   useEffect(() => {
-    if (!initialPageConsumedRef.current && initialData?.regionKey === activeRegionKey && refreshKey === 0) {
+    if (!initialPageConsumedRef.current && initialData?.regionKey === activeRegionKey && refreshKey === 0 && !isPastTab) {
       initialPageConsumedRef.current = true;
       return;
     }
@@ -180,9 +157,10 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
     const fetchEvents = async () => {
       try {
-        const query = activeRegionKey
-          ? `?region=${encodeURIComponent(activeRegionKey)}`
-          : '';
+        const params = new URLSearchParams();
+        if (activeRegionKey) params.set('region', activeRegionKey);
+        if (isPastTab) params.set('past', '1');
+        const query = params.size ? `?${params.toString()}` : '';
         const response = await fetch(`/api/events${query}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
 
@@ -210,7 +188,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     return () => {
       ignore = true;
     };
-  }, [activeRegionKey, initialData?.regionKey, refreshKey]);
+  }, [activeRegionKey, initialData?.regionKey, refreshKey, isPastTab]);
 
   const handleCreateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -353,6 +331,10 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       return false;
     }
 
+    if (activeTab === 'Passados') {
+      return true;
+    }
+
     if (activeTab === 'Hoje') {
       return isSameLocalDay(eventDate, now);
     }
@@ -373,25 +355,17 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       ? 'Eventos de hoje'
       : activeTab === 'Esta semana'
         ? 'Eventos desta semana'
-        : 'Eventos proximos';
+        : activeTab === 'Passados'
+          ? 'Eventos passados'
+          : 'Eventos proximos';
   return (
-    <ContentColumn size="wide" className="space-y-6 pb-20 animate-in fade-in duration-500">
+    <ContentColumn size="compact" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
         <PageHeader title="Eventos" action={
           <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
             <Plus size={16} /> Criar evento
           </button>
         } />
-        <div className="grid gap-2 sm:grid-cols-1">
-          <CompactActionCard
-            icon={<Plus size={16} />}
-            eyebrow="Evento gratuito"
-            title="Cadastre seu evento"
-            description={showCreateForm ? 'Toque para fechar o cadastro' : 'Divulgue para a comunidade local'}
-            onClick={() => setShowCreateForm((current) => !current)}
-          />
-        </div>
-
         <Modal open={showCreateForm} onClose={() => setShowCreateForm(false)} title="Cadastrar evento" className="max-w-2xl">
               <form
                 onSubmit={handleCreateEvent}
@@ -438,59 +412,22 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               {['Cultural', 'Networking', 'Esporte', 'Gastronomia', 'Família', 'Outros'].map((category) => <option key={category}>{category}</option>)}
             </select>
             <div className="space-y-3">
-              <div>
-                <p className="mb-1.5 px-1 text-xs font-bold text-slate-500">Data e hora de início</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    required
-                    type="date"
-                    value={splitLocalDateTime(createForm.startsAt)[0]}
-                    onChange={(event) => {
-                      const [, time] = splitLocalDateTime(createForm.startsAt);
-                      setCreateForm((current) => ({ ...current, startsAt: composeLocalDateTime(event.target.value, time) }));
-                      clearFieldError('startsAt');
-                    }}
-                    aria-invalid={Boolean(fieldErrors.startsAt)}
-                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
-                  />
-                  <input
-                    required
-                    type="time"
-                    value={splitLocalDateTime(createForm.startsAt)[1]}
-                    onChange={(event) => {
-                      const [date] = splitLocalDateTime(createForm.startsAt);
-                      setCreateForm((current) => ({ ...current, startsAt: composeLocalDateTime(date, event.target.value) }));
-                      clearFieldError('startsAt');
-                    }}
-                    aria-invalid={Boolean(fieldErrors.startsAt)}
-                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
-                  />
-                </div>
-              </div>
+              <DateTimeField
+                label="Início"
+                required
+                value={createForm.startsAt}
+                invalid={Boolean(fieldErrors.startsAt)}
+                onChange={(value) => {
+                  setCreateForm((current) => ({ ...current, startsAt: value }));
+                  clearFieldError('startsAt');
+                }}
+              />
               <FieldErrorMessage message={fieldErrors.startsAt} />
-              <div>
-                <p className="mb-1.5 px-1 text-xs font-bold text-slate-500">Data e hora de término (opcional)</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="date"
-                    value={splitLocalDateTime(createForm.endsAt)[0]}
-                    onChange={(event) => {
-                      const [, time] = splitLocalDateTime(createForm.endsAt);
-                      setCreateForm((current) => ({ ...current, endsAt: composeLocalDateTime(event.target.value, time) }));
-                    }}
-                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
-                  />
-                  <input
-                    type="time"
-                    value={splitLocalDateTime(createForm.endsAt)[1]}
-                    onChange={(event) => {
-                      const [date] = splitLocalDateTime(createForm.endsAt);
-                      setCreateForm((current) => ({ ...current, endsAt: composeLocalDateTime(date, event.target.value) }));
-                    }}
-                    className="theme-outline-ring w-full min-w-0 rounded-2xl border border-slate-200 px-3 py-3 text-sm outline-none"
-                  />
-                </div>
-              </div>
+              <DateTimeField
+                label="Término (opcional)"
+                value={createForm.endsAt}
+                onChange={(value) => setCreateForm((current) => ({ ...current, endsAt: value }))}
+              />
             </div>
             <RegionSelector
               value={createForm.regionKey}
@@ -580,7 +517,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             date={formatEventDate(item.startsAt)}
             location={item.venueName}
             region={item.locationLabel}
-            img={item.imageUrl || `https://picsum.photos/seed/${item.id}/300`}
+            img={item.imageUrl || PLACEHOLDER_IMAGE}
             onToggleFavorite={() => void handleFavoriteToggle(item)}
             onEdit={(mode) => router.push(`/events/${item.slug || item.id}?editar=${mode}`)}
           />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { MentionInput } from './MentionInput';
 import Link from 'next/link';
 import {
   Link as LinkIcon,
@@ -401,14 +402,7 @@ const CommentComposer: React.FC<CommentComposerProps> = ({
   onKeyDown,
 }) => (
   <div className="flex items-center gap-2">
-    <input
-      type="text"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      onKeyDown={onKeyDown}
-      placeholder="Escreva um comentario..."
-      className="flex-1 rounded-full bg-bg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-200"
-    />
+    <MentionInput value={value} onChange={onChange} onKeyDown={onKeyDown} placeholder="Escreva um comentario... (use @ para marcar)" />
     <Button type="button" onClick={onSubmit} size="xs">
       Responder
     </Button>

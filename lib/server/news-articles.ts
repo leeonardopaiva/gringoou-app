@@ -4,18 +4,19 @@ import { NewsArticleStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import type { NewsArticleInput } from '@/lib/news';
 import type { NewsArticleContract, NewsAdminArticleContract } from '@/lib/content-contracts';
+import { newsPath } from '@/lib/news-url';
 
 const PUBLIC_PAGE_SIZE = 10;
 const ADMIN_PAGE_SIZE = 20;
 
 type ArticleRow = Prisma.NewsArticleGetPayload<{ include: { author: { select: { id: true; name: true } } } }> & {
   likes?: { user: { id: string; name: string | null; username: string | null; image: string | null } }[];
-  _count?: { likes: number };
+  _count?: { likes: number; comments?: number };
 };
 
 /** Contagem de curtidas e as 3 mais recentes (para mostrar quem curtiu). */
 const likeInclude = () => ({
-  _count: { select: { likes: true } },
+  _count: { select: { likes: true, comments: { where: { isHidden: false } } } },
   likes: {
     orderBy: { createdAt: 'desc' as const },
     take: 3,
@@ -55,6 +56,8 @@ const toContract = (row: ArticleRow, labels: Map<string, string>, likedIds?: Set
   source: row.source,
   externalUrl: row.externalUrl,
   publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
+  path: newsPath(row),
+  commentCount: row._count?.comments ?? 0,
   likeCount: row._count?.likes ?? 0,
   viewerLiked: likedIds?.has(row.id) ?? false,
   recentLikers: (row.likes ?? []).map((like) => like.user),
@@ -247,4 +250,18 @@ export async function getLatestPublishedNews() {
     include: { author: { select: { id: true, name: true } } },
   });
   return row ? toContract(row, new Map()) : null;
+}
+
+/** Uma notícia publicada pelo id (página da notícia). */
+export async function getPublishedNewsById(id: string, viewerId?: string | null) {
+  const row = await prisma.newsArticle.findFirst({
+    where: { id, status: NewsArticleStatus.PUBLISHED, publishedAt: { not: null, lte: new Date() } },
+    include: { author: { select: { id: true, name: true } }, ...likeInclude() },
+  });
+  if (!row) return null;
+  const labels = await regionLabels([row.regionKey]);
+  const liked = viewerId
+    ? await prisma.newsArticleLike.findUnique({ where: { userId_articleId: { userId: viewerId, articleId: id } }, select: { userId: true } })
+    : null;
+  return toContract(row, labels, liked ? new Set([id]) : new Set());
 }

@@ -123,6 +123,8 @@ export interface PublicUserProfile {
   birthCity?: string | null;
   joinedAt: string;
   publicPath: string;
+  /** A pessoa aceita receber mensagens diretas (falso = "Ninguém"). */
+  acceptsMessages?: boolean;
   friendFeature: {
     available: boolean;
     canRequest: boolean;

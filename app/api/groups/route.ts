@@ -1,4 +1,5 @@
 import { CommunityGroupMemberRole, CommunityGroupMembershipStatus, Prisma } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -20,7 +21,9 @@ export async function GET(request: Request) {
 
   const session = await getServerAuthSession();
   const search = searchParams.get('search')?.trim();
-  const region = searchParams.get('region')?.trim();
+  const requestedRegion = searchParams.get('region')?.trim();
+  const regionScope = resolveRegionScope(session, requestedRegion);
+  const region = regionScope.enforced ? (regionScope.regionKey ?? '__sem_regiao__') : requestedRegion;
   const country = searchParams.get('country')?.trim().toUpperCase();
   const mine = searchParams.get('mine') === '1';
 

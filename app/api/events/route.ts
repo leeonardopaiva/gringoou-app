@@ -1,4 +1,5 @@
 import { EventStatus, VisibilityScope } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -13,13 +14,14 @@ export async function GET(request: Request) {
   const viewerId = session?.user?.id ?? '';
   const isAdmin = session?.user?.role === 'ADMIN';
   const { searchParams } = new URL(request.url);
-  const viewerRegionKey = searchParams.get('region') ?? session?.user?.regionKey;
+  const viewerRegionKey = resolveRegionScope(session, searchParams.get('region')).regionKey;
 
   const result = await eventsUseCases.listEvents({
     viewerId,
     isAdmin,
     regionKey: viewerRegionKey,
     category: searchParams.get('category') || undefined,
+    past: searchParams.get('past') === '1',
   });
 
   // Mapeia para o formato esperado pelo client (EventItem[])

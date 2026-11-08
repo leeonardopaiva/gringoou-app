@@ -339,7 +339,7 @@ export const communityPostSchema = z.object({
 });
 
 export const commentSchema = z.object({
-  content: z.string().trim().min(2).max(240),
+  content: z.string().trim().min(2).max(420),
 });
 
 export const suggestionSchema = z.object({

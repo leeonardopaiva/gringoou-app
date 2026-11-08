@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
 import Link from 'next/link';
 import { Ban, Check, ChevronDown, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UserCog, UsersRound } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -285,6 +286,21 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
 
           <section className="rounded-[28px] bg-white shadow-sm">
             <div className={`relative h-52 sm:h-60 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+              {group.canManage ? (
+                <ImageUploadButton
+                  folder="groups"
+                  label="Atualizar capa"
+                  className="absolute right-3 top-14"
+                  onUploaded={async (url) => {
+                    const response = await fetch(`/api/groups/${encodeURIComponent(group.slug)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ coverImageUrl: url }) });
+                    const payload = await response.json().catch(() => null);
+                    if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+                    setRefreshKey((current) => current + 1);
+                    notifyContentUpdated();
+                    showToast('Capa atualizada.', 'success');
+                  }}
+                />
+              ) : null}
               {group.coverImageUrl || group.imageUrl ? (
                 <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
               ) : null}

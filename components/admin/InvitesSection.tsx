@@ -1,5 +1,6 @@
 'use client';
 
+import { InfoTip } from '@/components/ui/InfoTip';
 import React, { startTransition, useEffect, useState } from 'react';
 import { Copy, Link2, Plus, Search, Ticket, Users } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -246,9 +247,7 @@ const InvitesSection: React.FC = () => {
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Convites</p>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40]">Convites e lista de espera</h1>
-          <p className="mt-1 text-sm text-slate-400">Gerencie o acesso ao Private Beta.</p>
+          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40]">Convites<InfoTip text="Gerencie a lista de espera e o acesso ao Private Beta." /></h1>
         </div>
         <Button iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
           Gerar convite

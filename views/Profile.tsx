@@ -1,5 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
+import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -254,9 +256,9 @@ const Profile: React.FC<{
       setCoverDraft(profile.coverImageUrl);
     }
 
-    if (editSection === 'region') {
-      setEditing((current) => ({ ...current, region: true }));
-      setSelectedRegionKey(profile.regionKey);
+    if (editSection === 'region' || editSection === 'profile') {
+      setProfileEditDraft(profile);
+      setEditing((current) => ({ ...current, profile: true }));
     }
 
     router.replace('/profile', { scroll: false });
@@ -301,7 +303,7 @@ const Profile: React.FC<{
     [profile.username],
   );
 
-  const saveProfile = async (patch: Partial<ProfileState>, message: string, editKey?: keyof typeof editing) => {
+  const saveProfile = async (patch: Partial<ProfileState>, message: string, editKey?: keyof typeof editing): Promise<boolean> => {
     setSavingKey(editKey || 'profile');
     try {
       const nextProfile = { ...profile, ...patch };
@@ -359,21 +361,23 @@ const Profile: React.FC<{
       notifyContentUpdated({ refreshSession: true });
       if (editKey) setEditing((current) => ({ ...current, [editKey]: false }));
       showToast(message, 'success');
+      return true;
     } catch (error) {
       console.error('Failed to save profile:', error);
       showToast(error instanceof Error ? error.message : 'Nao foi possivel salvar o perfil.', 'error');
+      return false;
     } finally {
       setSavingKey(null);
     }
   };
 
-  const saveAvatar = async () => {
+  const saveAvatar = async (value: string = avatarDraft, quiet = false): Promise<boolean> => {
     setSavingKey('avatar');
     try {
       const response = await fetch('/api/profile/image', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: normalizeUrlFieldValue(avatarDraft) || undefined }),
+        body: JSON.stringify({ image: normalizeUrlFieldValue(value) || undefined }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar sua foto.');
@@ -383,10 +387,12 @@ const Profile: React.FC<{
       await update();
       notifyContentUpdated({ refreshSession: true });
       setEditing((current) => ({ ...current, avatar: false }));
-      showToast('Foto do perfil atualizada.', 'success');
+      if (!quiet) showToast('Foto do perfil atualizada.', 'success');
+      return true;
     } catch (error) {
       console.error('Failed to update avatar:', error);
       showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar sua foto.', 'error');
+      return false;
     } finally {
       setSavingKey(null);
     }
@@ -415,31 +421,33 @@ const Profile: React.FC<{
     }
   };
 
-  const saveRegion = async () => {
-    if (!selectedRegionKey) {
+  const saveRegion = async (regionKey: string = selectedRegionKey, quiet = false): Promise<boolean> => {
+    if (!regionKey) {
       showToast('Selecione uma regiao valida antes de salvar.', 'error');
-      return;
+      return false;
     }
     setSavingKey('region');
     try {
       const response = await fetch('/api/profile/region', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regionKey: selectedRegionKey }),
+        body: JSON.stringify({ regionKey }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar sua regiao.');
       setProfile((current) => ({
         ...current,
-        regionKey: payload?.user?.regionKey || selectedRegionKey,
+        regionKey: payload?.user?.regionKey || regionKey,
         locationLabel: payload?.user?.locationLabel || current.locationLabel,
       }));
       await update();
       setEditing((current) => ({ ...current, region: false }));
-      showToast('Regiao atualizada com sucesso.', 'success');
+      if (!quiet) showToast('Regiao atualizada com sucesso.', 'success');
+      return true;
     } catch (error) {
       console.error('Failed to save region:', error);
       showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar sua regiao.', 'error');
+      return false;
     } finally {
       setSavingKey(null);
     }
@@ -460,7 +468,25 @@ const Profile: React.FC<{
     setInterestInput('');
   };
 
+  const [policyDraft, setPolicyDraft] = useState<MessagePolicy | null>(null);
+  const [policySaved, setPolicySaved] = useState<MessagePolicy | null>(null);
+
+  useEffect(() => {
+    if (!editing.profile || policySaved) return;
+    let ignore = false;
+    void fetch('/api/me/message-policy', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (ignore || !payload?.messagePolicy) return;
+        setPolicySaved(payload.messagePolicy as MessagePolicy);
+        setPolicyDraft(payload.messagePolicy as MessagePolicy);
+      })
+      .catch(() => undefined);
+    return () => { ignore = true; };
+  }, [editing.profile, policySaved]);
+
   const openEditProfileModal = () => {
+    setPolicyDraft(policySaved);
     setProfileEditDraft(profile);
     setEditing((c) => ({ ...c, profile: true }));
   };
@@ -485,7 +511,27 @@ const Profile: React.FC<{
       timeAbroad: profileEditDraft.timeAbroad,
       birthCity: profileEditDraft.birthCity,
     };
-    await saveProfile(patchData, 'Perfil atualizado com sucesso.', 'profile');
+    const imageChanged = profileEditDraft.image !== profile.image;
+    const regionChanged = Boolean(profileEditDraft.regionKey) && profileEditDraft.regionKey !== profile.regionKey;
+    const policyChanged = policyDraft !== null && policyDraft !== policySaved;
+    const ok = await saveProfile(patchData, 'Perfil atualizado com sucesso.', 'profile');
+    if (!ok) return;
+    if (imageChanged && !(await saveAvatar(profileEditDraft.image, true))) return;
+    if (regionChanged && !(await saveRegion(profileEditDraft.regionKey, true))) return;
+    if (policyChanged) {
+      try {
+        const response = await fetch('/api/me/message-policy', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messagePolicy: policyDraft }),
+        });
+        if (!response.ok) throw new Error();
+        setPolicySaved(policyDraft);
+      } catch {
+        showToast('Não foi possível salvar a privacidade de mensagens. Tente novamente.', 'error');
+        return;
+      }
+    }
     closeEditProfileModal();
   };
 
@@ -523,6 +569,7 @@ const Profile: React.FC<{
     <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
+          <ImageUploadButton folder="profiles" label="Atualizar capa" className="absolute bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
           {profile.coverImageUrl ? (
             <img src={profile.coverImageUrl} alt="Capa do perfil" className="h-full w-full object-cover object-center" />
           ) : (
@@ -533,9 +580,6 @@ const Profile: React.FC<{
             <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-white/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
               <PencilLine size={16} />
               Editar perfil
-            </button>
-            <button type="button" onClick={() => { setEditing((c) => ({ ...c, cover: !c.cover })); setCoverDraft(profile.coverImageUrl); }} className="rounded-2xl border border-white/60 bg-white/85 p-3 text-slate-600" aria-label="Editar capa">
-              <PencilLine size={16} />
             </button>
           </div>
         </div>
@@ -549,9 +593,7 @@ const Profile: React.FC<{
                   {getInitials(activeHeaderName)}
                 </div>
               )}
-              <button type="button" onClick={() => { setEditing((c) => ({ ...c, avatar: !c.avatar })); setAvatarDraft(profile.image); }} className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-white p-2 text-brand-500" aria-label="Editar foto do perfil">
-                <PencilLine size={14} />
-              </button>
+              <ImageUploadButton folder="profiles" size="sm" label="Atualizar foto" className="absolute bottom-1 right-1" onUploaded={async (url) => { await saveAvatar(url); }} />
             </div>
             <div className="relative mt-4">
               {canUseProfessionalMode ? (
@@ -604,7 +646,13 @@ const Profile: React.FC<{
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Capa do perfil</h3>
                     <div className="space-y-3">
                       <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" placeholder="Link da capa" hint="Use uma imagem horizontal para destacar seu perfil." />
-                      <p className="text-xs text-slate-500">Para editar a foto do perfil, use o botão no canto da imagem do header.</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Foto do perfil</h3>
+                    <div className="space-y-3">
+                      <CloudinaryImageField value={profileEditDraft.image} onChange={(image) => setProfileEditDraft((c) => c ? { ...c, image } : null)} folder="profiles" placeholder="Link da foto do perfil" hint="Envie uma foto quadrada, com o rosto bem visível." />
                     </div>
                   </div>
 
@@ -654,6 +702,22 @@ const Profile: React.FC<{
                     <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negocios e eventos priorizam esta regiao." />
                   </div>
 
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">Privacidade: quem pode me enviar mensagens</h3>
+                    <MessagePolicyOptions value={policyDraft} onChange={setPolicyDraft} disabled={savingKey === 'profile'} />
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">E-mail de acesso</h3>
+                    <p className="mb-3 text-xs text-slate-500">Atual: {profile.email || 'não informado'}. Para trocar, enviamos um link de confirmação ao novo endereço.</p>
+                    <div className="flex gap-2">
+                      <div className="min-w-0 flex-1"><Input value={requestedEmail} onChange={setRequestedEmail} placeholder="Novo e-mail" icon={<Mail size={16} />} type="email" /></div>
+                      <button type="button" onClick={() => void requestEmailChange()} disabled={requestingEmailChange || !requestedEmail.trim() || requestedEmail.trim() === profile.email} className="shrink-0 rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">
+                        {requestingEmailChange ? 'Enviando...' : 'Confirmar'}
+                      </button>
+                    </div>
+                  </div>
+
                   <ActionRow>
                     <PrimaryButton className={primaryButtonClass} label={savingKey === 'profile' ? 'Salvando...' : 'Salvar perfil'} onClick={() => void saveCompleteProfile()} disabled={savingKey === 'profile'} />
                     <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={closeEditProfileModal} disabled={savingKey === 'profile'} />
@@ -674,81 +738,26 @@ const Profile: React.FC<{
         />
       ) : (
         <>
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={editing.account} onToggle={() => { setEditing((c) => ({ ...c, account: !c.account })); setAccountDraft({ name: profile.name, username: profile.username, email: profile.email, phone: profile.phone, bio: profile.bio, gender: profile.gender, age: profile.age, timeAbroad: profile.timeAbroad, birthCity: profile.birthCity }); }}>
-        {editing.account ? (
-          <EditorCard>
-            <Input value={accountDraft.name} onChange={(value) => setAccountDraft((c) => ({ ...c, name: value }))} placeholder="Nome completo" icon={<UserRound size={16} />} />
-            <Input value={accountDraft.username} onChange={(value) => setAccountDraft((c) => ({ ...c, username: normalizeUsernameInput(value) }))} placeholder="Nome publico" icon={<Globe size={16} />} />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input value={accountDraft.email} onChange={(value) => setAccountDraft((c) => ({ ...c, email: value }))} placeholder="Email" icon={<Mail size={16} />} type="email" disabled />
-              <Input value={accountDraft.phone} onChange={(value) => setAccountDraft((c) => ({ ...c, phone: formatLoosePhoneInput(value) }))} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
-            </div>
-            <textarea rows={4} value={accountDraft.bio} onChange={(event) => setAccountDraft((c) => ({ ...c, bio: event.target.value }))} placeholder="Escreva uma frase curta sobre voce" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <CityAutocomplete value={accountDraft.birthCity} scope="world" onChange={(value) => setAccountDraft((c) => ({ ...c, birthCity: value }))} placeholder="Cidade natal" />
-              <Input value={accountDraft.age ? String(accountDraft.age) : ''} onChange={(value) => setAccountDraft((c) => ({ ...c, age: value ? Number(value) : null }))} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
-              <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={accountDraft.gender} onChange={(event) => setAccountDraft((c) => ({ ...c, gender: event.target.value as ProfileState['gender'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
-              <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={accountDraft.timeAbroad} onChange={(event) => setAccountDraft((c) => ({ ...c, timeAbroad: event.target.value as ProfileState['timeAbroad'] }))} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
-            </div>
-            <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'account' ? 'Salvando...' : 'Salvar dados'} onClick={() => void saveProfile({ name: accountDraft.name, username: accountDraft.username, phone: accountDraft.phone, bio: accountDraft.bio, gender: accountDraft.gender, age: accountDraft.age, timeAbroad: accountDraft.timeAbroad, birthCity: accountDraft.birthCity }, 'Seus dados foram atualizados.', 'account')} disabled={savingKey === 'account'} />
-              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, account: false }))} disabled={savingKey === 'account'} />
-            </ActionRow>
-          </EditorCard>
-        ) : (
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="space-y-4">
             <p className="text-base leading-7 text-slate-700">{profile.bio || 'Adicione uma frase sobre voce para personalizar seu perfil publico.'}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Meta label="Email" value={profile.email || 'Nao informado'} icon={<Mail size={16} />} />
               <Meta label="Telefone" value={profile.phone || 'Nao informado'} icon={<Phone size={16} />} />
             </div>
+            <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
             <Meta label="URL publica" value={publicProfileUrl} icon={<Globe size={16} />} />
           </div>
-        )}
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Interesses" description="Mostre os assuntos, servicos e temas que representam voce." editing={editing.interests} onToggle={() => { setEditing((c) => ({ ...c, interests: !c.interests })); setInterestDrafts(profile.interests); setInterestInput(''); }}>
-        {editing.interests ? (
-          <EditorCard>
-            <div className="flex gap-2">
-              <input type="text" value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="Adicionar interesse" className="flex-1 rounded-full border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
-              <button type="button" onClick={addInterest} className={`inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 text-sm font-bold text-white shadow-md ${primaryButtonClass}`}>
-                <Plus size={16} />
-                Adicionar
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {interestDrafts.length > 0 ? interestDrafts.map((interest) => (
-                <span key={interest} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
-                  {interest}
-                  <button type="button" onClick={() => setInterestDrafts((current) => current.filter((item) => item !== interest))} className="rounded-full bg-slate-100 p-1 text-slate-500">
-                    <X size={12} />
-                  </button>
-                </span>
-              )) : <p className="text-sm text-slate-500">Adicione ate 8 interesses para destacar seu perfil.</p>}
-            </div>
-            <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'interests' ? 'Salvando...' : 'Salvar interesses'} onClick={() => void saveProfile({ interests: interestDrafts }, 'Interesses atualizados.', 'interests')} disabled={savingKey === 'interests'} />
-              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, interests: false }))} disabled={savingKey === 'interests'} />
-            </ActionRow>
-          </EditorCard>
-        ) : (
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Interesses" description="Mostre os assuntos, servicos e temas que representam voce." editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="flex flex-wrap gap-2">
             {profile.interests.length > 0 ? profile.interests.map((interest) => <span key={interest} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">{interest}</span>) : <p className="text-sm text-slate-500">Ainda nao ha interesses cadastrados para este perfil.</p>}
           </div>
-        )}
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Galeria da galera" description="Use fotos pessoais, do seu trabalho ou da sua comunidade para enriquecer o perfil." editing={editing.gallery} onToggle={() => { setEditing((c) => ({ ...c, gallery: !c.gallery })); setGalleryDraft(profile.galleryUrls); }}>
-        {editing.gallery ? (
-          <EditorCard>
-            <ImageGalleryField value={galleryDraft} onChange={setGalleryDraft} folder="profiles" hint="Essas imagens aparecem na aba de fotos do seu perfil publico." />
-            <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'gallery' ? 'Salvando...' : 'Salvar galeria'} onClick={() => void saveProfile({ galleryUrls: galleryDraft }, 'Galeria atualizada.', 'gallery')} disabled={savingKey === 'gallery'} />
-              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, gallery: false }))} disabled={savingKey === 'gallery'} />
-            </ActionRow>
-          </EditorCard>
-        ) : profile.galleryUrls.length > 0 ? (
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Galeria da galera" description="Use fotos pessoais, do seu trabalho ou da sua comunidade para enriquecer o perfil." editing={false} onToggle={openEditProfileModal} hideAction>
+        {profile.galleryUrls.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {profile.galleryUrls.map((imageUrl, index) => (
               <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50 shadow-sm">
@@ -759,14 +768,6 @@ const Profile: React.FC<{
         ) : (
           <p className="text-sm text-slate-500">Nenhuma imagem adicional cadastrada ainda.</p>
         )}
-      </Section>
-
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Troca de email" description="Informe o novo email. Vamos enviar um link para confirmar a alteracao com seguranca." editing={false} onToggle={() => undefined} hideAction>
-        <EditorCard>
-          <Input value={requestedEmail} onChange={setRequestedEmail} placeholder="Novo email" icon={<Mail size={16} />} type="email" />
-          <p className="text-xs font-medium text-slate-500">O email atual so muda depois que voce abrir o link enviado para o novo endereco.</p>
-          <PrimaryButton className={primaryButtonClass} label={requestingEmailChange ? 'Enviando link...' : 'Enviar confirmacao'} onClick={() => void requestEmailChange()} disabled={requestingEmailChange} fullWidth />
-        </EditorCard>
       </Section>
 
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Indicacoes" description="Compartilhe seu link publico e acompanhe quantos cadastros chegaram por ele." editing={false} onToggle={() => undefined} hideAction>
@@ -780,19 +781,6 @@ const Profile: React.FC<{
         </div>
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Regiao ativa" description="Comunidade, negocios e eventos priorizam esta regiao." editing={editing.region} onToggle={() => setEditing((c) => ({ ...c, region: !c.region }))}>
-        {editing.region ? (
-          <EditorCard>
-            <RegionSelector citySearch label="Cidade atual (EUA)" value={selectedRegionKey} onChange={(region) => setSelectedRegionKey(region.key)} hint="Voce pode manter sua localizacao atual ou trocar manualmente para outra regiao existente." />
-            <ActionRow>
-              <PrimaryButton className={primaryButtonClass} label={savingKey === 'region' ? 'Salvando...' : 'Salvar regiao'} onClick={() => void saveRegion()} disabled={savingKey === 'region'} />
-              <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={() => setEditing((c) => ({ ...c, region: false }))} disabled={savingKey === 'region'} />
-            </ActionRow>
-          </EditorCard>
-        ) : (
-          <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
-        )}
-      </Section>
         </>
       )}
     </ContentColumn>

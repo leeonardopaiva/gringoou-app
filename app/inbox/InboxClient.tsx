@@ -12,7 +12,7 @@ import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMessaging, type Conversation as MessagingConversation } from '@/lib/MessagingProvider';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
@@ -32,16 +32,28 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     refreshConversations,
     startConversation,
     openDirectConversation,
+    updateConversationState,
+    deleteMessage,
   } = useMessaging();
   const { showToast } = useToast();
   const directTarget = searchParams?.get('to') ?? null;
   const openedDirectRef = useRef<string | null>(null);
   const [openingDirect, setOpeningDirect] = useState(Boolean(directTarget));
 
-  const [tab, setTab] = useState<'todas' | 'marketplace' | 'diretas'>('todas');
+  const [tab, setTab] = useState<'todas' | 'marketplace' | 'diretas' | 'arquivadas'>('todas');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [showMenu, setShowMenu] = useState<string | null>(null);
+  /** Posição do botão ⋯ que abriu o menu (no desktop o menu abre logo abaixo dele). */
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number } | null>(null);
+  const openMenu = (id: string, trigger: HTMLElement) => {
+    const rect = trigger.getBoundingClientRect();
+    const width = 240;
+    setMenuAnchor({ top: rect.bottom + 6, left: Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8)) });
+    setShowMenu(id);
+  };
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<string>('');
   const [reportDetails, setReportDetails] = useState('');
@@ -68,21 +80,27 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
     if (!directTarget || openedDirectRef.current === directTarget) return;
     openedDirectRef.current = directTarget;
     setOpeningDirect(true);
-    void openDirectConversation(directTarget).then((conversationId) => {
+    const rawContext = searchParams?.get('ctx') ?? '';
+    const [contextType, contextId] = rawContext.split(':');
+    const context = (contextType === 'business' || contextType === 'event') && contextId ? { type: contextType as 'business' | 'event', id: contextId } : undefined;
+    void openDirectConversation(directTarget, context).then(({ id: conversationId, error }) => {
       setOpeningDirect(false);
       if (conversationId) {
         router.replace(`/inbox?conversation=${conversationId}`);
       } else {
-        showToast('Não foi possível abrir a conversa agora. Tente novamente.', 'error');
+        showToast(error ?? 'Não foi possível abrir a conversa agora. Tente novamente.', 'error');
         router.replace('/inbox');
       }
     });
-  }, [directTarget, openDirectConversation, router, showToast]);
+  }, [directTarget, openDirectConversation, router, searchParams, showToast]);
 
   // Handle URL conversation parameter (conversa recém-criada pode ainda não estar na lista)
   useEffect(() => {
     const convId = searchParams?.get('conversation');
-    if (!convId) return;
+    if (!convId) {
+      setMobileView('list');
+      return;
+    }
     if (conversations.some((c) => c.id === convId)) {
       if (activeConversationId !== convId) void selectConversation(convId);
       setMobileView('chat');
@@ -93,9 +111,37 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   }, [searchParams, conversations, selectConversation, refreshConversations, activeConversationId, loading]);
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
-  const filtered = conversations.filter((c) =>
-    tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true
-  );
+  const visibleConversations = conversations.filter((c) => !c.archived);
+  const archivedConversations = conversations.filter((c) => c.archived);
+  const filtered =
+    tab === 'arquivadas'
+      ? archivedConversations
+      : visibleConversations.filter((c) => (tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true));
+  const menuConv = showMenu ? conversations.find((c) => c.id === showMenu) ?? null : null;
+
+  const runConversationAction = async (conv: Conversation, action: 'archive' | 'unarchive' | 'mute' | 'unmute' | 'delete') => {
+    setActionBusy(true);
+    const error = await updateConversationState(conv.id, action);
+    setActionBusy(false);
+    setShowMenu(null);
+    setDeleteTarget(null);
+    if (error) {
+      showToast(error, 'error');
+      return;
+    }
+    if (action === 'delete' || action === 'archive') {
+      if (isMobile) {
+        setMobileView('list');
+        router.replace('/inbox');
+      }
+      showToast(action === 'delete' ? 'Conversa excluída.' : 'Conversa arquivada.', 'success');
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    const error = await deleteMessage(messageId);
+    if (error) showToast(error, 'error');
+  };
 
   const REPORT_REASONS = [
     { id: 'SPAM', label: 'Spam ou propaganda' },
@@ -203,9 +249,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   };
 
   const tabLabels = {
-    todas: { label: 'Todas', icon: MessageCircle, count: conversations.length },
-    marketplace: { label: 'Marketplace', icon: Package, count: conversations.filter((c) => c.itemId).length },
-    diretas: { label: 'Pessoas', icon: UserIconLucide, count: conversations.filter((c) => !c.itemId).length },
+    todas: { label: 'Todas', icon: MessageCircle, count: visibleConversations.length },
+    marketplace: { label: 'Marketplace', icon: Package, count: visibleConversations.filter((c) => c.itemId).length },
+    diretas: { label: 'Pessoas', icon: UserIconLucide, count: visibleConversations.filter((c) => !c.itemId).length },
+    arquivadas: { label: 'Arquivadas', icon: Archive, count: archivedConversations.length },
   };
 
   const renderTabs = (variant: 'desktop' | 'mobile') => (
@@ -217,7 +264,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       role="tablist"
       aria-label="Filtrar conversas"
     >
-      {(['todas', 'marketplace', 'diretas'] as const).map((t) => {
+      {(['todas', 'marketplace', 'diretas', 'arquivadas'] as const).map((t) => {
         const info = tabLabels[t];
         const Icon = info.icon;
         return (
@@ -352,17 +399,23 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   const isActive = conv.id === activeConversationId;
 
                   return (
-                    <button
+                    <div
                       key={conv.id}
-                      type="button"
-                      onClick={() => {
-                        selectConversation(conv.id);
-                        if (isMobile) setMobileView('chat');
-                      }}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-2xl border bg-white p-3 text-left transition-colors',
+                        'relative flex w-full items-center rounded-2xl border bg-white transition-colors',
                         isActive ? 'border-brand-300 bg-brand-50 shadow-sm' : 'border-slate-200 hover:border-brand-200 hover:bg-brand-50/40'
                       )}
+                    >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isMobile) {
+                          router.push(`/inbox?conversation=${conv.id}`);
+                        } else {
+                          void selectConversation(conv.id);
+                        }
+                      }}
+                      className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left"
                     >
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-100">
                         {other.image ? (
@@ -378,7 +431,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate font-medium text-slate-900">{otherName}</p>
+                          <p className="flex min-w-0 items-center gap-1.5 truncate font-medium text-slate-900">
+                            <span className="truncate">{otherName}</span>
+                            {conv.muted ? <BellOff size={12} className="shrink-0 text-slate-400" aria-label="Silenciada" /> : null}
+                          </p>
                           <p className="shrink-0 text-[10px] text-slate-400">{formatTime(conv.updatedAt)}</p>
                         </div>
                         {conv.item && (
@@ -394,8 +450,22 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         )}
                       </div>
                     </button>
+                    <button
+                      type="button"
+                      onClick={(event) => openMenu(conv.id, event.currentTarget)}
+                      className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                      aria-label={`Opções da conversa com ${otherName}`}
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                    </div>
                   );
                 })}
+                {filtered.length === 0 ? (
+                  <p className="px-2 py-6 text-center text-sm text-slate-400">
+                    {tab === 'arquivadas' ? 'Nenhuma conversa arquivada.' : 'Nenhuma conversa por aqui.'}
+                  </p>
+                ) : null}
               </div>
             </aside>
 
@@ -418,10 +488,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     <button
                       type="button"
                       onClick={handleBack}
-                      className="md:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                      aria-label="Voltar"
+                      className="mr-1 inline-flex h-10 shrink-0 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 md:hidden"
+                      aria-label="Voltar para as conversas"
                     >
-                      <ChevronLeft size={20} />
+                      <ChevronLeft size={22} />
+                      Conversas
                     </button>
                     <div className="flex-1 min-w-0">
                       {(() => {
@@ -463,7 +534,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => setShowMenu(activeConv.id)}
+                        onClick={(event) => openMenu(activeConv.id, event.currentTarget)}
                         className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                         aria-label="Mais opções"
                       >
@@ -532,13 +603,22 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                                   : 'rounded-bl-md bg-slate-100 text-slate-900 shadow-sm'
                               )}
                             >
-                              <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
+                              {msg.deleted ? (
+                                <p className={cn('text-sm italic', isMine ? 'text-brand-100' : 'text-slate-400')}>Mensagem apagada</p>
+                              ) : (
+                                <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
+                              )}
                               <p
                                 className={cn(
-                                  'mt-1.5 text-right text-[10px]',
+                                  'mt-1.5 flex items-center justify-end gap-2 text-[10px]',
                                   isMine ? 'text-brand-100' : 'text-slate-400'
                                 )}
                               >
+                                {isMine && !msg.deleted && Date.now() - new Date(msg.createdAt).getTime() < 15 * 60 * 1000 ? (
+                                  <button type="button" onClick={() => void handleDeleteMessage(msg.id)} className="font-semibold underline-offset-2 hover:underline" aria-label="Apagar mensagem">
+                                    Apagar
+                                  </button>
+                                ) : null}
                                 {formatTime(msg.createdAt)}
                               </p>
                             </div>
@@ -558,6 +638,9 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     </div>
                   ) : (
                   <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+                    {activeConv.requestStatus === 'PENDING' && activeConv.buyer.id === user.id ? (
+                      <p className="mb-2 text-center text-xs text-slate-500">Sua mensagem foi enviada. A pessoa precisa aceitar para vocês conversarem.</p>
+                    ) : null}
                     <div className="flex items-end gap-2">
                       <textarea
                         value={draft}
@@ -602,40 +685,94 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 </div>
               )}
 
-              {/* Context Menu */}
-              {showMenu && activeConv && (
-                <div
-                  className="fixed top-20 right-4 z-50 w-56 rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-16 md:right-4"
-                  role="menu"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMenu(null);
-                      setReportOpen(true);
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    role="menuitem"
-                  >
-                    <Flag size={16} />
-                    Denunciar
-                  </button>
-                  <hr className="my-1 border-slate-100" />
-                  <button
-                    type="button"
-                    disabled={blockBusy}
-                    onClick={() => void toggleBlock(activeConv)}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                    role="menuitem"
-                  >
-                    <Ban size={16} />
-                    {activeConv.blockedByViewer ? 'Desbloquear pessoa' : 'Bloquear pessoa'}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         )}
+
+        {menuConv ? (
+          <>
+            <div className="fixed inset-0 z-[70] bg-slate-950/30 md:bg-transparent" onClick={() => setShowMenu(null)} aria-hidden="true" />
+            <div
+              className="fixed inset-x-0 bottom-0 z-[75] rounded-t-2xl border border-slate-200 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-xl md:inset-x-auto md:bottom-auto md:w-60 md:rounded-xl"
+              style={!isMobile && menuAnchor ? { top: menuAnchor.top, left: menuAnchor.left } : undefined}
+              role="menu"
+            >
+              {(() => {
+                const itemClass = 'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50';
+                return (
+                  <>
+                    <button type="button" role="menuitem" disabled={actionBusy} onClick={() => void runConversationAction(menuConv, menuConv.archived ? 'unarchive' : 'archive')} className={itemClass}>
+                      {menuConv.archived ? <ArchiveRestore size={17} /> : <Archive size={17} />}
+                      {menuConv.archived ? 'Desarquivar' : 'Arquivar'}
+                    </button>
+                    <button type="button" role="menuitem" disabled={actionBusy} onClick={() => void runConversationAction(menuConv, menuConv.muted ? 'unmute' : 'mute')} className={itemClass}>
+                      {menuConv.muted ? <Bell size={17} /> : <BellOff size={17} />}
+                      {menuConv.muted ? 'Reativar notificações' : 'Silenciar'}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setShowMenu(null);
+                        void selectConversation(menuConv.id);
+                        setReportOpen(true);
+                      }}
+                      className={itemClass}
+                    >
+                      <Flag size={17} />
+                      Denunciar
+                    </button>
+                    <hr className="my-1 border-slate-100" />
+                    <button type="button" role="menuitem" disabled={blockBusy} onClick={() => void toggleBlock(menuConv)} className={cn(itemClass, 'text-red-600 hover:bg-red-50')}>
+                      <Ban size={17} />
+                      {menuConv.blockedByViewer ? 'Desbloquear pessoa' : 'Bloquear pessoa'}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setDeleteTarget(menuConv.id);
+                        setShowMenu(null);
+                      }}
+                      className={cn(itemClass, 'text-red-600 hover:bg-red-50')}
+                    >
+                      <Trash2 size={17} />
+                      Excluir conversa
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+          </>
+        ) : null}
+
+        <Modal
+          open={Boolean(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+          title="Excluir conversa?"
+          description="Ela some da sua lista, mas a outra pessoa continua vendo. Se ela escrever de novo, a conversa volta com o histórico."
+          className="max-w-md"
+          footer={
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={actionBusy}
+                onClick={() => {
+                  const target = conversations.find((c) => c.id === deleteTarget);
+                  if (target) void runConversationAction(target, 'delete');
+                }}
+                className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+              >
+                Excluir
+              </button>
+            </div>
+          }
+        >
+          <span className="sr-only">Confirmação</span>
+        </Modal>
 
         <Modal
           open={reportOpen}
@@ -679,14 +816,6 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
           />
         </Modal>
 
-        {/* Click outside to close menu - only render when menu is open */}
-        {showMenu && (
-          <div
-            className="fixed inset-0 z-40 md:hidden"
-            onClick={() => setShowMenu(null)}
-            aria-hidden="true"
-          />
-        )}
       </main>
     </div>
   );

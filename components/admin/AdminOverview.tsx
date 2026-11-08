@@ -2,6 +2,7 @@
 
 import { CalendarDays, CheckCircle2, Clock3, MessageCircle, Megaphone, RefreshCcw, Store, Users } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
+import { InfoTip } from '@/components/ui/InfoTip';
 
 type Section = 'ads' | 'moderation' | 'businesses' | 'events' | 'users' | 'regions' | 'imports' | 'banners' | 'analytics';
 type Actor = { name: string | null; email: string | null };
@@ -43,12 +44,12 @@ export default function AdminOverview({ dashboard, loading, refreshing, onRefres
   return (
     <div className="mx-auto max-w-[1500px] space-y-7 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><h1 className="text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Painel operacional</h1><p className="mt-1 text-sm text-slate-400">Acompanhe pendencias, modere conteudos e gerencie os recursos da plataforma.</p></div>
-        <div className="flex gap-3"><select aria-label="Periodo" className="h-11 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium outline-none"><option>Esta semana</option><option>Este mes</option></select><Button iconLeft={<RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />} disabled={refreshing} onClick={onRefresh}>Atualizar painel</Button></div>
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Visão geral<InfoTip text="Pendências, moderação e atalhos para os recursos da plataforma." /></h1>
+        <div className="flex gap-3"><button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing} onClick={onRefresh} className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button></div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-        {loading && !dashboard ? Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-44 animate-pulse rounded-2xl bg-white" />) : kpis.map((item) => { const Icon = item.icon; return <button key={item.label} type="button" onClick={() => onNavigate(item.section)} className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-[0_2px_12px_rgba(15,23,42,0.035)] transition hover:-translate-y-0.5 hover:border-blue-200"><div className="flex items-start justify-between"><span className={`flex h-10 w-10 items-center justify-center rounded-full ${item.color}`}><Icon size={19} /></span><span className="text-[11px] font-bold text-[#2B5DF5] opacity-0 transition group-hover:opacity-100">Ver →</span></div><p className="mt-5 text-3xl font-extrabold text-[#132F40]">{compactNumber.format(item.value)}</p><p className="mt-1 text-xs font-bold text-[#132F40]">{item.label}</p><p className="mt-1 text-[11px] text-slate-400">{item.caption}</p></button>; })}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 2xl:grid-cols-6">
+        {loading && !dashboard ? Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-24 animate-pulse rounded-2xl bg-white sm:h-44" />) : kpis.map((item) => { const Icon = item.icon; return <button key={item.label} type="button" onClick={() => onNavigate(item.section)} className="group rounded-2xl border border-slate-200 bg-white p-3.5 text-left sm:p-5 shadow-[0_2px_12px_rgba(15,23,42,0.035)] transition hover:-translate-y-0.5 hover:border-blue-200"><div className="flex items-start justify-between"><span className={`flex h-8 w-8 items-center justify-center rounded-full sm:h-10 sm:w-10 ${item.color}`}><Icon size={17} /></span><span className="text-[11px] font-bold text-[#2B5DF5] opacity-0 transition group-hover:opacity-100">Ver →</span></div><p className="mt-2.5 text-2xl font-extrabold leading-none text-[#132F40] sm:mt-5 sm:text-3xl">{compactNumber.format(item.value)}</p><p className="mt-1 text-xs font-bold text-[#132F40]">{item.label}</p><p className="mt-0.5 truncate text-[11px] text-slate-400">{item.caption}</p></button>; })}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">

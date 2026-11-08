@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { BadgeCheck, BriefcaseBusiness, CalendarDays, Globe2, MapPin, Megaphone } from 'lucide-react';
 import StarRating from '../components/engagement/StarRating';
 import { Logo } from '../components/Layout';
@@ -234,7 +235,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 {profile.businesses.map((business) => (
                   <div key={business.id} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
                     <img
-                      src={business.imageUrl || `https://picsum.photos/seed/${business.id}/320`}
+                      src={business.imageUrl || PLACEHOLDER_IMAGE}
                       alt={business.name}
                       className="h-24 w-24 rounded-2xl object-cover"
                     />
@@ -269,7 +270,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 {profile.events.map((event) => (
                   <Link key={event.id} href={`/events/${event.slug}`} className="flex gap-4 rounded-[28px] border border-slate-100 bg-slate-50 p-4">
                     <img
-                      src={event.imageUrl || `https://picsum.photos/seed/${event.id}/320`}
+                      src={event.imageUrl || PLACEHOLDER_IMAGE}
                       alt={event.title}
                       className="h-24 w-24 rounded-2xl object-cover"
                     />

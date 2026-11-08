@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { Post } from '@/types';
 import PostCard from '@/components/community/PostCard';
+import { MentionText } from '@/components/community/MentionText';
 import { Popover } from '@/components/ui/Popover';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 
@@ -360,7 +361,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 className="w-full rounded-md border border-input bg-surface px-3 py-2 text-[11px] text-foreground outline-none focus:ring-2 focus:ring-brand-200"
               />
             ) : (
-              <p className="text-[11px] leading-tight text-slate-600">{comment.content}</p>
+              <p className="text-[11px] leading-tight text-slate-600"><MentionText text={comment.content} /></p>
             )
           }
           menu={
@@ -418,7 +419,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
             ) : <button type="button" onClick={() => setReplyingTo({ id: comment.id, name: comment.author.name })} className="mt-2 text-[11px] font-bold text-brand-600">Responder</button>
           }
         />
-        {comment.replies?.map((reply) => <div key={reply.id} className="ml-10 border-l-2 border-brand-100 pl-3"><PostCard.CommentItem authorImage={reply.author.image || DEFAULT_AVATAR_URL} authorName={reply.author.name} authorHref={reply.author.username ? `/${reply.author.username}` : undefined} content={<p className="text-[11px] leading-tight text-slate-600">{reply.content}</p>} /></div>)}
+        {comment.replies?.map((reply) => <div key={reply.id} className="ml-10 border-l-2 border-brand-100 pl-3"><PostCard.CommentItem authorImage={reply.author.image || DEFAULT_AVATAR_URL} authorName={reply.author.name} authorHref={reply.author.username ? `/${reply.author.username}` : undefined} content={<p className="text-[11px] leading-tight text-slate-600"><MentionText text={reply.content} /></p>} /></div>)}
         </React.Fragment>
       ))}
 

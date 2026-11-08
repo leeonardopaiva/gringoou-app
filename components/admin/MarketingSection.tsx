@@ -1,5 +1,6 @@
 'use client';
 
+import { InfoTip } from '@/components/ui/InfoTip';
 import React, { useEffect, useState } from 'react';
 import { Eye, KeyRound, Mail, Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -125,11 +126,7 @@ const MarketingSection: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div>
-        <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Marketing</p>
-        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40]">E-mail marketing</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Crie e edite templates de e-mail. O envio em massa requer um serviço de e-mail transacional/bulk.
-        </p>
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40]">E-mail marketing<InfoTip text="Crie e edite templates de e-mail. O envio em massa exige um serviço de e-mail transacional." /></h1>
       </div>
 
       <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">

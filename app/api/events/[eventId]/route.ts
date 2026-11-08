@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -30,7 +31,8 @@ export async function GET(_request: Request, context: RouteContext) {
     isAdmin,
   });
 
-  if (!event) {
+  const eventScope = event as unknown as { regionKey?: string | null; createdById?: string | null };
+  if (!event || isOutsideViewerRegion(session, { regionKey: eventScope.regionKey, ownerId: eventScope.createdById })) {
     return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
   }
 

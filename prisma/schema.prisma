@@ -194,21 +194,21 @@ enum MarketplaceCondition {
 }
 
 model User {
-  id                        String                 @id @default(cuid())
+  id                        String                     @id @default(cuid())
   name                      String?
-  username                  String?                @unique
-  email                     String?                @unique
+  username                  String?                    @unique
+  email                     String?                    @unique
   passwordHash              String?
   emailVerified             DateTime?
-  emailVerificationRequired Boolean                @default(false)
+  emailVerificationRequired Boolean                    @default(false)
   image                     String?
   coverImageUrl             String?
   bio                       String?
-  interests                 String[]               @default([])
+  interests                 String[]                   @default([])
   profileObjective          String?
-  adsPersonalizationEnabled Boolean                @default(true)
-  galleryUrls               String[]               @default([])
-  role                      UserRole               @default(USER)
+  adsPersonalizationEnabled Boolean                    @default(true)
+  galleryUrls               String[]                   @default([])
+  role                      UserRole                   @default(USER)
   phone                     String?
   phoneVerifiedAt           DateTime?
   phoneCountry              String?
@@ -216,38 +216,38 @@ model User {
   locationLabel             String?
   regionKey                 String?
   referredById              String?
-  onboardingCompleted       Boolean                @default(false)
+  onboardingCompleted       Boolean                    @default(false)
   gender                    Gender?
   age                       Int?
   timeAbroad                TimeAbroad?
   birthCity                 String?
-  recruiterVerified         Boolean                @default(false)
-  isAdvertiser              Boolean                @default(false)
-  marketingEmailsOptOut     Boolean                @default(false)
-  preferredLanguage         String                 @default("pt-BR")
-  createdAt                 DateTime               @default(now())
-  updatedAt                 DateTime               @updatedAt
+  recruiterVerified         Boolean                    @default(false)
+  isAdvertiser              Boolean                    @default(false)
+  marketingEmailsOptOut     Boolean                    @default(false)
+  preferredLanguage         String                     @default("pt-BR")
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
   accounts                  Account[]
   adCharges                 AdCharge[]
   adImpressions             AdImpression[]
   adAccountMemberships      AdAccountUser[]
-  createdAds                Banner[]               @relation("AdCreator")
-  approvedAds               Banner[]               @relation("AdApprover")
+  createdAds                Banner[]                   @relation("AdCreator")
+  approvedAds               Banner[]                   @relation("AdApprover")
   sessions                  Session[]
   businessMemberships       BusinessMember[]
-  createdBusinesses         Business[]             @relation("BusinessCreator")
-  createdEvents             Event[]                @relation("EventCreator")
-  createdJobs               Job[]                  @relation("JobCreator")
-  createdHousing            Housing[]              @relation("HousingCreator")
-  communityPosts            CommunityPost[]        @relation("CommunityPostAuthor")
-  postComments              PostComment[]          @relation("PostCommentAuthor")
+  createdBusinesses         Business[]                 @relation("BusinessCreator")
+  createdEvents             Event[]                    @relation("EventCreator")
+  createdJobs               Job[]                      @relation("JobCreator")
+  createdHousing            Housing[]                  @relation("HousingCreator")
+  communityPosts            CommunityPost[]            @relation("CommunityPostAuthor")
+  postComments              PostComment[]              @relation("PostCommentAuthor")
   jobComments               JobComment[]
   housingComments           HousingComment[]
-  postReactions             PostReaction[]         @relation("PostReactionAuthor")
-  postReports               PostReport[]           @relation("PostReportAuthor")
+  postReactions             PostReaction[]             @relation("PostReactionAuthor")
+  postReports               PostReport[]               @relation("PostReportAuthor")
   postPreferences           CommunityPostPreference[]
-  mutedUsers                UserMute[]             @relation("UserMuteSource")
-  mutedByUsers              UserMute[]             @relation("UserMuteTarget")
+  mutedUsers                UserMute[]                 @relation("UserMuteSource")
+  mutedByUsers              UserMute[]                 @relation("UserMuteTarget")
   emailChangeTokens         EmailChangeToken[]
   passwordResetTokens       PasswordResetToken[]
   suggestions               Suggestion[]
@@ -257,55 +257,59 @@ model User {
   eventRatings              EventRating[]
   analyticsEvents           AnalyticsEvent[]
   bannerRegistrations       BannerRegistration[]
-  sentFriendRequests        FriendRequest[]        @relation("FriendRequestSender")
-  receivedFriendRequests    FriendRequest[]        @relation("FriendRequestRecipient")
-  createdGroups             CommunityGroup[]       @relation("CommunityGroupCreator")
+  sentFriendRequests        FriendRequest[]            @relation("FriendRequestSender")
+  receivedFriendRequests    FriendRequest[]            @relation("FriendRequestRecipient")
+  createdGroups             CommunityGroup[]           @relation("CommunityGroupCreator")
   groupMemberships          CommunityGroupMember[]
-  groupReports              CommunityGroupReport[] @relation("CommunityGroupReportAuthor")
-  reviewedGroupReports      CommunityGroupReport[] @relation("CommunityGroupReportReviewer")
-  referredBy                User?                  @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals                 User[]                 @relation("UserReferrals")
+  groupReports              CommunityGroupReport[]     @relation("CommunityGroupReportAuthor")
+  reviewedGroupReports      CommunityGroupReport[]     @relation("CommunityGroupReportReviewer")
+  referredBy                User?                      @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals                 User[]                     @relation("UserReferrals")
   phoneVerificationCodes    PhoneVerificationCode[]
-  marketplaceItems          MarketplaceItem[]        @relation("MarketplaceItemCreator")
-  newsArticles              NewsArticle[]            @relation("NewsArticleAuthor")
+  marketplaceItems          MarketplaceItem[]          @relation("MarketplaceItemCreator")
+  newsArticles              NewsArticle[]              @relation("NewsArticleAuthor")
   newsLikes                 NewsArticleLike[]
-  blocksMade                UserBlock[]              @relation("UserBlocksMade")
-  blocksReceived            UserBlock[]              @relation("UserBlocksReceived")
-  messageReportsMade        MessageReport[]          @relation("MessageReportAuthor")
-  messageReportsReceived    MessageReport[]          @relation("MessageReportTarget")
-  messageReportsReviewed    MessageReport[]          @relation("MessageReportReviewer")
-  marketplaceFavorites      MarketplaceFavorite[]    @relation("MarketplaceFavoriteUser")
-  createdInvites            Invite[]                 @relation("InviteCreator")
-  revokedInvites            Invite[]                 @relation("InviteRevoker")
-  inviteUsages              InviteUsage[]            @relation("InviteUsageUser")
-  buyerConversations        MarketplaceConversation[] @relation("ConversationBuyer")
-  sellerConversations       MarketplaceConversation[] @relation("ConversationSeller")
-  sentMessages              MarketplaceMessage[]      @relation("MessageSender")
+  messagePolicy             MessagePolicy              @default(EVERYONE)
+  newsComments              NewsComment[]              @relation("NewsCommentAuthor")
+  newsCommentReports        NewsCommentReport[]        @relation("NewsCommentReporter")
+  conversationStates        ConversationState[]
+  blocksMade                UserBlock[]                @relation("UserBlocksMade")
+  blocksReceived            UserBlock[]                @relation("UserBlocksReceived")
+  messageReportsMade        MessageReport[]            @relation("MessageReportAuthor")
+  messageReportsReceived    MessageReport[]            @relation("MessageReportTarget")
+  messageReportsReviewed    MessageReport[]            @relation("MessageReportReviewer")
+  marketplaceFavorites      MarketplaceFavorite[]      @relation("MarketplaceFavoriteUser")
+  createdInvites            Invite[]                   @relation("InviteCreator")
+  revokedInvites            Invite[]                   @relation("InviteRevoker")
+  inviteUsages              InviteUsage[]              @relation("InviteUsageUser")
+  buyerConversations        MarketplaceConversation[]  @relation("ConversationBuyer")
+  sellerConversations       MarketplaceConversation[]  @relation("ConversationSeller")
+  sentMessages              MarketplaceMessage[]       @relation("MessageSender")
   marketplaceModerationLogs MarketplaceModerationLog[] @relation("MarketplaceModerator")
 
   @@index([referredById, createdAt])
 }
 
 model Job {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   title          String
   company        String
-  description    String   @db.Text
+  description    String       @db.Text
   employmentType String
   locationLabel  String
-  countryCode    String   @default("US")
+  countryCode    String       @default("US")
   regionKey      String?
   salary         String?
   contactUrl     String?
   imageUrl       String?
-  galleryUrls    String[] @default([])
+  galleryUrls    String[]     @default([])
   businessId     String?
-  isActive       Boolean  @default(true)
+  isActive       Boolean      @default(true)
   createdById    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  createdBy      User     @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  business       Business? @relation("JobBusiness", fields: [businessId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      User         @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  business       Business?    @relation("JobBusiness", fields: [businessId], references: [id], onDelete: SetNull)
   comments       JobComment[]
 
   @@index([isActive, createdAt])
@@ -315,21 +319,21 @@ model Job {
 }
 
 model Housing {
-  id            String   @id @default(cuid())
+  id            String           @id @default(cuid())
   title         String
-  description   String   @db.Text
+  description   String           @db.Text
   propertyType  String
   locationLabel String
   regionKey     String?
   price         String
   imageUrl      String?
-  galleryUrls   String[] @default([])
+  galleryUrls   String[]         @default([])
   contactUrl    String?
-  isActive      Boolean  @default(true)
+  isActive      Boolean          @default(true)
   createdById   String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     User     @relation("HousingCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  createdBy     User             @relation("HousingCreator", fields: [createdById], references: [id], onDelete: Cascade)
   comments      HousingComment[]
 
   @@index([isActive, createdAt])
@@ -405,9 +409,9 @@ model EmailChangeToken {
 }
 
 model Business {
-  id                  String             @id @default(cuid())
+  id                  String                 @id @default(cuid())
   name                String
-  slug                String             @unique
+  slug                String                 @unique
   category            String
   description         String?
   phone               String?
@@ -417,27 +421,27 @@ model Business {
   address             String
   locationLabel       String
   regionKey           String
-  visibilityScope     VisibilityScope    @default(USER_REGION)
+  visibilityScope     VisibilityScope        @default(USER_REGION)
   visibilityRegionKey String?
   imageUrl            String?
-  galleryUrls         String[]           @default([])
-  ratingAverage       Float              @default(0)
-  ratingCount         Int                @default(0)
-  status              BusinessStatus     @default(PENDING_REVIEW)
+  galleryUrls         String[]               @default([])
+  ratingAverage       Float                  @default(0)
+  ratingCount         Int                    @default(0)
+  status              BusinessStatus         @default(PENDING_REVIEW)
   ownershipVerifiedAt DateTime?
   createdById         String
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  createdBy           User               @relation("BusinessCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  createdBy           User                   @relation("BusinessCreator", fields: [createdById], references: [id], onDelete: Cascade)
   members             BusinessMember[]
-  visibilityRegion    Region?            @relation("BusinessVisibilityRegion", fields: [visibilityRegionKey], references: [key], onDelete: SetNull)
+  visibilityRegion    Region?                @relation("BusinessVisibilityRegion", fields: [visibilityRegionKey], references: [key], onDelete: SetNull)
   favorites           BusinessFavorite[]
   ratings             BusinessRating[]
-  communityPosts      CommunityPost[]    @relation("CommunityPostBusinessAuthor")
-  events              Event[]            @relation("EventBusiness")
-  jobs                Job[]              @relation("JobBusiness")
-  adAccount            AdAccount?
-  slugRedirects        BusinessSlugRedirect[]
+  communityPosts      CommunityPost[]        @relation("CommunityPostBusinessAuthor")
+  events              Event[]                @relation("EventBusiness")
+  jobs                Job[]                  @relation("JobBusiness")
+  adAccount           AdAccount?
+  slugRedirects       BusinessSlugRedirect[]
 
   @@index([status, regionKey])
   @@index([category, regionKey])
@@ -502,21 +506,21 @@ model Event {
 }
 
 model CommunityPost {
-  id               String              @id @default(cuid())
-  content          String              @db.Text
+  id               String                    @id @default(cuid())
+  content          String                    @db.Text
   imageUrl         String?
   externalUrl      String?
-  status           CommunityPostStatus @default(PUBLISHED)
+  status           CommunityPostStatus       @default(PUBLISHED)
   authorId         String
   businessAuthorId String?
   groupId          String?
   regionKey        String
   locationLabel    String
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  author           User                @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  businessAuthor   Business?           @relation("CommunityPostBusinessAuthor", fields: [businessAuthorId], references: [id], onDelete: SetNull)
-  group            CommunityGroup?     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  author           User                      @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  businessAuthor   Business?                 @relation("CommunityPostBusinessAuthor", fields: [businessAuthorId], references: [id], onDelete: SetNull)
+  group            CommunityGroup?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   comments         PostComment[]
   reactions        PostReaction[]
   reports          PostReport[]
@@ -547,18 +551,18 @@ model PostComment {
 }
 
 model JobComment {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   jobId     String
   authorId  String
-  content   String   @db.Text
+  content   String       @db.Text
   parentId  String?
-  isHidden  Boolean  @default(false)
+  isHidden  Boolean      @default(false)
   hiddenAt  DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent    JobComment? @relation("JobCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  job       Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    JobComment?  @relation("JobCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   JobComment[] @relation("JobCommentReplies")
 
   @@index([jobId, createdAt])
@@ -566,18 +570,18 @@ model JobComment {
 }
 
 model HousingComment {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   housingId String
   authorId  String
-  content   String   @db.Text
+  content   String           @db.Text
   parentId  String?
-  isHidden  Boolean  @default(false)
+  isHidden  Boolean          @default(false)
   hiddenAt  DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  housing   Housing  @relation(fields: [housingId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent    HousingComment? @relation("HousingCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  housing   Housing          @relation(fields: [housingId], references: [id], onDelete: Cascade)
+  author    User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    HousingComment?  @relation("HousingCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   HousingComment[] @relation("HousingCommentReplies")
 
   @@index([housingId, createdAt])
@@ -841,24 +845,24 @@ model FriendRequest {
 }
 
 model CommunityGroup {
-  id          String                 @id @default(cuid())
-  name        String
-  slug        String                 @unique
-  description String?
-  imageUrl    String?
+  id            String                 @id @default(cuid())
+  name          String
+  slug          String                 @unique
+  description   String?
+  imageUrl      String?
   coverImageUrl String?
-  category    String?
-  regionKey   String?
-  countryCode String                 @default("US")
-  isPublic    Boolean                @default(true)
-  createdById String
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  createdBy   User                   @relation("CommunityGroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  region      Region?                @relation(fields: [regionKey], references: [key], onDelete: SetNull)
-  members     CommunityGroupMember[]
-  posts       CommunityPost[]
-  reports     CommunityGroupReport[]
+  category      String?
+  regionKey     String?
+  countryCode   String                 @default("US")
+  isPublic      Boolean                @default(true)
+  createdById   String
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  createdBy     User                   @relation("CommunityGroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  region        Region?                @relation(fields: [regionKey], references: [key], onDelete: SetNull)
+  members       CommunityGroupMember[]
+  posts         CommunityPost[]
+  reports       CommunityGroupReport[]
 
   @@index([isPublic, createdAt])
   @@index([regionKey, createdAt])
@@ -867,15 +871,15 @@ model CommunityGroup {
 }
 
 model CommunityGroupMember {
-  id        String                   @id @default(cuid())
+  id        String                         @id @default(cuid())
   groupId   String
   userId    String
-  role      CommunityGroupMemberRole @default(MEMBER)
+  role      CommunityGroupMemberRole       @default(MEMBER)
   status    CommunityGroupMembershipStatus @default(APPROVED)
-  createdAt DateTime                 @default(now())
-  updatedAt DateTime                 @updatedAt
-  group     CommunityGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  group     CommunityGroup                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@index([userId, createdAt])
@@ -915,28 +919,28 @@ model CommunityGroupReport {
 }
 
 model CommunityPostPreference {
-  id          String        @id @default(cuid())
-  postId      String
-  userId      String
-  isSaved     Boolean       @default(false)
-  isInterested Boolean      @default(false)
-  isHidden    Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  post        CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  postId       String
+  userId       String
+  isSaved      Boolean       @default(false)
+  isInterested Boolean       @default(false)
+  isHidden     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  post         CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@index([userId, isSaved, updatedAt])
 }
 
 model UserMute {
-  id        String   @id @default(cuid())
-  userId    String
+  id          String   @id @default(cuid())
+  userId      String
   mutedUserId String
-  createdAt DateTime @default(now())
-  user      User     @relation("UserMuteSource", fields: [userId], references: [id], onDelete: Cascade)
-  mutedUser User     @relation("UserMuteTarget", fields: [mutedUserId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  user        User     @relation("UserMuteSource", fields: [userId], references: [id], onDelete: Cascade)
+  mutedUser   User     @relation("UserMuteTarget", fields: [mutedUserId], references: [id], onDelete: Cascade)
 
   @@unique([userId, mutedUserId])
   @@index([mutedUserId])
@@ -1020,21 +1024,21 @@ model PhoneVerificationCode {
 }
 
 model Invite {
-  id              String        @id @default(cuid())
-  codeHash        String        @unique
-  status          InviteStatus  @default(ACTIVE)
+  id              String         @id @default(cuid())
+  codeHash        String         @unique
+  status          InviteStatus   @default(ACTIVE)
   email           String?
-  usageLimit      Int           @default(1)
-  usedCount       Int           @default(0)
+  usageLimit      Int            @default(1)
+  usedCount       Int            @default(0)
   expiresAt       DateTime?
   revokedAt       DateTime?
   createdById     String
   revokedById     String?
   waitlistEntryId String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  createdBy       User          @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  revokedBy       User?         @relation("InviteRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       User           @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  revokedBy       User?          @relation("InviteRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
   waitlistEntry   WaitlistEntry? @relation(fields: [waitlistEntryId], references: [id], onDelete: SetNull)
   usages          InviteUsage[]
 
@@ -1058,30 +1062,30 @@ model InviteUsage {
 }
 
 model MarketplaceItem {
-  id            String               @id @default(cuid())
-  title         String
-  description   String               @db.Text
-  category      String
-  priceCents    Int?
-  isFree        Boolean              @default(false)
-  condition     MarketplaceCondition @default(GOOD)
-  locationLabel String
-  regionKey     String
-  imageUrl      String?
-  galleryUrls   String[]             @default([])
-  status        MarketplaceStatus    @default(PENDING_REVIEW)
-  createdById   String
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  latitude      Float?
-  longitude     Float?
-  moderationReason String? @db.Text
+  id               String                     @id @default(cuid())
+  title            String
+  description      String                     @db.Text
+  category         String
+  priceCents       Int?
+  isFree           Boolean                    @default(false)
+  condition        MarketplaceCondition       @default(GOOD)
+  locationLabel    String
+  regionKey        String
+  imageUrl         String?
+  galleryUrls      String[]                   @default([])
+  status           MarketplaceStatus          @default(PENDING_REVIEW)
+  createdById      String
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  latitude         Float?
+  longitude        Float?
+  moderationReason String?                    @db.Text
   moderatedById    String?
   moderatedAt      DateTime?
   moderationLogs   MarketplaceModerationLog[]
-  createdBy     User                 @relation("MarketplaceItemCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  favorites     MarketplaceFavorite[]
-  conversations MarketplaceConversation[]
+  createdBy        User                       @relation("MarketplaceItemCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  favorites        MarketplaceFavorite[]
+  conversations    MarketplaceConversation[]
 
   @@index([status, regionKey, createdAt])
   @@index([status, category, regionKey, createdAt])
@@ -1101,20 +1105,23 @@ model MarketplaceFavorite {
 }
 
 model MarketplaceConversation {
-  id        String               @id @default(cuid())
+  id            String                        @id @default(cuid())
   /// Nulo em conversas diretas entre duas pessoas (sem anúncio).
-  itemId    String?
-  buyerId   String
-  sellerId  String
-  status    MarketplaceConversationStatus @default(ACTIVE)
+  itemId        String?
+  buyerId       String
+  sellerId      String
+  status        MarketplaceConversationStatus @default(ACTIVE)
+  /// PENDING: mensagem direta de quem o destinatário não aceita receber direto; aguarda aceitar/excluir.
+  requestStatus ConversationRequestStatus     @default(ACCEPTED)
   lastMessageAt DateTime?
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  item      MarketplaceItem?       @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  buyer     User                   @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
-  seller    User                   @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
-  messages  MarketplaceMessage[]
-  reports   MessageReport[]
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
+  item          MarketplaceItem?              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  buyer         User                          @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller        User                          @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages      MarketplaceMessage[]
+  reports       MessageReport[]
+  states        ConversationState[]
 
   @@unique([itemId, buyerId])
   @@index([buyerId, updatedAt])
@@ -1127,16 +1134,45 @@ enum MarketplaceConversationStatus {
   ARCHIVED
 }
 
+/// Quem pode iniciar mensagem direta com a pessoa.
+enum MessagePolicy {
+  EVERYONE
+  FRIENDS
+  NOBODY
+}
+
+enum ConversationRequestStatus {
+  ACCEPTED
+  PENDING
+}
+
+/// Estado da conversa para cada participante (arquivar, silenciar, excluir só para si).
+model ConversationState {
+  id             String                  @id @default(cuid())
+  conversationId String
+  userId         String
+  archivedAt     DateTime?
+  mutedAt        DateTime?
+  deletedAt      DateTime?
+  conversation   MarketplaceConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
 model MarketplaceMessage {
-  id             String                 @id @default(cuid())
+  id             String                  @id @default(cuid())
   conversationId String
   senderId       String
-  content        String                 @db.Text
+  content        String                  @db.Text
   readAt         DateTime?
+  /// Apagada pelo autor: o texto deixa de aparecer, mas a linha fica para a moderação.
+  deletedAt      DateTime?
   ablyMessageId  String?
-  createdAt      DateTime               @default(now())
+  createdAt      DateTime                @default(now())
   conversation   MarketplaceConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User                   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  sender         User                    @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
   @@index([senderId])
@@ -1178,11 +1214,40 @@ model NewsArticle {
   updatedAt   DateTime          @updatedAt
   author      User?             @relation("NewsArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
   likes       NewsArticleLike[]
+  comments    NewsComment[]
 
   @@index([status, publishedAt, id])
   @@index([status, regionKey, publishedAt])
   @@index([status, category, publishedAt])
   @@index([authorId, createdAt])
+}
+
+model NewsComment {
+  id        String              @id @default(cuid())
+  articleId String
+  authorId  String
+  content   String              @db.Text
+  /// Oculto pela moderação (ou automaticamente após várias denúncias).
+  isHidden  Boolean             @default(false)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  article   NewsArticle         @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author    User                @relation("NewsCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  reports   NewsCommentReport[]
+
+  @@index([articleId, createdAt])
+  @@index([authorId])
+}
+
+model NewsCommentReport {
+  commentId  String
+  reporterId String
+  createdAt  DateTime    @default(now())
+  comment    NewsComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporter   User        @relation("NewsCommentReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, reporterId])
+  @@index([reporterId])
 }
 
 model NewsArticleLike {

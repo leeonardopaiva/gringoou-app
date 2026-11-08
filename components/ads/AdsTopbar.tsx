@@ -6,11 +6,10 @@ import { signOut, useSession } from 'next-auth/react';
 import { Bell, BriefcaseBusiness, Check, ChevronDown, ExternalLink, LogOut, Menu, Plus, Settings, Users } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
-import GringoouLogo from '@/components/icons/GringoouLogo';
 
-type AdsTopbarProps = { onMenuToggle: () => void };
+type AdsTopbarProps = { onMenuToggle: () => void; collapsed?: boolean };
 
-export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
+export function AdsTopbar({ onMenuToggle, collapsed = false }: AdsTopbarProps) {
   const { data: session } = useSession();
   const { account, accounts, accountSwitchLocked, canCreateAccount, maxAccounts, selectAccount } = useAdAccount();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,28 +34,29 @@ export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
   }
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white">
-      <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:justify-end md:px-7 md:pl-[calc(1.75rem+272px)]">
-        <div className="flex items-center gap-3 md:hidden">
-          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-[#132f40]"><Menu size={21} /></button>
-          <GringoouLogo size={28} />
+    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-slate-200/80 bg-gradient-to-r from-white via-slate-50 to-slate-100 transition-[left] duration-300 ${collapsed ? 'lg:left-20' : 'lg:left-72'}`}>
+      <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:px-7">
+        <div className="flex min-w-0 items-center gap-3">
+          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 lg:hidden"><Menu size={21} /></button>
+          <Link href="/ads/overview" aria-label="Gringoou" className="lg:hidden"><img src="/assets/logo_simbolo.svg" alt="" className="h-8 w-8 object-contain" /></Link>
+          <span className="truncate text-sm font-bold tracking-tight text-slate-700">Gestor do negócio</span>
         </div>
         <div className="flex items-center gap-3">
-          <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"><Bell size={18} /></button>
+          <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"><Bell size={18} /></button>
           <div ref={menuRef} className="relative">
-            <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full bg-slate-50 py-1 pl-1 pr-3 transition hover:bg-slate-100">
-              <Avatar src={triggerAvatar} name={account?.name ?? userName} size="md" />
-              <div className="hidden min-w-0 text-left sm:block"><strong className="block max-w-[180px] truncate text-sm text-[#132f40]">{account?.name ?? userName}</strong><span className="block max-w-[180px] truncate text-[11px] text-slate-400">Account ID: {accountId.slice(0, 10)}...</span></div>
-              <ChevronDown size={16} className="text-slate-500" />
+            <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 transition hover:bg-slate-50">
+              <Avatar src={triggerAvatar} name={account?.name ?? userName} size="sm" />
+              <div className="hidden min-w-0 text-left sm:block"><strong className="block max-w-[180px] truncate text-sm text-slate-800">{account?.name ?? userName}</strong><span className="block max-w-[180px] truncate text-[11px] text-slate-300"></span></div>
+              <ChevronDown size={16} className="text-slate-400" />
             </button>
             {open ? (
               <div className="absolute right-0 top-[calc(100%+10px)] w-[330px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
-                <div className="p-4"><p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Conectado como</p><div className="mt-3 flex items-center gap-3 rounded-xl p-2"><Avatar src={session?.user?.image} name={userName} size="md" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{userName}</strong><span className="block truncate text-xs text-slate-500">{userEmail}</span></span></div></div>
+                <div className="p-4"><p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Conectado como</p><div className="mt-3 flex items-center gap-3 rounded-xl p-2"><Avatar src={session?.user?.image} name={userName} size="sm" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{userName}</strong><span className="block truncate text-xs text-slate-500">{userEmail}</span></span></div></div>
                 <div className="border-t border-slate-100 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Contas de negócio ({accounts.length})</p>
                   <div className="mt-2 space-y-1">{accounts.map((item) => (
                     <div key={item.id} className="flex items-center gap-1 rounded-xl p-1 hover:bg-brand-50">
-                      <button type="button" disabled={accountSwitchLocked} onClick={() => void changeAccount(item.id)} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 text-left disabled:cursor-not-allowed disabled:opacity-50"><Avatar src={item.logoUrl} name={item.name} size="md" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{item.name}</strong><span className="block truncate text-xs text-slate-500">Conta Ads · ID: {item.id.slice(0, 12)}...</span></span>{item.id === account?.id ? <Check size={18} className="shrink-0 text-brand-500" /> : <BriefcaseBusiness size={18} className="shrink-0 text-slate-300" />}</button>
+                      <button type="button" disabled={accountSwitchLocked} onClick={() => void changeAccount(item.id)} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 text-left disabled:cursor-not-allowed disabled:opacity-50"><Avatar src={item.logoUrl} name={item.name} size="sm" /><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{item.name}</strong><span className="block truncate text-xs text-slate-500">Conta Ads · ID: {item.id.slice(0, 12)}...</span></span>{item.id === account?.id ? <Check size={18} className="shrink-0 text-brand-500" /> : <BriefcaseBusiness size={18} className="shrink-0 text-slate-300" />}</button>
                       {item.publicPath ? <Link href={item.publicPath} onClick={() => setOpen(false)} aria-label={`Abrir página pública de ${item.name}`} title="Abrir página pública" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white hover:text-brand-600"><ExternalLink size={16} /></Link> : null}
                     </div>
                   ))}</div>

@@ -19,6 +19,28 @@ const PORT = Number(process.env.LOCAL_DB_PORT ?? 54329);
 const DB_NAME = 'gringoou';
 export const LOCAL_URL = `postgresql://postgres:postgres@localhost:${PORT}/${DB_NAME}`;
 
+/** Tamanho (bytes) de uma pasta, somando os arquivos. */
+const folderSize = (dir) => {
+  let total = 0;
+  try {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      total += entry.isDirectory() ? folderSize(full) : fs.statSync(full).size;
+    }
+  } catch {
+    /* pasta inexistente ou em uso */
+  }
+  return total;
+};
+
+/** O cache do Next (.next) incha ao longo dos dias e deixa o modo dev lento; limpa quando passa de 1,5 GB. */
+const cleanNextCacheIfHuge = () => {
+  const dir = path.join(ROOT, '.next');
+  if (folderSize(dir) < 1.5 * 1024 ** 3) return;
+  console.log('[db:local] Cache do Next acima de 1,5 GB: limpando .next para manter o app rápido...');
+  fs.rmSync(dir, { recursive: true, force: true });
+};
+
 const reset = process.argv.includes('--reset');
 const withDev = process.argv.includes('--with-dev');
 let devProcess = null;
@@ -165,12 +187,19 @@ try {
 
   console.log(`\n[db:local] Pronto em ${LOCAL_URL.replace(/:postgres@/, ':***@')}`);
   if (withDev) {
-    console.log('[db:local] Iniciando o app (next dev)... Ctrl+C encerra app e banco.');
-    devProcess = spawn('npx', ['next', 'dev'], {
+    cleanNextCacheIfHuge();
+    console.log('[db:local] Iniciando o app (next dev --turbopack)... Ctrl+C encerra app e banco.');
+    devProcess = spawn('npx', ['next', 'dev', '--turbopack'], {
       cwd: ROOT,
       stdio: 'inherit',
       shell: process.platform === 'win32',
-      env: { ...process.env, DATABASE_URL: LOCAL_URL, DIRECT_URL: LOCAL_URL },
+      env: {
+        ...process.env,
+        DATABASE_URL: LOCAL_URL,
+        DIRECT_URL: LOCAL_URL,
+        // Limita o heap do Node para o coletor de lixo agir antes de a memória chegar a vários GB.
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --max-old-space-size=4096`.trim(),
+      },
     });
     devProcess.on('exit', () => void stop());
   } else {

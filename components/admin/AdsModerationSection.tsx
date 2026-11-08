@@ -1,5 +1,6 @@
 'use client';
 
+import { InfoTip } from '@/components/ui/InfoTip';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Building2, CalendarDays, Check, CheckCircle2, Clock3, Eye, MapPin, Megaphone, RefreshCcw, Search, X, XCircle } from 'lucide-react';
 import { Badge, Button, Card, Input, Modal, Select, Textarea } from '@/components/ui';
@@ -108,7 +109,7 @@ export default function AdsModerationSection() {
   return (
     <div className={cn('transition-[padding] duration-200', selected && 'xl:pr-[400px]')}>
       <div className="mx-auto max-w-[1180px] space-y-6 px-4 py-7 sm:px-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Moderador · Anuncios pagos</p><h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Moderacao de Anuncios</h1><p className="mt-1 text-sm text-slate-400">Revise campanhas pagas antes da publicacao.</p></div><Button iconLeft={<RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />} disabled={refreshing} onClick={() => void loadCampaigns(true)}>Atualizar fila</Button></div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Anúncios pagos<InfoTip text="Revise as campanhas pagas antes de publicá-las." /></h1><button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing} onClick={() => void loadCampaigns(true)} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button></div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map((item) => { const Icon = item.icon; return <Card key={item.label} className="rounded-2xl border border-slate-200 p-5 shadow-[0_2px_12px_rgba(15,23,42,.035)]"><span className={`flex h-10 w-10 items-center justify-center rounded-full ${item.color}`}><Icon size={19} /></span><p className="mt-5 text-3xl font-extrabold">{item.value}</p><p className="mt-1 text-xs font-bold">{item.label}</p><p className="mt-1 text-[11px] text-slate-400">{item.caption}</p></Card>; })}</div>
 

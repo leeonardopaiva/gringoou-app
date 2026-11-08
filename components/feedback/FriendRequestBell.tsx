@@ -7,7 +7,6 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
 
 type PendingFriendRequest = {
   id: string;
@@ -34,11 +33,18 @@ type PendingCommunityPost = {
   };
 };
 
+type PendingMessageRequest = {
+  id: string;
+  preview: string;
+  sender: { id: string; name?: string | null; username?: string | null; image?: string | null };
+};
+
 const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = false }) => {
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [requests, setRequests] = useState<PendingFriendRequest[]>([]);
   const [pendingPosts, setPendingPosts] = useState<PendingCommunityPost[]>([]);
+  const [messageRequests, setMessageRequests] = useState<PendingMessageRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -46,10 +52,13 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
     setLoading(true);
 
     try {
-      const [friendResponse, postResponse] = await Promise.all([
+      const [friendResponse, postResponse, messageResponse] = await Promise.all([
         fetch('/api/friends/requests', { cache: 'no-store' }),
         fetch('/api/admin/community/posts', { cache: 'no-store' }),
+        fetch('/api/messages/requests', { cache: 'no-store' }),
       ]);
+      const messagePayload = messageResponse.ok ? await messageResponse.json().catch(() => null) : null;
+      setMessageRequests(Array.isArray(messagePayload?.requests) ? messagePayload.requests : []);
       const payload = await friendResponse.json().catch(() => null);
 
       if (!friendResponse.ok) {
@@ -95,7 +104,31 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
     }
   };
 
-  const notificationCount = requests.length + pendingPosts.length;
+  const notificationCount = requests.length + pendingPosts.length + messageRequests.length;
+
+  const handleMessageRequest = async (conversationId: string, action: 'accept' | 'delete' | 'block') => {
+    setProcessingId(conversationId);
+
+    try {
+      const response = await fetch(`/api/messages/requests/${conversationId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'Nao foi possivel responder a mensagem.');
+      }
+
+      setMessageRequests((current) => current.filter((request) => request.id !== conversationId));
+      showToast(payload?.message ?? 'Pronto.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Nao foi possivel responder a mensagem.', 'error');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   useEffect(() => {
     void loadRequests();
@@ -134,7 +167,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
-        aria-label={adminMode ? 'Notificacoes administrativas' : 'Solicitacoes de amizade'}
+        aria-label={adminMode ? 'Alertas' : 'Alertas'}
       >
         <Bell size={18} />
         {notificationCount > 0 ? (
@@ -147,29 +180,74 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[80] w-[320px] max-w-[calc(100vw-2rem)] rounded-card border border-border bg-surface p-2 text-left shadow-md">
-          <div className="px-2 py-2">
-            <p className="text-sm font-bold text-slate-900">{adminMode ? 'Notificações' : 'Solicitações'}</p>
-            <p className="text-xs text-slate-400">{adminMode ? 'Pendências da comunidade e da sua conta.' : 'Conexões pendentes da comunidade.'}</p>
-          </div>
-
-          <div className="max-h-[360px] space-y-1.5 overflow-y-auto">
+        <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[80] w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-card border border-border bg-surface text-left shadow-md">
+          <div className="max-h-[420px] overflow-y-auto">
             {loading && notificationCount === 0 ? (
-              <div className="flex justify-center rounded-xl px-4 py-5" role="status" aria-label="Carregando notificações">
+              <div className="flex justify-center px-4 py-8" role="status" aria-label="Carregando notificações">
                 <Spinner size="sm" />
               </div>
             ) : notificationCount === 0 ? (
-              <div className="rounded-xl px-4 py-5 text-center text-sm font-medium text-slate-500">
-                Nenhuma solicitação pendente.
+              <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                  <Bell size={20} aria-hidden />
+                </span>
+                <p className="text-sm font-medium text-slate-500">Nada novo por aqui</p>
               </div>
             ) : (
-              <>
-              {requests.map((request) => {
-                const requesterName = request.requester.name || 'Usuario da comunidade';
+              <ul className="divide-y divide-slate-100">
+                {messageRequests.map((request) => {
+                  const senderName = request.sender.name || request.sender.username || 'Membro da comunidade';
 
-                return (
-                  <div key={request.id} className="rounded-xl border-slate-200 bg-white p-3">
-                    <div className="flex items-center gap-3">
+                  return (
+                    <li key={request.id} className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={request.sender.username ? `/${request.sender.username}` : '/'}
+                          onClick={() => setOpen(false)}
+                          className="shrink-0"
+                        >
+                          <Avatar src={request.sender.image} name={senderName} size="lg" />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-900">{senderName}</p>
+                          <p className="truncate text-xs text-slate-500">quer enviar uma mensagem</p>
+                        </div>
+                      </div>
+                      {request.preview ? <p className="mt-2 line-clamp-2 pl-[3.25rem] text-xs leading-5 text-slate-600">{request.preview}</p> : null}
+                      <div className="mt-2.5 flex flex-wrap gap-2 pl-[3.25rem]">
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'accept')}
+                          className="rounded-full bg-brand-500 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:brightness-105 disabled:opacity-50"
+                        >
+                          Aceitar
+                        </button>
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'delete')}
+                          className="rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          type="button"
+                          disabled={processingId === request.id}
+                          onClick={() => void handleMessageRequest(request.id, 'block')}
+                          className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Bloquear
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+                {requests.map((request) => {
+                  const requesterName = request.requester.name || 'Usuario da comunidade';
+
+                  return (
+                    <li key={request.id} className="flex items-center gap-3 px-4 py-3.5">
                       <Link
                         href={request.requester.username ? `/${request.requester.username}` : '/'}
                         onClick={() => setOpen(false)}
@@ -178,72 +256,69 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                         <Avatar src={request.requester.image} name={requesterName} size="lg" />
                       </Link>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-slate-900">{requesterName}</p>
-                        <p className="truncate text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          @{request.requester.username || 'perfil'}
-                        </p>
+                        <p className="truncate text-sm font-semibold text-slate-900">{requesterName}</p>
+                        <p className="truncate text-xs text-slate-500">quer se conectar com você</p>
                       </div>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <Button
-                        variant="primary"
-                        size="xs"
-                        iconLeft={<Check size={14} />}
-                        disabled={processingId === request.id}
-                        onClick={() => void handleDecision(request.id, 'accept')}
-                      >
-                        Aceitar
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="xs"
-                        iconLeft={<X size={14} />}
-                        disabled={processingId === request.id}
-                        onClick={() => void handleDecision(request.id, 'decline')}
-                      >
-                        Recusar
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-              {pendingPosts.map((post) => {
-                const authorName = post.author.name || 'Usuario da comunidade';
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <button
+                          type="button"
+                          aria-label={`Aceitar ${requesterName}`}
+                          disabled={processingId === request.id}
+                          onClick={() => void handleDecision(request.id, 'accept')}
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-50"
+                        >
+                          <Check size={16} aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Recusar ${requesterName}`}
+                          disabled={processingId === request.id}
+                          onClick={() => void handleDecision(request.id, 'decline')}
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
+                        >
+                          <X size={16} aria-hidden />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+                {pendingPosts.map((post) => {
+                  const authorName = post.author.name || 'Usuario da comunidade';
 
-                return (
-                  <div key={post.id} className="rounded-xl border border-amber-200 bg-amber-50 p-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={post.author.image} name={authorName} size="lg" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-slate-900">Post aguardando aprovacao</p>
-                        <p className="truncate text-xs text-slate-500">{authorName} em {post.locationLabel}</p>
+                  return (
+                    <li key={post.id} className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <Avatar src={post.author.image} name={authorName} size="lg" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-900">{authorName}</p>
+                          <p className="truncate text-xs text-slate-500">publicação aguardando aprovação · {post.locationLabel}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <button
+                            type="button"
+                            aria-label="Aprovar publicação"
+                            disabled={processingId === post.id}
+                            onClick={() => void handlePostDecision(post.id, 'approve')}
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-50"
+                          >
+                            <Check size={16} aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Recusar publicação"
+                            disabled={processingId === post.id}
+                            onClick={() => void handlePostDecision(post.id, 'remove')}
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
+                          >
+                            <X size={16} aria-hidden />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-700">{post.content}</p>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <Button
-                        variant="primary"
-                        size="xs"
-                        iconLeft={<Check size={14} />}
-                        disabled={processingId === post.id}
-                        onClick={() => void handlePostDecision(post.id, 'approve')}
-                      >
-                        Aprovar
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="xs"
-                        iconLeft={<X size={14} />}
-                        disabled={processingId === post.id}
-                        onClick={() => void handlePostDecision(post.id, 'remove')}
-                      >
-                        Recusar
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-              </>
+                      <p className="mt-2 line-clamp-2 pl-[3.25rem] text-xs leading-5 text-slate-600">{post.content}</p>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>

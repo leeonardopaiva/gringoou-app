@@ -1,5 +1,6 @@
 'use client';
 
+import { InfoTip } from '@/components/ui/InfoTip';
 import { useMemo } from 'react';
 import { Activity, CalendarDays, ImageIcon, RefreshCcw, Search, Users } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -113,9 +114,7 @@ export default function AdminAnalyticsSection({ data, loading, days, regionFilte
     <section className="space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · Analytics</p>
-          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Analytics da Plataforma</h1>
-          <p className="mt-1 text-sm text-slate-500">Analise uso, buscas, campanhas e interacoes com dados reais da plataforma.</p>
+          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Analytics<InfoTip text="Uso, buscas, campanhas e interações com dados reais da plataforma." /></h1>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
           <label className="relative">

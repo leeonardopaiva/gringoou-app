@@ -1,4 +1,5 @@
 import { BusinessStatus, CommunityPostStatus, EventStatus, Prisma } from '@prisma/client';
+import { resolveRegionScope, regionWhereFor } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -9,17 +10,19 @@ export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get('q') || '').trim().slice(0, 60);
-  const regionKey = session?.user?.regionKey || undefined;
+  const regionScope = resolveRegionScope(session, null);
+  const regionKey = regionScope.regionKey || undefined;
+  const scopedRegion = regionWhereFor(regionScope);
   if (query && query.length < 2) return NextResponse.json({ suggestions: [] });
 
   const contains = (value: string): Prisma.StringFilter => ({ contains: value, mode: Prisma.QueryMode.insensitive });
   const [regions, events, businesses, groups, people, posts] = await Promise.all([
     prisma.region.findMany({ where: query ? { isActive: true, OR: [{ label: contains(query) }, { city: contains(query) }, { state: contains(query) }, { key: contains(query) }] } : { isActive: true, ...(regionKey ? { key: regionKey } : {}) }, take: LIMIT, orderBy: { label: 'asc' }, select: { key: true, label: true } }),
     prisma.event.findMany({ where: { status: EventStatus.PUBLISHED, startsAt: { gte: new Date() }, ...(regionKey ? { regionKey } : {}), ...(query ? { OR: [{ title: contains(query) }, { locationLabel: contains(query) }, { venueName: contains(query) }] } : {}) }, take: LIMIT, orderBy: { startsAt: 'asc' }, select: { id: true, slug: true, title: true, locationLabel: true } }),
-    query ? prisma.business.findMany({ where: { status: BusinessStatus.PUBLISHED, OR: [{ name: contains(query) }, { slug: contains(query) }, { category: contains(query) }] }, take: LIMIT, orderBy: [{ ratingAverage: 'desc' }, { createdAt: 'desc' }], select: { id: true, slug: true, name: true, category: true } }) : Promise.resolve([]),
-    query ? prisma.communityGroup.findMany({ where: { isPublic: true, OR: [{ name: contains(query) }, { slug: contains(query) }, { category: contains(query) }] }, take: LIMIT, orderBy: { createdAt: 'desc' }, select: { id: true, slug: true, name: true, category: true } }) : Promise.resolve([]),
-    query ? prisma.user.findMany({ where: { onboardingCompleted: true, username: { not: null }, OR: [{ name: contains(query) }, { username: contains(query) }] }, take: LIMIT, orderBy: { name: 'asc' }, select: { id: true, username: true, name: true, locationLabel: true } }) : Promise.resolve([]),
-    query ? prisma.communityPost.findMany({ where: { status: CommunityPostStatus.PUBLISHED, groupId: null, content: contains(query), ...(regionKey ? { regionKey } : {}) }, take: LIMIT, orderBy: { createdAt: 'desc' }, select: { id: true, content: true, locationLabel: true } }) : Promise.resolve([]),
+    query ? prisma.business.findMany({ where: { status: BusinessStatus.PUBLISHED, ...scopedRegion, OR: [{ name: contains(query) }, { slug: contains(query) }, { category: contains(query) }] }, take: LIMIT, orderBy: [{ ratingAverage: 'desc' }, { createdAt: 'desc' }], select: { id: true, slug: true, name: true, category: true } }) : Promise.resolve([]),
+    query ? prisma.communityGroup.findMany({ where: { isPublic: true, ...scopedRegion, OR: [{ name: contains(query) }, { slug: contains(query) }, { category: contains(query) }] }, take: LIMIT, orderBy: { createdAt: 'desc' }, select: { id: true, slug: true, name: true, category: true } }) : Promise.resolve([]),
+    query ? prisma.user.findMany({ where: { onboardingCompleted: true, username: { not: null }, ...scopedRegion, OR: [{ name: contains(query) }, { username: contains(query) }] }, take: LIMIT, orderBy: { name: 'asc' }, select: { id: true, username: true, name: true, locationLabel: true } }) : Promise.resolve([]),
+    query ? prisma.communityPost.findMany({ where: { status: CommunityPostStatus.PUBLISHED, groupId: null, content: contains(query), ...(regionScope.enforced ? scopedRegion : regionKey ? { regionKey } : {}) }, take: LIMIT, orderBy: { createdAt: 'desc' }, select: { id: true, content: true, locationLabel: true } }) : Promise.resolve([]),
   ]);
 
   const suggestions = [

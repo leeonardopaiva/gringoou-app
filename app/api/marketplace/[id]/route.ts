@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { getServerAuthSession } from '@/lib/auth';
 import { findRegionByKey } from '@/lib/region-store';
 import { marketplaceUpdateSchema } from '@/lib/validators';
@@ -18,7 +19,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
   const item = await marketplaceUseCases.getMarketplace({ id, viewerId, isAdmin, canModerate });
 
-  if (!item) {
+  const itemScope = item as unknown as { regionKey?: string | null; createdById?: string | null } | null;
+  if (!item || isOutsideViewerRegion(session, { regionKey: itemScope?.regionKey, ownerId: itemScope?.createdById })) {
     return NextResponse.json({ error: 'Anuncio nao encontrado.' }, { status: 404 });
   }
 

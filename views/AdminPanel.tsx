@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useSearchParams } from 'next/navigation';
 import {
   BadgeCheck,
@@ -27,6 +28,9 @@ import AdminOverview from '../components/admin/AdminOverview';
 import AdminAnalyticsSection from '../components/admin/AdminAnalyticsSection';
 import GroupReportsSection from '../components/admin/GroupReportsSection';
 import MessageReportsSection from '../components/admin/MessageReportsSection';
+import { InfoTip } from '../components/ui/InfoTip';
+import { Avatar } from '../components/ui/Avatar';
+import NewsCommentReportsSection from '../components/admin/NewsCommentReportsSection';
 import MarketplaceModerationSection from '../components/admin/MarketplaceModerationSection';
 import UserDeletionModal from '../components/admin/UserDeletionModal';
 import { Button, Modal } from '../components/ui';
@@ -1210,15 +1214,15 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   ];
   const analyticsMaxValue = Math.max(...analyticsHighlightData.map((item) => item.value), 1);
   const sectionMeta: Record<Exclude<AdminSection, 'overview' | 'ads'>, { title: string; description: string }> = {
-    moderation: { title: 'Moderacao da Comunidade', description: 'Revise conteudos, negocios e eventos sinalizados pela comunidade.' },
-    imports: { title: 'Importacoes', description: 'Valide e importe dados operacionais com seguranca.' },
-    banners: { title: 'Banners', description: 'Gerencie os banners editoriais e seus periodos de exibicao.' },
-    regions: { title: 'Regioes', description: 'Organize as localidades disponiveis em toda a plataforma.' },
-    businesses: { title: 'Negocios', description: 'Consulte, revise e atualize os negocios cadastrados.' },
-    events: { title: 'Eventos', description: 'Gerencie eventos publicados e pendentes de revisao.' },
-    users: { title: 'Usuarios', description: 'Administre perfis, acessos e permissoes da plataforma.' },
-    suggestions: { title: 'Sugestoes', description: 'Acompanhe os feedbacks enviados pelos usuarios.' },
-    analytics: { title: 'Analytics', description: 'Analise uso, buscas, campanhas e interacoes na plataforma.' },
+    moderation: { title: 'Moderação', description: 'Conteúdos, negócios e eventos aguardando revisão ou denunciados pela comunidade.' },
+    imports: { title: 'Importação', description: 'Valide a planilha antes de importar. Nada é gravado até você confirmar.' },
+    banners: { title: 'Banners', description: 'Banners editoriais e os períodos em que aparecem.' },
+    regions: { title: 'Regiões', description: 'Localidades disponíveis para cadastro, perfil e filtros.' },
+    businesses: { title: 'Negócios', description: 'Consulte, aprove e edite os negócios cadastrados.' },
+    events: { title: 'Eventos', description: 'Eventos publicados e pendentes de revisão.' },
+    users: { title: 'Usuários', description: 'Perfis, acessos e permissões da plataforma.' },
+    suggestions: { title: 'Sugestões', description: 'Feedbacks enviados pelos usuários.' },
+    analytics: { title: 'Analytics', description: 'Uso, buscas, campanhas e interações na plataforma.' },
   };
 
   if (activeSection === 'overview') {
@@ -1231,13 +1235,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   return (
     <div className="mx-auto max-w-[1500px] animate-in space-y-6 px-4 py-7 fade-in duration-500 sm:px-7 lg:px-8">
-      {activeSection !== 'analytics' ? <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Admin · {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</p>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}</h1>
-          <p className="mt-1 text-sm text-slate-400">{sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description}</p>
-        </div>
-        <Button iconLeft={<RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />} disabled={refreshing || loading} onClick={() => void loadDashboard(true)}>Atualizar</Button>
+      {activeSection !== 'analytics' ? <div className="flex items-start justify-between gap-4">
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
+          {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}
+          <InfoTip text={sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description} />
+        </h1>
+        <button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing || loading} onClick={() => void loadDashboard(true)} className="flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button>
       </div> : null}
       <div className="hidden">
         <div className="rounded-[32px] bg-gradient-to-br from-[#345CFF] via-[#5B4BFF] to-[#7A54F5] p-5 text-white shadow-xl">
@@ -1675,6 +1678,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         <MarketplaceModerationSection />
         <GroupReportsSection />
         <MessageReportsSection />
+        <NewsCommentReportsSection />
         <ModerationSection
           title="Negocios em aprovacao"
           count={dashboard?.pendingBusinesses.length ?? 0}
@@ -1754,11 +1758,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           {dashboard?.pendingPosts.map((post) => (
             <div key={post.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <img
-                  src={post.author.image || `https://picsum.photos/seed/${post.author.id}/100`}
-                  alt={post.author.name || 'Autor'}
-                  className="h-11 w-11 rounded-2xl object-cover"
-                />
+                <Avatar src={post.author.image} name={post.author.name || 'Autor'} size="sm" className="!h-10 !w-10" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold theme-text">
                     {post.author.name || 'Usuario da comunidade'}
@@ -1824,9 +1824,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={business.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
-                      src={business.imageUrl || `https://picsum.photos/seed/${business.id}/200`}
+                      src={business.imageUrl || PLACEHOLDER_IMAGE}
                       alt={business.name}
-                      className="h-20 w-20 rounded-2xl object-cover"
+                      className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
@@ -2047,9 +2047,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={event.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
-                      src={event.imageUrl || `https://picsum.photos/seed/${event.id}/200`}
+                      src={event.imageUrl || PLACEHOLDER_IMAGE}
                       alt={event.title}
-                      className="h-20 w-20 rounded-2xl object-cover"
+                      className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
@@ -2258,11 +2258,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {visibleSuggestions.map((suggestion) => (
                 <div key={suggestion.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
-                    <img
-                      src={suggestion.user.image || `https://picsum.photos/seed/${suggestion.user.id}/120`}
-                      alt={suggestion.user.name || suggestion.user.email || 'Usuario'}
-                      className="h-14 w-14 rounded-2xl object-cover"
-                    />
+                    <Avatar src={suggestion.user.image} name={suggestion.user.name || suggestion.user.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -2362,11 +2358,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {visibleUsers.map((managedUser) => (
                 <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
                   <div className="flex items-start gap-4">
-                    <img
-                      src={managedUser.image || `https://picsum.photos/seed/${managedUser.id}/120`}
-                      alt={managedUser.name || managedUser.email || 'Usuario'}
-                      className="h-14 w-14 rounded-2xl object-cover"
-                    />
+                    <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>

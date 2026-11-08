@@ -1,4 +1,5 @@
 import { BusinessStatus, CommunityPostStatus, EventStatus, FriendRequestStatus } from '@prisma/client';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -27,6 +28,7 @@ export async function GET(_request: Request, context: RouteContext) {
     },
     select: {
       id: true,
+      messagePolicy: true,
       name: true,
       username: true,
       image: true,
@@ -41,7 +43,7 @@ export async function GET(_request: Request, context: RouteContext) {
     },
   });
 
-  if (!user?.username) {
+  if (!user?.username || isOutsideViewerRegion(session, { regionKey: user.regionKey, ownerId: user.id })) {
     return NextResponse.json({ error: 'Perfil publico nao encontrado.' }, { status: 404 });
   }
 
@@ -261,6 +263,7 @@ export async function GET(_request: Request, context: RouteContext) {
       birthCity: user.birthCity,
       joinedAt: user.createdAt,
       publicPath: `/${user.username}`,
+      acceptsMessages: user.messagePolicy !== 'NOBODY',
       friendFeature: {
         available: true,
         canRequest: friendshipStatus === 'none',
