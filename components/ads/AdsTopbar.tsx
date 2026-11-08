@@ -7,9 +7,9 @@ import { Bell, BriefcaseBusiness, Check, ChevronDown, ExternalLink, LogOut, Menu
 import { Avatar } from '@/components/ui';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 
-type AdsTopbarProps = { onMenuToggle: () => void };
+type AdsTopbarProps = { onMenuToggle: () => void; collapsed?: boolean };
 
-export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
+export function AdsTopbar({ onMenuToggle, collapsed = false }: AdsTopbarProps) {
   const { data: session } = useSession();
   const { account, accounts, accountSwitchLocked, canCreateAccount, maxAccounts, selectAccount } = useAdAccount();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -34,16 +34,12 @@ export function AdsTopbar({ onMenuToggle }: AdsTopbarProps) {
   }
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/5 bg-gradient-to-r from-[#26364B] to-[#2D4059]">
+    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-white/5 bg-gradient-to-r from-[#26364B] to-[#2D4059] transition-[left] duration-300 ${collapsed ? 'lg:left-20' : 'lg:left-72'}`}>
       <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:px-7">
         <div className="flex min-w-0 items-center gap-3">
-          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 shrink-0 items-center justify-center border border-white/15 text-white md:hidden"><Menu size={21} /></button>
-          <Link href="/ads/overview" aria-label="Gringoou Campanhas" className="flex items-center gap-2.5">
-            <img src="/assets/logo_simbolo.svg" alt="" className="h-9 w-9 object-contain" />
-            <span className="hidden text-base font-extrabold tracking-tight text-white sm:inline">Gringoou</span>
-          </Link>
-          <span className="h-6 w-px bg-white/20" aria-hidden />
-          <span className="truncate text-sm font-bold uppercase tracking-wider text-[#66b6ff]">Campanhas</span>
+          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/15 text-white lg:hidden"><Menu size={21} /></button>
+          <Link href="/ads/overview" aria-label="Gringoou" className="lg:hidden"><img src="/assets/logo_simbolo.svg" alt="" className="h-8 w-8 object-contain" /></Link>
+          <span className="truncate text-sm font-bold uppercase tracking-wider text-[#66b6ff]">Gestor do negócio</span>
         </div>
         <div className="flex items-center gap-3">
           <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-slate-200 transition hover:bg-white/20"><Bell size={18} /></button>
