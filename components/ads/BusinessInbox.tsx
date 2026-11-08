@@ -68,10 +68,10 @@ export function BusinessInbox() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
           Mensagens
-          <InfoTip text="Conversas iniciadas por pessoas que entraram em contato com o seu negócio. Bloquear, denunciar e arquivar ficam na Inbox completa." />
+          <InfoTip text="Conversas iniciadas por pessoas que entraram em contato com o seu negócio. Para bloquear, denunciar ou arquivar, abra a conversa nas mensagens da comunidade." />
         </h1>
         <Link href="/inbox" className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-          <ExternalLink size={15} /> Inbox completa
+          <ExternalLink size={15} /> Mensagens da comunidade
         </Link>
       </div>
 

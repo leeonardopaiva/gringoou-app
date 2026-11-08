@@ -66,9 +66,8 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
           </p>
         </div>
         {management ? (
-          <Link href="/community" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand-500 px-4 text-xs font-bold text-white">
-            <Plus size={15} />
-            Nova publicação
+          <Link href="/community" aria-label="Nova publicação" title="Nova publicação" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
+            <Plus size={18} />
           </Link>
         ) : null}
       </div>
@@ -105,8 +104,10 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
           ))}
         </div>
       ) : (
-        <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
-          {management ? 'Este negócio ainda não publicou na comunidade.' : 'Nenhuma novidade publicada por este negócio.'}
+        <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Newspaper size={22} aria-hidden /></span>
+          <p className="text-sm font-semibold text-slate-700">{management ? 'Nenhuma publicação ainda' : 'Sem novidades por aqui'}</p>
+          <p className="max-w-xs text-xs text-slate-400">{management ? 'Use o botão + para compartilhar uma novidade com a comunidade.' : 'Quando este negócio publicar algo, aparece aqui.'}</p>
         </div>
       )}
     </section>

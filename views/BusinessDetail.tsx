@@ -434,30 +434,26 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   }
 
   return (
-    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500 sm:my-4 sm:overflow-hidden sm:rounded-card">
+    <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
+      <BackBar fallbackHref="/businesses" label="Negócios" />
+      <div className="overflow-hidden bg-white sm:rounded-card">
       {managementMode ? (
-        <div className="border-b border-slate-100 bg-white px-5 py-4 sm:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-700"><BadgeCheck size={14} /> Você é proprietário</div>
-              <h1 className="mt-2 truncate text-xl font-bold text-slate-900">{business.name}</h1>
-              <p className="mt-0.5 text-sm text-slate-500">Gerencie sua página e publicações.</p>
-            </div>
-            <Dropdown
-              align="right"
-              trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100"><MoreHorizontal size={20} /></span>}
-              sections={[{ heading: 'Ações do negócio', items: [
-                { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(business.publicPath) },
-                { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => handleOpenEditModal('info') },
-                { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => handleOpenEditModal('media') },
-                { label: 'Editar contato', icon: <Phone size={16} />, onClick: () => handleOpenEditModal('contact') },
-                ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => window.location.assign(`/ads/promover/${business.id}`) }] : []),
-              ] }]}
-            />
-          </div>
+        <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia esta página</p>
+          <Dropdown
+            align="right"
+            trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>}
+            sections={[{ heading: 'Ações do negócio', items: [
+              { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(business.publicPath) },
+              { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => handleOpenEditModal('info') },
+              { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => handleOpenEditModal('media') },
+              { label: 'Editar contato', icon: <Phone size={16} />, onClick: () => handleOpenEditModal('contact') },
+              ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => window.location.assign(`/ads/promover/${business.id}`) }] : []),
+            ] }]}
+          />
+
         </div>
       ) : null}
-      <BackBar fallbackHref="/businesses" label="Negócios" />
       <div className={`relative h-56 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-64 ${isPendingReview ? 'grayscale' : ''}`}>
         {business.imageUrl && !coverFailed ? (
           <img src={business.imageUrl} className="h-full w-full object-cover" alt="" onError={() => setCoverFailed(true)} />
@@ -869,6 +865,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           </div>
         </div>
       ) : null}
+      </div>
     </ContentColumn>
   );
 };
