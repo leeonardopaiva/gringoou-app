@@ -132,7 +132,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.label} className="relative min-h-[104px] overflow-hidden rounded-2xl border border-slate-200 px-4 py-4 shadow-sm sm:min-h-[150px] sm:px-7 sm:py-6">
-            <span className={`absolute inset-x-0 top-0 h-1 ${stat.accent ? 'bg-teal-400' : 'bg-slate-200'}`} aria-hidden />
+            <span className={`absolute inset-x-0 top-0 h-1 ${stat.accent ? 'bg-[#339eff]' : 'bg-slate-200'}`} aria-hidden />
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[12px]">{stat.label}</p>
             <p className={`mt-3 text-2xl font-extrabold leading-none sm:mt-6 sm:text-[34px] ${stat.accent ? 'text-brand-500' : 'text-[#132f40]'}`}>{stat.value}</p>
             <p className="mt-2 truncate text-[11px] text-slate-400 sm:mt-3 sm:text-[13px]">{stat.caption}</p>
