@@ -109,10 +109,10 @@ export default function JobDetail({ jobId }: { jobId: string }) {
   };
 
   if (loading) {
-    return <ContentColumn className="space-y-4 pb-6"><div className="h-64 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
+    return <ContentColumn size="compact" className="space-y-4 pb-6"><div className="h-64 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
   }
   if (!job) {
-    return <ContentColumn className="pb-10 text-center text-muted-foreground">Vaga não encontrada.</ContentColumn>;
+    return <ContentColumn size="compact" className="pb-10 text-center text-muted-foreground">Vaga não encontrada.</ContentColumn>;
   }
   const contactIsUrl = Boolean(job.contactUrl && /^https?:\/\//i.test(job.contactUrl));
   const contactHref = job.contactUrl
@@ -122,7 +122,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
     : '';
 
   return (
-    <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500">
+    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
       <BackBar fallbackHref="/jobs" label="Vagas" />
       <header className="relative flex min-h-72 items-end overflow-hidden bg-foreground p-6 text-white">
         {job.imageUrl ? (
@@ -133,25 +133,42 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         {job.canEdit ? <div className="absolute right-4 top-4 z-20"><Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /></div> : null}
         <div className="relative">
-          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>
+            {job.canEdit ? <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">Sua publicação</span> : null}
+          </div>
           <h1 className="mt-4 text-3xl font-bold">{job.title}</h1>
           <p className="mt-2 flex items-center gap-2 text-white/80"><Briefcase size={16} /> {job.company}</p>
         </div>
       </header>
 
       <div className="space-y-7 px-5 pt-8">
-        <section className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-3xl bg-slate-50 p-4"><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400"><MapPin size={15} /> Localização</p><p className="mt-2 font-bold text-foreground">{job.locationLabel}</p></div>
-          <div className="rounded-3xl bg-slate-50 p-4"><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400"><WalletCards size={15} /> Salário</p><p className="mt-2 font-bold text-foreground">{job.salary || 'A combinar'}</p></div>
+        <section aria-label="Resumo da vaga" className="divide-y divide-border rounded-2xl border border-border">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <MapPin size={18} className="shrink-0 text-brand-500" aria-hidden />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">Localização</p>
+              <p className="truncate text-sm font-semibold text-foreground">{job.locationLabel}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <WalletCards size={18} className="shrink-0 text-brand-500" aria-hidden />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">Salário</p>
+              <p className="truncate text-sm font-semibold text-foreground">{job.salary || 'A combinar'}</p>
+            </div>
+          </div>
         </section>
-        <section className="border-t border-border pt-6">
+        {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3.5 text-sm font-bold text-white transition hover:brightness-105">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
+        <section>
           <h2 className="text-h3 font-bold">Sobre a vaga</h2>
           <p className="mt-3 whitespace-pre-wrap text-body-sm leading-7 text-muted-foreground">{job.description}</p>
-          <PublisherSignature className="mt-4" publisher={job.publisher ?? { name: job.createdBy?.name || job.company, image: null, href: null, kind: 'USER' }} />{job.canEdit ? <span className="mt-3 inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">Você é proprietário</span> : null}
+        </section>
+        <section className="border-t border-border pt-5">
+          <PublisherSignature publisher={job.publisher ?? { name: job.createdBy?.name || job.company, image: null, href: null, kind: 'USER' }} />
         </section>
         {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
         <CommentWall endpoint={`/api/jobs/${jobId}/comments`} title="Comentários sobre a vaga" />
-        {contactHref ? <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white">{contactIsUrl ? <ExternalLink size={17} /> : <Phone size={17} />} {contactIsUrl ? 'Candidatar-se' : 'Ligar para o contato'}</a> : null}
       </div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar vaga" description="Atualize os dados e a capa da publicação." className="max-w-xl">

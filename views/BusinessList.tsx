@@ -1,5 +1,6 @@
 ﻿import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -25,27 +26,7 @@ import { FeedCard } from '../components/ui/FeedCard';
 import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
-import { CompactActionCard } from '../components/ui/CompactActionCard';
 import { useActiveRegion } from '../components/RegionContext';
-
-const SAMPLE_BUSINESSES: Business[] = [
-  {
-    id: 'sample-1',
-    name: 'Minas Grill',
-    category: 'Restaurante',
-    address: '57 Cambridge St.',
-    imageUrl: 'https://picsum.photos/seed/grill/200',
-    locationLabel: 'Boston, 02108',
-  },
-  {
-    id: 'sample-2',
-    name: 'Supermercado Brasileiro',
-    category: 'Mercado',
-    address: '67 Chestnut Ave.',
-    imageUrl: 'https://picsum.photos/seed/market/200',
-    locationLabel: 'Boston, 02108',
-  },
-];
 
 const emptyForm = {
   name: '',
@@ -189,8 +170,8 @@ const BusinessList: React.FC<BusinessListProps> = ({
       } catch (error) {
         console.error('Failed to load businesses:', error);
         if (!ignore) {
-          setBusinesses(SAMPLE_BUSINESSES);
-          setResultScope('global');
+          setBusinesses([]);
+          setResultScope('local');
         }
       }
     };
@@ -326,11 +307,6 @@ const BusinessList: React.FC<BusinessListProps> = ({
             <Plus size={16} /> Criar negócio
           </button>
         } />
-        <div className="grid gap-2 sm:grid-cols-1">
-          <CompactActionCard icon={<Plus size={16} />} eyebrow="Página gratuita" title="Crie a página do seu negócio" description="Publique após a aprovação da equipe" onClick={() => setShowCreateForm(true)} />
-          {/* <CompactActionCard icon={<Megaphone size={16} />} eyebrow="Gringoou Ads" title="Alcance mais pessoas" description="Promova um negócio aprovado" href="/ads" /> */}
-        </div>
-
       </div>
       {showCreateForm ? (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/45 p-3 sm:items-center sm:p-6">
@@ -408,7 +384,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
             className={isPendingReview ? 'bg-slate-50 opacity-65 grayscale' : ''}
           >
             <FeedCard.Header
-              avatarUrl={business.imageUrl || `https://picsum.photos/seed/${business.id}/200`}
+              avatarUrl={business.imageUrl || PLACEHOLDER_IMAGE}
               avatarAlt={business.name}
               title={business.name}
               subtitle={`${business.category} · ${business.locationLabel || business.address}`}
@@ -428,7 +404,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
             {business.description ? <FeedCard.Content text={business.description} /> : null}
             <Link href={`/businesses/${business.slug || business.id}`} aria-label={`Abrir ${business.name}`}>
               <FeedCard.Media
-                src={business.imageUrl || `https://picsum.photos/seed/${business.id}/800/600`}
+                src={business.imageUrl || PLACEHOLDER_IMAGE}
                 alt={business.name}
               />
             </Link>

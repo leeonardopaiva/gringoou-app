@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useRouter } from 'next/navigation';
 import {
   BadgeCheck,
@@ -730,7 +731,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
-                            src={business.imageUrl || `https://picsum.photos/seed/${business.id}/320`}
+                            src={business.imageUrl || PLACEHOLDER_IMAGE}
                             alt={business.name}
                             className="h-24 w-24 rounded-2xl object-cover"
                           />
@@ -763,7 +764,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           className="flex gap-4 border-b border-slate-100 px-1 py-4 transition hover:bg-slate-50/60"
                         >
                           <img
-                            src={event.imageUrl || `https://picsum.photos/seed/${event.id}/320`}
+                            src={event.imageUrl || PLACEHOLDER_IMAGE}
                             alt={event.title}
                             className="h-24 w-24 rounded-2xl object-cover"
                           />

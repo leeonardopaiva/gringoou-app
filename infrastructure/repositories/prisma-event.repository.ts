@@ -9,11 +9,12 @@ import { getVisibilityFilter } from '@/lib/visibility';
 import { findRegionByKey } from '@/lib/region-store';
 
 function buildListQuery(filters: EventListFilters) {
-  const { viewerId, isAdmin, regionKey, category } = filters;
+  const { viewerId, isAdmin, regionKey, category, past } = filters;
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   return {
     where: {
-      startsAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      startsAt: past ? { lt: cutoff } : { gte: cutoff },
       ...(category ? { category } : {}),
       OR: [
         { status: EventStatus.PUBLISHED, ...getVisibilityFilter(regionKey) },
@@ -21,7 +22,7 @@ function buildListQuery(filters: EventListFilters) {
         ...(isAdmin ? [{ status: EventStatus.PENDING_REVIEW }] : []),
       ],
     },
-    orderBy: [{ startsAt: 'asc' as const }],
+    orderBy: [{ startsAt: past ? ('desc' as const) : ('asc' as const) }],
     take: 24,
     select: {
       id: true, slug: true, title: true, description: true, venueName: true, category: true, startsAt: true,

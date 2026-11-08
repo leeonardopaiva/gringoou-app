@@ -6,19 +6,21 @@ export interface ListEventsInput {
   isAdmin: boolean;
   regionKey?: string | null;
   category?: string | null;
+  past?: boolean;
 }
 
 export type ListEventsOutput = EventsPage;
 
 export function makeListEvents(repo: EventRepository) {
   return async (input: ListEventsInput): Promise<ListEventsOutput> => {
-    const { viewerId, isAdmin, regionKey, category } = input;
+    const { viewerId, isAdmin, regionKey, category, past } = input;
 
     return repo.list({
       viewerId,
       isAdmin,
       regionKey,
       category,
+      past,
     });
   };
 }

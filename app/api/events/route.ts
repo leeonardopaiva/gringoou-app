@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     isAdmin,
     regionKey: viewerRegionKey,
     category: searchParams.get('category') || undefined,
+    past: searchParams.get('past') === '1',
   });
 
   // Mapeia para o formato esperado pelo client (EventItem[])

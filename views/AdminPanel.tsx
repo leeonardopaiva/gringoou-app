@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useSearchParams } from 'next/navigation';
 import {
   BadgeCheck,
@@ -1755,7 +1756,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             <div key={post.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <img
-                  src={post.author.image || `https://picsum.photos/seed/${post.author.id}/100`}
+                  src={post.author.image || PLACEHOLDER_IMAGE}
                   alt={post.author.name || 'Autor'}
                   className="h-11 w-11 rounded-2xl object-cover"
                 />
@@ -1824,7 +1825,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={business.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
-                      src={business.imageUrl || `https://picsum.photos/seed/${business.id}/200`}
+                      src={business.imageUrl || PLACEHOLDER_IMAGE}
                       alt={business.name}
                       className="h-20 w-20 rounded-2xl object-cover"
                     />
@@ -2047,7 +2048,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={event.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
-                      src={event.imageUrl || `https://picsum.photos/seed/${event.id}/200`}
+                      src={event.imageUrl || PLACEHOLDER_IMAGE}
                       alt={event.title}
                       className="h-20 w-20 rounded-2xl object-cover"
                     />
@@ -2259,7 +2260,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={suggestion.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
-                      src={suggestion.user.image || `https://picsum.photos/seed/${suggestion.user.id}/120`}
+                      src={suggestion.user.image || PLACEHOLDER_IMAGE}
                       alt={suggestion.user.name || suggestion.user.email || 'Usuario'}
                       className="h-14 w-14 rounded-2xl object-cover"
                     />
@@ -2363,7 +2364,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
                   <div className="flex items-start gap-4">
                     <img
-                      src={managedUser.image || `https://picsum.photos/seed/${managedUser.id}/120`}
+                      src={managedUser.image || PLACEHOLDER_IMAGE}
                       alt={managedUser.name || managedUser.email || 'Usuario'}
                       className="h-14 w-14 rounded-2xl object-cover"
                     />

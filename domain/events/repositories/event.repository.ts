@@ -8,6 +8,8 @@ import type {
 export interface EventListFilters {
   regionKey?: string | null;
   category?: string | null;
+  /** Lista eventos que já terminaram (do mais recente ao mais antigo). */
+  past?: boolean;
   viewerId: string;
   isAdmin: boolean;
 }

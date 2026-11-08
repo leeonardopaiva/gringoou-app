@@ -163,7 +163,7 @@ const SearchResults: React.FC = () => {
 
   return (
     <ContentColumn size="standard" className="animate-in space-y-6 pb-24 fade-in duration-500">
-      <header><h1 className="text-h2 font-bold text-foreground">Busca</h1><p className="mt-1 text-sm text-slate-500">Encontre pessoas, grupos, negócios, eventos, vagas e conversas.</p></header>
+      <header><h1 className="text-h2 font-bold text-foreground">Busca</h1></header>
       <div className="flex flex-wrap gap-2">
         <button ref={filtersButtonRef} type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
       </div>

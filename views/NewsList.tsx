@@ -179,7 +179,7 @@ const NewsCard: React.FC<{ article: NewsArticleContract }> = ({ article }) => {
             type="button"
             onClick={() => void handleShare()}
             aria-label="Compartilhar notícia"
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-4"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-transparent px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-4"
           >
             <Share2 size={17} aria-hidden />
             <span className="hidden sm:inline">Compartilhar</span>

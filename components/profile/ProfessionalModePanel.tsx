@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { BriefcaseBusiness, CalendarDays, ExternalLink, ImagePlus, Megaphone, MoreHorizontal, Plus } from 'lucide-react';
 import { Dropdown } from '../ui/Dropdown';
 import type { ProfessionalProfileSummary } from '../../types';

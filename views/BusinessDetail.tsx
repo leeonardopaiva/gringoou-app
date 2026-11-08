@@ -78,7 +78,7 @@ const defaultBusiness: BusinessDetailState = {
   description: 'Os detalhes deste negócio ainda não foram carregados.',
   address: 'Endereço indisponível',
   category: 'Negócio',
-  imageUrl: 'https://picsum.photos/seed/minasgrill/800/600',
+  imageUrl: '',
   galleryUrls: [],
   phone: '',
   whatsapp: '',
@@ -476,7 +476,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           <button
             type="button"
             onClick={() => void handleShare()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-transparent text-slate-600 transition hover:bg-slate-50"
             aria-label="Compartilhar negocio"
           >
             <Share2 size={19} />
@@ -516,7 +516,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {callHref ? <a href={callHref} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Phone size={14} />Ligar</a> : null}
             {whatsappHref ? <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-emerald-700 shadow-sm"><MessageCircle size={14} />WhatsApp</a> : null}
-            <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Share2 size={14} />Compartilhar</button>
+            <button type="button" onClick={() => void handleShare()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-transparent px-3 text-xs font-bold text-slate-600 hover:bg-slate-50"><Share2 size={14} />Compartilhar</button>
             <button type="button" onClick={() => void handleFavoriteToggle()} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-3 text-xs font-bold text-slate-700 shadow-sm"><Heart size={14} fill={business.isFavorite ? 'currentColor' : 'none'} />{business.isFavorite ? 'Salvo' : 'Salvar'}</button>
           </div>
           {business.canEdit && !managementMode ? (

@@ -150,7 +150,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
   };
 
   return (
-    <ContentColumn size="wide" className="animate-in space-y-5 pb-24 fade-in duration-500">
+    <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <PageHeader title="Vagas" action={
         <Button
           size="sm"

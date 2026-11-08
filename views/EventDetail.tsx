@@ -84,7 +84,7 @@ const defaultEvent: EventDetailState = {
   city: '',
   state: '',
   externalUrl: '',
-  imageUrl: 'https://picsum.photos/seed/emigrei-event/900/600',
+  imageUrl: '',
   galleryUrls: [],
   ratingAverage: 0,
   ratingCount: 0,
@@ -460,7 +460,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   if (loading) {
     return (
-      <ContentColumn className="animate-in space-y-5 pb-6 fade-in duration-500">
+      <ContentColumn size="compact" className="animate-in space-y-5 pb-6 fade-in duration-500">
         <div className="h-64 animate-pulse rounded-[28px] bg-slate-100" />
         <div className="space-y-3">
           <div className="h-8 w-2/3 animate-pulse rounded-full bg-slate-100" />
@@ -472,7 +472,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   }
 
   return (
-    <ContentColumn className="animate-in bg-white pb-24 fade-in duration-500">
+    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
       <BackBar fallbackHref="/events" label="Eventos" />
       <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
         <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
@@ -499,7 +499,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
           <button
             type="button"
             onClick={() => void handleShare()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-transparent text-slate-600 transition hover:bg-slate-50"
             aria-label="Compartilhar evento"
           >
             <Share2 size={19} />
