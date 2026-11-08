@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatLoosePhoneInput, isValidPhone } from '../lib/forms/phone';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import Link from 'next/link';
 import {
@@ -269,6 +270,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   };
 
   const handleSaveBusiness = async () => {
+    if ((phoneDraft.trim() && !isValidPhone(phoneDraft)) || (whatsappDraft.trim() && !isValidPhone(whatsappDraft))) {
+      showToast('Informe telefone e WhatsApp válidos, com DDD ou código do país.', 'error');
+      return;
+    }
     setSavingBusiness(true);
 
     try {
@@ -797,7 +802,11 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     </label>
                     <input
                       value={phoneDraft}
-                      onChange={(event) => setPhoneDraft(event.target.value)}
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      maxLength={24}
+                      onChange={(event) => setPhoneDraft(formatLoosePhoneInput(event.target.value))}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
                       placeholder="Telefone"
                     />
@@ -809,7 +818,11 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     </label>
                     <input
                       value={whatsappDraft}
-                      onChange={(event) => setWhatsappDraft(event.target.value)}
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      maxLength={24}
+                      onChange={(event) => setWhatsappDraft(formatLoosePhoneInput(event.target.value))}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
                       placeholder="WhatsApp"
                     />

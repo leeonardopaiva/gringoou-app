@@ -1,3 +1,4 @@
+import { isValidPhone } from '@/lib/forms/phone';
 import {
   BusinessStatus,
   BannerType,
@@ -18,6 +19,9 @@ const emptyToUndefined = (value: string) => {
 };
 
 const optionalString = z.string().transform(emptyToUndefined).optional();
+const optionalPhone = optionalString.refine((value) => !value || isValidPhone(value), {
+  message: 'Informe um telefone válido, com DDD ou código do país.',
+});
 const optionalEmail = z
   .string()
   .transform(emptyToUndefined)
@@ -107,9 +111,7 @@ export const onboardingSchema = z.object({
   name: z.string().trim().min(2).max(80),
   username: usernameSchema,
   email: z.string().email().optional(),
-  phone: optionalString.refine((value) => !value || value.length >= 8, {
-    message: 'Telefone muito curto',
-  }),
+  phone: optionalPhone,
   regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
     message: 'Selecione uma opcao de genero',
@@ -171,9 +173,7 @@ export const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(80),
   username: usernameSchema,
   email: optionalEmail,
-  phone: optionalString.refine((value) => !value || value.length >= 8, {
-    message: 'Telefone muito curto',
-  }),
+  phone: optionalPhone,
   gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY']).optional(),
   age: z.coerce.number().int().min(18).max(120).optional(),
   timeAbroad: z.enum(
@@ -286,8 +286,8 @@ export const businessSchema = z.object({
   description: z.string().trim().min(10).max(600),
   address: z.string().trim().min(5).max(140),
   regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
-  phone: optionalString,
-  whatsapp: optionalString,
+  phone: optionalPhone,
+  whatsapp: optionalPhone,
   website: optionalUrl,
   instagram: optionalString,
   imageUrl: optionalUrl,
@@ -320,9 +320,7 @@ export const adminUserSchema = z.object({
   name: z.string().trim().min(2).max(80),
   username: usernameSchema,
   email: optionalEmail,
-  phone: optionalString.refine((value) => !value || value.length >= 8, {
-    message: 'Telefone muito curto',
-  }),
+  phone: optionalPhone,
   image: optionalUrl,
   role: z.nativeEnum(UserRole),
   regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),

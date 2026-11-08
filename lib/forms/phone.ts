@@ -2,6 +2,12 @@ import { COUNTRY_CALLING_CODE_OPTIONS, findCountryByIso2 } from '@/lib/country-c
 
 export const phoneDigitsOnly = (value: string) => value.replace(/\D/g, '');
 
+/** Telefone válido: de 8 a 15 dígitos (padrão internacional E.164 sem o +). */
+export const isValidPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  return digits.length >= 8 && digits.length <= 15;
+};
+
 const formatGroupedDigits = (digits: string, groups: number[]) => {
   let cursor = 0;
   const chunks: string[] = [];
