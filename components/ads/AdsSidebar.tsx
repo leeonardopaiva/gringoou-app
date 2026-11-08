@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { BarChart3, ChevronLeft, ChevronRight, CircleHelp, CirclePlus, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem } from '@/components/navigation/SidebarMenu';
-import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { cn } from '@/lib/cn';
 
 const items = [
@@ -30,8 +29,7 @@ type AdsSidebarProps = {
 export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapsed }: AdsSidebarProps) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
-  const { account } = useAdAccount();
-
+  
   const go = (href: string) => {
     onMobileClose();
     router.push(href);
@@ -42,7 +40,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
       {mobileOpen ? <button type="button" aria-label="Fechar menu" onClick={onMobileClose} className="fixed inset-0 z-[55] bg-slate-950/40 lg:hidden" /> : null}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-white/5 bg-gradient-to-b from-[#26364B] to-[#1B2738] text-white transition-[width,transform] duration-300 ease-out lg:max-w-none lg:translate-x-0 lg:overflow-visible',
+          'fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-white/5 bg-gradient-to-b from-[#2F343C] to-[#1F2328] text-white transition-[width,transform] duration-300 ease-out lg:max-w-none lg:translate-x-0 lg:overflow-visible',
           collapsed ? 'lg:w-20' : 'lg:w-72',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -65,12 +63,6 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
                   {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                 </button>
               </div>
-              {!collapsed ? (
-                <div className="min-w-0 px-1">
-                  <h2 className="truncate text-body-sm font-semibold text-[#66b6ff]">{account?.name ?? 'Meu negócio'}</h2>
-                  <p className="truncate text-[11px] font-medium text-slate-400">Gestor do negócio</p>
-                </div>
-              ) : null}
             </div>
 
             <SidebarMenu label="Menu do gestor do negócio">

@@ -34,20 +34,20 @@ export function AdsTopbar({ onMenuToggle, collapsed = false }: AdsTopbarProps) {
   }
 
   return (
-    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-white/5 bg-gradient-to-r from-[#26364B] to-[#2D4059] transition-[left] duration-300 ${collapsed ? 'lg:left-20' : 'lg:left-72'}`}>
+    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-slate-200/80 bg-gradient-to-r from-white via-slate-50 to-slate-100 transition-[left] duration-300 ${collapsed ? 'lg:left-20' : 'lg:left-72'}`}>
       <div className="flex h-[72px] items-center justify-between gap-4 px-4 md:px-7">
         <div className="flex min-w-0 items-center gap-3">
-          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/15 text-white lg:hidden"><Menu size={21} /></button>
+          <button type="button" onClick={onMenuToggle} aria-label="Abrir menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 lg:hidden"><Menu size={21} /></button>
           <Link href="/ads/overview" aria-label="Gringoou" className="lg:hidden"><img src="/assets/logo_simbolo.svg" alt="" className="h-8 w-8 object-contain" /></Link>
-          <span className="truncate text-sm font-bold uppercase tracking-wider text-[#66b6ff]">Gestor do negócio</span>
+          <span className="truncate text-sm font-bold tracking-tight text-slate-700">Gestor do negócio</span>
         </div>
         <div className="flex items-center gap-3">
-          <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-slate-200 transition hover:bg-white/20"><Bell size={18} /></button>
+          <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"><Bell size={18} /></button>
           <div ref={menuRef} className="relative">
-            <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 transition hover:bg-white/20">
+            <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 transition hover:bg-slate-50">
               <Avatar src={triggerAvatar} name={account?.name ?? userName} size="sm" />
-              <div className="hidden min-w-0 text-left sm:block"><strong className="block max-w-[180px] truncate text-sm text-white">{account?.name ?? userName}</strong><span className="block max-w-[180px] truncate text-[11px] text-slate-300"></span></div>
-              <ChevronDown size={16} className="text-slate-300" />
+              <div className="hidden min-w-0 text-left sm:block"><strong className="block max-w-[180px] truncate text-sm text-slate-800">{account?.name ?? userName}</strong><span className="block max-w-[180px] truncate text-[11px] text-slate-300"></span></div>
+              <ChevronDown size={16} className="text-slate-400" />
             </button>
             {open ? (
               <div className="absolute right-0 top-[calc(100%+10px)] w-[330px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
