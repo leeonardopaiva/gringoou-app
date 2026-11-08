@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
+import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
@@ -569,7 +569,7 @@ const Profile: React.FC<{
     <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
-          <ImageUploadButton folder="profiles" label="Atualizar capa" className="absolute bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
+          <ImageEditMenu folder="profiles" kind="cover" src={profile.coverImageUrl} className="bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
           {profile.coverImageUrl ? (
             <img src={profile.coverImageUrl} alt="Capa do perfil" className="h-full w-full object-cover object-center" />
           ) : (
@@ -585,7 +585,8 @@ const Profile: React.FC<{
         </div>
         <div className="-mt-12 px-5 pb-5">
           <div className="flex flex-col items-center text-center">
-            <div className="relative h-28 w-28 overflow-hidden rounded-full border-[5px] border-white bg-white shadow-lg">
+            <div className="relative h-28 w-28">
+            <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-white shadow-lg">
               {activeHeaderImage ? (
                 <img src={activeHeaderImage} alt={activeHeaderName} className="h-full w-full object-cover" onError={handleAvatarError} />
               ) : (
@@ -593,7 +594,8 @@ const Profile: React.FC<{
                   {getInitials(activeHeaderName)}
                 </div>
               )}
-              <ImageUploadButton folder="profiles" size="sm" label="Atualizar foto" className="absolute bottom-1 right-1" onUploaded={async (url) => { await saveAvatar(url); }} />
+            </div>
+              <ImageEditMenu folder="profiles" kind="avatar" src={profile.image} className="bottom-1 right-0" onUploaded={async (url) => { await saveAvatar(url); }} />
             </div>
             <div className="relative mt-4">
               {canUseProfessionalMode ? (

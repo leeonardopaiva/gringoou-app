@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
+import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import Link from 'next/link';
 import {
   BadgeCheck,
@@ -457,10 +457,11 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       ) : null}
       <div className={`relative h-56 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-64 ${isPendingReview ? 'grayscale' : ''}`}>
         {business.canEdit ? (
-          <ImageUploadButton
+          <ImageEditMenu
             folder="businesses"
-            label="Atualizar capa"
-            className="absolute bottom-3 right-3"
+            kind="cover"
+            src={business.imageUrl}
+            className="bottom-3 right-3"
             onUploaded={async (url) => {
               const response = await fetch(`/api/businesses/${business.slug || business.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
               const payload = await response.json().catch(() => null);

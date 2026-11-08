@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ImageUploadButton } from '@/components/ui/ImageUploadButton';
+import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import Link from 'next/link';
 import { Ban, Check, ChevronDown, Flag, LogIn, LockKeyhole, MapPin, MoreHorizontal, Settings, ShieldCheck, Tag, Trash2, UserCheck, UserCog, UsersRound } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -287,10 +287,11 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           <section className="rounded-[28px] bg-white shadow-sm">
             <div className={`relative h-52 sm:h-60 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {group.canManage ? (
-                <ImageUploadButton
+                <ImageEditMenu
                   folder="groups"
-                  label="Atualizar capa"
-                  className="absolute right-3 top-14"
+                  kind="cover"
+                  src={group.coverImageUrl || group.imageUrl}
+                  className="bottom-3 right-3"
                   onUploaded={async (url) => {
                     const response = await fetch(`/api/groups/${encodeURIComponent(group.slug)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ coverImageUrl: url }) });
                     const payload = await response.json().catch(() => null);
