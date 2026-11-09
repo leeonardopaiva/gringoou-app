@@ -1,4 +1,5 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus, Prisma } from '@prisma/client';
+import { notifyCampaignEvent } from '@/lib/ads/notifications';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { canManageAdBilling, getPromotionEligibilityError } from '@/lib/ads/account';
@@ -94,5 +95,6 @@ export async function POST(request: Request) {
     console.error('Failed to redeem ad coupon:', error);
     return NextResponse.json({ error: 'Não foi possível aplicar o cupom agora. Tente novamente.' }, { status: 500 });
   }
+  await notifyCampaignEvent(banner.id, 'CAMPAIGN_SUBMITTED');
   return NextResponse.json({ ok: true, campaignId: banner.id });
 }

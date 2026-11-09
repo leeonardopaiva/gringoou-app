@@ -1,4 +1,5 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
+import { notifyCampaignEvent } from '@/lib/ads/notifications';
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/ads/server';
@@ -62,6 +63,7 @@ const confirmPayment = async (intent: Stripe.PaymentIntent) => {
       },
     }),
   ]);
+  await notifyCampaignEvent(bannerId, 'PAYMENT_CONFIRMED');
 };
 
 const refundPayment = async (providerPaymentId: string) => {
@@ -69,6 +71,7 @@ const refundPayment = async (providerPaymentId: string) => {
   if (!payment || payment.status !== AdPaymentStatus.PAID) return;
   // Pagamento reembolsado: o crédito do cupom volta a ficar disponível para a conta.
   await prisma.adCouponRedemption.deleteMany({ where: { bannerId: payment.bannerId } });
+  await notifyCampaignEvent(payment.bannerId, 'PAYMENT_REFUNDED');
   await prisma.$transaction([
     prisma.adPayment.update({ where: { id: payment.id }, data: { status: AdPaymentStatus.REFUNDED } }),
     prisma.banner.update({
@@ -111,10 +114,12 @@ export async function POST(request: Request) {
   }
 
   if (event.type === 'payment_intent.payment_failed') {
+    const failedBannerId = event.data.object.metadata?.bannerId;
     await prisma.adPayment.updateMany({
       where: { providerPaymentId: event.data.object.id },
       data: { status: AdPaymentStatus.FAILED },
     });
+    if (failedBannerId) await notifyCampaignEvent(failedBannerId, 'PAYMENT_FAILED');
   }
 
   if (event.type === 'payment_intent.canceled') {
