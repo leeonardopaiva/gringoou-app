@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import {
+  BadgeCheck,
   CalendarDays,
   Clock3,
   Copy,
@@ -164,6 +165,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   const [coverDraft, setCoverDraft] = useState('');
   const [galleryDraft, setGalleryDraft] = useState<string[]>([]);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [coverFailed, setCoverFailed] = useState(false);
 
   useEffect(() => {
     // Se initialEvent foi fornecido, não faz fetch inicial — monta direto
@@ -474,108 +476,78 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   }
 
   return (
-    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
+    <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
       <BackBar fallbackHref="/events" label="Eventos" />
-      <div className={`relative h-72 ${isPendingReview ? 'grayscale' : ''}`}>
+      <div className="overflow-hidden bg-white sm:rounded-card">
         {event.canEdit ? (
-          <ImageEditMenu
-            folder="events"
-            kind="cover"
-            src={event.imageUrl}
-            className="bottom-3 right-3"
-            onUploaded={async (url) => {
-              const response = await fetch(`/api/events/${event.slug || event.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
-              const payload = await response.json().catch(() => null);
-              if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
-              setEvent((current) => ({ ...current, imageUrl: payload.event?.imageUrl || url }));
-              notifyContentUpdated();
-              showToast('Capa atualizada.', 'success');
-            }}
-          />
-        ) : null}
-        <img src={event.imageUrl} className="h-full w-full object-cover" alt={event.title} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-        {event.canEdit ? <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"><CalendarDays size={14} className="text-brand-500" /> Você é proprietário</div> : null}
-
-        <div className="absolute right-4 top-4 flex gap-2">
-          {event.canEdit ? <Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações do evento', items: [
-            { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
-            { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: openDetailsEditor },
-            { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
-          ] }]} /> : null}
-          <button
-            type="button"
-            onClick={() => void handleFavoriteToggle()}
-            className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${
-              event.isFavorite ? 'bg-red-600 text-white' : 'bg-surface text-foreground hover:bg-brand-100'
-            }`}
-            aria-label="Favoritar evento"
-          >
-            <Heart size={19} fill={event.isFavorite ? 'currentColor' : 'none'} />
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleShare()}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-transparent text-slate-600 transition hover:bg-slate-50"
-            aria-label="Compartilhar evento"
-          >
-            <Share2 size={19} />
-          </button>
-        </div>
-
-        <div className="absolute bottom-6 left-5 right-5">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-              Evento
-            </div>
-
-          </div>
-
-          <h1 className="mt-3 flex items-center gap-2 text-3xl font-bold leading-tight text-white">{event.title}{event.ownershipVerifiedAt ? <ShieldCheck size={22} aria-label="Evento verificado pela equipe" /> : null}</h1>
-          <p className="mt-2 text-sm text-white/85">{event.locationLabel}</p>
-        </div>
-      </div>
-
-      <div className="space-y-8 px-5 pt-8">
-        {isPendingReview ? (
-          <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-            Este evento esta aguardando aprovacao e fica visivel apenas para voce e administradores.
+          <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia este evento</p>
+            <Dropdown align="right" trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do evento', items: [
+              { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
+              { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: openDetailsEditor },
+              { label: 'Editar galeria', icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
+            ] }]} />
           </div>
         ) : null}
 
-        <section className="space-y-4 border-b border-slate-100 pb-7">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 space-y-2">
-              <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
-                <Globe2 size={16} />
-                URL publica
-              </div>
-              <p className="break-all text-sm text-slate-600">{publicUrl}</p>
-              <PublisherSignature publisher={event.publisher ?? { name: event.createdByName, image: null, href: null, kind: 'USER' }} />
-              {!event.isOwner && event.organizerId ? (
-                <button
-                  type="button"
-                  onClick={() => startDirectConversation(event.organizerId as string, { type: 'event', id: event.id })}
-                  className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-4 text-sm font-bold text-brand-600 transition hover:bg-brand-50"
-                >
-                  <MessageCircle size={16} aria-hidden />
-                  Enviar mensagem
-                </button>
-              ) : null}
-            </div>
-
+        <div className={`relative h-56 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-64 ${isPendingReview ? 'grayscale' : ''}`}>
+          {event.imageUrl && !coverFailed ? (
+            <img src={event.imageUrl} className="h-full w-full object-cover" alt="" onError={() => setCoverFailed(true)} />
+          ) : (
+            <div className="flex h-full items-center justify-center text-white/30" aria-hidden><CalendarDays size={72} /></div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10" />
+          {event.canEdit ? (
+            <ImageEditMenu
+              folder="events"
+              kind="cover"
+              src={event.imageUrl}
+              className="bottom-3 right-3"
+              onUploaded={async (url) => {
+                const response = await fetch(`/api/events/${event.slug || event.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
+                const payload = await response.json().catch(() => null);
+                if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+                setCoverFailed(false);
+                setEvent((current) => ({ ...current, imageUrl: payload.event?.imageUrl || url }));
+                notifyContentUpdated();
+                showToast('Capa atualizada.', 'success');
+              }}
+            />
+          ) : null}
+          <div className="absolute right-4 top-4 flex gap-2">
             <button
               type="button"
-              onClick={() => void handleCopyUrl()}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-200"
+              onClick={() => void handleFavoriteToggle()}
+              className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${event.isFavorite ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-700 hover:bg-white'}`}
+              aria-label="Favoritar evento"
             >
-              <Copy size={14} />
-              Copiar
+              <Heart size={19} fill={event.isFavorite ? 'currentColor' : 'none'} />
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleShare()}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+              aria-label="Compartilhar evento"
+            >
+              <Share2 size={19} />
             </button>
           </div>
+        </div>
 
-          <div className="pt-1">
+        <div className="space-y-7 px-5 pb-2 pt-6 sm:px-7">
+          {isPendingReview ? (
+            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
+              Este evento está aguardando aprovação e fica visível apenas para você e administradores.
+            </div>
+          ) : null}
+
+          <header className="space-y-3">
+            <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">{event.category || 'Evento'}</span>
+            <h1 className="flex items-center gap-2 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+              <span className="min-w-0 break-words">{event.title}</span>
+              {event.ownershipVerifiedAt ? <ShieldCheck size={22} className="shrink-0 text-brand-500" aria-label="Evento verificado pela equipe" /> : null}
+            </h1>
+            <p className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />{event.locationLabel}</p>
             <StarRating
               average={event.ratingAverage}
               count={event.ratingCount}
@@ -592,87 +564,77 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 )
               }
             />
-          </div>
-        </section>
+          </header>
 
-        <section className="space-y-4 border-b border-slate-100 pb-7">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex items-center gap-4">
-              <div className="theme-icon-surface flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
-                <CalendarDays size={19} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Inicio</p>
-                <p className="mt-1 text-sm font-bold text-slate-700">{formatEventDateTime(event.startsAt)}</p>
+          {/* Ações: a principal ocupa o espaço, as demais são ícones. */}
+          <div className="flex items-stretch gap-2.5">
+            {!event.isOwner && event.organizerId ? (
+              <button
+                type="button"
+                onClick={() => startDirectConversation(event.organizerId as string, { type: 'event', id: event.id })}
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105"
+              >
+                <MessageCircle size={18} aria-hidden />
+                Falar com o organizador
+              </button>
+            ) : null}
+            {event.externalUrl ? (
+              <a href={event.externalUrl} target="_blank" rel="noreferrer" aria-label="Abrir link do evento" title="Link do evento" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50">
+                <Globe2 size={18} />
+              </a>
+            ) : null}
+            <button type="button" onClick={() => void handleCopyUrl()} aria-label="Copiar link do evento" title="Copiar link" className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 ${!event.isOwner && event.organizerId ? 'w-12' : 'flex-1 gap-2 px-5 text-sm font-bold'}`}>
+              <Copy size={18} />
+              {!event.isOwner && event.organizerId ? null : 'Copiar link do evento'}
+            </button>
+          </div>
+
+          <section aria-label="Data e local" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-4">
+            <div className="flex items-start gap-3 py-3.5">
+              <CalendarDays size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Início</p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-900">{formatEventDateTime(event.startsAt)}</p>
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-                <Clock3 size={19} />
-              </div>
-              <div>
+            <div className="flex items-start gap-3 py-3.5">
+              <Clock3 size={18} className="mt-0.5 shrink-0 text-emerald-600" aria-hidden />
+              <div className="min-w-0">
                 <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Encerramento</p>
-                <p className="mt-1 text-sm font-bold text-slate-700">
-                  {event.endsAt ? formatEventDateTime(event.endsAt) : 'Nao informado'}
-                </p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-900">{event.endsAt ? formatEventDateTime(event.endsAt) : 'Não informado'}</p>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="space-y-3 border-b border-slate-100 pb-7">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
-              <MapPin size={16} />
-              Local
+            <div className="flex items-start gap-3 py-3.5">
+              <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Local</p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-900">{event.venueName}</p>
+                <p className="text-sm text-slate-500">{event.locationLabel}{showCityRegion ? ` · ${cityRegion}` : ''}</p>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <p className="theme-text text-base font-bold">{event.venueName}</p>
-          <div className="space-y-1 text-sm text-slate-600">
-            <p>{event.locationLabel}</p>
-            {showCityRegion ? <p>{cityRegion}</p> : null}
-          </div>
-          <LinkifiedText text={event.description} className="text-sm leading-relaxed text-slate-600" />
-          {event.externalUrl ? (
-            <a
-              href={event.externalUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200"
-            >
-              <Globe2 size={14} />
-              Link do evento
-            </a>
-          ) : null}
-        </section>
+          <section aria-label="Sobre o evento">
+            <h2 className="text-base font-bold text-slate-900">Sobre o evento</h2>
+            <LinkifiedText text={event.description} className="mt-2 block text-sm leading-7 text-slate-600" />
+            <PublisherSignature className="mt-4" publisher={event.publisher ?? { name: event.createdByName, image: null, href: null, kind: 'USER' }} />
+          </section>
 
-        <section className="space-y-4 pb-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
-              <Images size={16} />
-              Galeria
-            </div>
-
-          </div>
-
-          {galleryImages.length === 0 ? (
-            <EmptyNotice title="Sem fotos adicionais" description="O organizador ainda não adicionou fotos." />
-          ) : (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-              {galleryImages.map((imageUrl, index) => (
-                <button type="button" onClick={() => setLightboxImage(imageUrl)} key={`${imageUrl}-${index}`} className="aspect-square overflow-hidden rounded-2xl bg-slate-50">
-                  <img
-                    src={imageUrl}
-                    className="h-full w-full object-cover"
-                    alt={`${event.title} - imagem ${index + 1}`}
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
+          <section aria-label="Galeria" className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900">Fotos</h2>
+            {galleryImages.length === 0 ? (
+              <EmptyNotice title="Sem fotos adicionais" description="O organizador ainda não adicionou fotos." />
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {galleryImages.map((imageUrl, index) => (
+                  <button type="button" onClick={() => setLightboxImage(imageUrl)} key={`${imageUrl}-${index}`} className="aspect-square overflow-hidden rounded-xl bg-slate-100">
+                    <img src={imageUrl} loading="lazy" className="h-full w-full object-cover" alt={`${event.title} - imagem ${index + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
 
       {editingDetails ? (
