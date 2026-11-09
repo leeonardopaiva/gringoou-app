@@ -6,6 +6,7 @@ import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
 import type { User } from '../types';
 import { Modal } from '../components/ui/Modal';
+import { BackBar } from '../components/ui/BackBar';
 import { Dropdown } from '../components/ui/Dropdown';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
@@ -284,8 +285,25 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          <section className="rounded-[28px] bg-white shadow-sm">
-            <div className={`relative h-52 sm:h-60 ${group.coverImageUrl || group.imageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+          {embedded ? <BackBar fallbackHref="/groups" label="Grupos" /> : null}
+          <section className="overflow-hidden rounded-[28px] bg-white shadow-sm">
+            {group.canManage ? (
+              <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
+                <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><ShieldCheck size={14} aria-hidden /> Você administra este grupo</p>
+                <Dropdown
+                  align="right"
+                  trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100" aria-label="Ações do grupo"><MoreHorizontal size={18} /></span>}
+                  sections={[{ heading: 'Ações do grupo', items: [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }] }]}
+                />
+              </div>
+            ) : null}
+            <div className={`relative h-40 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-52`}>
+              {group.coverImageUrl || group.imageUrl ? (
+                <img src={group.coverImageUrl || group.imageUrl || ''} alt="" className="h-full w-full object-cover object-center" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-white/25" aria-hidden><UsersRound size={72} /></div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10" />
               {group.canManage ? (
                 <ImageEditMenu
                   folder="groups"
@@ -302,51 +320,31 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                   }}
                 />
               ) : null}
-              {group.coverImageUrl || group.imageUrl ? (
-                <img src={group.coverImageUrl || group.imageUrl || ''} alt={`Capa de ${group.name}`} className="h-full w-full object-cover object-center" />
-              ) : null}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
-              {viewer ? <div className="absolute right-4 top-4 z-30"><Dropdown
+              {viewer && !group.canManage ? <div className="absolute right-4 top-4 z-30"><Dropdown
                 align="right"
-                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
-                sections={[{ items: group.canManage
-                  ? [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }]
-                  : [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }]
-                }]}
+                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
+                sections={[{ items: [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }] }]}
               /></div> : null}
-              <div className="absolute bottom-4 left-4 right-4 flex items-end gap-3 text-white">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/80 bg-surface text-lg font-bold text-brand-500 shadow-sm">
-                  {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-xl font-bold leading-tight sm:text-2xl">{group.name}</h1>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                    {group.category ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
-                        <Tag size={10} />
-                        {group.category}
-                      </span>
-                    ) : null}
-                    {group.regionLabel ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
-                        <MapPin size={10} />
-                        {group.regionLabel}
-                      </span>
-                    ) : null}
-                    <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
-                      <UsersRound size={10} />
-                      {group.memberCount} membro{group.memberCount === 1 ? '' : 's'}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5">
-                      {group.isPublic ? <UsersRound size={10} /> : <LockKeyhole size={10} />}
-                      {group.isPublic ? 'Público' : 'Restrito'}
-                    </span>
-                  </div>
-                </div>
+            </div>
+
+            <div className="relative -mt-9 px-5 sm:px-6">
+              <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-surface text-xl font-bold text-brand-500 shadow-md">
+                {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
+              </div>
+              <h1 className="mt-3 break-words text-2xl font-extrabold leading-tight tracking-tight text-slate-900">{group.name}</h1>
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+                {group.category ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-brand-700"><Tag size={11} />{group.category}</span>
+                ) : null}
+                {group.regionLabel ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1"><MapPin size={11} />{group.regionLabel}</span>
+                ) : null}
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1"><UsersRound size={11} />{group.memberCount} membro{group.memberCount === 1 ? '' : 's'}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">{group.isPublic ? <UsersRound size={11} /> : <LockKeyhole size={11} />}{group.isPublic ? 'Público' : 'Restrito'}</span>
               </div>
             </div>
 
-            <div className="space-y-4 p-4 sm:p-5">
+            <div className="space-y-5 px-5 pb-6 pt-4 sm:px-6">
               {group.description ? (
                 <p className="text-sm leading-6 text-slate-600">{group.description}</p>
               ) : (
@@ -362,7 +360,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
               ) : (
                 <Link
                   href="/"
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-sm font-bold text-white"
                 >
                   <LogIn size={17} />
                   Entrar para participar
