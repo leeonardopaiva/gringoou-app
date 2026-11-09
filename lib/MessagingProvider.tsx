@@ -8,6 +8,9 @@ export type Conversation = {
   id: string;
   /** Nulo em conversas diretas entre pessoas. */
   itemId: string | null;
+  /** Negócio de origem (conversa com a página de um negócio). */
+  businessId?: string | null;
+  business?: { id: string; name: string; slug: string | null; imageUrl: string | null } | null;
   /** A pessoa logada bloqueou o outro participante. */
   blockedByViewer?: boolean;
   /** Arquivada / silenciada pela pessoa logada. */

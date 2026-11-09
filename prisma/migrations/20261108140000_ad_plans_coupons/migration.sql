@@ -19,6 +19,7 @@ CREATE TABLE "AdCoupon" (
     "code" TEXT NOT NULL,
     "plan" "AdPlan",
     "assignedEmail" TEXT,
+    "creditCents" INTEGER,
     "maxRedemptions" INTEGER NOT NULL DEFAULT 1,
     "expiresAt" TIMESTAMP(3),
     "isActive" BOOLEAN NOT NULL DEFAULT true,

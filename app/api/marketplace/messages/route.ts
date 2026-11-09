@@ -13,6 +13,8 @@ const NOT_RECEIVING_MESSAGE = 'Esta pessoa não está recebendo mensagens.';
 const conversationSelect = {
   id: true,
   itemId: true,
+  businessId: true,
+  business: { select: { id: true, name: true, slug: true, imageUrl: true } },
   requestStatus: true,
   lastMessageAt: true,
   createdAt: true,
@@ -132,10 +134,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: BLOCKED_MESSAGE }, { status: 403 });
     }
 
+    // Contato por negócio: a conversa fica ligada à página (separada das conversas pessoais).
+    let contextBusinessId: string | null = null;
+    if (body.context?.type === 'business' && typeof body.context.id === 'string') {
+      const contextBusiness = await prisma.business.findFirst({
+        where: { id: body.context.id, OR: [{ createdById: recipient.id }, { members: { some: { userId: recipient.id } } }] },
+        select: { id: true },
+      });
+      contextBusinessId = contextBusiness?.id ?? null;
+    }
+
     let directRequestStatus: 'ACCEPTED' | 'PENDING' = 'ACCEPTED';
     const existingDirect = await prisma.marketplaceConversation.findFirst({
       where: {
         itemId: null,
+        businessId: contextBusinessId,
         OR: [
           { buyerId: viewerId, sellerId: recipient.id },
           { buyerId: recipient.id, sellerId: viewerId },
@@ -170,6 +183,7 @@ export async function POST(request: Request) {
       data: {
         buyerId: viewerId,
         sellerId: recipient.id,
+        businessId: contextBusinessId,
         requestStatus: directRequestStatus,
         ...(content ? { lastMessageAt: new Date(), messages: { create: { senderId: viewerId, content } } } : {}),
       },

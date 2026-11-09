@@ -12,7 +12,7 @@ import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMessaging, type Conversation as MessagingConversation } from '@/lib/MessagingProvider';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { MessageCircle, Package, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
+import { MessageCircle, Package, Store, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
@@ -40,7 +40,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const openedDirectRef = useRef<string | null>(null);
   const [openingDirect, setOpeningDirect] = useState(Boolean(directTarget));
 
-  const [tab, setTab] = useState<'todas' | 'marketplace' | 'diretas' | 'arquivadas'>('todas');
+  const [tab, setTab] = useState<'todas' | 'marketplace' | 'negocios' | 'diretas' | 'arquivadas'>('todas');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [draft, setDraft] = useState('');
@@ -116,7 +116,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const filtered =
     tab === 'arquivadas'
       ? archivedConversations
-      : visibleConversations.filter((c) => (tab === 'marketplace' ? !!c.itemId : tab === 'diretas' ? !c.itemId : true));
+      : visibleConversations.filter((c) => (tab === 'marketplace' ? !!c.itemId : tab === 'negocios' ? !!c.businessId : tab === 'diretas' ? !c.itemId && !c.businessId : true));
   const menuConv = showMenu ? conversations.find((c) => c.id === showMenu) ?? null : null;
 
   const runConversationAction = async (conv: Conversation, action: 'archive' | 'unarchive' | 'mute' | 'unmute' | 'delete') => {
@@ -251,7 +251,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   const tabLabels = {
     todas: { label: 'Todas', icon: MessageCircle, count: visibleConversations.length },
     marketplace: { label: 'Marketplace', icon: Package, count: visibleConversations.filter((c) => c.itemId).length },
-    diretas: { label: 'Pessoas', icon: UserIconLucide, count: visibleConversations.filter((c) => !c.itemId).length },
+    negocios: { label: 'Negócios', icon: Store, count: visibleConversations.filter((c) => c.businessId).length },
+    diretas: { label: 'Pessoas', icon: UserIconLucide, count: visibleConversations.filter((c) => !c.itemId && !c.businessId).length },
     arquivadas: { label: 'Arquivadas', icon: Archive, count: archivedConversations.length },
   };
 
@@ -264,7 +265,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       role="tablist"
       aria-label="Filtrar conversas"
     >
-      {(['todas', 'marketplace', 'diretas', 'arquivadas'] as const).map((t) => {
+      {(['todas', 'marketplace', 'negocios', 'diretas', 'arquivadas'] as const).map((t) => {
         const info = tabLabels[t];
         const Icon = info.icon;
         return (
@@ -354,10 +355,12 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             </div>
             <div className="h-[500px] rounded-2xl border border-slate-200 bg-white flex items-center justify-center">
               <EmptyState
-                icon={tab === 'marketplace' ? <Package size={28} /> : tab === 'diretas' ? <UserIconLucide size={28} /> : <MessageCircle size={28} />}
+                icon={tab === 'marketplace' ? <Package size={28} /> : tab === 'negocios' ? <Store size={28} /> : tab === 'diretas' ? <UserIconLucide size={28} /> : <MessageCircle size={28} />}
                 title={
                   tab === 'marketplace'
                     ? 'Nenhuma conversa do Marketplace'
+                    : tab === 'negocios'
+                    ? 'Nenhuma conversa com negócios'
                     : tab === 'diretas'
                     ? 'Nenhuma conversa com pessoas'
                     : 'Nenhuma conversa por aqui'
@@ -365,6 +368,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 description={
                   tab === 'marketplace'
                     ? 'Quando você envia uma mensagem sobre um anúncio, a conversa aparece aqui — tanto para comprador quanto para vendedor.'
+                    : tab === 'negocios'
+                    ? 'Quando você fala com um negócio, ou alguém fala com o seu, a conversa aparece aqui.'
                     : tab === 'diretas'
                     ? 'Para conversar com alguém, abra o perfil da pessoa e toque em "Enviar mensagem".'
                     : 'Suas conversas aparecerão aqui quando você começar a conversar.'
@@ -437,6 +442,12 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                           </p>
                           <p className="shrink-0 text-[10px] text-slate-400">{formatTime(conv.updatedAt)}</p>
                         </div>
+                        {conv.business && (
+                          <p className="mt-0.5 truncate text-xs text-slate-500 flex items-center gap-1">
+                            <Store size={10} className="text-slate-400" />
+                            {conv.business.name}
+                          </p>
+                        )}
                         {conv.item && (
                           <p className="mt-0.5 truncate text-xs text-slate-500 flex items-center gap-1">
                             <Package size={10} className="text-slate-400" />
@@ -509,7 +520,9 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                             </div>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-semibold text-slate-900">{otherName}</p>
-                              {activeConv.item ? (
+                              {activeConv.business ? (
+                                <p className="truncate text-xs text-slate-500">Sobre o negócio {activeConv.business.name}</p>
+                              ) : activeConv.item ? (
                                 <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p>
                               ) : other.username ? (
                                 <p className="truncate text-xs text-slate-500">@{other.username}</p>

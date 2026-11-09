@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { useMessaging } from '@/lib/MessagingProvider';
+import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { cn } from '@/lib/cn';
 
@@ -24,6 +25,7 @@ function shortTime(value: string) {
 /** Caixa de entrada do negócio: mensagens que outras pessoas enviaram ao responsável pelo negócio. */
 export function BusinessInbox() {
   const { data: session } = useSession();
+  const { account } = useAdAccount();
   const me = session?.user?.id ?? '';
   const { showToast } = useToast();
   const { conversations, activeConversationId, messages, loading, selectConversation, sendMessage } = useMessaging();
@@ -34,8 +36,8 @@ export function BusinessInbox() {
 
   // Recebidas: conversas iniciadas por outras pessoas (a pessoa logada é quem recebe).
   const received = useMemo(
-    () => conversations.filter((c) => !c.archived && c.seller.id === me && c.requestStatus !== 'PENDING'),
-    [conversations, me],
+    () => conversations.filter((c) => !c.archived && c.seller.id === me && c.requestStatus !== 'PENDING' && Boolean(account?.businessId) && c.businessId === account?.businessId),
+    [conversations, me, account?.businessId],
   );
   const active = received.find((c) => c.id === activeConversationId) ?? null;
 
@@ -68,7 +70,7 @@ export function BusinessInbox() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
           Mensagens
-          <InfoTip text="Conversas iniciadas por pessoas que entraram em contato com o seu negócio. Para bloquear, denunciar ou arquivar, abra a conversa nas mensagens da comunidade." />
+          <InfoTip text="Conversas de pessoas que escreveram para este negócio. Conversas antigas, de antes da separação por negócio, continuam nas mensagens da comunidade. Para bloquear, denunciar ou arquivar, abra a conversa por lá." />
         </h1>
         <Link href="/inbox" className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
           <ExternalLink size={15} /> Mensagens da comunidade

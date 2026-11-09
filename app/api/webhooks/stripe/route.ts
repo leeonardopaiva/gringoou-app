@@ -21,6 +21,14 @@ const confirmPayment = async (intent: Stripe.PaymentIntent) => {
     throw new Error('Valor do pagamento divergente do contrato.');
   }
 
+  const couponId = intent.metadata.couponId;
+  const adAccountId = intent.metadata.adAccountId;
+  if (couponId && adAccountId) {
+    await prisma.adCouponRedemption
+      .create({ data: { couponId, adAccountId, bannerId, userId: intent.metadata.userId || 'unknown' } })
+      .catch(() => undefined); // já registrado (reenvio do webhook) ou conta já usou cupom
+  }
+
   await prisma.$transaction([
     prisma.adPayment.upsert({
       where: { providerPaymentId: intent.id },
