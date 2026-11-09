@@ -20,12 +20,20 @@ export async function PATCH(request: Request, context: RouteContext) {
   return NextResponse.json({ coupon });
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
   const { response } = await requireRootSession();
   if (response) return response;
   const { couponId } = await context.params;
-  const used = await prisma.adCouponRedemption.count({ where: { couponId } });
-  if (used > 0) return NextResponse.json({ error: 'Este cupom já foi usado. Desative-o em vez de excluir.' }, { status: 409 });
+  const force = new URL(request.url).searchParams.get('force') === '1';
+  const redemptions = await prisma.adCouponRedemption.findMany({ where: { couponId }, select: { id: true, bannerId: true } });
+  // Reservas de campanhas que nunca foram pagas não contam como uso.
+  const paidBanners = redemptions.length
+    ? await prisma.adPayment.findMany({ where: { bannerId: { in: redemptions.map((item) => item.bannerId).filter((id): id is string => Boolean(id)) }, status: 'PAID' }, select: { bannerId: true } })
+    : [];
+  const realUses = new Set(paidBanners.map((item) => item.bannerId)).size;
+  if (realUses > 0 && !force) {
+    return NextResponse.json({ error: 'Este cupom já foi usado em campanhas. Confirme para excluir mesmo assim.', code: 'USED', uses: realUses }, { status: 409 });
+  }
   await prisma.adCoupon.delete({ where: { id: couponId } }).catch(() => null);
   return NextResponse.json({ ok: true });
 }
