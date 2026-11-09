@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Copy, RefreshCcw, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { Skeleton } from '@/components/ui';
+import { ConfirmModal, Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 
@@ -88,10 +88,14 @@ export default function AdCouponsSection() {
     await load();
   };
 
-  const remove = async (coupon: Coupon) => {
-    const response = await fetch(`/api/admin/ads/coupons/${coupon.id}`, { method: 'DELETE' });
+  const [removing, setRemoving] = useState<Coupon | null>(null);
+  const remove = async (coupon: Coupon, force = false) => {
+    const response = await fetch(`/api/admin/ads/coupons/${coupon.id}${force ? '?force=1' : ''}`, { method: 'DELETE' });
     const payload = await response.json().catch(() => null);
+    if (response.status === 409 && payload?.code === 'USED') return setRemoving(coupon);
     if (!response.ok) return showToast(payload?.error || 'Não foi possível excluir o cupom.', 'error');
+    setRemoving(null);
+    showToast('Cupom excluído.', 'success');
     await load();
   };
 
@@ -131,6 +135,17 @@ export default function AdCouponsSection() {
         <button type="button" onClick={() => void create()} disabled={creating || form.code.length < 4} className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-60">{creating ? 'Criando...' : 'Criar cupom'}</button>
       </section>
 
+      <ConfirmModal
+        open={Boolean(removing)}
+        onClose={() => setRemoving(null)}
+        title="Excluir cupom já usado"
+        description={`O cupom ${removing?.code ?? ''} já foi usado em campanhas. Excluir não apaga pagamentos nem campanhas, mas libera as contas que o usaram para usar outro cupom.`}
+        confirmLabel="Excluir mesmo assim"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={() => removing && void remove(removing, true)}
+      />
+
       {loading && coupons.length === 0 ? (
         <Skeleton className="h-40 w-full" />
       ) : coupons.length === 0 ? (
@@ -154,7 +169,7 @@ export default function AdCouponsSection() {
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${status[1]}`}>{status[0]}</span>
                 <button type="button" onClick={() => void toggle(coupon)} className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">{coupon.isActive ? 'Desativar' : 'Ativar'}</button>
-                {coupon.redeemedCount === 0 ? <button type="button" onClick={() => void remove(coupon)} aria-label="Excluir cupom" className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button> : null}
+                <button type="button" onClick={() => void remove(coupon)} aria-label="Excluir cupom" title="Excluir cupom" className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button>
               </li>
             );
           })}
