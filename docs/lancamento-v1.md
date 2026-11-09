@@ -2,7 +2,7 @@
 
 ## Configuração na Vercel
 
-Configure as variáveis existentes de banco, autenticação, Brevo, Stripe, Cloudinary, Mapbox e IA para **Production**. Mantenha `DEV_AUTH_ENABLED=false`, `NEXT_PUBLIC_DEV_AUTH_ENABLED=false`, `EMAIL_TEST_ENABLED=false` e `NEXT_PUBLIC_ADS_SMOKE_TEST_MODE=false`.
+Configure as variáveis existentes de banco, autenticação, Brevo, Stripe, Cloudinary, Mapbox e IA para **Production**. Mantenha `DEV_AUTH_ENABLED=false`, `NEXT_PUBLIC_DEV_AUTH_ENABLED=false`, `EMAIL_TEST_ENABLED=false`.
 
 As novas chaves operacionais aceitam `false` para pausar apenas a funcionalidade indicada. Ausência ou `true` mantém o comportamento atual:
 

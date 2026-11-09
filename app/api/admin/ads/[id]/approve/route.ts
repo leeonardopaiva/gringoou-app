@@ -2,7 +2,7 @@ import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus, BannerPlacement 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
-import { isValidAdPlanDuration } from '@/lib/ads/contracts';
+import { AD_DURATIONS } from '@/lib/ads/contracts';
 import { sendAdModerationEmail } from '@/lib/ads/moderation-email';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -24,7 +24,7 @@ export async function POST(_request: Request, context: RouteContext) {
   if (!campaign) {
     return NextResponse.json({ error: 'Campanha paga e pendente de revisao nao encontrada.' }, { status: 409 });
   }
-  if (!campaign.plan || !campaign.durationMonths || !isValidAdPlanDuration(campaign.plan, campaign.durationMonths)) {
+  if (!campaign.plan || !campaign.durationMonths || !(AD_DURATIONS as readonly number[]).includes(campaign.durationMonths)) {
     return NextResponse.json({ error: 'Plano e vigencia da campanha sao invalidos.' }, { status: 409 });
   }
 

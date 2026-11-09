@@ -11,8 +11,8 @@ export type CouponEvaluation =
  * (cortesia); com valor, é um crédito promocional e o restante é pago pelo cartão.
  */
 export async function evaluateAdCoupon(input: { code: string; plan: AdPlan; adAccountId: string; userEmail?: string | null; userId: string; bannerId?: string; totalCents: number }): Promise<CouponEvaluation> {
-  // Trava tentativa e erro de códigos: poucas verificações por pessoa por hora.
-  const limit = await consumeRateLimit({ scope: 'ads:coupon', key: `user:${input.userId}`, max: 20, windowMs: 60 * 60 * 1000 });
+  // Trava tentativa e erro de códigos: no máximo 5 verificações por pessoa por hora.
+  const limit = await consumeRateLimit({ scope: 'ads:coupon', key: `user:${input.userId}`, max: 5, windowMs: 60 * 60 * 1000 });
   if (!limit.allowed) return { ok: false, error: 'Muitas tentativas de cupom. Tente novamente mais tarde.' };
 
   const row = await prisma.adCoupon.findUnique({ where: { code: input.code.trim().toUpperCase() }, include: { _count: { select: { redemptions: true } } } });

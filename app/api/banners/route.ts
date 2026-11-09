@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { scoreDeliveryCandidate, selectWeightedWithDiversity } from '@/lib/ads/delivery';
+import { getAdPlanCatalog } from '@/lib/ads/plans';
 
 const MAX_PAID_ADS_BY_PLACEMENT = 4;
 const MAX_HOME_BANNERS = 8;
@@ -15,6 +16,8 @@ const hasIntersection = (left: string[], right: string[]) => {
 
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
+  // Meta de impressões de cada pacote, cadastrada no admin (nunca valores fixos no código).
+  const planTargets = new Map<string, number>((await getAdPlanCatalog().catch(() => [] as Awaited<ReturnType<typeof getAdPlanCatalog>>)).map((item): [string, number] => [item.plan, item.estimatedImpressions]));
   const { searchParams } = new URL(request.url);
   // The UI can switch regions before the refreshed session reaches every
   // client component. An explicit region must therefore win over the session.
@@ -152,6 +155,7 @@ export async function GET(request: Request) {
       id: banner.id,
       adAccountId: banner.adAccountId,
       plan: banner.plan,
+      planTargetImpressions: planTargets.get(banner.plan ?? ''),
       startsAt: banner.startsAt,
       endsAt: banner.endsAt,
       createdAt: banner.createdAt,
