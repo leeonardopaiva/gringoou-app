@@ -1,3 +1,4 @@
+import '@/lib/zod-messages';
 import { z } from 'zod';
 import { AD_DURATIONS, AD_GOALS, AD_PLANS } from './contracts';
 

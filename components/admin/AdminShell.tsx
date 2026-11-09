@@ -122,9 +122,9 @@ export default function AdminShell({ user, children }: { user: User; children: R
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#132F40]">
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-56 border-r border-slate-200 lg:block">{sidebar}</aside>
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-slate-200 lg:block">{sidebar}</aside>
       {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-slate-950/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label="Fechar" className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
-      <div className="lg:pl-56">
+      <div className="lg:pl-72">
         <header className="sticky top-0 z-40 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-7">
           <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{user.role === UserRole.MODERATOR ? 'Moderação' : 'Administração'}</span></div>
           <div className="flex items-center gap-2">
