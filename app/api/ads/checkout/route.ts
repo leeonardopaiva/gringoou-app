@@ -1,6 +1,6 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { evaluateAdCoupon } from '@/lib/ads/coupons';
+import { evaluateAdCoupon, releaseStaleCouponReservations } from '@/lib/ads/coupons';
 import { adPlanTotalCents, getAdPlanCatalog } from '@/lib/ads/plans';
 import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
 import { adCheckoutSchema } from '@/lib/ads/validation';
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
     if (evaluation.full) return NextResponse.json({ error: 'Este cupom cobre o valor inteiro. Use a opção de aplicar cupom.' }, { status: 409 });
     amountCents = evaluation.payCents;
     appliedCouponId = evaluation.couponId;
+    await releaseStaleCouponReservations(parsed.data.adAccountId);
     const reserved = await prisma.adCouponRedemption.findUnique({ where: { adAccountId: parsed.data.adAccountId }, select: { bannerId: true } });
     if (!reserved) {
       try {

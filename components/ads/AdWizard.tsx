@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
 import { Button, Skeleton } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { adCreativeStepSchema, adGoalStepSchema, adReachStepSchema, type AdWizardData } from '@/lib/ads/validation';
@@ -273,6 +274,19 @@ export const AdWizard: React.FC = () => {
     }
   };
 
+  const startNewCampaign = () => {
+    if (storageKey) sessionStorage.removeItem(storageKey);
+    checkoutKeyRef.current = null;
+    setClientSecret(null);
+    setAppliedCoupon(null);
+    setCourtesyApplied(false);
+    setPaymentSubmitted(false);
+    setPaymentProcessing(false);
+    setRequestError(null);
+    setErrors({});
+    dispatch({ type: 'RESET' });
+  };
+
   if (accountLoading || !account || !hydrated) {
     return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-white p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
   }
@@ -295,7 +309,12 @@ export const AdWizard: React.FC = () => {
         <p className="text-[10px] font-bold text-slate-400">Criar Anuncio</p>
         <div className="mt-1 flex items-end justify-between gap-4">
           <h1 className="text-[28px] font-extrabold leading-tight text-[#132f40]">Novo Anuncio</h1>
-          {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
+          <div className="flex items-center gap-3">
+            {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
+            {state.draftId || state.step > 1 ? (
+              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing} iconLeft={<Plus size={15} />} onClick={startNewCampaign}>Nova campanha</Button>
+            ) : null}
+          </div>
         </div>
         <WizardStepper currentStep={state.step} steps={STEPS} className="mt-5" />
       </header>
