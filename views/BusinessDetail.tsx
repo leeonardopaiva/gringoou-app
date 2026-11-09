@@ -659,7 +659,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         </p>
       </div>
 
-      <div className="px-5 pb-8">
+      <div className="px-5 pb-8 sm:px-7">
         <BusinessPostsPanel businessId={business.id} businessName={business.name} management={managementMode} />
       </div>
       <ImageLightbox open={Boolean(selectedImage)} onClose={() => setSelectedImage(null)} src={selectedImage || ''} alt={`Imagem de ${business.name}`} />

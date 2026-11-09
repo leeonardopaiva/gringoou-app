@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, ImageIcon, MessageCircle, Newspaper, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Newspaper, Plus } from 'lucide-react';
 import type { Post } from '@/types';
 
 type BusinessPostsPanelProps = {
@@ -53,56 +53,55 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
     };
   }, [businessId, management]);
 
+  const formatDate = (value: string) => new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(value)).replace('.', '');
+
   return (
-    <section className="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-            <Newspaper size={17} className="text-brand-500" />
-            {management ? 'Publicações do negócio' : `Novidades de ${businessName}`}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            {management ? 'Acompanhe status e interação das publicações feitas como negócio.' : 'Conteúdos publicados por esta página na comunidade.'}
-          </p>
-        </div>
+    <section aria-label={management ? 'Publicações do negócio' : `Novidades de ${businessName}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
+          {management ? 'Publicações' : 'Novidades'}
+          {!loading && posts.length > 0 ? <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">{posts.length}</span> : null}
+        </h2>
         {management ? (
-          <Link href="/community" aria-label="Nova publicação" title="Nova publicação" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
+          <Link href="/community" aria-label="Nova publicação" title="Nova publicação" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
             <Plus size={18} />
           </Link>
         ) : null}
       </div>
 
       {loading ? (
-        <div className="mt-5 space-y-3">
-          <div className="h-28 animate-pulse rounded-3xl bg-slate-100" />
-          <div className="h-28 animate-pulse rounded-3xl bg-slate-100" />
+        <div className="mt-4 flex gap-3 overflow-hidden">
+          <div className="h-56 w-[72%] shrink-0 animate-pulse rounded-2xl bg-slate-100 sm:w-64" />
+          <div className="h-56 w-[72%] shrink-0 animate-pulse rounded-2xl bg-slate-100 sm:w-64" />
         </div>
       ) : posts.length ? (
-        <div className="mt-5 space-y-4">
-          {posts.map((post) => (
-            <article key={post.id} className="overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50/70">
-              {post.imageUrl ? (
-                <img src={post.imageUrl} alt="Imagem da publicação" className="max-h-72 w-full object-cover" />
-              ) : null}
-              <div className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusClass(post.status)}`}>
-                    {statusLabel(post.status)}
-                  </span>
-                  <time className="text-[11px] text-slate-400">
-                    {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(post.createdAt))}
-                  </time>
-                </div>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{post.content}</p>
-                <div className="mt-4 flex items-center gap-4 text-xs font-semibold text-slate-500">
-                  <span className="inline-flex items-center gap-1.5"><Heart size={14} />{post.likeCount}</span>
-                  <span className="inline-flex items-center gap-1.5"><MessageCircle size={14} />{post.commentCount}</span>
-                  {post.imageUrl ? <span className="inline-flex items-center gap-1.5"><ImageIcon size={14} />Imagem</span> : null}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <>
+          <ul className="-mx-5 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:-mx-7 sm:px-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {posts.map((post) => (
+              <li key={post.id} className="w-[72%] shrink-0 snap-start sm:w-64">
+                <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                  {post.imageUrl ? (
+                    <img src={post.imageUrl} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  ) : (
+                    <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-300" aria-hidden><Newspaper size={32} /></div>
+                  )}
+                  <div className="flex flex-1 flex-col p-3.5">
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                      <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
+                      {management ? <span className={`rounded-full px-2 py-0.5 font-bold ${statusClass(post.status)}`}>{statusLabel(post.status)}</span> : null}
+                    </div>
+                    <p className="mt-1.5 line-clamp-3 flex-1 whitespace-pre-wrap text-sm leading-5 text-slate-700">{post.content}</p>
+                    <div className="mt-3 flex items-center gap-4 text-xs font-semibold text-slate-400">
+                      <span className="inline-flex items-center gap-1.5"><Heart size={14} />{post.likeCount}</span>
+                      <span className="inline-flex items-center gap-1.5"><MessageCircle size={14} />{post.commentCount}</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+          {posts.length > 1 ? <p className="mt-1 text-center text-[11px] text-slate-400">Deslize para ver as {posts.length} publicações</p> : null}
+        </>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Newspaper size={22} aria-hidden /></span>
