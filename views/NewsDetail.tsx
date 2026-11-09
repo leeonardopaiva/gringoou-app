@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -57,7 +57,7 @@ const NewsDetail: React.FC<{ slug: string }> = ({ slug }) => {
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <BackBar fallbackHref="/news" label="Notícias" />
+      <PageHeader title="Notícias" backHref="/news" historyBack />
       {state === 'loading' ? (
         <div className="space-y-3" role="status" aria-label="Carregando notícia">
           <Skeleton className="aspect-[16/9] w-full rounded-2xl" />

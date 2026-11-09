@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ExternalLink, MapPin, Newspaper, Search, Share2, ThumbsUp } from 'lucide-react';
+import { ExternalLink, MapPin, Newspaper, Share2, ThumbsUp } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -11,7 +11,7 @@ import { Avatar } from '../components/ui/Avatar';
 import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { NewsComments } from '../components/news/NewsComments';
-import { SectionTabs } from '../components/ui/SectionTabs';
+import { SubHeader } from '../components/ui/SubHeader';
 import { Button } from '../components/ui';
 import { formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -25,9 +25,6 @@ const ALL = 'all';
 const CATEGORY_TABS = [{ id: ALL, label: 'Todas' }, ...NEWS_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))];
 
 type Sort = 'recent' | 'oldest';
-
-const selectClass =
-  'h-10 min-w-0 flex-1 rounded-2xl border border-slate-100 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100';
 
 const formatPublishedAt = (iso: string) =>
   new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(
@@ -149,9 +146,8 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
               <span className="font-semibold text-slate-600">{article.source}</span>
               <span aria-hidden>·</span>
               <time dateTime={article.publishedAt} title={formatPublishedAt(article.publishedAt)}>
-                {formatPublishedAt(article.publishedAt)}
+                {detail ? formatPublishedAt(article.publishedAt) : formatRelativeTime(article.publishedAt)}
               </time>
-              <span className="text-slate-300">({formatRelativeTime(article.publishedAt)})</span>
             </p>
             {article.regionLabel ? (
               <p className="flex items-center gap-1">
@@ -417,56 +413,55 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
     <ContentColumn size="feed" className="pb-20 pt-2">
       <PageHeader title={t('news.title')} backHref="/home" />
 
-      <div className="mt-4 space-y-3">
-        <div className="relative">
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder={t('news.search')}
-            aria-label="Buscar notícias"
-            className="w-full rounded-2xl border border-slate-100 bg-white py-3.5 pl-12 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} aria-hidden />
-        </div>
+      <SubHeader
+        className="mt-2"
+        tabsLabel="Categorias de notícias"
+        tabs={CATEGORY_TABS}
+        activeTab={category}
+        onTabChange={setCategory}
+        filters={{
+          fields: [
+            { type: 'search', id: 'q', label: 'Buscar', placeholder: t('news.search') },
+            {
+              type: 'select',
+              id: 'scope',
+              label: 'Região',
+              options: [
+                { value: 'mine', label: 'Minha região', disabled: !regionKey },
+                { value: 'all', label: 'Todas as regiões' },
+              ],
+            },
+            {
+              type: 'select',
+              id: 'sort',
+              label: 'Ordenar por',
+              options: [
+                { value: 'recent', label: 'Mais recentes' },
+                { value: 'oldest', label: 'Mais antigas' },
+              ],
+            },
+            ...(sources.length > 1
+              ? [{ type: 'select' as const, id: 'source', label: 'Fonte', options: [{ value: '', label: 'Todas as fontes' }, ...sources.map((name) => ({ value: name, label: name }))] }]
+              : []),
+          ],
+          values: { q: searchInput, scope, sort, source },
+          defaults: { scope: 'mine', sort: 'recent' },
+          onApply: (values) => {
+            setSearchInput(String(values.q ?? ''));
+            setScope(values.scope === 'all' ? 'all' : 'mine');
+            setSort(values.sort === 'oldest' ? 'oldest' : 'recent');
+            setSource(String(values.source ?? ''));
+          },
+          onClear: () => {
+            setSearchInput('');
+            setScope('mine');
+            setSort('recent');
+            setSource('');
+          },
+        }}
+      />
 
-        <SectionTabs options={CATEGORY_TABS} value={category} onChange={setCategory} ariaLabel="Categorias de notícias" />
-
-        <div className="flex gap-2">
-          <select
-            aria-label="Região"
-            value={scope}
-            onChange={(event) => setScope(event.target.value as 'mine' | 'all')}
-            className={selectClass}
-          >
-            <option value="mine" disabled={!regionKey}>
-              Minha região
-            </option>
-            <option value="all">Todas as regiões</option>
-          </select>
-          <select
-            aria-label="Ordenar por data"
-            value={sort}
-            onChange={(event) => setSort(event.target.value as Sort)}
-            className={selectClass}
-          >
-            <option value="recent">Mais recentes</option>
-            <option value="oldest">Mais antigas</option>
-          </select>
-          {sources.length > 1 ? (
-            <select aria-label="Fonte" value={source} onChange={(event) => setSource(event.target.value)} className={selectClass}>
-              <option value="">Todas as fontes</option>
-              {sources.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="mt-5 space-y-4" aria-busy={loading || loadingMore}>
+      <div className="mt-6 space-y-4" aria-busy={loading || loadingMore}>
         {loading ? (
           <>
             <NewsSkeleton />

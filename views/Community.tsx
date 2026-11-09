@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
+import { Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
 import CommunityComposer from '@/components/community/CommunityComposer';
 import FeedPostCard from '@/components/community/FeedPostCard';
 import type { ComposerMode } from '@/components/community/utils';
@@ -22,7 +22,8 @@ import { ViewableAdSlot } from '@/components/ads/ViewableAdSlot';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { CompactActionCard } from '@/components/ui/CompactActionCard';
 import { FeedCard } from '@/components/ui/FeedCard';
-import { SectionTabs } from '@/components/ui/SectionTabs';
+import { SubHeader } from '@/components/ui/SubHeader';
+import PageHeader from '@/components/navigation/PageHeader';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 
@@ -853,12 +854,7 @@ const Community: React.FC<{
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-3 pb-20 fade-in duration-500">
-      <header className="flex items-center gap-2 pb-1">
-        <Link href="/home" aria-label="Voltar para a home" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100">
-          <ArrowLeft size={19} />
-        </Link>
-        <h1 className="text-xl font-bold text-slate-900">Comunidade</h1>
-      </header>
+      <PageHeader title="Comunidade" backHref="/home" />
       <div className="flex flex-col gap-3">
       <div ref={composerRef} className="order-2">
         {isComposerExpanded ? (
@@ -963,7 +959,7 @@ const Community: React.FC<{
           </div>
         </div>
 
-        <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
+        <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-brand-500 via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
             <UserPlus size={16} aria-hidden="true" />
           </span>
@@ -985,11 +981,11 @@ const Community: React.FC<{
       </div>
       </div>
 
-      <SectionTabs
-        options={FEED_FILTER_OPTIONS}
-        value={feedFilter}
-        onChange={(value) => setFeedFilter(value as typeof feedFilter)}
-        ariaLabel="Filtrar publicações"
+      <SubHeader
+        tabsLabel="Publicações"
+        tabs={[...FEED_FILTER_OPTIONS]}
+        activeTab={feedFilter}
+        onTabChange={(value) => setFeedFilter(value as typeof feedFilter)}
       />
 
       <div className="space-y-3">

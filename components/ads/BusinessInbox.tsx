@@ -88,7 +88,7 @@ export function BusinessInbox() {
         </Link>
       </div>
 
-      <div className="grid h-[calc(100vh-190px)] min-h-[440px] overflow-hidden rounded-2xl border border-slate-200 bg-white md:grid-cols-[320px_1fr]">
+      <div className="grid h-[calc(100dvh-190px)] min-h-[440px] overflow-hidden rounded-2xl border border-slate-200 bg-white md:grid-cols-[320px_1fr]">
         <aside className={cn('min-h-0 flex-col border-slate-100 md:flex md:border-r', view === 'chat' ? 'hidden' : 'flex')}>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {loading && received.length === 0 ? (

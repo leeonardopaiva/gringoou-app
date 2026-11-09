@@ -6,7 +6,7 @@ type LegalSection = { title: string; paragraphs: string[] };
 
 export default function LegalPage({ title, updatedAt, sections }: { title: string; updatedAt: string; sections: LegalSection[] }) {
   return (
-    <main className="min-h-screen bg-bg px-4 py-8 sm:px-6 sm:py-12">
+    <main className="min-h-dvh bg-bg px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-3xl">
         <Link href="/login" className="mb-8 inline-flex items-center gap-3 text-foreground">
           <GringoouLogo size={34} />

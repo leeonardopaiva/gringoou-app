@@ -681,7 +681,7 @@ const Profile: React.FC<{
             </p>
           </div>
 
-          <Modal open={editing.profile} onClose={closeEditProfileModal} title="Editar perfil" description="Atualize todos os seus dados pessoais em um único lugar." className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <Modal open={editing.profile} onClose={closeEditProfileModal} title="Editar perfil" description="Atualize todos os seus dados pessoais em um único lugar." className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
             {profileEditDraft && (
               <EditorCard>
                 <div className="space-y-4">
@@ -850,7 +850,7 @@ const Section: React.FC<{ title: string; description: string; editing: boolean; 
     </div>
     {!editing ? <div className="mt-5">{children}</div> : null}
     {!hideAction ? (
-      <Modal open={editing} onClose={onToggle} title={title} description={description} className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+      <Modal open={editing} onClose={onToggle} title={title} description={description} className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         {children}
       </Modal>
     ) : null}

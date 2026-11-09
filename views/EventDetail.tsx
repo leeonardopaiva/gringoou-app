@@ -30,7 +30,7 @@ import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { useMessaging } from '../lib/MessagingProvider';
 import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
@@ -477,7 +477,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <BackBar fallbackHref="/events" label="Eventos" />
+      <PageHeader title="Eventos" backHref="/events" historyBack />
       <div className="overflow-hidden bg-white sm:rounded-card">
         {event.canEdit ? (
           <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
@@ -641,12 +641,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center sm:p-6" onClick={(clickEvent) => {
           if (clickEvent.target === clickEvent.currentTarget && !savingDetails) setEditingDetails(false);
         }}>
-          <div className="animate-in max-h-[92vh] w-full max-w-xl overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
+          <div className="animate-in max-h-[92dvh] w-full max-w-xl overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div><p className="theme-text text-sm font-bold">Editar evento</p><p className="mt-1 text-xs text-slate-500">Atualize as informações exibidas na página pública.</p></div>
               <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500" aria-label="Fechar modal"><X size={18} /></button>
             </div>
-            <div className="max-h-[70vh] space-y-3 overflow-y-auto px-5 py-5">
+            <div className="max-h-[70dvh] space-y-3 overflow-y-auto px-5 py-5">
               <input value={detailsDraft.title} onChange={(input) => setDetailsDraft((current) => ({ ...current, title: input.target.value }))} placeholder="Título do evento" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <textarea rows={4} value={detailsDraft.description} onChange={(input) => setDetailsDraft((current) => ({ ...current, description: input.target.value }))} placeholder="Descrição" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <input value={detailsDraft.venueName} onChange={(input) => setDetailsDraft((current) => ({ ...current, venueName: input.target.value }))} placeholder="Local" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
@@ -709,7 +709,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               </button>
             </div>
 
-            <div className="max-h-[70vh] space-y-5 overflow-y-auto px-5 py-5">
+            <div className="max-h-[70dvh] space-y-5 overflow-y-auto px-5 py-5">
               <CloudinaryImageField
                 value={coverDraft}
                 onChange={setCoverDraft}

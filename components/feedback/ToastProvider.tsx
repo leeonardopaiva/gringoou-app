@@ -61,7 +61,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-4 z-[140] flex justify-center px-4">
+      <div className="pointer-events-none fixed inset-x-0 top-4 z-[160] flex justify-center px-4">
         <div className="w-full max-w-md space-y-3">
           {toasts.map((toast) => {
             const hasAction = Boolean(toast.actionLabel && toast.onAction);

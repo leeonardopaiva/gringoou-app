@@ -11,7 +11,7 @@ import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { notifyContentUpdated } from '@/lib/content-refresh';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { BackBar } from '@/components/ui/BackBar';
+import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
@@ -123,7 +123,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
 
   return (
     <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
-      <BackBar fallbackHref="/jobs" label="Vagas" />
+      <PageHeader title="Vagas" backHref="/jobs" historyBack />
       <header className="relative flex min-h-72 items-end overflow-hidden bg-foreground p-6 text-white">
         {job.imageUrl ? (
           <img src={job.imageUrl} alt={'Capa da vaga ' + job.title} className="absolute inset-0 h-full w-full object-cover opacity-60" />

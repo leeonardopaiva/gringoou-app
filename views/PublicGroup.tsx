@@ -6,7 +6,7 @@ import { useToast } from '../components/feedback/ToastProvider';
 import { Logo } from '../components/Layout';
 import type { User } from '../types';
 import { Modal } from '../components/ui/Modal';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { Dropdown } from '../components/ui/Dropdown';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
@@ -245,7 +245,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
 
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
-    : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
+    : 'min-h-dvh bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
     ? 'mx-auto w-full max-w-[600px]'
     : 'mx-auto w-full max-w-[600px]';
@@ -285,7 +285,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          {embedded ? <BackBar fallbackHref="/groups" label="Grupos" /> : null}
+          {embedded ? <PageHeader title="Grupos" backHref="/groups" historyBack /> : null}
           <section className="overflow-hidden rounded-[28px] bg-white shadow-sm">
             {group.canManage ? (
               <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">

@@ -15,8 +15,6 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
-import { FilterPopover } from "@/components/ui/FilterPopover";
-import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
@@ -25,6 +23,7 @@ import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
+import { SubHeader } from '../components/ui/SubHeader';
 
 type Housing = {
   id: string;
@@ -139,39 +138,28 @@ export default function HousingList({ user }: { user: User }) {
         </Button>
       } />
       <section className="space-y-3">
-        <SectionHeader title="Imoveis disponiveis">
-          <FilterPopover>
-            <Select
-              value={propertyType}
-              onChange={(e) => {
-                setPropertyType(e.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="">Todos os tipos</option>
-              <option>Apartamento</option>
-              <option>Casa</option>
-              <option>Quarto</option>
-              <option>Republica</option>
-            </Select>
-            <Input
-              value={location}
-              onChange={(e) => {
-                setLocation(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Localizacao"
-            />
-            <Input
-              value={price}
-              onChange={(e) => {
-                setPrice(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Preco"
-            />
-          </FilterPopover>
-        </SectionHeader>
+        <SubHeader
+          filters={{
+            fields: [
+              { type: 'select', id: 'propertyType', label: 'Tipo de imóvel', options: [{ value: '', label: 'Todos os tipos' }, ...['Apartamento', 'Casa', 'Quarto', 'Republica'].map((v) => ({ value: v, label: v }))] },
+              { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
+              { type: 'text', id: 'price', label: 'Preço', placeholder: 'Ex.: 1500' },
+            ],
+            values: { propertyType, location, price },
+            onApply: (values) => {
+              setPropertyType(String(values.propertyType ?? ''));
+              setLocation(String(values.location ?? ''));
+              setPrice(String(values.price ?? ''));
+              setPage(1);
+            },
+            onClear: () => {
+              setPropertyType('');
+              setLocation('');
+              setPrice('');
+              setPage(1);
+            },
+          }}
+        />
         {loading ? (
           <div className="space-y-3" role="status" aria-label="Carregando moradias" aria-busy="true">
             {[0, 1, 2].map((key) => (

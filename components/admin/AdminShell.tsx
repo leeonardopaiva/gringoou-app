@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import GringoouLogo from '@/components/icons/GringoouLogo';
 import FriendRequestBell from '@/components/feedback/FriendRequestBell';
+import { Popover } from '@/components/ui/Popover';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
@@ -69,15 +70,6 @@ export default function AdminShell({ user, children }: { user: User; children: R
   useEffect(() => {
     setSearchQuery(searchParams?.get('q') ?? '');
   }, [searchParams]);
-
-  useEffect(() => {
-    if (!accountMenuOpen) return;
-    const close = (event: MouseEvent) => {
-      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountMenuOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [accountMenuOpen]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -121,7 +113,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#132F40]">
+    <div className="min-h-dvh bg-[#F8FAFC] text-[#132F40]">
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-slate-200 lg:block">{sidebar}</aside>
       {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-slate-950/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label="Fechar" className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
       <div className="lg:pl-72">
@@ -134,18 +126,18 @@ export default function AdminShell({ user, children }: { user: User; children: R
             </div>
             <div ref={accountMenuRef} className="relative">
               <button type="button" aria-label="Abrir menu do perfil" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)} className="flex h-10 items-center gap-2 rounded-full border border-slate-200 px-2.5 transition hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="xs" /><span className="hidden max-w-28 truncate text-xs font-bold sm:block">{user.name}</span><ChevronDown size={14} className="text-slate-400" /></button>
-              {accountMenuOpen ? (
-                <div className="absolute right-0 top-[calc(100%+10px)] z-[80] w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10">
+              <Popover open={accountMenuOpen} onClose={() => setAccountMenuOpen(false)} anchorRef={accountMenuRef} align="end" role="dialog" unstyled className="w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10">
+                <div>
                   <Link href={profileHref} onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="sm" /><span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Administrador'}</span></span></Link>
                   <div className="my-1 border-t border-slate-100" />
                   <Link href="/home" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />Voltar a comunidade</Link>
                   <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={16} />Sair</button>
                 </div>
-              ) : null}
+              </Popover>
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-74px)]">{children}</main>
+        <main className="min-h-[calc(100dvh-74px)]">{children}</main>
       </div>
     </div>
   );

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Bell, Check, X } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
+import { Popover } from '../ui/Popover';
 
 type PendingFriendRequest = {
   id: string;
@@ -42,6 +43,7 @@ type PendingMessageRequest = {
 const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = false }) => {
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const [requests, setRequests] = useState<PendingFriendRequest[]>([]);
   const [pendingPosts, setPendingPosts] = useState<PendingCommunityPost[]>([]);
   const [messageRequests, setMessageRequests] = useState<PendingMessageRequest[]>([]);
@@ -162,7 +164,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
   };
 
   return (
-    <div className="relative">
+    <div ref={anchorRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -179,8 +181,8 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
         ) : null}
       </button>
 
-      {open ? (
-        <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[80] w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-card border border-border bg-surface text-left shadow-md">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} align="end" role="dialog" unstyled className="w-[340px] overflow-hidden rounded-card border border-border bg-surface text-left shadow-md">
+        <div>
           <div className="max-h-[420px] overflow-y-auto">
             {loading && notificationCount === 0 ? (
               <div className="flex justify-center px-4 py-8" role="status" aria-label="Carregando notificações">
@@ -322,7 +324,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
             )}
           </div>
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 };

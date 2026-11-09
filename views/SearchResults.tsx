@@ -7,7 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Briefcase, CalendarDays, Clock3, House, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
 import { ContentColumn } from '@/components/ui';
 import RegionSelector from '@/components/RegionSelector';
-import { Popover } from '@/components/ui/Popover';
+import PageHeader from '@/components/navigation/PageHeader';
+import { SubHeader } from '@/components/ui/SubHeader';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { buildSearchPath } from '@/lib/search-navigation';
 
@@ -93,8 +94,6 @@ const SearchResults: React.FC = () => {
   const [assistantLoading, setAssistantLoading] = useState(false);
   const [assistantResponse, setAssistantResponse] = useState<AssistantResponse | null>(null);
   const [assistantError, setAssistantError] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const filtersButtonRef = useRef<HTMLButtonElement>(null);
   const [filterDraft, setFilterDraft] = useState({ region: '', country: '', city: '', businessType: '', propertyType: '', dateScope: 'future' });
 
   useEffect(() => setFilterDraft({
@@ -164,26 +163,35 @@ const SearchResults: React.FC = () => {
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-6 pb-24 fade-in duration-500">
-      <header><h1 className="text-h2 font-bold text-foreground">Busca</h1></header>
-      <div className="flex flex-wrap gap-2">
-        <button ref={filtersButtonRef} type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
-      </div>
-
-      <Popover open={filtersOpen} onClose={() => setFiltersOpen(false)} anchorRef={filtersButtonRef} align="start" className="max-h-[75vh] w-[min(92vw,420px)] overflow-y-auto p-4">
-        <div className="grid gap-4">
-          <RegionSelector value={filterDraft.region} onChange={(region) => setFilterDraft((current) => ({ ...current, region: region.key }))} onClear={() => setFilterDraft((current) => ({ ...current, region: '' }))} allowEmpty emptyLabel="Todas as regiões" label="Localidade" inlineMenu />
-          <label className="space-y-2"><span className="text-sm font-bold">País</span><select value={filterDraft.country} onChange={(event) => setFilterDraft((current) => ({ ...current, country: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="">Todos</option><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Cidade ou estado</span><input value={filterDraft.city} onChange={(event) => setFilterDraft((current) => ({ ...current, city: event.target.value }))} placeholder="Ex.: Boston" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Tipo de negócio</span><input value={filterDraft.businessType} onChange={(event) => setFilterDraft((current) => ({ ...current, businessType: event.target.value }))} placeholder="Ex.: Restaurante" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Tipo de moradia</span><input value={filterDraft.propertyType} onChange={(event) => setFilterDraft((current) => ({ ...current, propertyType: event.target.value }))} placeholder="Ex.: Apartamento" className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm outline-none" /></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Período dos eventos</span><select value={filterDraft.dateScope} onChange={(event) => setFilterDraft((current) => ({ ...current, dateScope: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="future">Próximos eventos</option><option value="today">Hoje</option><option value="weekend">Fim de semana</option><option value="ongoing">Acontecendo agora</option><option value="past">Eventos anteriores</option><option value="any">Todos os eventos</option></select></label>
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => { setFiltersOpen(false); navigateWith({ region: filterDraft.region, country: filterDraft.country || null, city: filterDraft.city || null, businessType: filterDraft.businessType || null, propertyType: filterDraft.propertyType || null, dateScope: filterDraft.dateScope === 'future' ? null : filterDraft.dateScope, page: null }); }} className="inline-flex h-10 items-center justify-center rounded-full bg-brand-500 px-5 text-xs font-bold text-white">Aplicar filtros</button><button type="button" onClick={clearFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 text-xs font-bold text-red-700"><X size={14} /> Limpar filtros</button></div>
-        </div>
-      </Popover>
-
-      <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" aria-label="Categorias da busca">
-        {tabs.map((tab) => <button key={tab.id} type="button" onClick={() => navigateWith(browseMode ? { view: tab.id === 'all' ? null : tab.id, category: null, page: null } : { category: tab.id === 'all' ? null : tab.id, page: null })} className={`whitespace-nowrap rounded-2xl border px-4 py-2 text-xs font-bold ${activeTab === tab.id ? 'border-brand-500 bg-brand-500 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>{tab.label} ({tab.id === 'all' ? results.counts.total : results.counts[tab.id]})</button>)}
-      </nav>
+      <PageHeader title="Busca" backHref="/home" historyBack />
+      <SubHeader
+        className="-mt-3"
+        tabsLabel="Categorias da busca"
+        tabs={tabs.map((tab) => ({ id: tab.id, label: `${tab.label} (${tab.id === 'all' ? results.counts.total : results.counts[tab.id]})` }))}
+        activeTab={activeTab}
+        onTabChange={(id) => navigateWith(browseMode ? { view: id === 'all' ? null : id, category: null, page: null } : { category: id === 'all' ? null : id, page: null })}
+        filters={{
+          fields: [
+            {
+              type: 'custom',
+              id: 'region',
+              label: 'Localidade',
+              render: (draft, setValue) => (
+                <RegionSelector value={String(draft.region ?? '')} onChange={(region) => setValue('region', region.key)} onClear={() => setValue('region', '')} allowEmpty emptyLabel="Todas as regiões" label="Localidade" inlineMenu />
+              ),
+            },
+            { type: 'select', id: 'country', label: 'País', options: [{ value: '', label: 'Todos' }, { value: 'US', label: 'Estados Unidos' }, { value: 'BR', label: 'Brasil' }, { value: 'PT', label: 'Portugal' }, { value: 'CA', label: 'Canadá' }, { value: 'GB', label: 'Reino Unido' }, { value: 'IE', label: 'Irlanda' }] },
+            { type: 'text', id: 'city', label: 'Cidade ou estado', placeholder: 'Ex.: Boston' },
+            { type: 'text', id: 'businessType', label: 'Tipo de negócio', placeholder: 'Ex.: Restaurante' },
+            { type: 'text', id: 'propertyType', label: 'Tipo de moradia', placeholder: 'Ex.: Apartamento' },
+            { type: 'select', id: 'dateScope', label: 'Período dos eventos', options: [{ value: 'future', label: 'Próximos eventos' }, { value: 'today', label: 'Hoje' }, { value: 'weekend', label: 'Fim de semana' }, { value: 'ongoing', label: 'Acontecendo agora' }, { value: 'past', label: 'Eventos anteriores' }, { value: 'any', label: 'Todos os eventos' }] },
+          ],
+          values: { ...filterDraft },
+          defaults: { dateScope: 'future' },
+          onApply: (values) => navigateWith({ region: String(values.region ?? ''), country: String(values.country || '') || null, city: String(values.city || '') || null, businessType: String(values.businessType || '') || null, propertyType: String(values.propertyType || '') || null, dateScope: values.dateScope === 'future' ? null : String(values.dateScope), page: null }),
+          onClear: clearFilters,
+        }}
+      />
 
       {!hasCriteria ? <EmptyState text="Digite um termo ou selecione filtros para buscar no app." /> : null}
       {loading ? <div className="space-y-3"><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /><div className="h-28 animate-pulse rounded-3xl bg-white" /></div> : null}

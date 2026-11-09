@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { formatInternationalPhone } from '@/lib/phone';
 
 const inputClassName =
-  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-[#0086ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0086ff]';
+  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 
 const buttonClassName =
-  'rounded-full bg-[#0086ff] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#006ed4] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0086ff]';
+  'rounded-full bg-brand-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
 
 type Step = 'phone' | 'code' | 'done';
 
@@ -128,7 +128,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
             setStep('phone');
             setError(null);
           }}
-          className="text-sm font-semibold text-[#0086ff] disabled:opacity-60"
+          className="text-sm font-semibold text-brand-500 disabled:opacity-60"
         >
           Usar outro telefone ou reenviar codigo
         </button>

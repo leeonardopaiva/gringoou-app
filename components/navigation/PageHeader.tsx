@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { goBackOr } from '@/lib/navigation-history';
 
 type PageHeaderProps = {
   title: string;
@@ -11,10 +13,10 @@ type PageHeaderProps = {
   backHref?: string;
   /** Oculta o botão Voltar em páginas raiz. */
   hideBack?: boolean;
+  /** Páginas de detalhe: volta para a tela de onde a pessoa veio; `backHref` só vale em acesso direto por link. */
+  historyBack?: boolean;
   /** Handler opcional (ex.: voltar no histórico); `backHref` continua sendo o fallback. */
   onBack?: () => void;
-  /** Subtítulo opcional exibido abaixo do título. */
-  description?: React.ReactNode;
   /** Ações contextuais alinhadas à direita. */
   action?: React.ReactNode;
   /** Navegação por abas exibida abaixo do título. */
@@ -24,27 +26,32 @@ type PageHeaderProps = {
   className?: string;
 };
 
+/** Cabeçalho de página: voltar + título (somente título, sem subtítulo). Filtros e abas ficam no SubHeader. */
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   backHref = '/home',
   hideBack = false,
+  historyBack = false,
   onBack,
-  description,
   action,
   tabs,
   titleClassName,
   className,
-}) => (
+}) => {
+  const router = useRouter();
+  const handleBack = onBack ?? (historyBack ? () => goBackOr(router, backHref) : undefined);
+
+  return (
   <header className={cn('min-w-0', className)}>
     <div className="flex min-h-12 items-center gap-2">
       {hideBack ? null : (
         <Link
           href={backHref}
           onClick={
-            onBack
+            handleBack
               ? (event) => {
                   event.preventDefault();
-                  onBack();
+                  handleBack();
                 }
               : undefined
           }
@@ -55,14 +62,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           <ArrowLeft size={19} aria-hidden="true" />
         </Link>
       )}
-      <div className="min-w-0 flex-1">
-        <h1 className={cn('truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
-        {description ? <p className="truncate text-sm text-muted-foreground">{description}</p> : null}
-      </div>
+      <h1 className={cn('min-w-0 flex-1 truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
       {action ? <div className="ml-auto shrink-0">{action}</div> : null}
     </div>
     {tabs ? <div className="mt-2">{tabs}</div> : null}
   </header>
-);
+  );
+};
 
 export default PageHeader;

@@ -11,7 +11,7 @@ import { Button, Input, Modal, Select, Textarea } from '@/components/ui';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { notifyContentUpdated } from '@/lib/content-refresh';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { BackBar } from '@/components/ui/BackBar';
+import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
@@ -70,7 +70,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
   const formattedPrice = Number.isFinite(amount) && amount > 0 ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount) : item.price;
 
   return <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-    <BackBar fallbackHref="/housing" label="Moradia" />
+    <PageHeader title="Moradia" backHref="/housing" historyBack />
     <div className="overflow-hidden bg-white sm:rounded-card">
       {item.canEdit ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">

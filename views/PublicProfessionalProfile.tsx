@@ -5,6 +5,7 @@ import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { BadgeCheck, BriefcaseBusiness, CalendarDays, Globe2, MapPin, Megaphone } from 'lucide-react';
 import StarRating from '../components/engagement/StarRating';
 import { Logo } from '../components/Layout';
+import PageHeader from '../components/navigation/PageHeader';
 import { handleAvatarError } from '../lib/avatar';
 import { PublicProfessionalProfile, User } from '../types';
 
@@ -98,10 +99,10 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
 
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
-    : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
+    : 'min-h-dvh bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
     ? 'mx-auto w-full min-w-0 max-w-[620px] [&_img]:max-w-full'
-    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
+    : 'mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
   const isOwnProfile = viewer?.username === profile.username;
 
   if (loading) {
@@ -151,6 +152,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
               <Logo size="lg" />
             </div>
           ) : null}
+          <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
 
           <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
             <div className={`relative h-80 ${profile.coverImageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>

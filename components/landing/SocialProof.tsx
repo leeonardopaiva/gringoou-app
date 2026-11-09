@@ -14,7 +14,7 @@ export function SocialProof() {
       <div className="flex items-center gap-3" aria-hidden="true">
         <span className="size-2 rounded-full bg-[#e4eaf6]" />
         <span className="size-2 rounded-full bg-[#e4eaf6]" />
-        <span className="size-2 rounded-full bg-[#0086ff]" />
+        <span className="size-2 rounded-full bg-brand-500" />
 {/*         <Image src="/landing/arrow.svg" alt="" width={18} height={18} className="ml-2" />
  */}      </div>
     </div>

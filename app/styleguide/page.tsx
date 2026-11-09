@@ -83,7 +83,7 @@ export default function StyleguidePage() {
   const [city, setCity] = useState('');
 
   return (
-    <div className="min-h-screen bg-bg pb-24">
+    <div className="min-h-dvh bg-bg pb-24">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-[#0f2b3d] px-6 py-3 text-white">
         <div className="flex items-center gap-3">
           <GringoouLogo size={22} className="brightness-0 invert" />

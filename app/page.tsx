@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen overflow-hidden bg-[#f7f8fb]">
+    <div className="min-h-dvh overflow-hidden bg-[#f7f8fb]">
       <LandingHeader />
       <LandingHero />
       <WaitlistSection />

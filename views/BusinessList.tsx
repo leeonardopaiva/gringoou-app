@@ -27,6 +27,7 @@ import { FeedCard } from '../components/ui/FeedCard';
 import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
+import { SubHeader } from '../components/ui/SubHeader';
 import { useActiveRegion } from '../components/RegionContext';
 
 const emptyForm = {
@@ -311,7 +312,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       </div>
       {showCreateForm ? (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/45 p-3 sm:items-center sm:p-6">
-          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
+          <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-bold theme-text">Cadastrar negócio</h3>
               <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Fechar</button>
@@ -347,24 +348,14 @@ const BusinessList: React.FC<BusinessListProps> = ({
         </div>
       ) : null}
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {['Todos', 'Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveFilter(category)}
-            className={`px-6 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-sm border ${
-              activeFilter === category
-                ? 'theme-bg text-white border-transparent'
-                : 'bg-white theme-text border-slate-100'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+      <SubHeader
+        tabsLabel="Categorias de negócios"
+        tabs={['Todos', 'Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => ({ id: category, label: category }))}
+        activeTab={activeFilter}
+        onTabChange={setActiveFilter}
+      />
 
       <div className="space-y-4 pb-20">
-        <h2 className="font-bold theme-text">Negócios disponíveis</h2>
         {resultScope === 'global' && businesses.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             Ainda nao ha negocios publicados na sua regiao. Mostrando resultados de outras regioes.

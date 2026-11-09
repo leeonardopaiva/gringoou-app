@@ -41,7 +41,7 @@ export default function AdsLoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md items-center">
+    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] max-w-md items-center">
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         <GringoouLogo size={34} />
         <p className="mt-6 text-xs font-bold uppercase tracking-wider text-brand-500">Portal do anunciante</p>

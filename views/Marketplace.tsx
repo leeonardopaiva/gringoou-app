@@ -14,9 +14,7 @@ import { Check, Heart, Images, MapPin, MoreHorizontal, PencilLine, Plus, Search 
 import { Dropdown } from '../components/ui/Dropdown';
 import RegionSelector from '../components/RegionSelector';
 import PageHeader from '../components/navigation/PageHeader';
-import { FilterPopover } from '../components/ui/FilterPopover';
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { SectionTabs } from '../components/ui/SectionTabs';
+import { SubHeader } from '../components/ui/SubHeader';
 import { Modal } from '../components/ui/Modal';
 import {
   type FieldErrors,
@@ -351,14 +349,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     return eventDate >= now || isSameLocalDay(eventDate, now);
   });
 
-  const sectionTitle =
-    activeTab === 'Hoje'
-      ? 'Eventos de hoje'
-      : activeTab === 'Esta semana'
-        ? 'Eventos desta semana'
-        : activeTab === 'Passados'
-          ? 'Eventos passados'
-          : 'Eventos proximos';
   return (
     <ContentColumn size="compact" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
@@ -481,18 +471,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-3">
-          <SectionHeader title={sectionTitle}>
-            <SectionTabs.Mobile options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
-            <FilterPopover>
-              <div className="relative">
-                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar eventos" className="w-full rounded-full border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
-              </div>
-            </FilterPopover>
-          </SectionHeader>
-          <SectionTabs.Desktop options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
-        </div>
+        <SubHeader
+          tabsLabel="Categorias de eventos"
+          tabs={EVENT_TAB_OPTIONS}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          filters={{
+            fields: [{ type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar eventos' }],
+            values: { q: search },
+            onApply: (values) => setSearch(String(values.q ?? '')),
+            onClear: () => setSearch(''),
+          }}
+        />
         {resultScope === 'global' && events.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             Ainda nao ha eventos publicados na sua regiao. Mostrando eventos de outras regioes.

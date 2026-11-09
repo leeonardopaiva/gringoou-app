@@ -36,6 +36,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
   const [item, setItem] = useState<MarketplaceItemContract | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [locationChanged, setLocationChanged] = useState(false);
   const [form, setForm] = useState({
     title: '', description: '', category: 'Outros', condition: 'GOOD', isFree: false, price: '',
     locationLabel: '', imageUrl: '', galleryUrls: [] as string[],
@@ -62,8 +63,9 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           locationLabel: data.locationLabel,
           imageUrl: data.imageUrl ?? '',
           galleryUrls: data.galleryUrls,
-          latitude: data.latitude ?? null,
-          longitude: data.longitude ?? null,
+          // A API só entrega a área aproximada; a coordenada salva só é reenviada se o endereço mudar.
+          latitude: null,
+          longitude: null,
         });
       } catch (error) {
         if (!cancelled) showToast(error instanceof Error ? error.message : 'Anúncio não encontrado.', 'error');
@@ -104,8 +106,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           locationLabel: form.locationLabel,
           imageUrl: form.imageUrl.trim() ? form.imageUrl.trim() : null,
           galleryUrls: form.galleryUrls,
-          latitude: form.latitude,
-          longitude: form.longitude,
+          ...(locationChanged ? { latitude: form.latitude, longitude: form.longitude } : {}),
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -226,7 +227,10 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           <AddressAutocomplete
             value={form.locationLabel}
             onChange={(value, latitude, longitude) =>
-              setForm((c) => ({ ...c, locationLabel: value, latitude: latitude ?? null, longitude: longitude ?? null }))
+              {
+                setLocationChanged(true);
+                setForm((c) => ({ ...c, locationLabel: value, latitude: latitude ?? null, longitude: longitude ?? null }));
+              }
             }
             placeholder="Bairro, cidade ou endereço"
           />

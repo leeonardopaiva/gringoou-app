@@ -29,7 +29,7 @@ import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
 import { ImageEditMenu } from '../components/ui/ImageEditMenu';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
@@ -208,10 +208,10 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       : 'Compartilhando experiencias e fortalecendo a comunidade brasileira.');
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
-    : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
+    : 'min-h-dvh bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
     ? 'mx-auto w-full min-w-0 max-w-[620px] [&_img]:max-w-full'
-    : 'mx-auto flex min-h-[calc(100vh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
+    : 'mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full min-w-0 max-w-[620px] items-start justify-center [&_img]:max-w-full';
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
 
@@ -358,7 +358,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <Logo size="lg" />
             </div>
           ) : null}
-          {!embedded ? <BackBar fallbackHref={viewer ? '/community' : '/'} label="Comunidade" /> : null}
+          <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
 
           <div className="relative">
             <div className="relative h-36 sm:h-44">

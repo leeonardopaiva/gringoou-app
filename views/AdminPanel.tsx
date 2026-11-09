@@ -1868,7 +1868,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
                   {editingBusinessId === business.id ? (
                     <Modal open onClose={resetBusinessForm} title="Editar negocio" description={business.name} className="max-w-3xl">
-                    <div className="max-h-[72vh] space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={businessForm.name}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, name: value }))}
@@ -2089,7 +2089,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
                   {editingEventId === event.id ? (
                     <Modal open onClose={resetEventForm} title="Editar evento" description={event.title} className="max-w-3xl">
-                    <div className="max-h-[72vh] space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={eventForm.title}
                         onChange={(value) => setEventForm((current) => ({ ...current, title: value }))}
@@ -2406,7 +2406,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
                   {editingUserId === managedUser.id ? (
                     <Modal open onClose={resetUserForm} title="Editar usuario" description={managedUser.name || managedUser.email || 'Usuario'} className="max-w-2xl">
-                    <div className="max-h-[72vh] space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={userForm.name}
                         onChange={(value) => setUserForm((current) => ({ ...current, name: value }))}

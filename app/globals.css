@@ -69,6 +69,16 @@
   --radius-sheet: 32px;
   --radius-full: 9999px;
 
+  /* Escala de camadas (z-index), da base ao topo. Use estes valores nos componentes novos:
+       10-30   elementos internos (sticky, badges, cabeçalhos de seção)
+       40-50   barras fixas (header, navegação inferior)
+       55-60   menus laterais (drawers) e seus fundos
+       70-75   widgets flutuantes e folhas de ação
+       90-130  painéis e dropdowns
+       150     Modal
+       160     Toast (acima de modais, para erros aparecerem em qualquer tela)
+       200     Popover/tooltip e lightbox de imagem */
+
   /* Gringoou design system — shadows */
   --shadow-xs: 0 1px 2px rgba(15, 43, 61, 0.05);
   --shadow-sm: 0 4px 12px rgba(15, 43, 61, 0.06);
@@ -108,6 +118,32 @@ input,
 textarea,
 select {
   min-width: 0;
+}
+
+/* Áreas de toque: em telas de toque, botões e links de ícone pequenos (24–36px) ganham uma
+   área clicável invisível de 44px. O tamanho visual não muda. Elementos já posicionados
+   (absolute/fixed/sticky/relative) ficam de fora para não alterar o layout. */
+@media (pointer: coarse) {
+  :where(button, a):where([class~='h-9'][class~='w-9'], [class~='h-8'][class~='w-8'], [class~='h-7'][class~='w-7'], [class~='h-6'][class~='w-6']):not(.absolute):not(.fixed):not(.sticky):not(.relative) {
+    position: relative;
+  }
+  :where(button, a)[class~='h-9'][class~='w-9']::after { content: ''; position: absolute; inset: -4px; }
+  :where(button, a)[class~='h-8'][class~='w-8']::after { content: ''; position: absolute; inset: -6px; }
+  :where(button, a)[class~='h-7'][class~='w-7']::after { content: ''; position: absolute; inset: -8px; }
+  :where(button, a)[class~='h-6'][class~='w-6']::after { content: ''; position: absolute; inset: -10px; }
+}
+
+/* Área de toque mínima de 44px em telas de toque: botões de ícone pequenos ganham uma
+   margem clicável invisível (o tamanho visual não muda). */
+@media (pointer: coarse) {
+  :where(button, a)[class~='h-9'][class~='w-9']:not(.absolute):not(.fixed):not(.sticky):not(.relative) { position: relative; }
+  :where(button, a)[class~='h-9'][class~='w-9']::after { content: ''; position: absolute; inset: -4px; }
+  :where(button, a)[class~='h-8'][class~='w-8']:not(.absolute):not(.fixed):not(.sticky):not(.relative) { position: relative; }
+  :where(button, a)[class~='h-8'][class~='w-8']::after { content: ''; position: absolute; inset: -6px; }
+  :where(button, a)[class~='h-7'][class~='w-7']:not(.absolute):not(.fixed):not(.sticky):not(.relative) { position: relative; }
+  :where(button, a)[class~='h-7'][class~='w-7']::after { content: ''; position: absolute; inset: -8px; }
+  :where(button, a)[class~='h-6'][class~='w-6']:not(.absolute):not(.fixed):not(.sticky):not(.relative) { position: relative; }
+  :where(button, a)[class~='h-6'][class~='w-6']::after { content: ''; position: absolute; inset: -10px; }
 }
 
 @media (max-width: 767px), (hover: none) and (pointer: coarse) {

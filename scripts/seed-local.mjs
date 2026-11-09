@@ -131,8 +131,9 @@ async function main() {
         galleryUrls: [img(`market-${i}-b`), img(`market-${i}-c`)],
         status,
         createdById: owner.id,
-        latitude: region.lat + (Math.random() - 0.5) * 0.05,
-        longitude: region.lng + (Math.random() - 0.5) * 0.05,
+        // Determinístico: 3 de cada 4 anúncios têm coordenadas; 1 em cada 4 fica SEM (testa o caso sem mapa).
+        latitude: i % 4 === 3 ? null : Number((region.lat + ((i % 5) - 2) * 0.004).toFixed(4)),
+        longitude: i % 4 === 3 ? null : Number((region.lng + ((i % 5) - 2) * 0.004).toFixed(4)),
         createdAt: hoursAgo(i * 7 + 1),
         ...(status === 'REJECTED'
           ? { moderationReason: 'Fotos não mostram o item real.', moderatedById: moderator.id, moderatedAt: hoursAgo(3) }

@@ -25,7 +25,7 @@ export function CompactActionCard({ icon, eyebrow, title, description, trailing,
     </span>
     {trailing ? <span className="flex shrink-0 items-center gap-1">{trailing}</span> : null}
   </>;
-  const classes = cn('flex min-h-14 w-full items-center gap-3 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)] transition hover:brightness-105', className);
+  const classes = cn('flex min-h-14 w-full items-center gap-3 rounded-xl bg-gradient-to-br from-brand-500 via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)] transition hover:brightness-105', className);
   if (href) return <Link href={href} className={classes}>{content}</Link>;
   if (onClick) return <button type="button" onClick={onClick} className={classes}>{content}</button>;
   return <div className={classes}>{content}</div>;
