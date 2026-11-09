@@ -17,8 +17,6 @@ type PageHeaderProps = {
   historyBack?: boolean;
   /** Handler opcional (ex.: voltar no histórico); `backHref` continua sendo o fallback. */
   onBack?: () => void;
-  /** Subtítulo opcional exibido abaixo do título. */
-  description?: React.ReactNode;
   /** Ações contextuais alinhadas à direita. */
   action?: React.ReactNode;
   /** Navegação por abas exibida abaixo do título. */
@@ -28,13 +26,13 @@ type PageHeaderProps = {
   className?: string;
 };
 
+/** Cabeçalho de página: voltar + título (somente título, sem subtítulo). Filtros e abas ficam no SubHeader. */
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   backHref = '/home',
   hideBack = false,
   historyBack = false,
   onBack,
-  description,
   action,
   tabs,
   titleClassName,
@@ -64,10 +62,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           <ArrowLeft size={19} aria-hidden="true" />
         </Link>
       )}
-      <div className="min-w-0 flex-1">
-        <h1 className={cn('truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
-        {description ? <p className="truncate text-sm text-muted-foreground">{description}</p> : null}
-      </div>
+      <h1 className={cn('min-w-0 flex-1 truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
       {action ? <div className="ml-auto shrink-0">{action}</div> : null}
     </div>
     {tabs ? <div className="mt-2">{tabs}</div> : null}
