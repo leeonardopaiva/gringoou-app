@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Bell, CheckCircle2, Clock3, RotateCcw, XCircle } from 'lucide-react';
+import { AlertCircle, Bell, CalendarX2, CheckCircle2, Clock3, MessageCircle, RotateCcw, XCircle } from 'lucide-react';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { cn } from '@/lib/cn';
 
@@ -15,6 +15,9 @@ const ICONS: Record<string, { icon: React.ElementType; tone: string }> = {
   PAYMENT_CONFIRMED: { icon: CheckCircle2, tone: 'bg-sky-50 text-sky-600' },
   PAYMENT_FAILED: { icon: AlertCircle, tone: 'bg-red-50 text-red-600' },
   PAYMENT_REFUNDED: { icon: RotateCcw, tone: 'bg-slate-100 text-slate-600' },
+  CAMPAIGN_ENDING: { icon: Clock3, tone: 'bg-amber-50 text-amber-600' },
+  CAMPAIGN_ENDED: { icon: CalendarX2, tone: 'bg-slate-100 text-slate-600' },
+  NEW_MESSAGE: { icon: MessageCircle, tone: 'bg-brand-50 text-brand-600' },
 };
 
 function timeAgo(value: string) {

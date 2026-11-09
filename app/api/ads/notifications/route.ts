@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { syncCampaignLifecycleAlerts } from '@/lib/ads/notifications';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,7 @@ export async function GET(request: Request) {
     select: { id: true },
   });
   if (!membership) return NextResponse.json({ error: 'Acesso negado a esta conta.' }, { status: 403 });
+  await syncCampaignLifecycleAlerts(adAccountId);
   const [items, unread] = await Promise.all([
     prisma.adNotification.findMany({ where: { adAccountId }, orderBy: { createdAt: 'desc' }, take: 30 }),
     prisma.adNotification.count({ where: { adAccountId, readAt: null } }),
