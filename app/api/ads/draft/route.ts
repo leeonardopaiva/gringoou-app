@@ -1,6 +1,6 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus, BannerPlacement, BannerType } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { getAdDestinationFields } from '@/lib/ads/server';
+import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
 import { adDraftSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       archivedAt: null,
       moderationStatus: AdModerationStatus.DRAFT,
       paymentStatus: AdPaymentStatus.PENDING,
-      payments: { none: {} },
+      payments: { none: { status: AdPaymentStatus.PAID } },
     },
     orderBy: { updatedAt: 'desc' },
     select: {
@@ -132,11 +132,30 @@ async function saveDraft(request: Request, requireExisting: boolean) {
         id: parsed.data.bannerId,
         adAccountId: parsed.data.adAccountId,
         moderationStatus: AdModerationStatus.DRAFT,
-        payments: { none: {} },
+        payments: { none: { status: AdPaymentStatus.PAID } },
       },
-      select: { id: true },
+      select: { id: true, payments: { where: { status: AdPaymentStatus.PENDING, provider: 'STRIPE' }, select: { id: true, providerPaymentId: true } } },
     });
-    if (!current) return NextResponse.json({ error: 'Rascunho nao encontrado ou bloqueado apos iniciar o pagamento.' }, { status: 404 });
+    if (!current) return NextResponse.json({ error: 'Esta campanha não pode mais ser editada, pois já foi enviada. Crie uma nova campanha.' }, { status: 404 });
+
+    // Pagamento apenas iniciado (cartão não confirmado) não trava a edição: o pedido antigo é descartado e um novo é gerado no checkout.
+    for (const payment of current.payments) {
+      if (!payment.providerPaymentId) continue;
+      try {
+        const stripe = getStripe();
+        const intent = await stripe.paymentIntents.retrieve(payment.providerPaymentId);
+        if (intent.status === 'processing' || intent.status === 'succeeded') {
+          return NextResponse.json({ error: 'Seu pagamento está sendo processado. Aguarde a confirmação antes de alterar a campanha.' }, { status: 409 });
+        }
+        if (intent.status !== 'canceled') await stripe.paymentIntents.cancel(intent.id).catch(() => undefined);
+      } catch (error) {
+        console.error('Failed to discard pending payment while editing draft:', error);
+        return NextResponse.json({ error: 'Não foi possível liberar a campanha para edição agora. Tente novamente em instantes.' }, { status: 503 });
+      }
+    }
+    if (current.payments.length) {
+      await prisma.adPayment.updateMany({ where: { id: { in: current.payments.map((payment) => payment.id) } }, data: { status: AdPaymentStatus.FAILED } });
+    }
     banner = await prisma.banner.update({ where: { id: current.id }, data, select: { id: true, updatedAt: true } });
   } else {
     banner = await prisma.banner.create({
