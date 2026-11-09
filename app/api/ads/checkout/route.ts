@@ -1,6 +1,7 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { AD_PLAN_CATALOG, getAdCheckoutAmount } from '@/lib/ads/contracts';
+import { isAdsSmokeTestModeEnabled } from '@/lib/ads/contracts';
+import { adPlanTotalCents, getAdPlanCatalog } from '@/lib/ads/plans';
 import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
 import { adCheckoutSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
@@ -80,7 +81,11 @@ export async function POST(request: Request) {
   const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });
   if (!region) return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
 
-  const amountCents = getAdCheckoutAmount(parsed.data.plan, parsed.data.durationMonths);
+  const planInfo = (await getAdPlanCatalog()).find((item) => item.plan === parsed.data.plan);
+  if (!planInfo || !planInfo.isActive || planInfo.durationMonths !== parsed.data.durationMonths) {
+    return NextResponse.json({ error: 'O pacote selecionado não está mais disponível. Escolha o pacote novamente.' }, { status: 409 });
+  }
+  const amountCents = isAdsSmokeTestModeEnabled() ? 100 : adPlanTotalCents(planInfo);
   const destinationFields = getAdDestinationFields(parsed.data.goal, parsed.data.destination);
 
   await prisma.banner.update({
@@ -110,7 +115,7 @@ export async function POST(request: Request) {
       {
         amount: amountCents,
         currency: 'usd',
-        description: `Campanha ${AD_PLAN_CATALOG[parsed.data.plan].name} - ${parsed.data.durationMonths} mes(es): ${parsed.data.headline}`,
+        description: `Campanha ${planInfo.name} - ${parsed.data.durationMonths} mes(es): ${parsed.data.headline}`,
         receipt_email: session.user.email ?? undefined,
         metadata: { bannerId: banner.id, userId: session.user.id, adAccountId: parsed.data.adAccountId },
       },
