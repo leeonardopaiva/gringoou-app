@@ -358,7 +358,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <Logo size="lg" />
             </div>
           ) : null}
-          {!embedded ? <PageHeader title="Comunidade" backHref={viewer ? '/community' : '/'} historyBack /> : null}
+          <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
 
           <div className="relative">
             <div className="relative h-36 sm:h-44">
