@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, Eye, ImagePlus, LoaderCircle } from 'lucide-react';
+import { Camera, Eye, ImagePlus, LoaderCircle, Save } from 'lucide-react';
 import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type CloudinaryFolder } from '@/lib/cloudinary';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
 import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 
 type ImageEditMenuProps = {
@@ -148,38 +147,37 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
       <Modal
         open={editing}
         onClose={closeEditor}
-        title={isCover ? 'Alterar capa' : 'Alterar foto'}
-        description={isCover ? 'Use uma imagem horizontal para um melhor resultado.' : 'Escolha uma foto quadrada, com o rosto bem visível.'}
-        className="sm:max-w-md"
-        footer={
-          <div className="flex w-full justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={closeEditor} disabled={saving}>Cancelar</Button>
-            <Button type="button" onClick={() => void save()} disabled={!file || saving}>
-              {saving ? <><LoaderCircle size={16} className="mr-2 animate-spin" /> Salvando...</> : 'Salvar'}
-            </Button>
-          </div>
-        }
+        className={cn('!p-0 overflow-hidden sm:max-w-md sm:!p-0', '[&>div]:pr-0 [&>button]:bg-black/40 [&>button]:text-white [&>button:hover]:bg-black/60 [&>button:hover]:text-white')}
       >
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { pick(event.target.files?.[0]); event.target.value = ''; }} />
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
+        <div
+          className={cn('relative w-full overflow-hidden bg-slate-100', isCover ? 'aspect-[16/10]' : 'aspect-square')}
           onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={(event) => { event.preventDefault(); setDragging(false); pick(event.dataTransfer.files?.[0]); }}
-          className={cn(
-            'group relative flex w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 transition',
-            isCover ? 'aspect-[16/9]' : 'mx-auto aspect-square max-w-[260px]',
-            dragging ? 'border-brand-400 bg-brand-50' : 'border-slate-200 hover:border-brand-300',
-          )}
         >
-          {shownImage ? <img src={shownImage} alt="" className="h-full w-full object-cover" /> : null}
-          <span className={cn('flex flex-col items-center gap-2 px-4 text-center text-sm', shownImage ? 'absolute inset-0 justify-end bg-gradient-to-t from-black/50 to-transparent pb-3 text-white' : 'text-slate-500')}>
-            {shownImage ? null : <ImagePlus size={28} className="text-slate-400" />}
-            <span className="font-semibold">{file ? 'Escolher outra imagem' : shownImage ? 'Toque para trocar a imagem' : 'Toque para escolher uma imagem'}</span>
-            {shownImage ? null : <span className="text-xs text-slate-400">No computador, ou na galeria e câmera do celular</span>}
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            aria-label={file ? 'Escolher outra imagem' : 'Escolher imagem'}
+            className={cn('absolute inset-0 flex items-center justify-center transition', dragging ? 'bg-brand-50' : 'hover:bg-slate-200/60')}
+          >
+            {shownImage ? <img src={shownImage} alt="" className="h-full w-full object-cover" /> : <ImagePlus size={34} className="text-slate-400" />}
+          </button>
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+            {isCover ? 'Editar capa' : 'Editar foto'}
           </span>
-        </button>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={!file || saving}
+            aria-label="Salvar"
+            title="Salvar"
+            className="absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {saving ? <LoaderCircle size={19} className="animate-spin" /> : <Save size={19} />}
+          </button>
+        </div>
       </Modal>
     </div>
   );
