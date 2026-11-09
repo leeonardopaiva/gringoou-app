@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { Popover } from '@/components/ui/Popover';
 
 export interface InfoTipProps {
   /** Texto explicativo mostrado ao passar o mouse, focar ou tocar. */
@@ -16,31 +17,16 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, className, align = 'star
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const tipId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: MouseEvent | TouchEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('touchstart', close);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
+  // Hover só vale para mouse: no toque o mouseenter emulado abriria e o clique logo em seguida fecharia.
+  const hoverOpen = (event: React.PointerEvent) => { if (event.pointerType === 'mouse') setOpen(true); };
+  const hoverClose = (event: React.PointerEvent) => { if (event.pointerType === 'mouse') setOpen(false); };
 
   return (
     <span
       ref={rootRef}
       className={cn('relative inline-flex align-middle', className)}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onPointerEnter={hoverOpen}
+      onPointerLeave={hoverClose}
     >
       <button
         type="button"
@@ -52,18 +38,20 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, className, align = 'star
       >
         <Info size={15} aria-hidden />
       </button>
-      {open ? (
-        <span
-          id={tipId}
-          role="tooltip"
-          className={cn(
-            'absolute top-full z-50 mt-1.5 w-64 max-w-[80vw] rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-lg',
-            align === 'end' ? 'right-0' : 'left-0',
-          )}
-        >
-          {text}
-        </span>
-      ) : null}
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={rootRef}
+        align={align}
+        role="tooltip"
+        id={tipId}
+        unstyled
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        className="w-64 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-lg"
+      >
+        {text}
+      </Popover>
     </span>
   );
 };

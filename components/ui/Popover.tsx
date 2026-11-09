@@ -13,7 +13,8 @@ export interface PopoverProps {
   className?: string;
   /** Sem o visual padrão (borda, fundo, sombra): o chamador define a aparência, o Popover só posiciona. */
   unstyled?: boolean;
-  role?: 'menu' | 'dialog';
+  role?: 'menu' | 'dialog' | 'tooltip';
+  id?: string;
   children: React.ReactNode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -32,6 +33,7 @@ export const Popover: React.FC<PopoverProps> = ({
   className,
   unstyled = false,
   role = 'menu',
+  id,
   children,
   onMouseEnter,
   onMouseLeave,
@@ -130,6 +132,7 @@ export const Popover: React.FC<PopoverProps> = ({
     <div
       ref={popoverRef}
       role={role}
+      id={id}
       style={style}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
