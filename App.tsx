@@ -44,6 +44,11 @@ const App: React.FC<{
   initialProfileData?: ProfileInitialData;
 }> = ({ initialHomeData, initialCommunityData, initialBusinessesData, initialEventsData, initialJobsData, initialNewsData, initialMarketplaceData, initialProfileData }) => {
   const pathname = usePathname() || '/';
+  // /profile?edit=... abre o editor de perfil; sem esse parâmetro, /profile leva ao perfil público da pessoa.
+  const [profileEditRequested, setProfileEditRequested] = useState(false);
+  useEffect(() => {
+    setProfileEditRequested(pathname === '/profile' && new URLSearchParams(window.location.search).has('edit'));
+  }, [pathname]);
   const router = useRouter();
   const { data: session, status, update } = useSession();
   const [registrationError, setRegistrationError] = useState<string | null>(null);
@@ -80,7 +85,7 @@ const App: React.FC<{
   const phoneVerificationEnabled = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
 
   useEffect(() => {
-    if (pathname === '/profile' && session?.user?.username) {
+    if (pathname === '/profile' && session?.user?.username && !new URLSearchParams(window.location.search).has('edit')) {
       router.replace(`/perfil/${encodeURIComponent(session.user.username)}`);
     }
   }, [pathname, router, session?.user?.username]);
@@ -507,7 +512,7 @@ const App: React.FC<{
 
   const currentUser = session?.user ? buildCurrentUser(session.user) : null;
 
-  if (pathname === '/profile' && session?.user?.username) {
+  if (pathname === '/profile' && session?.user?.username && !profileEditRequested) {
     return null;
   }
 

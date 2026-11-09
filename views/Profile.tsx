@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { useSession } from 'next-auth/react';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
@@ -248,6 +248,8 @@ const Profile: React.FC<{
     router.replace('/profile');
   }, [router, searchParams, showToast, update]);
 
+  const deepLinkHandled = useRef(false);
+
   useEffect(() => {
     const editSection = searchParams?.get('edit');
 
@@ -255,12 +257,13 @@ const Profile: React.FC<{
       return;
     }
 
+    // O parâmetro fica na URL enquanto o editor está aberto; ao fechar, a pessoa volta ao próprio perfil.
+    if (deepLinkHandled.current) return;
+    deepLinkHandled.current = true;
     if (editSection === 'cover' || editSection === 'region' || editSection === 'profile') {
       openEditProfileModal();
     }
-
-    router.replace('/profile', { scroll: false });
-  }, [loading, profile.coverImageUrl, profile.regionKey, router, searchParams]);
+  }, [loading, searchParams]);
 
   useEffect(() => {
     if (loading || searchParams?.get('mode') !== 'professional' || !canUseProfessionalMode || !professionalProfile.identity) {
@@ -535,6 +538,7 @@ const Profile: React.FC<{
   const closeEditProfileModal = () => {
     setProfileEditDraft(null);
     setEditing((c) => ({ ...c, profile: false }));
+    if (searchParams?.get('edit') && profile.username) router.replace(`/perfil/${encodeURIComponent(profile.username)}`);
   };
 
   /** Descarta de propósito: apaga o rascunho guardado. */
