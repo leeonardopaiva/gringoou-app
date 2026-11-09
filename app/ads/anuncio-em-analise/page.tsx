@@ -15,14 +15,14 @@ export default async function AdReviewPage({ searchParams }: PageProps) {
   const campaign = params?.campaign
     ? await prisma.banner.findFirst({
         where: { id: params.campaign, adAccountId: membership.adAccountId },
-        select: { headline: true, name: true, paymentStatus: true },
+        select: { headline: true, name: true, paymentStatus: true, payments: { where: { provider: 'COURTESY' }, select: { id: true }, take: 1 } },
       })
     : null;
 
   return (
     <AdReviewConfirmation
       headline={campaign?.headline || campaign?.name || null}
-      paymentConfirmed={campaign?.paymentStatus === 'PAID'}
+      kind={campaign?.payments.length ? 'courtesy' : campaign?.paymentStatus === 'PAID' ? 'paid' : 'processing'}
     />
   );
 }

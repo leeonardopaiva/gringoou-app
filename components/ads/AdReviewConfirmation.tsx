@@ -2,70 +2,113 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Clock3, LayoutDashboard, ShieldCheck } from 'lucide-react';
-import { Badge, Button, Card } from '@/components/ui';
+import { Check, Clock3, Gift, LayoutDashboard, Megaphone, PartyPopper, ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/cn';
 
 const STORAGE_KEY = 'gringoou:ad-wizard-draft';
 
 type AdReviewConfirmationProps = {
   headline: string | null;
-  paymentConfirmed: boolean;
+  /** Como a campanha foi liberada: cortesia (sem cobrança), pagamento confirmado ou pagamento ainda em processamento. */
+  kind: 'courtesy' | 'paid' | 'processing';
 };
 
-export function AdReviewConfirmation({ headline, paymentConfirmed }: AdReviewConfirmationProps) {
+const COPY = {
+  courtesy: {
+    badge: 'Cortesia aplicada',
+    title: 'Parabéns! Sua campanha foi enviada',
+    lead: 'Você ganhou esta campanha de cortesia, sem nenhuma cobrança.',
+  },
+  paid: {
+    badge: 'Pagamento confirmado',
+    title: 'Parabéns! Sua campanha foi enviada',
+    lead: 'Recebemos o seu pagamento e a campanha já está com a nossa equipe.',
+  },
+  processing: {
+    badge: 'Pagamento em processamento',
+    title: 'Quase lá!',
+    lead: 'Estamos confirmando o seu pagamento. Isso costuma levar poucos instantes.',
+  },
+} as const;
+
+export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationProps) {
   const router = useRouter();
+  const copy = COPY[kind];
 
   useEffect(() => {
     sessionStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  const steps = [
+    { icon: Check, title: kind === 'courtesy' ? 'Cortesia recebida' : 'Pedido recebido', text: 'Sua campanha está registrada.', state: kind === 'processing' ? 'current' : 'done' },
+    { icon: ShieldCheck, title: 'Análise da equipe', text: 'Conferimos o conteúdo antes de colocar no ar. Avisamos você por e-mail.', state: kind === 'processing' ? 'todo' : 'current' },
+    { icon: Megaphone, title: 'No ar', text: 'Depois de aprovada, a campanha começa a aparecer para a sua região.', state: 'todo' },
+  ] as const;
+
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-150px)] w-full max-w-[820px] items-center justify-center py-10">
-      <Card className="w-full rounded-[28px] border border-slate-200 px-6 py-10 text-center shadow-sm sm:px-12 sm:py-14">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-          <Check size={38} strokeWidth={2.5} />
+    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 py-8 sm:py-12">
+      <section className="rounded-3xl border border-slate-200 bg-white px-6 py-9 text-center shadow-sm sm:px-10">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          {kind === 'processing' ? <Clock3 size={30} /> : <PartyPopper size={30} />}
         </div>
+        <span className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{copy.badge}</span>
+        <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[#132f40] sm:text-3xl">{copy.title}</h1>
+        {headline ? <p className="mt-2 text-base font-semibold text-[#243b53]">“{headline}”</p> : null}
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{copy.lead}</p>
+      </section>
 
-        <Badge tone={paymentConfirmed ? 'success' : 'destaque'} className="mt-6">
-          {paymentConfirmed ? 'Pagamento confirmado' : 'Pagamento em processamento'}
-        </Badge>
+      <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm sm:px-8" aria-label="Status da campanha">
+        <h2 className="text-sm font-bold text-[#243b53]">O que acontece agora</h2>
+        <ol className="mt-4">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            const last = index === steps.length - 1;
+            return (
+              <li key={step.title} className="relative flex gap-4 pb-6 last:pb-0">
+                {!last ? <span className="absolute left-[17px] top-9 h-[calc(100%-2.25rem)] w-px bg-slate-200" aria-hidden /> : null}
+                <span
+                  className={cn(
+                    'z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border',
+                    step.state === 'done' && 'border-emerald-200 bg-emerald-50 text-emerald-600',
+                    step.state === 'current' && 'border-amber-200 bg-amber-50 text-amber-600',
+                    step.state === 'todo' && 'border-slate-200 bg-slate-50 text-slate-400',
+                  )}
+                >
+                  <Icon size={17} />
+                </span>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-sm font-bold text-[#243b53]">
+                    {step.title}
+                    {step.state === 'current' ? <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">Agora</span> : null}
+                  </p>
+                  <p className="mt-0.5 text-sm leading-5 text-slate-500">{step.text}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
 
-        <h1 className="mt-5 text-[30px] font-extrabold leading-tight text-[#132f40] sm:text-[38px]">
-          Seu anúncio será analisado
-        </h1>
-        <p className="mx-auto mt-4 max-w-[590px] text-[15px] leading-7 text-slate-500">
-          {headline ? <strong className="text-[#243b53]">{headline}. </strong> : null}
-          {paymentConfirmed
-            ? 'Recebemos seu pagamento e enviamos a campanha para moderação.'
-            : 'Recebemos sua solicitação e estamos confirmando o pagamento com o Stripe.'}{' '}
-          Após a aprovação da equipe, o anúncio ficará ativo em breve.
-        </p>
-
-        <div className="mx-auto mt-10 grid max-w-[650px] gap-3 text-left sm:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
-            <Check size={20} className="text-emerald-600" />
-            <p className="mt-3 text-sm font-bold text-[#243b53]">Pagamento enviado</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">Confirmação segura pelo Stripe.</p>
+      {kind === 'courtesy' ? (
+        <section className="flex gap-3 rounded-2xl border border-sky-100 bg-sky-50/70 px-5 py-4">
+          <Gift size={20} className="mt-0.5 shrink-0 text-brand-500" />
+          <div className="text-sm leading-6 text-slate-600">
+            <p className="font-bold text-[#243b53]">Sobre a sua cortesia</p>
+            <p>Ela vale para esta campanha e não renova sozinha.</p>
+            <p>Quando o período terminar, você pode contratar um pacote em Campanhas para continuar anunciando.</p>
           </div>
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
-            <ShieldCheck size={20} className="text-amber-600" />
-            <p className="mt-3 text-sm font-bold text-[#243b53]">Análise da equipe</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">Verificaremos o conteúdo da campanha.</p>
-          </div>
-          <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
-            <Clock3 size={20} className="text-brand-500" />
-            <p className="mt-3 text-sm font-bold text-[#243b53]">Ativação</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">O anúncio aprovado entrará no ar.</p>
-          </div>
-        </div>
+        </section>
+      ) : null}
 
-        <p className="mt-8 text-xs text-slate-400">
-          Você poderá acompanhar o status da campanha no painel de anúncios.
-        </p>
-        <Button className="mt-6" iconLeft={<LayoutDashboard size={17} />} onClick={() => router.push('/ads/overview')}>
-          Voltar ao dashboard
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Button iconLeft={<LayoutDashboard size={17} />} onClick={() => router.push('/ads/overview')}>
+          Ver minhas campanhas
         </Button>
-      </Card>
+        <Button variant="secondary" iconLeft={<Megaphone size={17} />} onClick={() => router.push('/ads/wizard')}>
+          Criar outra campanha
+        </Button>
+      </div>
     </div>
   );
 }

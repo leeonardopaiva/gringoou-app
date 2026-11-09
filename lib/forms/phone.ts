@@ -63,6 +63,19 @@ const formatNorthAmericaPhone = (digits: string) => {
 const formatGenericPhone = (digits: string) =>
   formatGroupedDigits(digits.slice(0, 15), [3, 3, 4, 5]).join(' ');
 
+/** Agrupamento e tamanho máximo do número local (sem o código do país) de países europeus comuns. */
+const EUROPE_FORMATS: Record<string, { groups: number[]; max: number }> = {
+  pt: { groups: [3, 3, 3], max: 9 },
+  es: { groups: [3, 3, 3], max: 9 },
+  it: { groups: [3, 3, 4], max: 10 },
+  fr: { groups: [1, 2, 2, 2, 2], max: 9 },
+  de: { groups: [4, 3, 4], max: 11 },
+  gb: { groups: [4, 6], max: 10 },
+  ie: { groups: [2, 3, 4], max: 9 },
+  nl: { groups: [1, 4, 4], max: 9 },
+  ch: { groups: [2, 3, 2, 2], max: 9 },
+};
+
 export const formatPhoneInputByCountry = (value: string, countryIso2?: string | null) => {
   const digits = phoneDigitsOnly(value);
 
@@ -76,8 +89,11 @@ export const formatPhoneInputByCountry = (value: string, countryIso2?: string | 
     case 'us':
     case 'ca':
       return formatNorthAmericaPhone(digits);
-    default:
+    default: {
+      const europe = countryIso2 ? EUROPE_FORMATS[countryIso2] : undefined;
+      if (europe) return formatGroupedDigits(digits.slice(0, europe.max), europe.groups).join(' ');
       return formatGenericPhone(digits);
+    }
   }
 };
 
@@ -94,7 +110,7 @@ export const buildInternationalPhone = (countryIso2: string, value: string) => {
 export const formatLoosePhoneInput = (value: string) => {
   const trimmed = value.trimStart();
   const hasInternationalPrefix = trimmed.startsWith('+');
-  const digits = phoneDigitsOnly(trimmed);
+  const digits = phoneDigitsOnly(trimmed).slice(0, 15);
 
   if (!digits) {
     return '';

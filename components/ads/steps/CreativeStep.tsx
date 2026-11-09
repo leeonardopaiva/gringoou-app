@@ -1,6 +1,7 @@
 'use client';
 
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
+import { formatInternationalPhone } from '@/lib/phone';
 import { Badge, Button, Card, Input, Select, Textarea } from '@/components/ui';
 import type { AdWizardData } from '@/lib/ads/validation';
 import type { AdFieldErrors, PatchAdWizard } from '../types';
@@ -19,7 +20,7 @@ export function CreativeStep({ state, errors, patch }: { state: AdWizardData; er
         <label className="block space-y-2"><span className="text-body-sm font-bold">Descricao</span><Textarea value={state.description} maxLength={600} onChange={(event) => patch({ description: event.target.value })} state={errors.description ? 'error' : 'default'} helperText={errors.description ?? `${state.description.length}/600 caracteres`} /></label>
         <div><span className="mb-2 block text-body-sm font-bold">Imagem</span><CloudinaryImageField value={state.imageUrl} onChange={(imageUrl) => patch({ imageUrl })} folder="banners" height={220} error={errors.imageUrl} /></div>
         <label className="block space-y-2"><span className="text-body-sm font-bold">Chamada para acao</span><Select value={state.ctaLabel} onChange={(event) => patch({ ctaLabel: event.target.value })}>{CTA_OPTIONS.map((cta) => <option key={cta}>{cta}</option>)}</Select></label>
-        <label className="block space-y-2"><span className="text-body-sm font-bold">{destinationLabel}</span><Input value={state.destination} placeholder={state.goal === 'WHATSAPP' ? '15551234567' : state.goal === 'EXTERNAL_URL' ? 'https://seusite.com' : 'ID do item no marketplace'} onChange={(event) => patch({ destination: event.target.value })} state={errors.destination ? 'error' : 'default'} helperText={errors.destination} /></label>
+        <label className="block space-y-2"><span className="text-body-sm font-bold">{destinationLabel}</span><Input value={state.destination} {...(state.goal === 'WHATSAPP' ? { type: 'tel' as const, inputMode: 'tel' as const, maxLength: 24 } : {})} placeholder={state.goal === 'WHATSAPP' ? '+1 (555) 123-4567' : state.goal === 'EXTERNAL_URL' ? 'https://seusite.com' : 'ID do item no marketplace'} onChange={(event) => patch({ destination: state.goal === 'WHATSAPP' ? formatInternationalPhone(event.target.value) : event.target.value })} state={errors.destination ? 'error' : 'default'} helperText={errors.destination} /></label>
       </Card>
       <div className="lg:sticky lg:top-8 lg:self-start">
         <p className="mb-3 text-center text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Preview no app</p>
