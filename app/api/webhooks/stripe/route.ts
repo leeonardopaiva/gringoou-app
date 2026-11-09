@@ -65,8 +65,8 @@ const confirmPayment = async (intent: Stripe.PaymentIntent) => {
 };
 
 const refundPayment = async (providerPaymentId: string) => {
-  const payment = await prisma.adPayment.findUnique({ where: { providerPaymentId }, select: { id: true, bannerId: true } });
-  if (!payment) return;
+  const payment = await prisma.adPayment.findUnique({ where: { providerPaymentId }, select: { id: true, bannerId: true, status: true } });
+  if (!payment || payment.status !== AdPaymentStatus.PAID) return;
   // Pagamento reembolsado: o crédito do cupom volta a ficar disponível para a conta.
   await prisma.adCouponRedemption.deleteMany({ where: { bannerId: payment.bannerId } });
   await prisma.$transaction([
