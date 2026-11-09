@@ -66,11 +66,19 @@ export async function POST(request: Request) {
   let amountCents = isAdsSmokeTestModeEnabled() ? 100 : adPlanTotalCents(planInfo);
   let appliedCouponId: string | null = null;
   if (parsed.data.couponCode && !isAdsSmokeTestModeEnabled()) {
-    const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, totalCents: amountCents });
+    const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, userId: session.user.id, bannerId: banner.id, totalCents: amountCents });
     if (!evaluation.ok) return NextResponse.json({ error: evaluation.error }, { status: 400 });
     if (evaluation.full) return NextResponse.json({ error: 'Este cupom cobre o valor inteiro. Use a opção de aplicar cupom.' }, { status: 409 });
     amountCents = evaluation.payCents;
     appliedCouponId = evaluation.couponId;
+    const reserved = await prisma.adCouponRedemption.findUnique({ where: { adAccountId: parsed.data.adAccountId }, select: { bannerId: true } });
+    if (!reserved) {
+      try {
+        await prisma.adCouponRedemption.create({ data: { couponId: evaluation.couponId, adAccountId: parsed.data.adAccountId, bannerId: banner.id, userId: session.user.id } });
+      } catch {
+        return NextResponse.json({ error: 'Esta conta já usou um cupom.' }, { status: 409 });
+      }
+    }
   }
 
   const pendingPaymentIntentId = banner.payments[0]?.providerPaymentId;

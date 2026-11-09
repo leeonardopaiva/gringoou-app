@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const planInfo = (await getAdPlanCatalog()).find((item) => item.plan === parsed.data.plan);
   if (!planInfo) return NextResponse.json({ error: 'Pacote indisponível.' }, { status: 400 });
   const totalCents = planInfo.monthlyPriceCents * planInfo.durationMonths;
-  const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, totalCents });
+  const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, userId: session.user.id, totalCents });
   if (!evaluation.ok) return NextResponse.json({ error: evaluation.error }, { status: 400 });
   return NextResponse.json({ totalCents, discountCents: evaluation.discountCents, payCents: evaluation.payCents, full: evaluation.full });
 }
