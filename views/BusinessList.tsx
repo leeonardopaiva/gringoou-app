@@ -1,4 +1,5 @@
 ﻿import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import Link from 'next/link';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -370,9 +371,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
           </div>
         ) : null}
         {businesses.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Nenhum negocio publicado nesta regiao ainda.
-          </div>
+          <EmptyNotice icon="business" title="Nenhum negócio por aqui ainda" description="Quando negócios da sua região forem publicados, eles aparecem aqui." />
         ) : null}
         {businesses.map((business) => {
           const isPendingReview = business.status === 'PENDING_REVIEW' || business.isPendingReview;

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { useRef } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
@@ -993,9 +994,7 @@ const Community: React.FC<{
 
       <div className="space-y-3">
         {displayedPosts.length === 0 && !postsLoading ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Ninguem publicou por aqui ainda. Seja o primeiro da sua regiao.
-          </div>
+          <EmptyNotice icon="posts" title="Ninguém publicou por aqui ainda" description="Seja a primeira pessoa da sua região a compartilhar algo." />
         ) : null}
         {filteredPosts.map((post, index) => {
           const banner = getBannerAfterPost(index);

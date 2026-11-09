@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { BriefcaseBusiness, CalendarDays, ExternalLink, Megaphone, MoreHorizontal, Plus } from 'lucide-react';
 import { Dropdown } from '../ui/Dropdown';
@@ -107,7 +108,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
               </article>
             ))}
           </div>
-        ) : <p className="mt-3 py-5 text-sm text-slate-500">Nenhum negócio vinculado ainda.</p>}
+        ) : <EmptyNotice icon="business" title="Nenhum negócio vinculado" description="Cadastre um negócio para ele aparecer aqui." />}
       </section>
 
       <section>
@@ -136,7 +137,7 @@ const ProfessionalModePanel: React.FC<ProfessionalModePanelProps> = ({ professio
               </article>
             ))}
           </div>
-        ) : <p className="mt-3 py-5 text-sm text-slate-500">Nenhum evento profissional criado ainda.</p>}
+        ) : <EmptyNotice icon="events" title="Nenhum evento criado" description="Seus eventos profissionais aparecem aqui." />}
       </section>
     </div>
   );

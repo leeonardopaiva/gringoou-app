@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { useSession } from 'next-auth/react';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
@@ -741,7 +742,7 @@ const Profile: React.FC<{
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Nenhuma imagem adicional cadastrada ainda.</p>
+          <EmptyNotice title="Sem fotos na galeria" description="Use Editar perfil para adicionar fotos." />
         )}
       </Section>
 

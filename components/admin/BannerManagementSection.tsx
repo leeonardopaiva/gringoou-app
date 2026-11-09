@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { CalendarDays, ExternalLink, PencilLine, Plus } from 'lucide-react';
 import CloudinaryImageField from '../forms/CloudinaryImageField';
 import RegionSelector from '../RegionSelector';
@@ -340,7 +341,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
           {Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-40 animate-pulse rounded-3xl bg-white shadow-sm" />)}
         </div>
       ) : banners.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-7 text-center text-sm font-medium text-slate-500">Nenhum banner da Home cadastrado ainda.</div>
+        <EmptyNotice title="Nenhum banner cadastrado" description="Os banners da Home aparecem aqui." />
       ) : (
         <div className="space-y-3">
           {banners.length > BANNER_PREVIEW_LIMIT ? (
