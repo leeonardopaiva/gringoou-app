@@ -55,34 +55,45 @@ export default function AdPlansSection() {
 
   const update = (plan: string, patch: Partial<Draft>) => setDrafts((current) => ({ ...current, [plan]: { ...current[plan], ...patch } }));
 
-  const save = async (plan: { plan: string }) => {
-    const draft = drafts[plan.plan];
-    setSaving(plan.plan);
+  const toBody = (slot: string) => {
+    const draft = drafts[slot];
+    return {
+      plan: slot,
+      name: draft.name,
+      monthlyPriceCents: Math.round(Number(draft.price.replace(',', '.')) * 100) || 0,
+      durationMonths: draft.durationMonths,
+      estimatedImpressions: Number(draft.estimatedImpressions.replace(/\D/g, '')) || 0,
+      description: draft.description,
+      highlights: draft.highlights.split('\n').map((line) => line.trim()).filter(Boolean),
+      isActive: draft.isActive,
+    };
+  };
+
+  const send = async (body: unknown, busyKey: string, successMessage: string) => {
+    setSaving(busyKey);
     try {
-      const response = await fetch('/api/admin/ads/plans', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan: plan.plan,
-          name: draft.name,
-          monthlyPriceCents: Math.round(Number(draft.price.replace(',', '.')) * 100),
-          durationMonths: draft.durationMonths,
-          estimatedImpressions: Number(draft.estimatedImpressions),
-          description: draft.description,
-          highlights: draft.highlights.split('\n').map((line) => line.trim()).filter(Boolean),
-          isActive: draft.isActive,
-        }),
-      });
+      const response = await fetch('/api/admin/ads/plans', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar o pacote.');
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar.');
       setPlans(payload.plans);
-      setDrafts((current) => ({ ...current }));
-      showToast(`Pacote ${draft.name} atualizado. Vale para novas contratações.`, 'success');
+      showToast(successMessage, 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível salvar o pacote.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível salvar.', 'error');
     } finally {
       setSaving(null);
     }
+  };
+
+  const save = (plan: { plan: string }) => send(toBody(plan.plan), plan.plan, 'Pacote salvo. Vale para novas contratações.');
+
+  /** Salva de uma vez todos os pacotes que foram preenchidos (posições totalmente vazias são ignoradas). */
+  const saveAll = () => {
+    const filled = AD_PLANS.filter((slot) => {
+      const draft = drafts[slot];
+      return draft && (draft.name.trim() || draft.price.trim() || draft.estimatedImpressions.trim() || draft.description.trim());
+    });
+    if (filled.length === 0) return showToast('Preencha ao menos um pacote.', 'error');
+    return send({ plans: filled.map((slot) => toBody(slot)) }, 'all', filled.length === 1 ? 'Pacote salvo.' : `${filled.length} pacotes salvos. Valem para novas contratações.`);
   };
 
   return (
@@ -92,9 +103,12 @@ export default function AdPlansSection() {
           Planos de anúncios
           <InfoTip text="Todos os pacotes e valores vêm daqui (nada fixo no código). A cobrança sempre usa o valor salvo no banco. Mudanças valem para novas contratações; campanhas já pagas mantêm o valor contratado." />
         </h1>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => void saveAll()} disabled={saving !== null || loading} className="rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-60">{saving === 'all' ? 'Salvando...' : 'Salvar todos'}</button>
         <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
+        </div>
       </div>
 
       {!loading && plans.length === 0 ? (
@@ -121,7 +135,7 @@ export default function AdPlansSection() {
                 </div>
                 <label className="block text-xs font-bold text-slate-500">Nome<input className={`${inputClass} mt-1`} value={draft.name} onChange={(event) => update(plan.plan, { name: event.target.value })} /></label>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="block text-xs font-bold text-slate-500">Valor por mês (US$)<input className={`${inputClass} mt-1`} inputMode="decimal" value={draft.price} onChange={(event) => update(plan.plan, { price: event.target.value })} /></label>
+                  <label className="block text-xs font-bold text-slate-500">Valor por mês (US$)<input className={`${inputClass} mt-1`} inputMode="decimal" placeholder="ex.: 99.00" value={draft.price} onChange={(event) => update(plan.plan, { price: event.target.value })} /></label>
                   <label className="block text-xs font-bold text-slate-500">Vigência
                     <select className={`${inputClass} mt-1`} value={draft.durationMonths} onChange={(event) => update(plan.plan, { durationMonths: Number(event.target.value) })}>
                       <option value={1}>1 mês</option><option value={3}>3 meses</option><option value={6}>6 meses</option>
@@ -129,7 +143,7 @@ export default function AdPlansSection() {
                   </label>
                 </div>
                 <p className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700">Total do contrato: {formatAdCurrency(priceCents * draft.durationMonths)}</p>
-                <label className="block text-xs font-bold text-slate-500">Impressões estimadas<input className={`${inputClass} mt-1`} inputMode="numeric" value={draft.estimatedImpressions} onChange={(event) => update(plan.plan, { estimatedImpressions: event.target.value })} /></label>
+                <label className="block text-xs font-bold text-slate-500">Impressões estimadas<input className={`${inputClass} mt-1`} inputMode="numeric" placeholder="ex.: 5000 (mínimo 100)" value={draft.estimatedImpressions} onChange={(event) => update(plan.plan, { estimatedImpressions: event.target.value })} /></label>
                 <label className="block text-xs font-bold text-slate-500">Descrição<textarea rows={2} className={`${inputClass} mt-1 resize-none`} value={draft.description} onChange={(event) => update(plan.plan, { description: event.target.value })} /></label>
                 <label className="block text-xs font-bold text-slate-500">Destaques (um por linha)<textarea rows={3} className={`${inputClass} mt-1 resize-none`} value={draft.highlights} onChange={(event) => update(plan.plan, { highlights: event.target.value })} /></label>
                 <button type="button" onClick={() => void save(plan)} disabled={saving === plan.plan} className="w-full rounded-xl bg-brand-500 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-60">
