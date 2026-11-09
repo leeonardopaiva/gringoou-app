@@ -24,6 +24,7 @@ export async function GET(request: Request) {
   const draft = await prisma.banner.findFirst({
     where: {
       adAccountId,
+      archivedAt: null,
       moderationStatus: AdModerationStatus.DRAFT,
       paymentStatus: AdPaymentStatus.PENDING,
       payments: { none: {} },
