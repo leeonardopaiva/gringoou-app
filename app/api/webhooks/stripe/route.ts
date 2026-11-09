@@ -26,7 +26,7 @@ const confirmPayment = async (intent: Stripe.PaymentIntent) => {
   if (couponId && adAccountId) {
     await prisma.adCouponRedemption
       .create({ data: { couponId, adAccountId, bannerId, userId: intent.metadata.userId || 'unknown' } })
-      .catch(() => undefined); // já registrado (reenvio do webhook) ou conta já usou cupom
+      .catch(() => undefined); // já registrado (reenvio do webhook)
   }
 
   await prisma.$transaction([

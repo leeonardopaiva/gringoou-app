@@ -71,12 +71,12 @@ export async function POST(request: Request) {
     amountCents = evaluation.payCents;
     appliedCouponId = evaluation.couponId;
     await releaseStaleCouponReservations(parsed.data.adAccountId);
-    const reserved = await prisma.adCouponRedemption.findUnique({ where: { adAccountId: parsed.data.adAccountId }, select: { bannerId: true } });
+    const reserved = await prisma.adCouponRedemption.findUnique({ where: { bannerId: banner.id }, select: { id: true } });
     if (!reserved) {
       try {
         await prisma.adCouponRedemption.create({ data: { couponId: evaluation.couponId, adAccountId: parsed.data.adAccountId, bannerId: banner.id, userId: session.user.id } });
       } catch {
-        return NextResponse.json({ error: 'Esta conta já usou um cupom.' }, { status: 409 });
+        return NextResponse.json({ error: 'Esta campanha já tem um cupom aplicado.' }, { status: 409 });
       }
     }
   }

@@ -1356,12 +1356,13 @@ model AdCoupon {
 model AdCouponRedemption {
   id          String   @id @default(cuid())
   couponId    String
-  /// Cada conta de anúncios usa cortesia uma única vez.
-  adAccountId String   @unique
-  bannerId    String?
+  adAccountId String
+  /// Cada campanha aceita um único cupom.
+  bannerId    String?  @unique
   userId      String
   createdAt   DateTime @default(now())
   coupon      AdCoupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
 
   @@index([couponId])
+  @@index([adAccountId])
 }

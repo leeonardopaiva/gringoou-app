@@ -13,10 +13,12 @@ export type CouponEvaluation =
  */
 /** Libera reservas de cupom de campanhas que nunca foram pagas (pagamento abandonado). */
 export async function releaseStaleCouponReservations(adAccountId: string) {
-  const reservation = await prisma.adCouponRedemption.findUnique({ where: { adAccountId }, select: { id: true, bannerId: true } });
-  if (!reservation?.bannerId) return;
-  const paid = await prisma.adPayment.count({ where: { bannerId: reservation.bannerId, status: AdPaymentStatus.PAID } });
-  if (paid === 0) await prisma.adCouponRedemption.delete({ where: { id: reservation.id } }).catch(() => undefined);
+  const reservations = await prisma.adCouponRedemption.findMany({ where: { adAccountId, bannerId: { not: null } }, select: { id: true, bannerId: true } });
+  if (!reservations.length) return;
+  const paid = await prisma.adPayment.findMany({ where: { bannerId: { in: reservations.map((item) => item.bannerId as string) }, status: AdPaymentStatus.PAID }, select: { bannerId: true } });
+  const paidIds = new Set(paid.map((item) => item.bannerId));
+  const stale = reservations.filter((item) => !paidIds.has(item.bannerId as string)).map((item) => item.id);
+  if (stale.length) await prisma.adCouponRedemption.deleteMany({ where: { id: { in: stale } } });
 }
 
 export async function evaluateAdCoupon(input: { code: string; plan: AdPlan; adAccountId: string; userEmail?: string | null; userId: string; bannerId?: string; totalCents: number }): Promise<CouponEvaluation> {
@@ -32,9 +34,6 @@ export async function evaluateAdCoupon(input: { code: string; plan: AdPlan; adAc
   if (row.plan && row.plan !== input.plan) return { ok: false, error: 'Este cupom não vale para o pacote escolhido.' };
   if (row.assignedEmail && row.assignedEmail.toLowerCase() !== (input.userEmail ?? '').toLowerCase()) return { ok: false, error: 'Este cupom foi emitido para outra pessoa.' };
   if (row._count.redemptions >= row.maxRedemptions) return { ok: false, error: 'Este cupom já atingiu o limite de usos.' };
-  const already = await prisma.adCouponRedemption.findUnique({ where: { adAccountId: input.adAccountId }, select: { id: true, bannerId: true } });
-  // Retomar o pagamento da mesma campanha (cupom já reservado para ela) é permitido.
-  if (already && !(input.bannerId && already.bannerId === input.bannerId)) return { ok: false, error: 'Esta conta já usou um cupom. Contrate o pacote pelo pagamento normal.' };
   const discountCents = row.creditCents ? Math.min(row.creditCents, input.totalCents) : input.totalCents;
   const payCents = input.totalCents - discountCents;
   return { ok: true, couponId: row.id, discountCents, payCents, full: payCents === 0 };

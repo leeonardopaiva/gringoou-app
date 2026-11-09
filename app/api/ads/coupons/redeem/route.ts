@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       }),
     ]);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return invalid('Esta conta já usou uma cortesia.');
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return invalid('Esta campanha já tem um cupom aplicado.');
     console.error('Failed to redeem ad coupon:', error);
     return NextResponse.json({ error: 'Não foi possível aplicar o cupom agora. Tente novamente.' }, { status: 500 });
   }
