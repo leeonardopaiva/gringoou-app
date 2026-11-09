@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { goBackOr } from '@/lib/navigation-history';
 
 type PageHeaderProps = {
   title: string;
@@ -11,6 +13,8 @@ type PageHeaderProps = {
   backHref?: string;
   /** Oculta o botão Voltar em páginas raiz. */
   hideBack?: boolean;
+  /** Páginas de detalhe: volta para a tela de onde a pessoa veio; `backHref` só vale em acesso direto por link. */
+  historyBack?: boolean;
   /** Handler opcional (ex.: voltar no histórico); `backHref` continua sendo o fallback. */
   onBack?: () => void;
   /** Subtítulo opcional exibido abaixo do título. */
@@ -28,23 +32,28 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   backHref = '/home',
   hideBack = false,
+  historyBack = false,
   onBack,
   description,
   action,
   tabs,
   titleClassName,
   className,
-}) => (
+}) => {
+  const router = useRouter();
+  const handleBack = onBack ?? (historyBack ? () => goBackOr(router, backHref) : undefined);
+
+  return (
   <header className={cn('min-w-0', className)}>
     <div className="flex min-h-12 items-center gap-2">
       {hideBack ? null : (
         <Link
           href={backHref}
           onClick={
-            onBack
+            handleBack
               ? (event) => {
                   event.preventDefault();
-                  onBack();
+                  handleBack();
                 }
               : undefined
           }
@@ -63,6 +72,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </div>
     {tabs ? <div className="mt-2">{tabs}</div> : null}
   </header>
-);
+  );
+};
 
 export default PageHeader;

@@ -29,7 +29,7 @@ import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
 import { ImageEditMenu } from '../components/ui/ImageEditMenu';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
@@ -358,7 +358,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <Logo size="lg" />
             </div>
           ) : null}
-          {!embedded ? <BackBar fallbackHref={viewer ? '/community' : '/'} label="Comunidade" /> : null}
+          {!embedded ? <PageHeader title="Comunidade" backHref={viewer ? '/community' : '/'} historyBack /> : null}
 
           <div className="relative">
             <div className="relative h-36 sm:h-44">

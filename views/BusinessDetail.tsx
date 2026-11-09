@@ -20,7 +20,7 @@ import {
   X,
   Send,
 } from 'lucide-react';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import StarRating from '../components/engagement/StarRating';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -441,7 +441,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <BackBar fallbackHref="/businesses" label="Negócios" />
+      <PageHeader title="Negócios" backHref="/businesses" historyBack />
       <div className="overflow-hidden bg-white sm:rounded-card">
       {managementMode ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">

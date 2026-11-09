@@ -30,7 +30,7 @@ import { LinkifiedText } from '../components/ui/LinkifiedText';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
-import { BackBar } from '../components/ui/BackBar';
+import PageHeader from '../components/navigation/PageHeader';
 import { useMessaging } from '../lib/MessagingProvider';
 import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
@@ -477,7 +477,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <BackBar fallbackHref="/events" label="Eventos" />
+      <PageHeader title="Eventos" backHref="/events" historyBack />
       <div className="overflow-hidden bg-white sm:rounded-card">
         {event.canEdit ? (
           <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
