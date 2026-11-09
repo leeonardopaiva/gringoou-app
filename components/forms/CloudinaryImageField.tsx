@@ -178,8 +178,8 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       <p className="px-1 text-xs text-slate-500">
         {hint ||
           (isCloudinaryEnabled
-            ? 'Use JPG, PNG ou WebP de até 10 MB. Clique, toque ou arraste o arquivo.'
-            : 'Configure o Cloudinary no ambiente para habilitar o upload.')}
+            ? 'JPG, PNG ou WebP de até 10 MB.'
+            : 'O envio de imagens está indisponível no momento.')}
       </p>
     </div>
   );

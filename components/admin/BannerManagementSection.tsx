@@ -281,7 +281,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
               error={fieldErrors.imageUrl}
               folder="banners"
               placeholder="Link da imagem do banner"
-              hint="Envie o banner via Cloudinary ou cole uma URL publica."
+              hint="Envie a imagem do banner do seu computador ou celular."
             />
 
             {bannerForm.type === 'LINK' ? (

@@ -1980,7 +1980,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         }
                         folder="businesses"
                         placeholder="Link da imagem"
-                        hint="Envie a imagem pela Cloudinary ou cole uma URL publica."
+                        hint="Envie uma imagem do seu computador ou celular."
                       />
                       <ImageGalleryField
                         value={businessForm.galleryUrls}
@@ -2192,7 +2192,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         }
                         folder="events"
                         placeholder="Link da imagem"
-                        hint="Envie a imagem pela Cloudinary ou cole uma URL publica."
+                        hint="Envie uma imagem do seu computador ou celular."
                       />
                       <ImageGalleryField
                         value={eventForm.galleryUrls}
@@ -2446,7 +2446,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         }
                         folder="profiles"
                         placeholder="Link da foto do usuario"
-                        hint="Envie a foto pela Cloudinary ou cole uma URL publica."
+                        hint="Envie uma foto do seu computador ou celular."
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormSelect

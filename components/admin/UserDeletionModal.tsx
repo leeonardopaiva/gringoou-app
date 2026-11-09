@@ -124,7 +124,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
 
         {needsAcknowledgement ? <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4 accent-red-600" /><span className="text-sm text-slate-700"><strong className="block text-slate-900">Revisei e aceito a exclusao dos registros indicados</strong>Mesmo com transferencia, dados pessoais, posts e interacoes do usuario serao removidos. Interacoes de terceiros dentro de posts excluidos tambem podem ser afetadas.</span></label> : null}
 
-        {impact.externalAssetUrls.length ? <p className="text-xs leading-5 text-slate-500">Atenção: {impact.externalAssetUrls.length} arquivo(s) externo(s) podem permanecer na Cloudinary. Eles nao serao removidos automaticamente sem uma credencial segura de exclusao.</p> : null}
+        {impact.externalAssetUrls.length ? <p className="text-xs leading-5 text-slate-500">Atenção: {impact.externalAssetUrls.length} arquivo(s) externo(s) podem permanecer no serviço de imagens. Eles nao serao removidos automaticamente sem uma credencial segura de exclusao.</p> : null}
 
         <label className="block"><span className="text-sm font-bold text-slate-700">Digite <code className="rounded bg-slate-100 px-1.5 py-0.5">{impact.confirmationValue}</code> para confirmar</span><input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100" /></label>
 
