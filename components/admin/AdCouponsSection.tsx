@@ -108,7 +108,7 @@ export default function AdCouponsSection() {
       <div className="flex items-start justify-between gap-4">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
           Cupons
-          <InfoTip text="Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Vale uma vez por conta de anúncios; depois, o cliente contrata pelo fluxo normal." />
+          <InfoTip text="Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Uma conta pode usar mais de um cupom, e o mesmo cupom em mais de uma campanha, até o limite de usos do cupom. Cada campanha aceita um cupom." />
         </h1>
         <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
@@ -128,7 +128,7 @@ export default function AdCouponsSection() {
           </label>
           <label className="block text-xs font-bold text-slate-500">E-mail do cliente (opcional)<input type="email" className={`${inputClass} mt-1`} placeholder="só esta pessoa pode usar" value={form.assignedEmail} onChange={(event) => setForm({ ...form, assignedEmail: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Crédito em US$ (vazio = cobre o pacote inteiro)<input inputMode="decimal" placeholder="ex.: 50" className={`${inputClass} mt-1`} value={form.creditUsd} onChange={(event) => setForm({ ...form, creditUsd: event.target.value })} /></label>
-          <label className="block text-xs font-bold text-slate-500">Limite de usos<input inputMode="numeric" className={`${inputClass} mt-1`} value={form.maxRedemptions} onChange={(event) => setForm({ ...form, maxRedemptions: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">Limite de usos (total, todas as contas)<input inputMode="numeric" className={`${inputClass} mt-1`} value={form.maxRedemptions} onChange={(event) => setForm({ ...form, maxRedemptions: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Validade (opcional)<input type="date" className={`${inputClass} mt-1`} value={form.expiresAt} onChange={(event) => setForm({ ...form, expiresAt: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Anotação interna<input className={`${inputClass} mt-1`} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} /></label>
         </div>
