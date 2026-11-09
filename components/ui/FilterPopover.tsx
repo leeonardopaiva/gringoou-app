@@ -8,6 +8,8 @@ import { cn } from '../../lib/cn';
 export interface FilterPopoverProps {
   children: React.ReactNode;
   label?: string;
+  /** Quantidade de filtros ativos (fora do padrão); aparece como selo no botão. */
+  activeCount?: number;
   triggerClassName?: string;
   panelClassName?: string;
 }
@@ -20,6 +22,7 @@ export interface FilterPopoverProps {
 export const FilterPopover: React.FC<FilterPopoverProps> = ({
   children,
   label = 'Filtros',
+  activeCount = 0,
   triggerClassName,
   panelClassName,
 }) => {
@@ -38,6 +41,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
         )}
       >
         <SlidersHorizontal size={15} /> {label}
+        {activeCount > 0 ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-[11px] font-bold text-white">{activeCount}</span> : null}
       </button>
       <Popover
         open={open}
