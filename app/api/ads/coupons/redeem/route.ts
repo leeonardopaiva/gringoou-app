@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   if (!region) return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
 
   const invalid = (message: string) => NextResponse.json({ error: message }, { status: 400 });
-  const evaluation = await evaluateAdCoupon({ code: coupon.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, totalCents: planInfo.monthlyPriceCents * planInfo.durationMonths });
+  const evaluation = await evaluateAdCoupon({ code: coupon.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, userId: session.user.id, bannerId: banner.id, totalCents: planInfo.monthlyPriceCents * planInfo.durationMonths });
   if (!evaluation.ok) return invalid(evaluation.error);
   if (!evaluation.full) return invalid('Este cupom é um crédito parcial. Aplique-o no pagamento para abater do valor.');
   const row = { id: evaluation.couponId };
