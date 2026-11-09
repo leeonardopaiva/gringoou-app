@@ -28,6 +28,7 @@ import { Logo } from '../components/Layout';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
 import { Modal } from '../components/ui/Modal';
+import { ImageEditMenu } from '../components/ui/ImageEditMenu';
 import { BackBar } from '../components/ui/BackBar';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -132,11 +133,10 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [friendActionLoading, setFriendActionLoading] = useState(false);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [editModal, setEditModal] = useState<'details' | 'avatar' | 'cover' | null>(null);
+  const [editModal, setEditModal] = useState<'details' | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '', galleryUrls: [] as string[] });
-  const [mediaDraft, setMediaDraft] = useState('');
-
+  
   useEffect(() => {
     let ignore = false;
 
@@ -215,9 +215,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
 
-  const openProfileEditor = (section: 'details' | 'avatar' | 'cover') => {
+  const openProfileEditor = (section: 'details') => {
     setDetailsDraft({ name: profile.name, bio: profile.bio || '', galleryUrls: profile.galleryUrls || [] });
-    setMediaDraft(section === 'avatar' ? profile.image || '' : profile.coverImageUrl || '');
     setEditModal(section);
   };
 
@@ -239,22 +238,25 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     finally { setSavingProfile(false); }
   };
 
-  const saveMedia = async () => {
-    if (!editModal) return;
-    setSavingProfile(true);
-    try {
-      const isAvatar = editModal === 'avatar';
-      const response = await fetch(isAvatar ? '/api/profile/image' : '/api/profile', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isAvatar
-          ? { image: mediaDraft || undefined }
-          : { name: profile.name, username: profile.username, email: viewer?.email || undefined, phone: viewer?.phone || undefined, bio: profile.bio || undefined, coverImageUrl: mediaDraft || undefined, interests: profile.interests, galleryUrls: profile.galleryUrls }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar a imagem.');
-      showToast(isAvatar ? 'Foto atualizada.' : 'Capa atualizada.', 'success'); setEditModal(null); refreshProfile();
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a imagem.', 'error'); }
-    finally { setSavingProfile(false); }
+  const saveCover = async (url: string) => {
+    const response = await fetch('/api/profile', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: profile.name, username: profile.username, email: viewer?.email || undefined, phone: viewer?.phone || undefined, bio: profile.bio || undefined, coverImageUrl: url, interests: profile.interests, galleryUrls: profile.galleryUrls || [] }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) return payload?.error || 'Não foi possível atualizar a capa.';
+    showToast('Capa atualizada.', 'success');
+    refreshProfile();
+    return null;
+  };
+
+  const saveAvatar = async (url: string) => {
+    const response = await fetch('/api/profile/image', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: url }) });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) return payload?.error || 'Não foi possível atualizar a foto.';
+    showToast('Foto atualizada.', 'success');
+    refreshProfile();
+    return null;
   };
 
   const handleFriendAction = async () => {
@@ -359,42 +361,32 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
           {!embedded ? <BackBar fallbackHref={viewer ? '/community' : '/'} label="Comunidade" /> : null}
 
           <div className="relative">
-            <div className={`relative h-32 overflow-hidden rounded-t-[28px] sm:h-40 ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
-              {heroImage ? (
-                <img
-                  src={heroImage}
-                  className="h-full w-full object-cover object-center"
-                  alt={`Capa de ${profile.name}`}
-                />
-              ) : (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
-              )}
+            <div className="relative h-36 sm:h-44">
+              <div className={`absolute inset-0 overflow-hidden rounded-t-[28px] ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
+                {heroImage ? (
+                  <img src={heroImage} className="h-full w-full object-cover object-center" alt={`Capa de ${profile.name}`} />
+                ) : (
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
               {isOwnProfile ? (
-                <div className="absolute right-4 top-4">
-                  <button type="button" onClick={() => openProfileEditor('cover')}
-                    className="inline-flex rounded-full border border-white/70 bg-white/85 p-2.5 text-slate-600 shadow-sm backdrop-blur"
-                    aria-label="Editar capa"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-                </div>
+                <ImageEditMenu folder="profiles" kind="cover" src={profile.coverImageUrl} className="bottom-3 right-3" onUploaded={saveCover} />
               ) : null}
             </div>
 
-            <button type="button" disabled={!isOwnProfile} onClick={() => isOwnProfile && openProfileEditor('avatar')} className="absolute left-1/2 top-full z-20 h-28 w-28 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[5px] border-white bg-white shadow-md disabled:cursor-default sm:h-32 sm:w-32" aria-label={isOwnProfile ? 'Editar foto do perfil' : undefined}>
-              {profile.image ? (
-                <img
-                  src={profile.image}
-                  alt={profile.name}
-                  className="h-full w-full object-cover"
-                  onError={handleAvatarError}
-                />
-              ) : (
-                <div className={`flex h-full w-full items-center justify-center ${PROFILE_GRADIENT_CLASS} text-3xl font-bold text-white`}>
-                  {getInitials(profile.name)}
-                </div>
-              )}
-            </button>
+            <div className="absolute left-1/2 top-full z-20 h-28 w-28 -translate-x-1/2 -translate-y-1/2 sm:h-32 sm:w-32">
+              <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-white shadow-md">
+                {profile.image ? (
+                  <img src={profile.image} alt={profile.name} className="h-full w-full object-cover" onError={handleAvatarError} />
+                ) : (
+                  <div className={`flex h-full w-full items-center justify-center ${PROFILE_GRADIENT_CLASS} text-3xl font-bold text-white`}>
+                    {getInitials(profile.name)}
+                  </div>
+                )}
+              </div>
+              {isOwnProfile ? <ImageEditMenu folder="profiles" kind="avatar" src={profile.image} className="bottom-1 right-0" onUploaded={saveAvatar} /> : null}
+            </div>
           </div>
 
           <div className="rounded-t-[28px] bg-white px-5 pb-8 pt-16 sm:pt-20">
@@ -690,30 +682,32 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <section className="mt-6 px-1 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-2xl font-bold text-slate-900">Fotos</h2>
-                  <span className="text-sm font-semibold text-slate-400">
-                    {photoItems.length} {photoItems.length === 1 ? '' : 'imagens'}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    {photoItems.length > 0 ? <span className="text-sm font-semibold text-slate-400">{photoItems.length} {photoItems.length === 1 ? 'foto' : 'fotos'}</span> : null}
+                    {isOwnProfile ? <button type="button" onClick={() => openProfileEditor('details')} className="text-sm font-semibold text-brand-600 hover:underline">Gerenciar</button> : null}
+                  </div>
                 </div>
 
                 {photoPreview.length === 0 ? (
-                  <EmptyPublicState text="Nenhuma foto publica disponivel para este perfil." />
+                  <EmptyPublicState text="Nenhuma foto pública disponível para este perfil." />
                 ) : (
-                  <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {photoPreview.map((photo, index) => (
+                  <div className="mt-5 grid auto-rows-[104px] grid-cols-3 gap-1.5 sm:auto-rows-[150px] sm:gap-2" style={{ gridAutoFlow: 'dense' }}>
+                    {photoPreview.map((photo, index) => {
+                      const featured = index % 7 === 0;
+                      const wide = index % 7 === 4;
+                      return (
                         <button
                           type="button"
                           key={`${photo}-${index}`}
                           onClick={() => setSelectedPhoto(photo)}
-                          className="relative overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                          className={`group relative overflow-hidden rounded-2xl bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${featured ? 'col-span-2 row-span-2' : wide ? 'col-span-2' : ''}`}
                           aria-label={`Ampliar foto ${index + 1} de ${profile.name}`}
                         >
-                          <img
-                            src={photo}
-                            alt={`${profile.name} - foto ${index + 1}`}
-                            className="aspect-square w-full object-cover"
-                          />
+                          <img src={photo} alt={`${profile.name} - foto ${index + 1}`} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                          <span className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
                         </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </section>
@@ -797,7 +791,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             alt={`Foto ampliada de ${profile.name}`}
             onClose={() => setSelectedPhoto(null)}
           />
-          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title={editModal === 'details' ? 'Editar perfil' : editModal === 'avatar' ? 'Editar foto' : 'Editar capa'} description="As alterações serão atualizadas na sua página pública.">
+          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title="Editar perfil" description="As alterações serão atualizadas na sua página pública.">
             {editModal === 'details' ? (
               <div className="space-y-4">
                 <label className="block text-sm font-bold text-slate-700">Nome<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
@@ -805,12 +799,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <ImageGalleryField value={detailsDraft.galleryUrls} onChange={(galleryUrls) => setDetailsDraft((current) => ({ ...current, galleryUrls }))} folder="profiles" maxItems={8} hint="Adicione imagens que serão exibidas na aba Fotos do seu perfil público." />
                 <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar alterações'}</button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <CloudinaryImageField value={mediaDraft} onChange={setMediaDraft} folder="profiles" placeholder={editModal === 'avatar' ? 'Link da foto do perfil' : 'Link da capa do perfil'} hint="Envie pela Cloudinary ou cole uma URL pública." />
-                <button type="button" onClick={() => void saveMedia()} disabled={savingProfile} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar imagem'}</button>
-              </div>
-            )}
+            ) : null}
           </Modal>
         </div>
       </div>
