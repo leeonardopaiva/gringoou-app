@@ -243,6 +243,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
   const sellerLocation = item.city ? `${item.city}${item.state ? `, ${item.state}` : ''}` : item.locationLabel;
 
+  // Largura total (size="wide") no desktop é INTENCIONAL: melhor exibição da galeria e dos itens. Não padronizar.
   return (
     <ContentColumn size="wide" className="pb-24 pt-2">
       <PageHeader title="Anúncio" backHref="/marketplace" />
@@ -530,20 +531,9 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               ) : null}
             </div>
 
-            {/* Mapa compacto da localização aproximada */}
+            {/* Mapa da área aproximada: só existe se o anúncio tiver coordenadas (já aproximadas pelo servidor). */}
             {item.latitude != null && item.longitude != null ? (
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
-                <ApproximateAreaMap className="mt-2" latitude={item.latitude} longitude={item.longitude} label={`Área aproximada: ${sellerLocation}`} />
-              </div>
-            ) : (item.city || item.state) ? (
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
-                <p className="mt-2 flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600">
-                  <MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />
-                  {sellerLocation}
-                </p>
-              </div>
+              <ApproximateAreaMap title="Localização aproximada" latitude={item.latitude} longitude={item.longitude} label={`Área aproximada: ${sellerLocation}`} />
             ) : null}
 
             <div className="mt-5 border-t border-slate-100 pt-4">

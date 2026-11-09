@@ -11,7 +11,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "connect-src 'self' https: wss:",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://accounts.google.com https://www.openstreetmap.org",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://accounts.google.com",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",

@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
+import { Copy, ExternalLink, Send, Share2, UserPlus } from 'lucide-react';
 import CommunityComposer from '@/components/community/CommunityComposer';
 import FeedPostCard from '@/components/community/FeedPostCard';
 import type { ComposerMode } from '@/components/community/utils';
