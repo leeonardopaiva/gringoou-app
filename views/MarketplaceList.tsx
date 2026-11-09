@@ -7,12 +7,11 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { MessageCircle, Plus, Search, ShoppingBag, X } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { SubHeader } from '../components/ui/SubHeader';
 import { MarketplaceCard } from '../components/marketplace/MarketplaceCard';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
-import { SectionTabs } from '../components/ui/SectionTabs';
-import { FilterPopover } from '../components/ui/FilterPopover';
 import { Pagination } from '../components/ui/Pagination';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
@@ -262,27 +261,6 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
 
   const filteredCount = useMemo(() => items.length, [items]);
 
-  const activeFilters = useMemo(() => {
-    const filters: { id: string; label: string; onClear: () => void }[] = [];
-    if (search.trim()) {
-      filters.push({ id: 'search', label: `Busca: ${search.trim()}`, onClear: () => { setSearch(''); setPage(1); } });
-    }
-    if (category) {
-      filters.push({ id: 'category', label: category, onClear: () => { setCategory(''); setPage(1); } });
-    }
-    if (minPrice) {
-      filters.push({ id: 'minPrice', label: `Min: US$ ${minPrice}`, onClear: () => { setMinPrice(''); setPage(1); } });
-    }
-    if (maxPrice) {
-      filters.push({ id: 'maxPrice', label: `Máx: US$ ${maxPrice}`, onClear: () => { setMaxPrice(''); setPage(1); } });
-    }
-    const activeSortLabel = SORT_OPTIONS.find((option) => option.id === sort)?.label;
-    if (sort !== 'recent' && activeSortLabel) {
-      filters.push({ id: 'sort', label: activeSortLabel, onClear: () => { setSort('recent'); setPage(1); } });
-    }
-    return filters;
-  }, [category, maxPrice, minPrice, search, sort]);
-
   return (
     <ContentColumn size="wide" className="pb-20 pt-2">
       <PageHeader
@@ -305,120 +283,43 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         }
       />
 
-      <div className="mt-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
-            <input
-              type="text"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(1);
-              }}
-              placeholder="Buscar anúncios..."
-              aria-label="Buscar anúncios"
-              className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          </div>
-          <FilterPopover label="Filtros" triggerClassName="h-11 shrink-0">
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600">Categoria</label>
-                <select
-                  value={category}
-                  onChange={(event) => {
-                    setCategory(event.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                >
-                  <option value="">Todas</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600">Ordenar por</label>
-                <select
-                  value={sort}
-                  onChange={(event) => {
-                    setSort(event.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-600">Preço mín. (US$)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={minPrice}
-                    onChange={(event) => {
-                      setMinPrice(event.target.value);
-                      setPage(1);
-                    }}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-600">Preço máx. (US$)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={maxPrice}
-                    onChange={(event) => {
-                      setMaxPrice(event.target.value);
-                      setPage(1);
-                    }}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </FilterPopover>
-        </div>
-
-        <SectionTabs
-          options={SCOPE_TABS}
-          value={scope}
-          onChange={(id) => {
-            setScope(id as 'all' | 'mine' | 'favorites');
+      <SubHeader
+        className="mt-2"
+        tabsLabel="Anúncios"
+        tabs={SCOPE_TABS}
+        activeTab={scope}
+        onTabChange={(id) => {
+          setScope(id as 'all' | 'mine' | 'favorites');
+          setPage(1);
+        }}
+        filters={{
+          fields: [
+            { type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar anúncios' },
+            { type: 'select', id: 'category', label: 'Categoria', options: [{ value: '', label: 'Todas' }, ...CATEGORIES.map((cat) => ({ value: cat, label: cat }))] },
+            { type: 'select', id: 'sort', label: 'Ordenar por', options: SORT_OPTIONS.map((option) => ({ value: option.id, label: option.label })) },
+            { type: 'number', id: 'minPrice', label: 'Preço mín. (US$)' },
+            { type: 'number', id: 'maxPrice', label: 'Preço máx. (US$)' },
+          ],
+          values: { q: search, category, sort, minPrice, maxPrice },
+          defaults: { sort: 'recent' },
+          onApply: (values) => {
+            setSearch(String(values.q ?? ''));
+            setCategory(String(values.category ?? ''));
+            setSort(String(values.sort ?? 'recent'));
+            setMinPrice(String(values.minPrice ?? ''));
+            setMaxPrice(String(values.maxPrice ?? ''));
             setPage(1);
-          }}
-          ariaLabel="Filtro de anúncios"
-        />
-
-        
-
-        {activeFilters.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2" aria-label="Filtros ativos">
-            {activeFilters.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={filter.onClear}
-                aria-label={`Remover filtro: ${filter.label}`}
-                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-white pl-3 pr-2.5 text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
-              >
-                {filter.label}
-                <X size={13} aria-hidden />
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
+          },
+          onClear: () => {
+            setSearch('');
+            setCategory('');
+            setSort('recent');
+            setMinPrice('');
+            setMaxPrice('');
+            setPage(1);
+          },
+        }}
+      />
 
       {loading ? (
         <ListingGrid variant="tile" className="mt-5">

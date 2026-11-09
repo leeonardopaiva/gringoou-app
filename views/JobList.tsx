@@ -15,11 +15,10 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
-import { FilterPopover } from "@/components/ui/FilterPopover";
-import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
+import { SubHeader } from '../components/ui/SubHeader';
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import RegionSelector from "@/components/RegionSelector";
@@ -168,38 +167,28 @@ export default function JobList({ user, initialData }: { user: User; initialData
         </Button>
       } />
       <section className="space-y-3">
-        <SectionHeader>
-          <FilterPopover>
-            <Select
-              value={employmentType}
-              onChange={(e) => {
-                setEmploymentType(e.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="">Todos os contratos</option>
-              <option>Tempo integral</option>
-              <option>Meio periodo</option>
-              <option>Freelancer</option>
-            </Select>
-            <Input
-              value={location}
-              onChange={(e) => {
-                setLocation(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Localizacao"
-            />
-            <Input
-              value={salary}
-              onChange={(e) => {
-                setSalary(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Faixa salarial"
-            />
-          </FilterPopover>
-        </SectionHeader>
+        <SubHeader
+          filters={{
+            fields: [
+              { type: 'select', id: 'employmentType', label: 'Tipo de contrato', options: [{ value: '', label: 'Todos os contratos' }, ...['Tempo integral', 'Meio periodo', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
+              { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
+              { type: 'text', id: 'salary', label: 'Faixa salarial', placeholder: 'Ex.: 3000' },
+            ],
+            values: { employmentType, location, salary },
+            onApply: (values) => {
+              setEmploymentType(String(values.employmentType ?? ''));
+              setLocation(String(values.location ?? ''));
+              setSalary(String(values.salary ?? ''));
+              setPage(1);
+            },
+            onClear: () => {
+              setEmploymentType('');
+              setLocation('');
+              setSalary('');
+              setPage(1);
+            },
+          }}
+        />
         {loading ? (
           <div className="space-y-3" role="status" aria-label="Carregando vagas" aria-busy="true">
             {[0, 1, 2].map((key) => (

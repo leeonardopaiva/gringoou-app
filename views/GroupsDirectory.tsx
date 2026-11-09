@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Plus, Search, UsersRound } from 'lucide-react';
 import PageHeader from '@/components/navigation/PageHeader';
+import { SubHeader } from '@/components/ui/SubHeader';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import CreateGroupModal from '@/components/groups/CreateGroupModal';
 import { useIntersectionTrigger } from '@/hooks/useIntersectionTrigger';
@@ -194,44 +195,24 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
       />
 
       <div className="mt-4 space-y-6">
-        <div className="space-y-3">
-          <label className="flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-slate-500 shadow-sm focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
-            <Search size={20} className="shrink-0 text-slate-600" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar em todos os grupos"
-              className="min-w-0 flex-1 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-500"
-            />
-          </label>
-
-          <div className="flex items-center gap-2">
-            {countries
-              .filter(([value]) => value === country)
-              .map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    const nextCountryIndex = countries.findIndex(([c]) => c === country);
-                    const nextCountry = countries[(nextCountryIndex + 1) % countries.length];
-                    setCountry(nextCountry[0]);
-                  }}
-                  className="h-9 shrink-0 rounded-full bg-brand-500 px-4 text-xs font-bold text-white transition hover:brightness-110"
-                  title="Clique para alterar país"
-                >
-                  {label}
-                </button>
-              ))}
-          </div>
-        </div>
-
-        {user.regionKey ? (
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
-            <MapPin size={15} className="text-brand-500" />
-            {user.location}
-          </div>
-        ) : null}
+        <SubHeader
+          filters={{
+            fields: [
+              { type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar em todos os grupos' },
+              { type: 'select', id: 'country', label: 'País', options: countries.map(([value, label]) => ({ value, label })) },
+            ],
+            values: { q: query, country },
+            defaults: { country: 'US' },
+            onApply: (values) => {
+              setQuery(String(values.q ?? ''));
+              setCountry(String(values.country ?? 'US'));
+            },
+            onClear: () => {
+              setQuery('');
+              setCountry('US');
+            },
+          }}
+        />
 
         {myGroups.length ? (
           <section className="space-y-2">

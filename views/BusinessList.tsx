@@ -27,6 +27,7 @@ import { FeedCard } from '../components/ui/FeedCard';
 import { Badge } from '../components/ui/Badge';
 import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
+import { SubHeader } from '../components/ui/SubHeader';
 import { useActiveRegion } from '../components/RegionContext';
 
 const emptyForm = {
@@ -347,24 +348,14 @@ const BusinessList: React.FC<BusinessListProps> = ({
         </div>
       ) : null}
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {['Todos', 'Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveFilter(category)}
-            className={`px-6 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-sm border ${
-              activeFilter === category
-                ? 'theme-bg text-white border-transparent'
-                : 'bg-white theme-text border-slate-100'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+      <SubHeader
+        tabsLabel="Categorias de negócios"
+        tabs={['Todos', 'Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => ({ id: category, label: category }))}
+        activeTab={activeFilter}
+        onTabChange={setActiveFilter}
+      />
 
       <div className="space-y-4 pb-20">
-        <h2 className="font-bold theme-text">Negócios disponíveis</h2>
         {resultScope === 'global' && businesses.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             Ainda nao ha negocios publicados na sua regiao. Mostrando resultados de outras regioes.

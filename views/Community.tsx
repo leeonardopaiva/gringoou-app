@@ -22,7 +22,8 @@ import { ViewableAdSlot } from '@/components/ads/ViewableAdSlot';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import { CompactActionCard } from '@/components/ui/CompactActionCard';
 import { FeedCard } from '@/components/ui/FeedCard';
-import { SectionTabs } from '@/components/ui/SectionTabs';
+import { SubHeader } from '@/components/ui/SubHeader';
+import PageHeader from '@/components/navigation/PageHeader';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 
@@ -853,12 +854,7 @@ const Community: React.FC<{
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-3 pb-20 fade-in duration-500">
-      <header className="flex items-center gap-2 pb-1">
-        <Link href="/home" aria-label="Voltar para a home" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100">
-          <ArrowLeft size={19} />
-        </Link>
-        <h1 className="text-xl font-bold text-slate-900">Comunidade</h1>
-      </header>
+      <PageHeader title="Comunidade" backHref="/home" />
       <div className="flex flex-col gap-3">
       <div ref={composerRef} className="order-2">
         {isComposerExpanded ? (
@@ -985,11 +981,11 @@ const Community: React.FC<{
       </div>
       </div>
 
-      <SectionTabs
-        options={FEED_FILTER_OPTIONS}
-        value={feedFilter}
-        onChange={(value) => setFeedFilter(value as typeof feedFilter)}
-        ariaLabel="Filtrar publicações"
+      <SubHeader
+        tabsLabel="Publicações"
+        tabs={[...FEED_FILTER_OPTIONS]}
+        activeTab={feedFilter}
+        onTabChange={(value) => setFeedFilter(value as typeof feedFilter)}
       />
 
       <div className="space-y-3">

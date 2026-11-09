@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ExternalLink, MapPin, Newspaper, Search, Share2, ThumbsUp } from 'lucide-react';
+import { ExternalLink, MapPin, Newspaper, Share2, ThumbsUp } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -11,7 +11,7 @@ import { Avatar } from '../components/ui/Avatar';
 import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { NewsComments } from '../components/news/NewsComments';
-import { FilterPopover } from '../components/ui/FilterPopover';
+import { SubHeader } from '../components/ui/SubHeader';
 import { Button } from '../components/ui';
 import { formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { useToast } from '../components/feedback/ToastProvider';
@@ -25,11 +25,6 @@ const ALL = 'all';
 const CATEGORY_TABS = [{ id: ALL, label: 'Todas' }, ...NEWS_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))];
 
 type Sort = 'recent' | 'oldest';
-
-const selectClass =
-  'h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100';
-
-const filterLabelClass = 'grid gap-1.5 text-xs font-bold text-slate-500';
 
 const formatPublishedAt = (iso: string) =>
   new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(
@@ -418,71 +413,53 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
     <ContentColumn size="feed" className="pb-20 pt-2">
       <PageHeader title={t('news.title')} backHref="/home" />
 
-      <div className="mt-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder={t('news.search')}
-              aria-label="Buscar notícias"
-              className="h-12 w-full rounded-full border border-slate-100 bg-white pl-12 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} aria-hidden />
-          </div>
-          <FilterPopover
-            triggerClassName="h-12 shrink-0 shadow-sm"
-            activeCount={(scope !== 'mine' ? 1 : 0) + (sort !== 'recent' ? 1 : 0) + (source ? 1 : 0)}
-          >
-            <label className={filterLabelClass}>
-              Região
-              <select aria-label="Região" value={scope} onChange={(event) => setScope(event.target.value as 'mine' | 'all')} className={selectClass}>
-                <option value="mine" disabled={!regionKey}>
-                  Minha região
-                </option>
-                <option value="all">Todas as regiões</option>
-              </select>
-            </label>
-            <label className={filterLabelClass}>
-              Ordenar por
-              <select aria-label="Ordenar por data" value={sort} onChange={(event) => setSort(event.target.value as Sort)} className={selectClass}>
-                <option value="recent">Mais recentes</option>
-                <option value="oldest">Mais antigas</option>
-              </select>
-            </label>
-            {sources.length > 1 ? (
-              <label className={filterLabelClass}>
-                Fonte
-                <select aria-label="Fonte" value={source} onChange={(event) => setSource(event.target.value)} className={selectClass}>
-                  <option value="">Todas as fontes</option>
-                  {sources.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-          </FilterPopover>
-        </div>
-
-        <div role="group" aria-label="Categorias de notícias" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {CATEGORY_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              aria-pressed={category === tab.id}
-              onClick={() => setCategory(tab.id)}
-              className={`h-9 shrink-0 whitespace-nowrap rounded-full border px-4 text-xs font-bold transition ${
-                category === tab.id ? 'border-brand-500 bg-brand-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-brand-50 hover:text-brand-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SubHeader
+        className="mt-2"
+        tabsLabel="Categorias de notícias"
+        tabs={CATEGORY_TABS}
+        activeTab={category}
+        onTabChange={setCategory}
+        filters={{
+          fields: [
+            { type: 'search', id: 'q', label: 'Buscar', placeholder: t('news.search') },
+            {
+              type: 'select',
+              id: 'scope',
+              label: 'Região',
+              options: [
+                { value: 'mine', label: 'Minha região', disabled: !regionKey },
+                { value: 'all', label: 'Todas as regiões' },
+              ],
+            },
+            {
+              type: 'select',
+              id: 'sort',
+              label: 'Ordenar por',
+              options: [
+                { value: 'recent', label: 'Mais recentes' },
+                { value: 'oldest', label: 'Mais antigas' },
+              ],
+            },
+            ...(sources.length > 1
+              ? [{ type: 'select' as const, id: 'source', label: 'Fonte', options: [{ value: '', label: 'Todas as fontes' }, ...sources.map((name) => ({ value: name, label: name }))] }]
+              : []),
+          ],
+          values: { q: searchInput, scope, sort, source },
+          defaults: { scope: 'mine', sort: 'recent' },
+          onApply: (values) => {
+            setSearchInput(String(values.q ?? ''));
+            setScope(values.scope === 'all' ? 'all' : 'mine');
+            setSort(values.sort === 'oldest' ? 'oldest' : 'recent');
+            setSource(String(values.source ?? ''));
+          },
+          onClear: () => {
+            setSearchInput('');
+            setScope('mine');
+            setSort('recent');
+            setSource('');
+          },
+        }}
+      />
 
       <div className="mt-6 space-y-4" aria-busy={loading || loadingMore}>
         {loading ? (
