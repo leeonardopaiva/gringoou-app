@@ -734,7 +734,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               </button>
             </div>
 
-            <div className="max-h-[70vh] space-y-5 overflow-y-auto px-5 py-5">
+            <div className="max-h-[70dvh] space-y-5 overflow-y-auto px-5 py-5">
               {editModalTab === 'info' ? (
                 <>
                   <div className="space-y-2">

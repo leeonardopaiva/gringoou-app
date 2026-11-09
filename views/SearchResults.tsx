@@ -169,7 +169,7 @@ const SearchResults: React.FC = () => {
         <button ref={filtersButtonRef} type="button" onClick={() => setFiltersOpen((value) => !value)} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700"><SlidersHorizontal size={15} /> Filtros</button>
       </div>
 
-      <Popover open={filtersOpen} onClose={() => setFiltersOpen(false)} anchorRef={filtersButtonRef} align="start" className="max-h-[75vh] w-[min(92vw,420px)] overflow-y-auto p-4">
+      <Popover open={filtersOpen} onClose={() => setFiltersOpen(false)} anchorRef={filtersButtonRef} align="start" className="max-h-[75dvh] w-[min(92vw,420px)] overflow-y-auto p-4">
         <div className="grid gap-4">
           <RegionSelector value={filterDraft.region} onChange={(region) => setFilterDraft((current) => ({ ...current, region: region.key }))} onClear={() => setFilterDraft((current) => ({ ...current, region: '' }))} allowEmpty emptyLabel="Todas as regiões" label="Localidade" inlineMenu />
           <label className="space-y-2"><span className="text-sm font-bold">País</span><select value={filterDraft.country} onChange={(event) => setFilterDraft((current) => ({ ...current, country: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"><option value="">Todos</option><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>

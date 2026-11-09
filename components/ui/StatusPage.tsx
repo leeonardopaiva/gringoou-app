@@ -42,7 +42,7 @@ export const StatusPage: React.FC<StatusPageProps> = ({
   <main
     className={cn(
       'flex items-center justify-center px-6',
-      fullScreen ? 'min-h-screen bg-bg py-10' : 'py-16',
+      fullScreen ? 'min-h-dvh bg-bg py-10' : 'py-16',
       className,
     )}
   >

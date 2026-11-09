@@ -311,7 +311,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       </div>
       {showCreateForm ? (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/45 p-3 sm:items-center sm:p-6">
-          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
+          <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-bold theme-text">Cadastrar negócio</h3>
               <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Fechar</button>

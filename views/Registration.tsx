@@ -463,8 +463,8 @@ const Registration: React.FC<RegistrationProps> = ({
 
   if (!isOnboarding) {
     return (
-      <div className="min-h-screen bg-bg px-4 py-8 sm:px-6 sm:py-12">
-        <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center justify-center">
+      <div className="min-h-dvh bg-bg px-4 py-8 sm:px-6 sm:py-12">
+        <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-xl items-center justify-center">
           <Card
             variant="default"
             className="w-full overflow-hidden rounded-sheet border border-border bg-surface shadow-sm"
@@ -896,8 +896,8 @@ const Registration: React.FC<RegistrationProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-bg px-4 py-6 sm:px-6 lg:py-10">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-lg items-center justify-center">
+    <div className="min-h-dvh bg-bg px-4 py-6 sm:px-6 lg:py-10">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-lg items-center justify-center">
         <div className="hidden">
           <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/80 bg-white/70 px-4 py-2 shadow-sm backdrop-blur">
             <GringoouLogo size={22} />

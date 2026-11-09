@@ -113,7 +113,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#132F40]">
+    <div className="min-h-dvh bg-[#F8FAFC] text-[#132F40]">
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-slate-200 lg:block">{sidebar}</aside>
       {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-slate-950/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label="Fechar" className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
       <div className="lg:pl-72">
@@ -137,7 +137,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-74px)]">{children}</main>
+        <main className="min-h-[calc(100dvh-74px)]">{children}</main>
       </div>
     </div>
   );

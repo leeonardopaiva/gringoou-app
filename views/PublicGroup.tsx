@@ -245,7 +245,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
 
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
-    : 'min-h-screen bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
+    : 'min-h-dvh bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
   const wrapperClass = embedded
     ? 'mx-auto w-full max-w-[600px]'
     : 'mx-auto w-full max-w-[600px]';

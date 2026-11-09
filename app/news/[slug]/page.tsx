@@ -48,7 +48,7 @@ export default async function NewsArticleRoute({ params }: PageProps) {
 
   // Visitante (link compartilhado): a notícia é pública; curtir e comentar pedem entrada.
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[620px] px-4 py-8">
+    <main className="mx-auto min-h-dvh w-full max-w-[620px] px-4 py-8">
       <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
         {article.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

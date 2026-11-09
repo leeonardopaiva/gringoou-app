@@ -65,7 +65,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
   }
 
   return (
-    <div className={`mx-auto flex max-w-2xl items-center ${mode === 'initial' ? 'min-h-[calc(100vh-5rem)]' : 'py-6'}`}>
+    <div className={`mx-auto flex max-w-2xl items-center ${mode === 'initial' ? 'min-h-[calc(100dvh-5rem)]' : 'py-6'}`}>
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         {mode === 'initial' ? <GringoouLogo size={34} /> : null}
         <p className={`${mode === 'initial' ? 'mt-6' : ''} text-xs font-bold uppercase tracking-wider text-brand-500`}>{mode === 'initial' ? 'Gringoou Ads' : `Conta ${currentCount + 1} de ${maxAccounts}`}</p>

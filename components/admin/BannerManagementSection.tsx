@@ -240,7 +240,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
           </>
         }
       >
-        <form id={BANNER_FORM_ID} onSubmit={submitBanner} className="max-h-[68vh] space-y-5 overflow-y-auto pr-1">
+        <form id={BANNER_FORM_ID} onSubmit={submitBanner} className="max-h-[68dvh] space-y-5 overflow-y-auto pr-1">
           <section className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Conteudo</p>
             <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(180px,1fr)]">

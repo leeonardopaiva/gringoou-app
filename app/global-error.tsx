@@ -10,7 +10,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
 
   return (
     <html lang="pt-BR">
-      <body className="grid min-h-screen place-items-center bg-slate-50 px-6 text-slate-900">
+      <body className="grid min-h-dvh place-items-center bg-slate-50 px-6 text-slate-900">
         <main className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
           <h1 className="text-xl font-bold">Algo nao saiu como esperado</h1>
           <p className="mt-3 text-sm text-slate-600">Nossa equipe pode acompanhar este erro. Tente novamente em instantes.</p>

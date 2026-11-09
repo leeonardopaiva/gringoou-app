@@ -4,7 +4,7 @@ import { SymbolLoader } from './SymbolLoader';
 /** Loader de tela cheia (primeira leitura da sessão e transições de rota): só o símbolo animado. */
 export const PageLoader: React.FC<{ label?: string }> = ({ label = 'Carregando' }) => (
   <div
-    className="flex min-h-screen items-center justify-center bg-bg"
+    className="flex min-h-dvh items-center justify-center bg-bg"
     role="status"
     aria-live="polite"
     aria-label={label}

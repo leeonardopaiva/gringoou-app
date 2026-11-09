@@ -301,7 +301,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   );
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-dvh bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="mx-auto max-w-[1120px] px-4 py-1">
@@ -481,7 +481,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             </aside>
 
             {/* Chat Panel */}
-            <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-[70vh]', isMobile && mobileView !== 'chat' && 'hidden')}>
+            <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-[70dvh]', isMobile && mobileView !== 'chat' && 'hidden')}>
               {openingDirect && !activeConv ? (
                 <div className="flex flex-1 flex-col" role="status" aria-label="Abrindo conversa">
                   <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">

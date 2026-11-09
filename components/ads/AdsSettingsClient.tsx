@@ -97,7 +97,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       </Card>
 
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar conta comercial" description="Atualize as informações da conta do seu negócio." className="max-w-2xl" footer={<><Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button><Button loading={savingAccount} onClick={() => void saveAccount()}>Salvar alteracoes</Button></>}>
-        <div className="max-h-[70vh] space-y-5 overflow-y-auto pr-1">
+        <div className="max-h-[70dvh] space-y-5 overflow-y-auto pr-1">
           <div><span className="mb-2 block text-sm font-bold">Logo da empresa</span><CloudinaryImageField value={accountForm.logoUrl ?? ''} onChange={(logoUrl) => setAccountForm((current) => ({ ...current, logoUrl }))} folder="businesses" width={120} height={120} /></div>
           <label className="block space-y-2"><span className="text-sm font-bold">Nome da empresa</span><Input value={accountForm.name} onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))} /></label>
           <label className="block space-y-2"><span className="text-sm font-bold">Website URL</span><Input type="text" inputMode="url" placeholder="empresa.com" value={accountForm.websiteUrl ?? ''} onChange={(event) => setAccountForm((current) => ({ ...current, websiteUrl: event.target.value }))} onBlur={() => setAccountForm((current) => ({ ...current, websiteUrl: normalizeUrlFieldValue(current.websiteUrl ?? '') }))} prefixIcon={<Globe2 size={16} />} /></label>

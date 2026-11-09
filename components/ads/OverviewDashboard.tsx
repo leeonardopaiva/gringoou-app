@@ -228,7 +228,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         className="max-w-2xl"
         footer={<><Button variant="secondary" disabled={resubmitting} onClick={() => { setRevising(null); setRevisionForm(null); }}>Cancelar</Button><Button loading={resubmitting} disabled={!revisionForm?.headline.trim() || !revisionForm?.description.trim() || !revisionForm?.imageUrl || !revisionForm?.destination.trim()} onClick={() => void resubmit()}>Reenviar para analise</Button></>}
       >
-        {revisionForm ? <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
+        {revisionForm ? <div className="max-h-[65dvh] space-y-4 overflow-y-auto pr-1">
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Titulo</label><Input value={revisionForm.headline} maxLength={70} onChange={(event) => setRevisionForm((current) => current ? { ...current, headline: event.target.value } : current)} /></div>
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Descricao</label><Textarea value={revisionForm.description} maxLength={600} onChange={(event) => setRevisionForm((current) => current ? { ...current, description: event.target.value } : current)} /></div>
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Imagem</label><CloudinaryImageField value={revisionForm.imageUrl} onChange={(imageUrl) => setRevisionForm((current) => current ? { ...current, imageUrl } : current)} folder="banners" height={200} /></div>

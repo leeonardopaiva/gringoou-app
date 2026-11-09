@@ -44,7 +44,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
         onClose={() => setOpen(false)}
         anchorRef={triggerRef}
         align="start"
-        className={cn('max-h-[75vh] w-[min(92vw,380px)] overflow-y-auto p-4', panelClassName)}
+        className={cn('max-h-[75dvh] w-[min(92vw,380px)] overflow-y-auto p-4', panelClassName)}
       >
         <div className="grid gap-3">{children}</div>
       </Popover>
