@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { notifyBusinessMessage } from '@/lib/ads/notifications';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { publishNewMessage } from '@/lib/ably';
@@ -126,6 +127,8 @@ export async function POST(request: Request, { params }: RouteContext) {
       sender: { select: { id: true, name: true, image: true } },
     },
   });
+
+  void notifyBusinessMessage(conversationId, viewerId, message.content);
 
   // Atualiza lastMessageAt
   await prisma.marketplaceConversation.update({

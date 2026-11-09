@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { notifyBusinessMessage } from '@/lib/ads/notifications';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit } from '@/lib/rate-limit';
@@ -175,6 +176,7 @@ export async function POST(request: Request) {
           data: { lastMessageAt: new Date(), status: 'ACTIVE', messages: { create: { senderId: viewerId, content } } },
         });
         if (existingDirect.requestStatus === 'ACCEPTED') await reviveConversationFor(existingDirect.id, recipient.id);
+        void notifyBusinessMessage(existingDirect.id, viewerId, content);
       }
       return NextResponse.json({ conversationId: existingDirect.id, existing: true, conversation: await loadConversation(existingDirect.id, viewerId) });
     }
@@ -189,6 +191,7 @@ export async function POST(request: Request) {
       },
       select: { id: true },
     });
+    if (content) void notifyBusinessMessage(direct.id, viewerId, content);
     return NextResponse.json({ conversationId: direct.id, message: 'Conversa iniciada.', conversation: await loadConversation(direct.id, viewerId) });
   }
 

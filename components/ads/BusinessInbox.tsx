@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ExternalLink, Loader2, MessageCircle, Send } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
@@ -26,6 +27,8 @@ function shortTime(value: string) {
 export function BusinessInbox() {
   const { data: session } = useSession();
   const { account } = useAdAccount();
+  const searchParams = useSearchParams();
+  const requestedConversation = searchParams?.get('conversation') ?? null;
   const me = session?.user?.id ?? '';
   const { showToast } = useToast();
   const { conversations, activeConversationId, messages, loading, selectConversation, sendMessage } = useMessaging();
@@ -44,6 +47,14 @@ export function BusinessInbox() {
   useEffect(() => {
     if (!active && view === 'chat') setView('list');
   }, [active, view]);
+
+  // Vindo de um alerta: abre direto a conversa indicada.
+  useEffect(() => {
+    if (requestedConversation && received.some((item) => item.id === requestedConversation) && activeConversationId !== requestedConversation) {
+      void selectConversation(requestedConversation);
+      setView('chat');
+    }
+  }, [requestedConversation, received, activeConversationId, selectConversation]);
 
   const open = (id: string) => {
     void selectConversation(id);
