@@ -135,7 +135,7 @@ const average = (numerator: number, denominator: number) => (denominator > 0 ? n
 
 export async function buildAdsOverviewData(userId: string, range: AdsDateRange, adAccountId?: string): Promise<AdsOverviewData> {
   const banners = await prisma.banner.findMany({
-    where: adAccountId ? { adAccountId } : { createdById: userId },
+    where: { archivedAt: null, ...(adAccountId ? { adAccountId } : { createdById: userId }) },
     orderBy: [{ updatedAt: 'desc' }],
     select: {
       id: true,

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarDays, Copy, Download, Edit3, Filter, Plus, Search, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
-import { Alert, Badge, Button, Card, Input, Modal, Select, Textarea } from '@/components/ui';
+import { Alert, Badge, Button, Card, ConfirmModal, Input, Modal, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import CloudinaryImageField from '@/components/forms/CloudinaryImageField';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
@@ -45,6 +45,26 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
   const [revising, setRevising] = useState<AdsOverviewRow | null>(null);
   const [revisionForm, setRevisionForm] = useState<RevisionForm | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
+  const [removing, setRemoving] = useState<AdsOverviewRow | null>(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const isOwner = account?.role === 'BUSINESS_ADMIN';
+  const canRemove = (row: AdsOverviewRow) => isOwner && row.moderationStatus !== 'PENDING_REVIEW' && !(row.moderationStatus === 'APPROVED' && (enabledRows[row.id] ?? false) && (!row.endsAt || new Date(row.endsAt) > new Date()));
+  const removeCampaign = async () => {
+    if (!removing) return;
+    setRemoveBusy(true);
+    try {
+      const response = await fetch(`/api/ads/${removing.id}/archive`, { method: 'POST' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível remover a campanha.');
+      showToast('Campanha removida do painel.', 'success');
+      setRemoving(null);
+      router.refresh();
+    } catch (reason) {
+      showToast(reason instanceof Error ? reason.message : 'Não foi possível remover a campanha.', 'error');
+    } finally {
+      setRemoveBusy(false);
+    }
+  };
   const visibleRows = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return data.rows;
@@ -170,7 +190,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
                   <tr key={row.id} className="border-b border-slate-100 text-[13px] text-[#243b53] hover:bg-slate-50/70">
                     <td className="max-w-[260px] px-5 py-4 font-bold">
                       <span className="block truncate">{row.label}</span>
-                      {row.moderationStatus === 'REJECTED' ? <button type="button" onClick={() => openRevision(row)} className="mt-1 text-xs font-bold text-brand-500 underline underline-offset-2">Corrigir e reenviar</button> : null}
+                      <span className="mt-1 flex flex-wrap gap-x-3">{row.moderationStatus === 'REJECTED' ? <button type="button" onClick={() => openRevision(row)} className="text-xs font-bold text-brand-500 underline underline-offset-2">Corrigir e reenviar</button> : null}{canRemove(row) ? <button type="button" onClick={() => setRemoving(row)} className="text-xs font-semibold text-slate-400 underline underline-offset-2 hover:text-red-600">Remover</button> : null}</span>
                     </td>
                     <td className="px-5 py-4"><button type="button" role="switch" aria-checked={enabled} onClick={() => void toggleCampaign(row)} className={`relative h-6 w-11 rounded-full transition ${enabled ? 'bg-brand-500' : 'bg-slate-200'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${enabled ? 'left-6' : 'left-1'}`} /></button></td>
                     <td className="px-5 py-4"><Badge tone={status.tone} className="normal-case tracking-normal">{status.label}</Badge></td>
@@ -189,6 +209,17 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         </div>
       </Card>
 
+      <ConfirmModal
+        open={Boolean(removing)}
+        onClose={() => (removeBusy ? undefined : setRemoving(null))}
+        title="Remover campanha"
+        description={`“${removing?.label ?? ''}” deixa de aparecer no painel. O histórico de pagamentos e os relatórios são mantidos.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        destructive
+        loading={removeBusy}
+        onConfirm={() => void removeCampaign()}
+      />
       <Modal
         open={Boolean(revising && revisionForm)}
         onClose={() => { if (!resubmitting) { setRevising(null); setRevisionForm(null); } }}

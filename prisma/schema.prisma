@@ -653,6 +653,8 @@ model AdAccountUser {
 
 model Banner {
   id                  String               @id @default(cuid())
+  /// Removida do painel pelo proprietário (some das listas; pagamentos e relatórios continuam).
+  archivedAt          DateTime?
   name                String
   imageUrl            String
   type                BannerType           @default(LINK)

@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, ShieldCheck, Store } from 'lucide-react';
+import { BriefcaseBusiness, Check, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, ShieldCheck, Store } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { Popover } from '@/components/ui/Popover';
-import { ConfirmModal } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import { MessagePrivacyModal } from '@/components/profile/MessagePrivacySection';
 
 type ManagedBusiness = {
@@ -99,7 +100,13 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
       const businessesFromAds = Array.isArray(adsPayload?.businesses) ? adsPayload.businesses : [];
       const mergedBusinesses = [...mapKnownBusinesses(knownBusinesses), ...businessesFromProfile, ...businessesFromAccounts, ...businessesFromAds]
         .filter((business): business is ManagedBusiness => Boolean(business?.id && business?.name))
-        .filter((business, index, all) => all.findIndex((candidate) => candidate.id === business.id) === index);
+        .reduce<ManagedBusiness[]>((merged, business) => {
+          const existing = merged.find((candidate) => candidate.id === business.id);
+          if (!existing) return [...merged, business];
+          return merged.map((candidate) => (candidate.id === business.id
+            ? { ...candidate, adAccountId: candidate.adAccountId || business.adAccountId, adsOnly: candidate.adsOnly ?? business.adsOnly, imageUrl: candidate.imageUrl || business.imageUrl, publicPath: candidate.publicPath || business.publicPath }
+            : candidate));
+        }, []);
       setBusinesses(mergedBusinesses);
       setHasAdAccounts(accounts.length > 0);
     } catch {
@@ -220,22 +227,43 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
         </div>
       </Popover>
       <MessagePrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
-      <ConfirmModal
+      <Modal
         open={Boolean(activating)}
         onClose={() => (activatingBusy ? undefined : setActivating(null))}
         title="Ativar o painel do negócio"
-        description={`Vamos criar a área de gestão de ${activating?.name ?? 'seu negócio'}: mensagens recebidas, campanhas e relatórios. É gratuito — você só paga se decidir criar uma campanha.`}
-        confirmLabel="Ativar e abrir"
-        cancelLabel="Agora não"
-        loading={activatingBusy}
-        onConfirm={async () => {
-          if (!activating) return;
-          setActivatingBusy(true);
-          await openBusinessManagement(activating, true);
-          setActivatingBusy(false);
-          setActivating(null);
-        }}
-      />
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setActivating(null)} disabled={activatingBusy}>Agora não</Button>
+            <Button
+              loading={activatingBusy}
+              onClick={async () => {
+                if (!activating) return;
+                setActivatingBusy(true);
+                await openBusinessManagement(activating, true);
+                setActivatingBusy(false);
+                setActivating(null);
+              }}
+            >
+              Ativar e abrir
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600">Você vai ativar o painel de <strong className="text-slate-900">{activating?.name ?? 'seu negócio'}</strong>.</p>
+        <ul className="mt-4 space-y-3">
+          {[
+            ['Mensagens', 'Veja e responda quem escreveu para o seu negócio.'],
+            ['Campanhas', 'Crie e acompanhe anúncios para a sua região.'],
+            ['Relatórios', 'Acompanhe resultados e gastos.'],
+          ].map(([title, text]) => (
+            <li key={title} className="flex gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><Check size={13} /></span>
+              <span className="text-sm leading-5"><strong className="block text-slate-900">{title}</strong><span className="text-slate-500">{text}</span></span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-500">Ativar é <strong className="text-slate-700">gratuito</strong>. Você só paga se decidir criar uma campanha.</p>
+      </Modal>
     </div>
   );
 }
