@@ -3,14 +3,15 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { BarChart3, ChevronLeft, ChevronRight, CircleHelp, CirclePlus, LayoutDashboard, LogOut, MessageCircle, Settings, Users } from 'lucide-react';
+import { BarChart3, ChevronLeft, ChevronRight, CircleHelp, CirclePlus, LayoutDashboard, LogOut, MessageCircle, Settings, Store, Users } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem } from '@/components/navigation/SidebarMenu';
 import { cn } from '@/lib/cn';
+import { useAdAccount } from '@/components/ads/AdAccountProvider';
 
 const items = [
   { href: '/ads/overview', label: 'Visão geral', icon: LayoutDashboard },
   { href: '/ads/inbox', label: 'Mensagens', icon: MessageCircle },
-  { href: '/ads/wizard', label: 'Promover', icon: CirclePlus },
+  { href: '/ads/wizard', label: 'Promover', icon: CirclePlus, ads: true },
   { href: '/ads/reports', label: 'Relatórios', icon: BarChart3 },
 ];
 
@@ -30,6 +31,7 @@ type AdsSidebarProps = {
 export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapsed }: AdsSidebarProps) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
+  const { account } = useAdAccount();
   
   const go = (href: string) => {
     onMobileClose();
@@ -73,7 +75,9 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
                   <SidebarMenuItem
                     key={item.href}
                     tone="dark"
-                    label={item.label}
+                    label={'ads' in item && item.ads && (account?.campaignCount ?? 0) > 0 ? 'Campanhas' : item.label}
+                    badge={'ads' in item && item.ads ? 'ADS' : undefined}
+                    badgeTone="success"
                     icon={<Icon size={18} />}
                     active={pathname.startsWith(item.href)}
                     collapsed={collapsed}
@@ -81,6 +85,13 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
                   />
                 );
               })}
+              <SidebarMenuItem
+                tone="dark"
+                label={account?.businessId ? 'Página do negócio' : 'Criar página do negócio'}
+                icon={<Store size={18} />}
+                collapsed={collapsed}
+                onClick={() => go(account?.businessId && account.publicPath ? `${account.publicPath}/gerenciar` : `/businesses?create=1&adAccountId=${encodeURIComponent(account?.id ?? '')}`)}
+              />
             </SidebarMenu>
 
             <div className="my-3 border-t border-white/10" role="separator" />

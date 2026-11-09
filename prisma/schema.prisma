@@ -1309,3 +1309,50 @@ model MessageReport {
   @@index([reportedUserId, createdAt])
   @@index([reporterId, createdAt])
 }
+
+/// Pacotes de anúncios editáveis pelo administrador raiz (valores padrão ficam em lib/ads/contracts.ts).
+model AdPlanConfig {
+  plan                 AdPlan   @id
+  name                 String
+  monthlyPriceCents    Int
+  durationMonths       Int
+  estimatedImpressions Int
+  description          String
+  highlights           String[]
+  isActive             Boolean  @default(true)
+  updatedById          String?
+  updatedAt            DateTime @updatedAt
+}
+
+/// Cupom de cortesia: libera uma campanha sem cobrança; depois a pessoa contrata pelo fluxo normal.
+model AdCoupon {
+  id             String                @id @default(cuid())
+  code           String                @unique
+  /// Restringe a um pacote (nulo = qualquer).
+  plan           AdPlan?
+  /// Restringe a quem tem este e-mail (nulo = qualquer pessoa com o código).
+  assignedEmail  String?
+  maxRedemptions Int                   @default(1)
+  expiresAt      DateTime?
+  isActive       Boolean               @default(true)
+  note           String?
+  createdById    String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  redemptions    AdCouponRedemption[]
+
+  @@index([isActive, expiresAt])
+}
+
+model AdCouponRedemption {
+  id          String   @id @default(cuid())
+  couponId    String
+  /// Cada conta de anúncios usa cortesia uma única vez.
+  adAccountId String   @unique
+  bannerId    String?
+  userId      String
+  createdAt   DateTime @default(now())
+  coupon      AdCoupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+}

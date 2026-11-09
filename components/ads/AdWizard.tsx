@@ -173,6 +173,26 @@ export const AdWizard: React.FC = () => {
     }
   }, [account?.id, showToast, state]);
 
+  const redeemCoupon = useCallback(async (code: string) => {
+    if (!state.draftId || !account?.id) return 'Rascunho não encontrado. Volte e salve a campanha.';
+    try {
+      checkoutKeyRef.current ??= `ad-payment-${state.draftId}-${crypto.randomUUID()}`;
+      const response = await fetch('/api/ads/coupons/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...state, bannerId: state.draftId, adAccountId: account.id, idempotencyKey: checkoutKeyRef.current, couponCode: code }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) return payload?.error ?? 'Não foi possível aplicar o cupom.';
+      setPaymentSubmitted(true);
+      if (storageKey) sessionStorage.removeItem(storageKey);
+      showToast('Cupom aplicado. Campanha aguardando moderação.', 'success');
+      return null;
+    } catch {
+      return 'Não foi possível aplicar o cupom agora. Tente novamente.';
+    }
+  }, [account?.id, showToast, state, storageKey]);
+
   const preparePayment = useCallback(async (draftId: string) => {
     if (!state.plan || !state.durationMonths || !businessApproved) return false;
     setSaving(true);
@@ -268,7 +288,7 @@ export const AdWizard: React.FC = () => {
       {state.step === 1 ? <GoalStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 2 ? <CreativeStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 3 ? <ReachAndPlanStep state={state} errors={errors} patch={patch} /> : null}
-      {state.step === 4 ? <CheckoutStep state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
+      {state.step === 4 ? <CheckoutStep onRedeemCoupon={redeemCoupon} state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
         setPaymentSubmitted(true);
         if (storageKey) sessionStorage.removeItem(storageKey);
         showToast('Pagamento enviado. Campanha aguardando moderacao.', 'success');

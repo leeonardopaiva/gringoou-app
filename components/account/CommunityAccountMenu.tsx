@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react';
 import { BriefcaseBusiness, ChevronDown, ExternalLink, LogOut, Megaphone, Settings, ShieldCheck, Store } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { Popover } from '@/components/ui/Popover';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { MessagePrivacyModal } from '@/components/profile/MessagePrivacySection';
 
 type ManagedBusiness = {
@@ -53,6 +54,9 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  /** Negócio que ainda não tem painel: pedimos confirmação antes de ativá-lo pela primeira vez. */
+  const [activating, setActivating] = useState<ManagedBusiness | null>(null);
+  const [activatingBusy, setActivatingBusy] = useState(false);
   const [businesses, setBusinesses] = useState<ManagedBusiness[]>(() => mapKnownBusinesses(knownBusinesses));
   const [hasAdAccounts, setHasAdAccounts] = useState(false);
   const [isLoadingBusinesses, setIsLoadingBusinesses] = useState(true);
@@ -136,15 +140,31 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
     router.push('/ads/overview');
   }
 
-  async function openBusinessManagement(business: ManagedBusiness) {
-    if (business.adAccountId) {
-      await fetch('/api/ads/accounts/select', {
+  async function openBusinessManagement(business: ManagedBusiness, confirmed = false) {
+    if (!confirmed && !business.adsOnly && !business.adAccountId) {
+      setOpen(false);
+      setActivating(business);
+      return;
+    }
+    try {
+      if (business.adsOnly && business.adAccountId) {
+        await openBusiness(business.adAccountId);
+        return;
+      }
+      const response = await fetch('/api/ads/accounts/open', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adAccountId: business.adAccountId }),
+        body: JSON.stringify({ businessId: business.id }),
       });
+      if (response.ok) {
+        setOpen(false);
+        router.push('/ads/overview');
+        return;
+      }
+    } catch {
+      /* cai para a página de gestão abaixo */
     }
-
+    // Sem painel disponível (ex.: página ainda em análise): abre a gestão da página.
     setOpen(false);
     router.push(business.managementPath);
   }
@@ -180,10 +200,9 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
                   <div key={business.id} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
                     <Avatar src={business.imageUrl} name={business.name} size="sm" />
                     <strong className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800" title={business.name}>{business.name}</strong>
-                    <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`Gerenciar ${business.name}`} title="Gerenciar"><Settings size={16} /></button>
+                    <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`Abrir painel de ${business.name}`} title="Painel do negócio"><Settings size={16} /></button>
                     {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
                     {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
-                    {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Promover ${business.name}`} title="Promover"><Megaphone size={15} /></button> : null}
                   </div>
                 ))}
               </div>
@@ -201,6 +220,22 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
         </div>
       </Popover>
       <MessagePrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
+      <ConfirmModal
+        open={Boolean(activating)}
+        onClose={() => (activatingBusy ? undefined : setActivating(null))}
+        title="Ativar o painel do negócio"
+        description={`Vamos criar a área de gestão de ${activating?.name ?? 'seu negócio'}: mensagens recebidas, campanhas e relatórios. É gratuito — você só paga se decidir criar uma campanha.`}
+        confirmLabel="Ativar e abrir"
+        cancelLabel="Agora não"
+        loading={activatingBusy}
+        onConfirm={async () => {
+          if (!activating) return;
+          setActivatingBusy(true);
+          await openBusinessManagement(activating, true);
+          setActivatingBusy(false);
+          setActivating(null);
+        }}
+      />
     </div>
   );
 }

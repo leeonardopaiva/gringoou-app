@@ -1,6 +1,7 @@
 'use client';
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { useRootAdmin } from '@/hooks/useRootAdmin';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -20,6 +21,8 @@ import {
   Menu,
   Megaphone,
   Plug,
+  WalletCards,
+  Gift,
   Search,
   ShieldCheck,
   Ticket,
@@ -33,7 +36,7 @@ import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { UserRole } from '@/types';
 
-const navigation = [
+const navigation: Array<{ href: string; label: string; icon: React.ElementType; exact?: boolean; rootOnly?: boolean }> = [
   { href: '/admin', label: 'Visão geral', icon: LayoutGrid, exact: true },
   { href: '/admin/ads', label: 'Anúncios pagos', icon: Megaphone },
   { href: '/admin/moderation', label: 'Moderação', icon: ShieldCheck },
@@ -47,7 +50,9 @@ const navigation = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/invites', label: 'Convites', icon: Ticket },
   { href: '/admin/marketing', label: 'Marketing', icon: Mail },
-  { href: '/admin/integrations', label: 'Integrações', icon: Plug },
+  { href: '/admin/integrations', label: 'Integrações', icon: Plug, rootOnly: true },
+  { href: '/admin/plans', label: 'Planos de anúncios', icon: WalletCards, rootOnly: true },
+  { href: '/admin/coupons', label: 'Cupons de cortesia', icon: Gift, rootOnly: true },
 ];
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {
@@ -56,6 +61,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
   const searchParams = useSearchParams();
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isRoot = useRootAdmin() === true;
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') ?? '');
   const segment = pathname.split('/')[2] || '';
@@ -89,7 +95,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="flex-1 overflow-y-auto px-3 py-5">
         <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Principal</p>
         <nav className="space-y-1" aria-label="Navegacao administrativa">
-          {navigation.filter((item) => user.role !== UserRole.MODERATOR || item.href === '/admin/moderation' || item.href === '/admin/news').map((item) => {
+          {navigation.filter((item) => (!item.rootOnly || isRoot) && (user.role !== UserRole.MODERATOR || item.href === '/admin/moderation' || item.href === '/admin/news')).map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (

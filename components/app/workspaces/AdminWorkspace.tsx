@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import AdPlansSection from '@/components/admin/AdPlansSection';
+import AdCouponsSection from '@/components/admin/AdCouponsSection';
+import RootOnly from '@/components/admin/RootOnly';
 import { ShieldAlert } from 'lucide-react';
 import AdminPanel from '@/views/AdminPanel';
 import AdminShell from '@/components/admin/AdminShell';
@@ -52,8 +55,14 @@ const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }
     return <AdminShell user={currentUser}><InvitesSection /></AdminShell>;
   }
 
-  if (segment === 'integrations') {
-    return <AdminShell user={currentUser}><IntegrationsSection /></AdminShell>;
+  if (segment === 'integrations' || segment === 'plans' || segment === 'coupons') {
+    return (
+      <AdminShell user={currentUser}>
+        <RootOnly>
+          {segment === 'integrations' ? <IntegrationsSection /> : segment === 'plans' ? <AdPlansSection /> : <AdCouponsSection />}
+        </RootOnly>
+      </AdminShell>
+    );
   }
 
   if (segment === 'marketing') {

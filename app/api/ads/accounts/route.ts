@@ -51,6 +51,7 @@ export async function GET() {
             timezone: true,
             businessId: true,
             business: { select: { slug: true, status: true } },
+            _count: { select: { banners: { where: { paymentStatus: 'PAID' } } } },
           },
         },
       },
@@ -84,8 +85,9 @@ export async function GET() {
   ]);
 
   return NextResponse.json({
-    accounts: memberships.map(({ role, adAccount }) => ({
+    accounts: memberships.map(({ role, adAccount: { _count, ...adAccount } }) => ({
       ...adAccount,
+      campaignCount: _count.banners,
       role,
       publicPath: adAccount.business ? `/businesses/${adAccount.business.slug}` : null,
       businessStatus: adAccount.business?.status ?? null,
