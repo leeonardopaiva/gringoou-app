@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Plus, Search, UsersRound } from 'lucide-react';
@@ -269,9 +270,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
               ))}
             </div>
           ) : filteredGroups.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm text-slate-500">
-              Nenhum grupo encontrado agora.
-            </div>
+            <EmptyNotice icon="groups" title="Nenhum grupo encontrado" description="Tente outro filtro ou crie um grupo para a sua região." />
           ) : (
             <div className="space-y-1">
               {filteredGroups.map((group) => <GroupRow key={group.id} group={group} />)}

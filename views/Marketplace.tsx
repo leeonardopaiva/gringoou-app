@@ -1,4 +1,5 @@
 import React, { startTransition, useEffect, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { ListingGrid } from '@/components/ui/ListingGrid';
 import Link from 'next/link';
@@ -498,9 +499,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
           </div>
         ) : null}
         {displayedEvents.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center text-sm font-medium text-slate-500">
-            Nenhum evento encontrado para este filtro.
-          </div>
+          <EmptyNotice icon="events" title="Nenhum evento para este filtro" description="Experimente outra data ou categoria." />
         ) : null}
         <ListingGrid variant="row">
         {displayedEvents.map((item) => (

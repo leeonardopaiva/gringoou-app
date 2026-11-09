@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import {
   CalendarDays,
@@ -657,9 +658,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
           </div>
 
           {galleryImages.length === 0 ? (
-            <div className="rounded-3xl bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-              Nenhuma imagem adicional cadastrada ainda.
-            </div>
+            <EmptyNotice title="Sem fotos adicionais" description="O organizador ainda não adicionou fotos." />
           ) : (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
               {galleryImages.map((imageUrl, index) => (

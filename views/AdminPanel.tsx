@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { startTransition, useDeferredValue, useEffect, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -2650,9 +2651,7 @@ const QueueCard: React.FC<{
 );
 
 const EmptyState: React.FC<{ text: string }> = ({ text }) => (
-  <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center text-sm font-medium text-slate-500">
-    {text}
-  </div>
+  <EmptyNotice title={text} />
 );
 
 const ConfirmationDialog: React.FC<{

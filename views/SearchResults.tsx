@@ -1,6 +1,7 @@
 'use client';
 
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Briefcase, CalendarDays, Clock3, House, LockKeyhole, MapPin, Search, SlidersHorizontal, Sparkles, Store, UserRound, Users, UsersRound, X } from 'lucide-react';
@@ -217,6 +218,6 @@ const SearchResults: React.FC = () => {
 };
 
 const ResultSection: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => <section className="space-y-3"><div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500"><span className="text-brand-500">{icon}</span>{title}</div><div className="space-y-3">{children}</div></section>;
-const EmptyState: React.FC<{ text: string }> = ({ text }) => <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center text-sm font-medium text-slate-500"><Search size={24} className="mx-auto mb-3 text-slate-300" />{text}</div>;
+const EmptyState: React.FC<{ text: string }> = ({ text }) => <EmptyNotice icon="search" title={text} />;
 
 export default SearchResults;

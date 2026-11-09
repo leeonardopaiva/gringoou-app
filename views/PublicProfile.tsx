@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
+import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import Link from 'next/link';
 import { PLACEHOLDER_IMAGE } from '@/lib/placeholder-image';
 import { useRouter } from 'next/navigation';
@@ -839,9 +840,7 @@ const ProfileMetric: React.FC<{ icon: React.ReactNode; value: number; label: str
 };
 
 const EmptyPublicState: React.FC<{ text: string }> = ({ text }) => (
-  <div className="mt-5 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
-    {text}
-  </div>
+  <EmptyNotice className="mt-3" title={text} />
 );
 
 export default PublicProfile;
