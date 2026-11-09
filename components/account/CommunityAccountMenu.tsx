@@ -155,7 +155,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
         <Avatar src={user.avatar} name={user.name} size="sm" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[310px] overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[340px] overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
         <div>
           <div className="p-2">
             <div className="flex items-center gap-3 px-3 py-2">
@@ -175,15 +175,15 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
             {isLoadingBusinesses ? (
               <div className="mt-3 h-12 animate-pulse rounded-xl bg-slate-100" aria-label="Carregando negócios" />
             ) : businesses.length ? <>
-              <div className="mt-2 max-h-48 space-y-1 overflow-y-auto pr-1">
+              <div className="mt-2 max-h-56 space-y-1.5 overflow-y-auto pr-1">
                 {businesses.map((business) => (
-                  <div key={business.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-slate-50">
+                  <div key={business.id} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
                     <Avatar src={business.imageUrl} name={business.name} size="sm" />
-                    <strong className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800">{business.name}</strong>
-                    <button type="button" onClick={() => void openBusinessManagement(business)} className="shrink-0 rounded-full bg-brand-500 px-3 py-1 text-xs font-bold text-white transition hover:brightness-105">Gerenciar</button>
-                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
-                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
-                    {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Promover ${business.name}`} title="Promover"><Megaphone size={15} /></button> : null}
+                    <strong className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800" title={business.name}>{business.name}</strong>
+                    <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`Gerenciar ${business.name}`} title="Gerenciar"><Settings size={16} /></button>
+                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
+                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
+                    {business.adAccountId ? <button type="button" onClick={() => void openBusiness(business.adAccountId!)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Promover ${business.name}`} title="Promover"><Megaphone size={15} /></button> : null}
                   </div>
                 ))}
               </div>
