@@ -33,6 +33,10 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Campanha pendente de revisao nao encontrada.' }, { status: 404 });
   }
 
+  // Campanha de cortesia recusada: libera o cupom para a conta usar de novo em outra campanha.
+  const wasCourtesy = await prisma.adPayment.findFirst({ where: { bannerId: id, provider: 'COURTESY' }, select: { id: true } });
+  if (wasCourtesy) await prisma.adCouponRedemption.deleteMany({ where: { bannerId: id } });
+
   try {
     await sendAdModerationEmail(id, 'REJECTED', parsed.data.reason);
   } catch (error) {
