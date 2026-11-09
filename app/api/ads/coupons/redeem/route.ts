@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { canManageAdBilling, getPromotionEligibilityError } from '@/lib/ads/account';
 import { getAdPlanCatalog } from '@/lib/ads/plans';
+import { evaluateAdCoupon } from '@/lib/ads/coupons';
 import { getAdDestinationFields } from '@/lib/ads/server';
 import { adCheckoutSchema } from '@/lib/ads/validation';
 import { getServerAuthSession } from '@/lib/auth';
@@ -51,15 +52,11 @@ export async function POST(request: Request) {
   const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });
   if (!region) return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
 
-  const row = await prisma.adCoupon.findUnique({ where: { code: coupon.data.couponCode }, include: { _count: { select: { redemptions: true } } } });
   const invalid = (message: string) => NextResponse.json({ error: message }, { status: 400 });
-  if (!row || !row.isActive) return invalid('Cupom inválido ou desativado.');
-  if (row.expiresAt && row.expiresAt.getTime() < Date.now()) return invalid('Este cupom expirou.');
-  if (row.plan && row.plan !== parsed.data.plan) return invalid('Este cupom não vale para o pacote escolhido.');
-  if (row.assignedEmail && row.assignedEmail.toLowerCase() !== (session.user.email ?? '').toLowerCase()) return invalid('Este cupom foi emitido para outra pessoa.');
-  if (row._count.redemptions >= row.maxRedemptions) return invalid('Este cupom já atingiu o limite de usos.');
-  const already = await prisma.adCouponRedemption.findUnique({ where: { adAccountId: parsed.data.adAccountId }, select: { id: true } });
-  if (already) return invalid('Esta conta já usou uma cortesia. Contrate o pacote pelo pagamento normal.');
+  const evaluation = await evaluateAdCoupon({ code: coupon.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, totalCents: planInfo.monthlyPriceCents * planInfo.durationMonths });
+  if (!evaluation.ok) return invalid(evaluation.error);
+  if (!evaluation.full) return invalid('Este cupom é um crédito parcial. Aplique-o no pagamento para abater do valor.');
+  const row = { id: evaluation.couponId };
 
   const destinationFields = getAdDestinationFields(parsed.data.goal, parsed.data.destination);
   try {

@@ -59,6 +59,8 @@ export const AdWizard: React.FC = () => {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountCents: number; payCents: number } | null>(null);
+  const [courtesyApplied, setCourtesyApplied] = useState(false);
   const checkoutKeyRef = useRef<string | null>(null);
   const { showToast } = useToast();
   const checkoutAmount = state.plan && state.durationMonths
@@ -174,8 +176,23 @@ export const AdWizard: React.FC = () => {
   }, [account?.id, showToast, state]);
 
   const redeemCoupon = useCallback(async (code: string) => {
-    if (!state.draftId || !account?.id) return 'Rascunho não encontrado. Volte e salve a campanha.';
+    if (!state.draftId || !account?.id || !state.plan) return 'Rascunho não encontrado. Volte e salve a campanha.';
     try {
+      const check = await fetch('/api/ads/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode: code, plan: state.plan, adAccountId: account.id }),
+      });
+      const checked = await check.json().catch(() => null);
+      if (!check.ok) return checked?.error ?? 'Cupom inválido.';
+      if (!checked.full) {
+        // Crédito parcial: refaz o pagamento só com o valor restante.
+        setAppliedCoupon({ code: code.toUpperCase(), discountCents: checked.discountCents, payCents: checked.payCents });
+        setClientSecret(null);
+        checkoutKeyRef.current = null;
+        showToast('Cupom aplicado. O valor do pagamento foi reduzido.', 'success');
+        return null;
+      }
       checkoutKeyRef.current ??= `ad-payment-${state.draftId}-${crypto.randomUUID()}`;
       const response = await fetch('/api/ads/coupons/redeem', {
         method: 'POST',
@@ -184,9 +201,10 @@ export const AdWizard: React.FC = () => {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) return payload?.error ?? 'Não foi possível aplicar o cupom.';
+      setCourtesyApplied(true);
       setPaymentSubmitted(true);
       if (storageKey) sessionStorage.removeItem(storageKey);
-      showToast('Cupom aplicado. Campanha aguardando moderação.', 'success');
+      showToast('Cortesia aplicada. Campanha aguardando moderação.', 'success');
       return null;
     } catch {
       return 'Não foi possível aplicar o cupom agora. Tente novamente.';
@@ -202,7 +220,7 @@ export const AdWizard: React.FC = () => {
       const response = await fetch('/api/ads/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...state, bannerId: draftId, adAccountId: account?.id, idempotencyKey: checkoutKeyRef.current }),
+        body: JSON.stringify({ ...state, bannerId: draftId, adAccountId: account?.id, idempotencyKey: checkoutKeyRef.current, couponCode: appliedCoupon?.code }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel preparar o pagamento.');
@@ -215,7 +233,7 @@ export const AdWizard: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  }, [account?.id, businessApproved, state]);
+  }, [account?.id, appliedCoupon?.code, businessApproved, state]);
 
   useEffect(() => {
     if (hydrated && canPay && businessApproved && state.step === 4 && state.draftId && !clientSecret && !paymentSubmitted) {
@@ -282,13 +300,13 @@ export const AdWizard: React.FC = () => {
       </header>
 
       {requestError ? <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-body-sm text-red-700">{requestError}</div> : null}
-      {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">Pagamento recebido ou em processamento. A campanha sera enviada para moderacao pelo webhook do Stripe.</div> : null}
+      {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">{courtesyApplied ? 'Cortesia aplicada! Sua campanha foi enviada para moderação e começa a ser exibida depois da aprovação. Ao final do período, contrate um pacote pelo fluxo normal para continuar anunciando.' : 'Pagamento recebido ou em processamento. A campanha será enviada para moderação assim que o pagamento for confirmado.'}</div> : null}
       {smokeTestMode ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-body-sm text-amber-800">Modo de teste de cobranca ativo. O checkout usa valor simbolico para homologacao em conta live.</div> : null}
 
       {state.step === 1 ? <GoalStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 2 ? <CreativeStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 3 ? <ReachAndPlanStep state={state} errors={errors} patch={patch} /> : null}
-      {state.step === 4 ? <CheckoutStep onRedeemCoupon={redeemCoupon} state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
+      {state.step === 4 ? <CheckoutStep appliedCoupon={appliedCoupon} onRedeemCoupon={redeemCoupon} state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
         setPaymentSubmitted(true);
         if (storageKey) sessionStorage.removeItem(storageKey);
         showToast('Pagamento enviado. Campanha aguardando moderacao.', 'success');

@@ -1,6 +1,7 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { isAdsSmokeTestModeEnabled } from '@/lib/ads/contracts';
+import { evaluateAdCoupon } from '@/lib/ads/coupons';
 import { adPlanTotalCents, getAdPlanCatalog } from '@/lib/ads/plans';
 import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
 import { adCheckoutSchema } from '@/lib/ads/validation';
@@ -58,11 +59,25 @@ export async function POST(request: Request) {
   });
   if (!banner) return NextResponse.json({ error: 'Rascunho nao encontrado ou indisponivel.' }, { status: 404 });
 
+  const planInfo = (await getAdPlanCatalog()).find((item) => item.plan === parsed.data.plan);
+  if (!planInfo || !planInfo.isActive || planInfo.durationMonths !== parsed.data.durationMonths) {
+    return NextResponse.json({ error: 'O pacote selecionado não está mais disponível. Escolha o pacote novamente.' }, { status: 409 });
+  }
+  let amountCents = isAdsSmokeTestModeEnabled() ? 100 : adPlanTotalCents(planInfo);
+  let appliedCouponId: string | null = null;
+  if (parsed.data.couponCode && !isAdsSmokeTestModeEnabled()) {
+    const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, totalCents: amountCents });
+    if (!evaluation.ok) return NextResponse.json({ error: evaluation.error }, { status: 400 });
+    if (evaluation.full) return NextResponse.json({ error: 'Este cupom cobre o valor inteiro. Use a opção de aplicar cupom.' }, { status: 409 });
+    amountCents = evaluation.payCents;
+    appliedCouponId = evaluation.couponId;
+  }
+
   const pendingPaymentIntentId = banner.payments[0]?.providerPaymentId;
   if (pendingPaymentIntentId) {
     try {
       const existingIntent = await getStripe().paymentIntents.retrieve(pendingPaymentIntentId);
-      if (['requires_payment_method', 'requires_confirmation', 'requires_action'].includes(existingIntent.status)) {
+      if (existingIntent.amount === amountCents && ['requires_payment_method', 'requires_confirmation', 'requires_action'].includes(existingIntent.status)) {
         return NextResponse.json({ clientSecret: existingIntent.client_secret });
       }
       if (existingIntent.status === 'processing' || existingIntent.status === 'succeeded') {
@@ -81,11 +96,6 @@ export async function POST(request: Request) {
   const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });
   if (!region) return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
 
-  const planInfo = (await getAdPlanCatalog()).find((item) => item.plan === parsed.data.plan);
-  if (!planInfo || !planInfo.isActive || planInfo.durationMonths !== parsed.data.durationMonths) {
-    return NextResponse.json({ error: 'O pacote selecionado não está mais disponível. Escolha o pacote novamente.' }, { status: 409 });
-  }
-  const amountCents = isAdsSmokeTestModeEnabled() ? 100 : adPlanTotalCents(planInfo);
   const destinationFields = getAdDestinationFields(parsed.data.goal, parsed.data.destination);
 
   await prisma.banner.update({
@@ -117,7 +127,7 @@ export async function POST(request: Request) {
         currency: 'usd',
         description: `Campanha ${planInfo.name} - ${parsed.data.durationMonths} mes(es): ${parsed.data.headline}`,
         receipt_email: session.user.email ?? undefined,
-        metadata: { bannerId: banner.id, userId: session.user.id, adAccountId: parsed.data.adAccountId },
+        metadata: { bannerId: banner.id, userId: session.user.id, adAccountId: parsed.data.adAccountId, ...(appliedCouponId ? { couponId: appliedCouponId } : {}) },
       },
       { idempotencyKey: parsed.data.idempotencyKey },
     );

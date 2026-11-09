@@ -43,7 +43,7 @@ function PaymentForm({ campaignId, onProcessing, onSuccess, onError }: { campaig
   );
 }
 
-export function CheckoutStep({ state, clientSecret, error, onProcessing, onSuccess, onError, onRedeemCoupon }: { onRedeemCoupon: (code: string) => Promise<string | null>; state: AdWizardData; clientSecret: string | null; error: string | null; onProcessing: (value: boolean) => void; onSuccess: () => void; onError: (message: string) => void }) {
+export function CheckoutStep({ state, clientSecret, error, onProcessing, onSuccess, onError, onRedeemCoupon, appliedCoupon }: { appliedCoupon: { code: string; discountCents: number; payCents: number } | null; onRedeemCoupon: (code: string) => Promise<string | null>; state: AdWizardData; clientSecret: string | null; error: string | null; onProcessing: (value: boolean) => void; onSuccess: () => void; onError: (message: string) => void }) {
   const plans = useAdPlans();
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -64,7 +64,13 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
         </div>
         <div className="mt-5 rounded-2xl bg-[#eaf5ff] p-5">
           <p className="text-xs font-bold uppercase tracking-wide text-[#176daa]">Total em dolar americano</p>
-          <p className="mt-1 text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(amount)}</p>
+          {appliedCoupon ? (
+            <div className="mt-1 space-y-1">
+              <p className="text-sm text-slate-500 line-through">{formatAdCurrency(amount)}</p>
+              <p className="text-xs font-semibold text-emerald-700">Crédito do cupom {appliedCoupon.code}: −{formatAdCurrency(appliedCoupon.discountCents)}</p>
+              <p className="text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(appliedCoupon.payCents)}</p>
+            </div>
+          ) : <p className="mt-1 text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(amount)}</p>}
           <p className="mt-2 text-xs leading-5 text-slate-500">Valor calculado e validado no servidor. A campanha segue para analise depois da confirmacao do Stripe.</p>
         </div>
       </Card>
@@ -89,7 +95,7 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
                 </div>
               </label>
               {couponError ? <p className="text-xs font-medium text-red-600">{couponError}</p> : null}
-              <p className="text-[11px] text-slate-400">Cupom de cortesia libera esta campanha sem cobrança.</p>
+              <p className="text-[11px] text-slate-400">Cortesia libera a campanha sem cobrança; crédito promocional abate do valor do pacote.</p>
             </form>
           ) : (
             <button type="button" onClick={() => setCouponOpen(true)} className="inline-flex items-center gap-2 text-sm font-semibold text-[#078cf5] hover:underline"><Gift size={16} /> Tenho um cupom</button>

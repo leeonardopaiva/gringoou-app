@@ -12,6 +12,7 @@ type Coupon = {
   code: string;
   plan: 'BRONZE' | 'SILVER' | 'GOLD' | null;
   assignedEmail: string | null;
+  creditCents: number | null;
   maxRedemptions: number;
   redeemedCount: number;
   expiresAt: string | null;
@@ -28,7 +29,7 @@ export default function AdCouponsSection() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ code: randomCode(), plan: '', assignedEmail: '', maxRedemptions: '1', expiresAt: '', note: '' });
+  const [form, setForm] = useState({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,6 +57,7 @@ export default function AdCouponsSection() {
           code: form.code,
           plan: form.plan || null,
           assignedEmail: form.assignedEmail || null,
+          creditCents: form.creditUsd ? Math.round(Number(form.creditUsd.replace(',', '.')) * 100) : null,
           maxRedemptions: Number(form.maxRedemptions) || 1,
           expiresAt: form.expiresAt ? new Date(`${form.expiresAt}T23:59:59`).toISOString() : null,
           note: form.note || null,
@@ -64,7 +66,7 @@ export default function AdCouponsSection() {
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível criar o cupom.');
       showToast(`Cupom ${payload.coupon.code} criado.`, 'success');
-      setForm({ code: randomCode(), plan: '', assignedEmail: '', maxRedemptions: '1', expiresAt: '', note: '' });
+      setForm({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
       await load();
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Não foi possível criar o cupom.', 'error');
@@ -94,8 +96,8 @@ export default function AdCouponsSection() {
     <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex items-start justify-between gap-4">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
-          Cupons de cortesia
-          <InfoTip text="Cada cupom libera uma campanha sem cobrança e vale uma vez por conta de anúncios. Depois da cortesia, o cliente contrata o pacote pelo fluxo normal de promover." />
+          Cupons
+          <InfoTip text="Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Vale uma vez por conta de anúncios; depois, o cliente contrata pelo fluxo normal." />
         </h1>
         <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
@@ -114,6 +116,7 @@ export default function AdCouponsSection() {
             </select>
           </label>
           <label className="block text-xs font-bold text-slate-500">E-mail do cliente (opcional)<input type="email" className={`${inputClass} mt-1`} placeholder="só esta pessoa pode usar" value={form.assignedEmail} onChange={(event) => setForm({ ...form, assignedEmail: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">Crédito em US$ (vazio = cobre o pacote inteiro)<input inputMode="decimal" placeholder="ex.: 50" className={`${inputClass} mt-1`} value={form.creditUsd} onChange={(event) => setForm({ ...form, creditUsd: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Limite de usos<input inputMode="numeric" className={`${inputClass} mt-1`} value={form.maxRedemptions} onChange={(event) => setForm({ ...form, maxRedemptions: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Validade (opcional)<input type="date" className={`${inputClass} mt-1`} value={form.expiresAt} onChange={(event) => setForm({ ...form, expiresAt: event.target.value })} /></label>
           <label className="block text-xs font-bold text-slate-500">Anotação interna<input className={`${inputClass} mt-1`} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} /></label>
@@ -139,7 +142,7 @@ export default function AdCouponsSection() {
                     <button type="button" onClick={() => copy(coupon.code)} aria-label="Copiar código" className="text-slate-400 hover:text-slate-600"><Copy size={14} /></button>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-slate-400">
-                    {coupon.plan ?? 'Qualquer pacote'} · {coupon.redeemedCount}/{coupon.maxRedemptions} usos{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` · até ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
+                    {coupon.creditCents ? `Crédito US$ ${(coupon.creditCents / 100).toFixed(2)}` : 'Cortesia total'} · {coupon.plan ?? 'Qualquer pacote'} · {coupon.redeemedCount}/{coupon.maxRedemptions} usos{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` · até ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${status[1]}`}>{status[0]}</span>

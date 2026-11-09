@@ -441,6 +441,7 @@ model Business {
   events              Event[]                @relation("EventBusiness")
   jobs                Job[]                  @relation("JobBusiness")
   adAccount           AdAccount?
+  conversations       MarketplaceConversation[]
   slugRedirects       BusinessSlugRedirect[]
 
   @@index([status, regionKey])
@@ -1108,6 +1109,8 @@ model MarketplaceConversation {
   id            String                        @id @default(cuid())
   /// Nulo em conversas diretas entre duas pessoas (sem anúncio).
   itemId        String?
+  /// Negócio sobre o qual a pessoa escreveu (conversa com o responsável pela página).
+  businessId    String?
   buyerId       String
   sellerId      String
   status        MarketplaceConversationStatus @default(ACTIVE)
@@ -1117,6 +1120,7 @@ model MarketplaceConversation {
   createdAt     DateTime                      @default(now())
   updatedAt     DateTime                      @updatedAt
   item          MarketplaceItem?              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  business      Business?                     @relation(fields: [businessId], references: [id], onDelete: SetNull)
   buyer         User                          @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   seller        User                          @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
   messages      MarketplaceMessage[]
@@ -1127,6 +1131,7 @@ model MarketplaceConversation {
   @@index([buyerId, updatedAt])
   @@index([sellerId, updatedAt])
   @@index([itemId])
+  @@index([businessId, updatedAt])
 }
 
 enum MarketplaceConversationStatus {
@@ -1332,6 +1337,8 @@ model AdCoupon {
   plan           AdPlan?
   /// Restringe a quem tem este e-mail (nulo = qualquer pessoa com o código).
   assignedEmail  String?
+  /// Crédito promocional em centavos de dólar. Nulo = cobre o pacote inteiro (cortesia).
+  creditCents    Int?
   maxRedemptions Int                   @default(1)
   expiresAt      DateTime?
   isActive       Boolean               @default(true)

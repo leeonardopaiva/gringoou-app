@@ -62,6 +62,7 @@ export const adCheckoutSchema = adCreativeStepSchema.and(adReachStepSchema).and(
     bannerId: z.string().cuid(),
     adAccountId: z.string().cuid(),
     idempotencyKey: z.string().trim().min(16).max(255),
+    couponCode: z.string().trim().toUpperCase().max(32).optional(),
   }),
 );
 
