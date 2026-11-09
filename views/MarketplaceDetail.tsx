@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw, Edit, Map } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
+import { ApproximateAreaMap } from '../components/ui/ApproximateAreaMap';
 import { MarketplaceCard, formatPrice, formatRelativeTime } from '../components/marketplace/MarketplaceCard';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { Button } from '../components/ui/Button';
@@ -533,17 +534,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             {item.latitude != null && item.longitude != null ? (
               <div className="mt-4 border-t border-slate-100 pt-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Localização aproximada</p>
-                <div className="relative mt-2 h-40 w-full overflow-hidden rounded-xl bg-slate-100">
-                  <iframe
-                    title="Região aproximada do anúncio"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${item.longitude - 0.03}%2C${item.latitude - 0.02}%2C${item.longitude + 0.03}%2C${item.latitude + 0.02}&layer=mapnik`}
-                    className="h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    sandbox="allow-scripts allow-same-origin"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-slate-400">Mapa aproximado — localização exata não é exibida por privacidade.</p>
+                <ApproximateAreaMap className="mt-2" latitude={item.latitude} longitude={item.longitude} label={`Área aproximada: ${sellerLocation}`} />
               </div>
             ) : (item.city || item.state) ? (
               <div className="mt-4 border-t border-slate-100 pt-4">
