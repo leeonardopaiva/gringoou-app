@@ -17,11 +17,11 @@ export function ReachAndPlanStep({ state, errors, patch }: { state: AdWizardData
       <RegionSelector value={state.regionKey} onChange={(region) => patch({ regionKey: region.key })} label="Regiao da campanha" hint={errors.regionKey} />
       <div className="grid gap-4 md:grid-cols-3">
         {plans === null ? <p className="text-sm text-slate-400 md:col-span-3">Carregando pacotes...</p> : null}
+        {plans?.length === 0 ? <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 md:col-span-3">Nenhum pacote disponível no momento. Tente novamente mais tarde.</p> : null}
         {plans?.map((item) => {
           const plan = item.plan;
           const selected = state.plan === plan;
           return <button key={plan} type="button" onClick={() => patch({ plan, durationMonths: item.durationMonths })} className={cn('relative rounded-2xl border-2 p-6 text-left transition hover:border-[#078cf5]', selected ? plan === 'SILVER' ? 'border-[#173247] bg-[#fff98a] shadow-lg' : 'border-[#078cf5] bg-white shadow-sm' : 'border-slate-200 bg-white')}>
-            {plan === 'SILVER' ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#173247] px-4 py-1 text-[9px] font-extrabold uppercase text-white">Mais popular</span> : null}
             <div className="flex items-center justify-between"><p className="text-[18px] font-extrabold text-[#173247]">{item.name}</p>{selected ? <Check size={18} className="text-[#078cf5]" /> : null}</div>
             <p className="mt-2 text-[28px] font-extrabold text-[#078cf5]">{formatAdCurrency(item.monthlyPriceCents * item.durationMonths)}</p>
             <p className="mt-1 text-[10px] font-semibold text-slate-400">{formatAdCurrency(item.monthlyPriceCents)} por mes</p>

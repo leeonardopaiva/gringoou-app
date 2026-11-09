@@ -1,5 +1,6 @@
 'use client';
 
+import { useAdPlans } from '@/hooks/useAdPlans';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Building2, CalendarDays, Check, CheckCircle2, Clock3, Eye, MapPin, Megaphone, RefreshCcw, Search, X, XCircle } from 'lucide-react';
@@ -24,7 +25,6 @@ const statusLabels = { PENDING_REVIEW: 'Pendentes', APPROVED: 'Aprovados', REJEC
 const quickReasons = ['Imagem inadequada ou ilegivel', 'Texto enganoso', 'Destino incompativel', 'Conteudo proibido', 'Informacoes insuficientes', 'Violacao das diretrizes'];
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const dateTime = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-const planName = { BRONZE: 'Bronze', SILVER: 'Prata', GOLD: 'Ouro' } as const;
 const goalName = { WHATSAPP: 'WhatsApp', EXTERNAL_URL: 'URL externa', MARKETPLACE: 'Marketplace' } as const;
 
 function slaStatus(submittedAt: string) {
@@ -41,6 +41,8 @@ function DetailRows({ rows }: { rows: Array<[string, React.ReactNode]> }) {
 }
 
 export default function AdsModerationSection() {
+  const adPlans = useAdPlans();
+  const planName = new Proxy(Object.fromEntries((adPlans ?? []).map((item) => [item.plan, item.name])) as Record<string, string>, { get: (target, key) => target[key as string] ?? 'Pacote' });
   const { showToast } = useToast();
   const [payload, setPayload] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);

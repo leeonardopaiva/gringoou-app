@@ -29,6 +29,7 @@ export default function AdCouponsSection() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [planOptions, setPlanOptions] = useState<Array<{ plan: string; name: string }>>([]);
   const [form, setForm] = useState({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
 
   const load = useCallback(async () => {
@@ -46,6 +47,12 @@ export default function AdCouponsSection() {
   }, [showToast]);
 
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void fetch('/api/admin/ads/plans', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : { plans: [] }))
+      .then((payload) => setPlanOptions((payload.plans ?? []).map((item: { plan: string; name: string }) => ({ plan: item.plan, name: item.name }))))
+      .catch(() => undefined);
+  }, []);
 
   const create = async () => {
     setCreating(true);
@@ -112,7 +119,7 @@ export default function AdCouponsSection() {
           </label>
           <label className="block text-xs font-bold text-slate-500">Pacote
             <select className={`${inputClass} mt-1`} value={form.plan} onChange={(event) => setForm({ ...form, plan: event.target.value })}>
-              <option value="">Qualquer pacote</option><option value="BRONZE">Bronze</option><option value="SILVER">Prata</option><option value="GOLD">Ouro</option>
+              <option value="">Qualquer pacote</option>{planOptions.map((option) => <option key={option.plan} value={option.plan}>{option.name}</option>)}
             </select>
           </label>
           <label className="block text-xs font-bold text-slate-500">E-mail do cliente (opcional)<input type="email" className={`${inputClass} mt-1`} placeholder="só esta pessoa pode usar" value={form.assignedEmail} onChange={(event) => setForm({ ...form, assignedEmail: event.target.value })} /></label>
@@ -142,7 +149,7 @@ export default function AdCouponsSection() {
                     <button type="button" onClick={() => copy(coupon.code)} aria-label="Copiar código" className="text-slate-400 hover:text-slate-600"><Copy size={14} /></button>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-slate-400">
-                    {coupon.creditCents ? `Crédito US$ ${(coupon.creditCents / 100).toFixed(2)}` : 'Cortesia total'} · {coupon.plan ?? 'Qualquer pacote'} · {coupon.redeemedCount}/{coupon.maxRedemptions} usos{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` · até ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
+                    {coupon.creditCents ? `Crédito US$ ${(coupon.creditCents / 100).toFixed(2)}` : 'Cortesia total'} · {coupon.plan ? planOptions.find((option) => option.plan === coupon.plan)?.name ?? 'Pacote' : 'Qualquer pacote'} · {coupon.redeemedCount}/{coupon.maxRedemptions} usos{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` · até ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${status[1]}`}>{status[0]}</span>

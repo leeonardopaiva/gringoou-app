@@ -12,7 +12,8 @@ import { ReachAndPlanStep } from './steps/ReachAndPlanStep';
 import type { AdFieldErrors } from './types';
 import { WizardStepper } from './WizardStepper';
 import { useAdAccount } from './AdAccountProvider';
-import { formatAdCurrency, getAdCheckoutAmount, isAdsSmokeTestModeEnabled } from '@/lib/ads/contracts';
+import { formatAdCurrency } from '@/lib/ads/contracts';
+import { useAdPlans } from '@/hooks/useAdPlans';
 
 const LEGACY_STORAGE_KEY = 'gringoou:ad-wizard-draft';
 const STORAGE_KEY_PREFIX = 'gringoou:ad-wizard-draft';
@@ -63,10 +64,9 @@ export const AdWizard: React.FC = () => {
   const [courtesyApplied, setCourtesyApplied] = useState(false);
   const checkoutKeyRef = useRef<string | null>(null);
   const { showToast } = useToast();
-  const checkoutAmount = state.plan && state.durationMonths
-    ? getAdCheckoutAmount(state.plan, state.durationMonths)
-    : 0;
-  const smokeTestMode = isAdsSmokeTestModeEnabled();
+  const adPlans = useAdPlans();
+  const selectedPlan = adPlans?.find((item) => item.plan === state.plan);
+  const checkoutAmount = appliedCoupon ? appliedCoupon.payCents : selectedPlan && state.durationMonths ? selectedPlan.monthlyPriceCents * state.durationMonths : 0;
   const canPay = account?.role === 'BUSINESS_ADMIN';
   const businessApproved = account?.businessStatus === 'PUBLISHED';
   const storageKey = account?.id ? `${STORAGE_KEY_PREFIX}:${account.id}` : null;
@@ -301,7 +301,6 @@ export const AdWizard: React.FC = () => {
 
       {requestError ? <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-body-sm text-red-700">{requestError}</div> : null}
       {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">{courtesyApplied ? 'Cortesia aplicada! Sua campanha foi enviada para moderação e começa a ser exibida depois da aprovação. Ao final do período, contrate um pacote pelo fluxo normal para continuar anunciando.' : 'Pagamento recebido ou em processamento. A campanha será enviada para moderação assim que o pagamento for confirmado.'}</div> : null}
-      {smokeTestMode ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-body-sm text-amber-800">Modo de teste de cobranca ativo. O checkout usa valor simbolico para homologacao em conta live.</div> : null}
 
       {state.step === 1 ? <GoalStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 2 ? <CreativeStep state={state} errors={errors} patch={patch} /> : null}

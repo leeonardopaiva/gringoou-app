@@ -21,7 +21,7 @@ const planSchema = z.object({
 export async function GET() {
   const { response } = await requireRootSession();
   if (response) return response;
-  return NextResponse.json({ plans: await getAdPlanCatalog() });
+  return NextResponse.json({ plans: await getAdPlanCatalog(), slots: AD_PLANS });
 }
 
 export async function PUT(request: Request) {

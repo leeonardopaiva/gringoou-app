@@ -1,4 +1,4 @@
-import { AD_PLAN_CATALOG, type AdPlanValue } from '@/lib/ads/contracts';
+import type { AdPlanValue } from '@/lib/ads/contracts';
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
@@ -7,6 +7,8 @@ export type DeliveryCandidate = {
   id: string;
   adAccountId: string | null;
   plan: AdPlanValue | null;
+  /** Impressões estimadas do pacote contratado (cadastradas no admin). */
+  planTargetImpressions?: number;
   startsAt: Date | null;
   endsAt: Date | null;
   createdAt: Date;
@@ -28,7 +30,7 @@ export type DeliveryScore = {
 };
 
 export function scoreDeliveryCandidate(candidate: DeliveryCandidate, now = new Date()): DeliveryScore {
-  const planTarget = candidate.plan ? AD_PLAN_CATALOG[candidate.plan].estimatedImpressions : 5_000;
+  const planTarget = candidate.planTargetImpressions ?? 5_000;
   const start = candidate.startsAt?.getTime() ?? candidate.createdAt.getTime();
   const end = candidate.endsAt?.getTime() ?? start + 30 * 24 * 60 * 60 * 1_000;
   const duration = Math.max(1, end - start);

@@ -99,7 +99,9 @@ export default function AdminShell({ user, children }: { user: User; children: R
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
-              <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={cn('flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold transition', active ? 'bg-[#EAF1FF] text-[#2B5DF5]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900')}>
+              <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={cn('flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold transition', item.rootOnly
+                ? (active ? 'bg-[#F6EBC8] text-[#7A5C0F]' : 'text-[#8A6A12] hover:bg-[#FBF3DB] hover:text-[#6B4F0B]')
+                : (active ? 'bg-[#EAF1FF] text-[#2B5DF5]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'))}>
                 <Icon size={18} strokeWidth={2} />
                 <span className="flex-1">{item.label}</span>
               </Link>

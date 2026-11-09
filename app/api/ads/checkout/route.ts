@@ -1,6 +1,5 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { isAdsSmokeTestModeEnabled } from '@/lib/ads/contracts';
 import { evaluateAdCoupon } from '@/lib/ads/coupons';
 import { adPlanTotalCents, getAdPlanCatalog } from '@/lib/ads/plans';
 import { getAdDestinationFields, getStripe } from '@/lib/ads/server';
@@ -63,9 +62,9 @@ export async function POST(request: Request) {
   if (!planInfo || !planInfo.isActive || planInfo.durationMonths !== parsed.data.durationMonths) {
     return NextResponse.json({ error: 'O pacote selecionado não está mais disponível. Escolha o pacote novamente.' }, { status: 409 });
   }
-  let amountCents = isAdsSmokeTestModeEnabled() ? 100 : adPlanTotalCents(planInfo);
+  let amountCents = adPlanTotalCents(planInfo);
   let appliedCouponId: string | null = null;
-  if (parsed.data.couponCode && !isAdsSmokeTestModeEnabled()) {
+  if (parsed.data.couponCode) {
     const evaluation = await evaluateAdCoupon({ code: parsed.data.couponCode, plan: parsed.data.plan, adAccountId: parsed.data.adAccountId, userEmail: session.user.email, userId: session.user.id, bannerId: banner.id, totalCents: amountCents });
     if (!evaluation.ok) return NextResponse.json({ error: evaluation.error }, { status: 400 });
     if (evaluation.full) return NextResponse.json({ error: 'Este cupom cobre o valor inteiro. Use a opção de aplicar cupom.' }, { status: 409 });
