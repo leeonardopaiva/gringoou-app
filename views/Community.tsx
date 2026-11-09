@@ -963,7 +963,7 @@ const Community: React.FC<{
           </div>
         </div>
 
-        <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#0086ff] via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
+        <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-brand-500 via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
             <UserPlus size={16} aria-hidden="true" />
           </span>

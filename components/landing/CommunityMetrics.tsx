@@ -33,12 +33,12 @@ export function CommunityMetrics() {
         </div>
         <div>
           <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">
-            <span className="ml-1 text-[0.6em] text-[#0086ff]"> +</span> 130
+            <span className="ml-1 text-[0.6em] text-brand-500"> +</span> 130
           </strong>
           <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-wide text-[#6b7a9e]">Países com <br />brasileiros conectados</span>
         </div>
       </div>
-      <a href="/login" aria-label="Fazer parte da rede social Gringoou" className="group hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0086ff] lg:block">
+      <a href="/login" aria-label="Fazer parte da rede social Gringoou" className="group hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500 lg:block">
         <CommunitySeal />
       </a>
     </aside>

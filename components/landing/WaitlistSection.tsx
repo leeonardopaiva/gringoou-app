@@ -7,7 +7,7 @@ import { waitlistSchema } from '@/lib/waitlist';
 import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 
 const inputClassName =
-  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-[#0086ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0086ff]';
+  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 
 export function WaitlistSection() {
   const [email, setEmail] = useState('');
@@ -186,7 +186,7 @@ export function WaitlistSection() {
                 disabled={locating}
                 aria-label="Usar minha localizacao"
                 title="Usar minha localizacao"
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-[#0086ff] transition hover:bg-[#f0f7ff] disabled:opacity-60"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-brand-500 transition hover:bg-[#f0f7ff] disabled:opacity-60"
               >
                 <LocateFixed size={18} className={locating ? 'animate-pulse' : ''} />
               </button>
@@ -215,7 +215,7 @@ export function WaitlistSection() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 rounded-full bg-[#0086ff] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#006ed4] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0086ff]"
+              className="mt-2 rounded-full bg-brand-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             >
               {loading ? 'Enviando...' : 'Quero entrar na lista'}
             </button>
@@ -225,7 +225,7 @@ export function WaitlistSection() {
         <div className="flex justify-center border-t border-[#eef1f7] pt-5">
           <Link
             href="/login"
-            className="text-sm font-bold text-[#0086ff] transition hover:text-[#006ed4]"
+            className="text-sm font-bold text-brand-500 transition hover:text-brand-600"
           >
             Já tem convite ou conta? Entrar
           </Link>
