@@ -204,12 +204,13 @@ export const AdWizard: React.FC = () => {
       setCourtesyApplied(true);
       setPaymentSubmitted(true);
       if (storageKey) sessionStorage.removeItem(storageKey);
-      showToast('Cortesia aplicada. Campanha aguardando moderação.', 'success');
+      showToast('Cortesia aplicada!', 'success');
+      router.replace(`/ads/anuncio-em-analise?campaign=${encodeURIComponent(state.draftId)}`);
       return null;
     } catch {
       return 'Não foi possível aplicar o cupom agora. Tente novamente.';
     }
-  }, [account?.id, showToast, state, storageKey]);
+  }, [account?.id, router, showToast, state, storageKey]);
 
   const preparePayment = useCallback(async (draftId: string) => {
     if (!state.plan || !state.durationMonths || !businessApproved) return false;
