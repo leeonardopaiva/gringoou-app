@@ -168,7 +168,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
         </Button>
       } />
       <section className="space-y-3">
-        <SectionHeader title="Vagas disponiveis">
+        <SectionHeader>
           <FilterPopover>
             <Select
               value={employmentType}

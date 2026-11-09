@@ -351,14 +351,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     return eventDate >= now || isSameLocalDay(eventDate, now);
   });
 
-  const sectionTitle =
-    activeTab === 'Hoje'
-      ? 'Eventos de hoje'
-      : activeTab === 'Esta semana'
-        ? 'Eventos desta semana'
-        : activeTab === 'Passados'
-          ? 'Eventos passados'
-          : 'Eventos proximos';
   return (
     <ContentColumn size="compact" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
@@ -482,7 +474,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
       <div className="space-y-4">
         <div className="space-y-3">
-          <SectionHeader title={sectionTitle}>
+          <SectionHeader>
             <SectionTabs.Mobile options={EVENT_TAB_OPTIONS} value={activeTab} onChange={setActiveTab} ariaLabel="Selecionar categoria de eventos" />
             <FilterPopover>
               <div className="relative">

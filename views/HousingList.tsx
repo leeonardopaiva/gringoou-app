@@ -139,7 +139,7 @@ export default function HousingList({ user }: { user: User }) {
         </Button>
       } />
       <section className="space-y-3">
-        <SectionHeader title="Imoveis disponiveis">
+        <SectionHeader>
           <FilterPopover>
             <Select
               value={propertyType}
