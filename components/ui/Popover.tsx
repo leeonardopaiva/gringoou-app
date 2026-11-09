@@ -11,6 +11,9 @@ export interface PopoverProps {
   align?: 'start' | 'end' | 'center';
   side?: 'bottom' | 'top';
   className?: string;
+  /** Sem o visual padrão (borda, fundo, sombra): o chamador define a aparência, o Popover só posiciona. */
+  unstyled?: boolean;
+  role?: 'menu' | 'dialog';
   children: React.ReactNode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -27,6 +30,8 @@ export const Popover: React.FC<PopoverProps> = ({
   align = 'end',
   side = 'bottom',
   className,
+  unstyled = false,
+  role = 'menu',
   children,
   onMouseEnter,
   onMouseLeave,
@@ -67,8 +72,20 @@ export const Popover: React.FC<PopoverProps> = ({
       const maxLeft = viewportLeft + viewportWidth - popoverWidth - gap;
       left = Math.min(Math.max(left, minLeft), Math.max(maxLeft, minLeft));
 
+      // Se o conteúdo não cabe na altura visível (ex.: celular deitado), limita e rola por dentro.
+      const availableHeight = viewportHeight - gap * 2;
+      const overflowsHeight = (popover?.scrollHeight ?? 0) > availableHeight;
+      if (overflowsHeight) top = viewportTop + gap;
+
       // Nunca mais largo que a tela (respeitando a margem de segurança).
-      setStyle({ position: 'fixed', top, left, maxWidth: viewportWidth - gap * 2, visibility: 'visible' });
+      setStyle({
+        position: 'fixed',
+        top,
+        left,
+        maxWidth: viewportWidth - gap * 2,
+        ...(overflowsHeight ? { maxHeight: availableHeight, overflowY: 'auto' as const } : null),
+        visibility: 'visible',
+      });
     };
 
     updatePosition();
@@ -112,11 +129,11 @@ export const Popover: React.FC<PopoverProps> = ({
   return createPortal(
     <div
       ref={popoverRef}
-      role="menu"
+      role={role}
       style={style}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className={cn('z-[200] rounded-2xl border border-border bg-surface shadow-lg', className)}
+      className={cn('z-[200]', !unstyled && 'rounded-2xl border border-border bg-surface shadow-lg', className)}
     >
       {children}
     </div>,
