@@ -54,6 +54,9 @@ type ProfileState = {
   birthCity: string;
 };
 
+/** Por quanto tempo o rascunho do editor de perfil fica guardado (1 hora). */
+const PROFILE_DRAFT_TTL_MS = 60 * 60 * 1000;
+
 const emptyProfessionalProfile: ProfessionalProfileSummary = {
   businessCount: 0,
   eventCount: 0,
@@ -253,8 +256,7 @@ const Profile: React.FC<{
     }
 
     if (editSection === 'cover' || editSection === 'region' || editSection === 'profile') {
-      setProfileEditDraft(profile);
-      setEditing((current) => ({ ...current, profile: true }));
+      openEditProfileModal();
     }
 
     router.replace('/profile', { scroll: false });
@@ -481,15 +483,72 @@ const Profile: React.FC<{
     return () => { ignore = true; };
   }, [editing.profile, policySaved]);
 
+  /** Rascunho do editor guardado neste aparelho por um tempo, para não perder o que foi digitado se a pessoa sair sem querer. */
+  const draftKey = `gringoou:profile-draft:${profile.id}`;
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  const readStoredDraft = (): { draft: ProfileState; policy: MessagePolicy | null } | null => {
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { draft?: ProfileState; policy?: MessagePolicy | null; savedAt?: number };
+      if (!parsed.draft || !parsed.savedAt || Date.now() - parsed.savedAt > PROFILE_DRAFT_TTL_MS) {
+        window.localStorage.removeItem(draftKey);
+        return null;
+      }
+      return { draft: parsed.draft, policy: parsed.policy ?? null };
+    } catch {
+      return null;
+    }
+  };
+
+  const clearStoredDraft = () => {
+    try {
+      window.localStorage.removeItem(draftKey);
+    } catch {
+      /* armazenamento indisponível: segue sem rascunho */
+    }
+  };
+
+  useEffect(() => {
+    if (!editing.profile || !profileEditDraft) return;
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(draftKey, JSON.stringify({ draft: profileEditDraft, policy: policyDraft, savedAt: Date.now() }));
+      } catch {
+        /* armazenamento indisponível: segue sem rascunho */
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [editing.profile, profileEditDraft, policyDraft, draftKey]);
+
   const openEditProfileModal = () => {
-    setPolicyDraft(policySaved);
-    setProfileEditDraft(profile);
+    const found = readStoredDraft();
+    const stored = found && (JSON.stringify(found.draft) !== JSON.stringify(profile) || (found.policy !== null && policySaved !== null && found.policy !== policySaved)) ? found : null;
+    setPolicyDraft(stored?.policy ?? policySaved);
+    setProfileEditDraft(stored ? { ...profile, ...stored.draft } : profile);
+    setDraftRestored(Boolean(stored));
     setEditing((c) => ({ ...c, profile: true }));
   };
 
+  /** Fecha mantendo o rascunho (X, Esc ou clique fora). */
   const closeEditProfileModal = () => {
     setProfileEditDraft(null);
     setEditing((c) => ({ ...c, profile: false }));
+  };
+
+  /** Descarta de propósito: apaga o rascunho guardado. */
+  const discardEditProfile = () => {
+    clearStoredDraft();
+    setDraftRestored(false);
+    closeEditProfileModal();
+  };
+
+  const resetDraftToSaved = () => {
+    clearStoredDraft();
+    setDraftRestored(false);
+    setProfileEditDraft(profile);
+    setPolicyDraft(policySaved);
   };
 
   const saveCompleteProfile = async () => {
@@ -528,6 +587,8 @@ const Profile: React.FC<{
         return;
       }
     }
+    clearStoredDraft();
+    setDraftRestored(false);
     closeEditProfileModal();
   };
 
@@ -620,6 +681,12 @@ const Profile: React.FC<{
             {profileEditDraft && (
               <EditorCard>
                 <div className="space-y-4">
+                  {draftRestored ? (
+                    <div className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                      <span>Recuperamos as alterações que você não salvou.</span>
+                      <button type="button" onClick={resetDraftToSaved} className="shrink-0 font-bold underline">Descartar</button>
+                    </div>
+                  ) : null}
                   <div>
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Capa do perfil</h3>
                     <div className="space-y-3">
@@ -698,7 +765,7 @@ const Profile: React.FC<{
 
                   <ActionRow>
                     <PrimaryButton className={primaryButtonClass} label={savingKey === 'profile' ? 'Salvando...' : 'Salvar perfil'} onClick={() => void saveCompleteProfile()} disabled={savingKey === 'profile'} />
-                    <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={closeEditProfileModal} disabled={savingKey === 'profile'} />
+                    <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={discardEditProfile} disabled={savingKey === 'profile'} />
                   </ActionRow>
                 </div>
               </EditorCard>
