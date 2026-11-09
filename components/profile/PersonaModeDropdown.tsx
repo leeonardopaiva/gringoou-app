@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BriefcaseBusiness, ChevronDown, UserRound } from 'lucide-react';
 import type { PersonaMode } from '../../types';
+import { Popover } from '../ui/Popover';
 
 type PersonaModeDropdownProps = {
   value: PersonaMode;
@@ -39,28 +40,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
     setOpen(false);
   }, [value]);
 
-  useEffect(() => {
-    if (!open) return;
-    const handlePointerDown = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open]);
-
-  const menuPositionClass =
-    align === 'left'
-      ? 'left-0'
-      : align === 'right'
-        ? 'right-0'
-        : 'left-1/2 -translate-x-1/2';
+  const popoverAlign = align === 'left' ? 'start' : align === 'right' ? 'end' : 'center';
 
   const handleChange = (mode: PersonaMode) => {
     onChange(mode);
@@ -96,11 +76,15 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
         </button>
       )}
 
-      {open ? (
-        <div
-          role="menu"
-          className={`absolute top-[calc(100%+0.35rem)] z-20 w-[220px] overflow-hidden rounded-2xl border border-border bg-surface p-1.5 text-left shadow-lg ${menuPositionClass} ${menuClassName}`.trim()}
-        >
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={containerRef}
+        align={popoverAlign}
+        unstyled
+        className={`w-[220px] overflow-hidden rounded-2xl border border-border bg-surface p-1.5 text-left shadow-lg ${menuClassName}`.trim()}
+      >
+        <div>
           <PersonaMenuOption
             title="Pessoal"
             subtitle={personalSubtitle}
@@ -138,7 +122,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
             />
           )}
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 };
