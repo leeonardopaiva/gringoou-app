@@ -15,6 +15,8 @@ export type AdAccountSummary = {
   publicPath: string | null;
   businessStatus: 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED' | 'SUSPENDED' | null;
   role: 'BUSINESS_ADMIN' | 'ADMIN' | 'EDITOR' | 'VIEWER';
+  /** Campanhas já contratadas (pagas ou em cortesia). */
+  campaignCount?: number;
 };
 
 type AdAccountContextValue = {
