@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AlertCircle, Bell, CalendarX2, CheckCircle2, Clock3, MessageCircle, RotateCcw, XCircle } from 'lucide-react';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { cn } from '@/lib/cn';
+import { Popover } from '@/components/ui/Popover';
 
 type AdAlert = { id: string; type: string; title: string; body: string | null; href: string | null; readAt: string | null; createdAt: string };
 
@@ -57,13 +58,6 @@ export function AdsAlertsBell() {
     return () => window.clearInterval(timer);
   }, [load]);
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: MouseEvent) => { if (!rootRef.current?.contains(event.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
-
   const markRead = async (ids?: string[]) => {
     if (!accountId) return;
     setItems((current) => current.map((item) => (!ids || ids.includes(item.id) ? { ...item, readAt: item.readAt ?? new Date().toISOString() } : item)));
@@ -77,8 +71,8 @@ export function AdsAlertsBell() {
         <Bell size={18} />
         {unread ? <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span> : null}
       </button>
-      {open ? (
-        <div className="absolute right-0 top-[calc(100%+10px)] z-[80] w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" role="dialog" unstyled className="w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+        <div>
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-bold text-slate-900">Alertas</p>
             {unread ? <button type="button" onClick={() => void markRead()} className="text-xs font-semibold text-brand-600 hover:underline">Marcar todos como lidos</button> : null}
@@ -112,7 +106,7 @@ export function AdsAlertsBell() {
             )}
           </div>
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 }
