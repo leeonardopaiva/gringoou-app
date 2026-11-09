@@ -46,10 +46,16 @@ export const Popover: React.FC<PopoverProps> = ({
       const popoverWidth = popoverRect?.width ?? 0;
       const popoverHeight = popoverRect?.height ?? 0;
       const gap = 8;
+      // visualViewport acompanha o teclado virtual e a barra do navegador no celular.
+      const viewport = window.visualViewport;
+      const viewportWidth = viewport?.width ?? document.documentElement.clientWidth;
+      const viewportHeight = viewport?.height ?? window.innerHeight;
+      const viewportLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.offsetTop ?? 0;
 
       let top = side === 'bottom' ? anchorRect.bottom + gap : anchorRect.top - gap - popoverHeight;
-      if (top + popoverHeight > window.innerHeight - gap) {
-        top = Math.max(gap, anchorRect.top - gap - popoverHeight);
+      if (top + popoverHeight > viewportTop + viewportHeight - gap) {
+        top = Math.max(viewportTop + gap, anchorRect.top - gap - popoverHeight);
       }
 
       let left = align === 'start'
@@ -57,18 +63,26 @@ export const Popover: React.FC<PopoverProps> = ({
         : align === 'center'
           ? anchorRect.left + anchorRect.width / 2 - popoverWidth / 2
           : anchorRect.right - popoverWidth;
-      const maxLeft = window.innerWidth - popoverWidth - gap;
-      left = Math.min(Math.max(left, gap), Math.max(maxLeft, gap));
+      const minLeft = viewportLeft + gap;
+      const maxLeft = viewportLeft + viewportWidth - popoverWidth - gap;
+      left = Math.min(Math.max(left, minLeft), Math.max(maxLeft, minLeft));
 
-      setStyle({ position: 'fixed', top, left, visibility: 'visible' });
+      // Nunca mais largo que a tela (respeitando a margem de segurança).
+      setStyle({ position: 'fixed', top, left, maxWidth: viewportWidth - gap * 2, visibility: 'visible' });
     };
 
     updatePosition();
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
+    window.visualViewport?.addEventListener('resize', updatePosition);
+    // Conteúdo que carrega depois (listas, estados vazios) muda a altura/largura do card.
+    const observer = typeof ResizeObserver !== 'undefined' && popoverRef.current ? new ResizeObserver(updatePosition) : null;
+    if (observer && popoverRef.current) observer.observe(popoverRef.current);
     return () => {
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
+      window.visualViewport?.removeEventListener('resize', updatePosition);
+      observer?.disconnect();
     };
   }, [open, align, side, anchorRef]);
 
