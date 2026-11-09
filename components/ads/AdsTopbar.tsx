@@ -6,6 +6,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { Bell, BriefcaseBusiness, Check, ChevronDown, ExternalLink, LogOut, Menu, Plus, Settings, Users } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
+import { AdsAlertsBell } from '@/components/ads/AdsAlertsBell';
 
 type AdsTopbarProps = { onMenuToggle: () => void; collapsed?: boolean };
 
@@ -42,7 +43,7 @@ export function AdsTopbar({ onMenuToggle, collapsed = false }: AdsTopbarProps) {
           <span className="truncate text-sm font-bold tracking-tight text-slate-700">Gestor do negócio</span>
         </div>
         <div className="flex items-center gap-3">
-          <button type="button" aria-label="Notificacoes" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"><Bell size={18} /></button>
+          <AdsAlertsBell />
           <div ref={menuRef} className="relative">
             <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 transition hover:bg-slate-50">
               <Avatar src={triggerAvatar} name={account?.name ?? userName} size="sm" />

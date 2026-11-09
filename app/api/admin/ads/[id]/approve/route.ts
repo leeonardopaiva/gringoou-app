@@ -1,4 +1,5 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus, BannerPlacement } from '@prisma/client';
+import { notifyCampaignEvent } from '@/lib/ads/notifications';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
@@ -59,6 +60,8 @@ export async function POST(_request: Request, context: RouteContext) {
     where: { id: campaign.id },
     select: { id: true, moderationStatus: true, startsAt: true, endsAt: true },
   });
+
+  await notifyCampaignEvent(campaign.id, 'CAMPAIGN_APPROVED');
 
   try {
     await sendAdModerationEmail(campaign.id, 'APPROVED');

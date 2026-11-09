@@ -1366,3 +1366,18 @@ model AdCouponRedemption {
   @@index([couponId])
   @@index([adAccountId])
 }
+
+/// Alertas do painel do negócio (campanha aprovada, recusada, pagamento etc.).
+model AdNotification {
+  id          String    @id @default(cuid())
+  adAccountId String
+  type        String
+  title       String
+  body        String?
+  href        String?
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([adAccountId, createdAt])
+  @@index([adAccountId, readAt])
+}

@@ -1,4 +1,5 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
+import { notifyCampaignEvent } from '@/lib/ads/notifications';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -36,6 +37,8 @@ export async function POST(request: Request, context: RouteContext) {
   // Campanha de cortesia recusada: libera o cupom para a conta usar de novo em outra campanha.
   const wasCourtesy = await prisma.adPayment.findFirst({ where: { bannerId: id, provider: 'COURTESY' }, select: { id: true } });
   if (wasCourtesy) await prisma.adCouponRedemption.deleteMany({ where: { bannerId: id } });
+
+  await notifyCampaignEvent(id, 'CAMPAIGN_REJECTED', parsed.data.reason);
 
   try {
     await sendAdModerationEmail(id, 'REJECTED', parsed.data.reason);
