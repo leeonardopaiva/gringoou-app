@@ -46,6 +46,10 @@ export const options = {
     'http_req_duration{kind:publico}': ['p(95)<800'],
     'http_req_duration{kind:autenticado}': ['p(95)<1200'],
     'http_req_duration{name:ready}': ['p(95)<600'],
+    // Limites folgados só para o k6 listar cada rota separadamente no resumo (diagnóstico, não critério).
+    'http_req_duration{name:health}': ['p(95)<60000'],
+    'http_req_duration{name:landing}': ['p(95)<60000'],
+    'http_req_duration{name:login}': ['p(95)<60000'],
   },
 };
 
@@ -58,6 +62,17 @@ const get = (path, tags) => {
   check(res, { [`${path} 200`]: (r) => r.status === 200 });
   return res;
 };
+
+// Aquecimento: acorda o banco (branch de Preview suspensa) e as funções antes de medir.
+// As requisições daqui não levam as tags de `kind`/`name`, então não entram nos limites acima.
+export function setup() {
+  for (let i = 0; i < 6; i += 1) {
+    http.get(`${BASE}/api/health/ready`, { headers });
+    http.get(`${BASE}/landing`, { headers });
+    http.get(`${BASE}/login`, { headers });
+    sleep(1);
+  }
+}
 
 export default function () {
   group('publico', () => {
