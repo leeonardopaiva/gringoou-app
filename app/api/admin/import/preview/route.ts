@@ -4,6 +4,8 @@ import { requireAdminSession } from '@/lib/require-admin';
 
 export const runtime = 'nodejs';
 
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+
 export async function POST(request: Request) {
   const { response } = await requireAdminSession();
 
@@ -20,6 +22,11 @@ export async function POST(request: Request) {
 
   if (!file.name.toLowerCase().endsWith('.xlsx')) {
     return NextResponse.json({ error: 'Use o modelo em formato .xlsx.' }, { status: 400 });
+  }
+
+  // XLSX é um zip: limitar o tamanho evita estouro de memória ao descompactar.
+  if (file.size > MAX_IMPORT_BYTES) {
+    return NextResponse.json({ error: 'O arquivo excede 5 MB. Divida a importacao em partes menores.' }, { status: 413 });
   }
 
   try {

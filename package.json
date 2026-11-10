@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "node scripts/vercel-build.mjs",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "db:local": "node scripts/local-db.mjs",

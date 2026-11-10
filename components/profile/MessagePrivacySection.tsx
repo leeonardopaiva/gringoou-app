@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { signOut, useSession } from 'next-auth/react';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
 import { Modal } from '@/components/ui/Modal';
@@ -42,6 +43,85 @@ export function MessagePolicyOptions({ value, onChange, disabled }: { value: Pol
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/** Direitos do titular (LGPD): baixar os próprios dados e excluir a conta. */
+function MyDataSection({ disabled }: { disabled?: boolean }) {
+  const { showToast } = useToast();
+  const { data: session } = useSession();
+  const [confirming, setConfirming] = useState(false);
+  const [confirmation, setConfirmation] = useState('');
+  const [busy, setBusy] = useState(false);
+  const expected = session?.user?.username ? `@${session.user.username}` : session?.user?.email ?? 'seu e-mail';
+
+  const deleteAccount = async () => {
+    if (busy || !confirmation.trim()) return;
+    setBusy(true);
+    try {
+      const response = await fetch('/api/me/account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        showToast(payload?.error ?? 'Não foi possível excluir a conta agora.', 'error');
+        return;
+      }
+      await signOut({ callbackUrl: '/login' });
+    } catch {
+      showToast('Não foi possível excluir a conta agora. Tente novamente.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-6 border-t border-slate-100 pt-5">
+      <h3 className="text-sm font-semibold text-slate-900">Seus dados</h3>
+      <p className="mt-1 text-xs leading-5 text-slate-500">Você pode baixar uma cópia dos seus dados ou excluir sua conta a qualquer momento.</p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <a
+          href="/api/me/export"
+          download
+          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Baixar meus dados
+        </a>
+        {!confirming ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setConfirming(true)}
+            className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+          >
+            Excluir minha conta
+          </button>
+        ) : null}
+      </div>
+      {confirming ? (
+        <div className="mt-3 rounded-2xl border border-red-200 bg-red-50/50 p-4">
+          <p className="text-xs leading-5 text-slate-700">
+            Seu perfil, publicações, comentários e mensagens serão apagados. Registros de pagamento e auditoria ficam sem identificação. Essa ação não pode ser desfeita.
+          </p>
+          <label className="mt-3 block text-xs font-semibold text-slate-700" htmlFor="delete-account-confirmation">
+            Para confirmar, digite {expected}
+          </label>
+          <input
+            id="delete-account-confirmation"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+            autoComplete="off"
+            className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-red-300"
+          />
+          <div className="mt-3 flex justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => { setConfirming(false); setConfirmation(''); }} disabled={busy}>Cancelar</Button>
+            <Button type="button" onClick={() => void deleteAccount()} disabled={busy || !confirmation.trim()}>{busy ? 'Excluindo...' : 'Excluir definitivamente'}</Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -111,6 +191,7 @@ export function MessagePrivacyModal({ open, onClose }: { open: boolean; onClose:
       }
     >
       <MessagePolicyOptions value={draft} onChange={setDraft} disabled={saving} />
+      <MyDataSection disabled={saving} />
     </Modal>
   );
 }

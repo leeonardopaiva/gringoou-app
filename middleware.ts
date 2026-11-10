@@ -5,6 +5,7 @@ import {
   isPreLaunchGateEnabled,
   verifyPreLaunchToken,
 } from '@/lib/pre-launch-gate';
+import { buildRateLimitHeaders, consumeRateLimit } from '@/lib/rate-limit';
 import {
   GEO_BYPASS_COOKIE_NAME,
   getRequestIp,
@@ -76,6 +77,50 @@ const PRE_LAUNCH_PUBLIC_PATHS = [
   '/api/waitlist',
   ...PUBLIC_ASSET_PREFIXES,
 ];
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+// Webhooks são assinados e chegam em rajadas legítimas; não limitamos por IP.
+const RATE_LIMIT_EXEMPT_PATHS = ['/api/webhooks/'];
+
+const tooManyRequests = (resetAt: number) =>
+  NextResponse.json(
+    { error: 'Muitas requisicoes. Aguarde um instante e tente novamente.' },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': String(Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))),
+        ...buildRateLimitHeaders({ allowed: false, remaining: 0, resetAt }),
+      },
+    },
+  );
+
+/**
+ * Teto global de escritas na API (rede de segurança para rotas sem limite próprio) e
+ * proteção contra força bruta no login. Limites específicos por rota continuam valendo por cima.
+ */
+const applyEdgeRateLimit = async (request: NextRequest, userId?: string | null) => {
+  const { pathname } = request.nextUrl;
+  if (!pathname.startsWith('/api/') || SAFE_METHODS.has(request.method)) return null;
+  if (RATE_LIMIT_EXEMPT_PATHS.some((prefix) => pathname.startsWith(prefix))) return null;
+
+  const ip = getRequestIp(request);
+
+  if (
+    pathname.startsWith('/api/auth/callback/credentials') ||
+    pathname.startsWith('/api/auth/signin/')
+  ) {
+    const result = await consumeRateLimit({ scope: 'edge:auth', key: `ip:${ip}`, max: 15, windowMs: 10 * 60 * 1000 });
+    return result.allowed ? null : tooManyRequests(result.resetAt);
+  }
+
+  const result = await consumeRateLimit({
+    scope: userId ? 'edge:write:user' : 'edge:write:ip',
+    key: userId ? `user:${userId}` : `ip:${ip}`,
+    max: userId ? 120 : 30,
+    windowMs: 60 * 1000,
+  });
+  return result.allowed ? null : tooManyRequests(result.resetAt);
+};
 
 const isTruthyEnv = (value?: string | null) =>
   Boolean(value && ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase()));
@@ -198,6 +243,11 @@ export async function middleware(request: NextRequest) {
       }
     }
 
+    if (isPublicPath(request.nextUrl.pathname)) {
+      const limited = await applyEdgeRateLimit(request);
+      if (limited) return limited;
+    }
+
     if (!isPublicPath(request.nextUrl.pathname)) {
       const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
       const isApiRequest = request.nextUrl.pathname.startsWith('/api/');
@@ -238,6 +288,9 @@ export async function middleware(request: NextRequest) {
 
         return buildMaintenanceResponse(request);
       }
+
+      const limited = await applyEdgeRateLimit(request, String(token.sub || token.id || ''));
+      if (limited) return limited;
     }
 
     return NextResponse.next();

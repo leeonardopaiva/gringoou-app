@@ -49,3 +49,23 @@ Os testes automatizados incluídos são de fumaça e não cobrem os fluxos auten
 ## Primeira semana
 
 Comece com equipe interna e uma região piloto. Mantenha um responsável por observar logs, Sentry, fila de moderação, Brevo, Stripe e custos da IA. Amplie convites gradualmente. Se ocorrer falha em uma integração, altere a flag correspondente na Vercel e faça redeploy; use `MAINTENANCE_MODE=true` para incidente amplo.
+
+## Endurecimento para lançamento público (2026-11-10)
+
+**Aplicado no código**
+- `npm audit fix` (sem `--force`): vulnerabilidade crítica do Next e a do Zod corrigidas. Restam avisos altos em ferramentas de build (Prisma CLI, PostCSS do Next) e no Nodemailer (injeção SMTP exige `envelope.size`/nome de transporte controlados por atacante; o app não expõe isso). Risco aceito; reavaliar a cada release.
+- Rate limit global no middleware: 120 escritas/min por usuário, 30/min por IP anônimo, 15 tentativas/10 min por IP no login. Limites por rota continuam valendo por cima. Depende de `UPSTASH_REDIS_REST_URL`/`TOKEN` em Production (sem eles cai para memória, que não protege em serverless).
+- `/api/ai/immigration`: login, flag `AI_ASSISTANT_ENABLED`, rate limit (20/h), limite de 500 caracteres e teto de tokens.
+- LGPD: `GET /api/me/export` (baixar dados) e `DELETE /api/me/account` (excluir conta, com confirmação pelo @usuário). Admins são removidos por outro admin; quem é único responsável por conta de anúncios precisa transferi-la antes.
+- Importação XLSX do admin limitada a 5 MB.
+- `GET /api/health/ready` testa o banco (503 se indisponível). Aponte o monitor externo para ele; `/api/health` segue só como liveness.
+- CI (`.github/workflows/ci.yml`): validação do Prisma, typecheck com rotas tipadas e `npm audit` bloqueando crítico.
+
+**Migrations automáticas no deploy (ativo)**: `npm run build` executa `scripts/vercel-build.mjs`. Em produção (`VERCEL_ENV=production`) ele roda `prisma migrate deploy` (só aplica migrations novas; nunca reset). Antes, `scripts/migration-guard.mjs` inspeciona o SQL pendente e ABORTA o build se houver DROP TABLE/COLUMN/TYPE, TRUNCATE, DELETE FROM, UPDATE em massa ou troca de tipo de coluna (a versão anterior segue no ar). Para liberar uma migration destrutiva de forma consciente: backup no Neon, `ALLOW_DESTRUCTIVE_MIGRATIONS=true` na Vercel só para esse deploy e remover depois. Preview e build local nunca tocam o banco. `scripts/prod-migrate.ps1` segue como alternativa manual.
+
+**Ainda pendente (não é código)**
+- Rotacionar a senha do Neon exposta e atualizar `DATABASE_URL`/`DIRECT_URL` na Vercel.
+- Testar restauração de backup do Neon e configurar alertas no Sentry e no monitor de `/api/health/ready`.
+- Revisão jurídica da política de privacidade, termos e consentimento de analytics/UTM.
+- Teste de carga (k6/Artillery) em Preview antes de campanha grande; ajustar `connection_limit` do pooler conforme o resultado.
+- Testes automatizados dos fluxos autenticados e de pagamento; CSP com nonce; quebrar `AdminPanel.tsx`, `Registration.tsx` e `Community.tsx` em módulos.
