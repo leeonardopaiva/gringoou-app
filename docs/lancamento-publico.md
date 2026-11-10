@@ -69,7 +69,8 @@ Arquivo: `scripts/loadtest/k6-leitura.js` (somente leitura, nenhuma escrita; rec
 
 ### Preparação
 1. Instale o k6 (uma vez): `choco install k6` (ou `winget install k6`).
-2. Gere um **deploy de Preview** (qualquer branch). Ele usa uma branch de banco, então não toca a produção. Anote a URL.
+2. Gere um **deploy de Preview** (qualquer branch) e anote a URL.
+   **Confirme que o Preview NÃO usa o banco de produção** antes de testar. Na primeira rodada (60 usuários virtuais), o Monitoring do Neon mostrou a carga na branch `main` (produção): a `DATABASE_URL` do ambiente Preview apontava para o banco principal. Para isolar: Neon → Branches → crie `loadtest` a partir da `main`; na Vercel, defina `DATABASE_URL` e `DIRECT_URL` do ambiente **Preview**, restritas à branch git do teste, com a string dessa branch; faça novo deploy e confira que o gráfico de CPU do Neon sobe **na branch `loadtest`** e não na `main`.
 3. Se o Preview tiver Deployment Protection, gere o segredo em Vercel → Settings → Deployment Protection → **Protection Bypass for Automation**.
 4. Para testar rotas autenticadas, crie uma **conta de teste** (nunca de usuário real), faça login no Preview e copie o cookie `next-auth.session-token` (DevTools → Application → Cookies). Ele expira em 8 horas.
 

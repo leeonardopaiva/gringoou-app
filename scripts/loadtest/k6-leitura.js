@@ -1,6 +1,7 @@
 // Teste de carga (somente LEITURA) com k6. Nunca faz POST/PUT/DELETE.
 //
-// ATENÇÃO: rode contra um deploy de PREVIEW (que usa branch de banco), nunca contra gringoou.com.
+// ATENÇÃO: rode contra um deploy de PREVIEW, nunca contra gringoou.com. Confirme antes que o Preview usa uma
+// branch de banco ISOLADA (DATABASE_URL do ambiente Preview): se apontar para a `main` do Neon, a carga bate na produção.
 //
 // Uso (PowerShell, raiz do projeto):
 //   k6 run -e BASE_URL=https://SEU-PREVIEW.vercel.app -e PROFILE=smoke scripts/loadtest/k6-leitura.js
