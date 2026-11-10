@@ -57,8 +57,9 @@ const headers = {};
 if (__ENV.BYPASS) headers['x-vercel-protection-bypass'] = __ENV.BYPASS;
 if (__ENV.COOKIE) headers.Cookie = __ENV.COOKIE;
 
+// redirects: 0 -> nunca seguir redirecionamento: um 302 para a tela de login da Vercel (SSO) deve reprovar, não "passar".
 const get = (path, tags) => {
-  const res = http.get(`${BASE}${path}`, { headers, tags });
+  const res = http.get(`${BASE}${path}`, { headers, tags, redirects: 0 });
   check(res, { [`${path} 200`]: (r) => r.status === 200 });
   return res;
 };
@@ -66,10 +67,26 @@ const get = (path, tags) => {
 // Aquecimento: acorda o banco (branch de Preview suspensa) e as funções antes de medir.
 // As requisições daqui não levam as tags de `kind`/`name`, então não entram nos limites acima.
 export function setup() {
+  // Confirma que estamos falando com o APP e não com a tela de proteção da Vercel.
+  const probe = http.get(`${BASE}/api/health`, { headers, redirects: 0 });
+  let appOk = false;
+  try {
+    appOk = probe.status === 200 && JSON.parse(probe.body).status === 'ok';
+  } catch (error) {
+    appOk = false;
+  }
+  if (!appOk) {
+    throw new Error(
+      `/api/health respondeu ${probe.status} e nao o JSON do app. ` +
+        'Se for 302/401, o Preview tem Deployment Protection: gere o segredo em Vercel > Settings > Deployment Protection > ' +
+        'Protection Bypass for Automation e rode com -e BYPASS=SEGREDO.',
+    );
+  }
+
   for (let i = 0; i < 6; i += 1) {
-    http.get(`${BASE}/api/health/ready`, { headers });
-    http.get(`${BASE}/landing`, { headers });
-    http.get(`${BASE}/login`, { headers });
+    http.get(`${BASE}/api/health/ready`, { headers, redirects: 0 });
+    http.get(`${BASE}/landing`, { headers, redirects: 0 });
+    http.get(`${BASE}/login`, { headers, redirects: 0 });
     sleep(1);
   }
 }
