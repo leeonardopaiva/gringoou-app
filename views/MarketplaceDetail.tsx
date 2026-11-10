@@ -357,13 +357,12 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               {item.canEdit ? (
                 <Dropdown
                   trigger={
-                    <button
-                      type="button"
-                      aria-label="Mais opções"
+                    <span
                       className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
                     >
                       <MoreHorizontal size={17} />
-                    </button>
+                      <span className="sr-only">Mais opções</span>
+                    </span>
                   }
                   sections={[
                     {
@@ -440,9 +439,10 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                     ) : null}
                     <Dropdown
                       trigger={
-                        <Button size="sm" variant="ghost" iconLeft={<MoreHorizontal size={14} />} aria-label="Mais opções">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100">
+                          <MoreHorizontal size={14} />
                           <span className="sr-only">Mais opções</span>
-                        </Button>
+                        </span>
                       }
                       sections={[
                         {
