@@ -22,6 +22,7 @@ import type { ProfileInitialData } from '../lib/content-contracts';
 import { Modal } from '../components/ui/Modal';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { notifyContentUpdated } from '../lib/content-refresh';
+import { withUtm } from '@/lib/utm-client';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-foreground';
@@ -820,8 +821,8 @@ const Profile: React.FC<{
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Indicacoes" description="Compartilhe seu link publico e acompanhe quantos cadastros chegaram por ele." editing={false} onToggle={() => undefined} hideAction>
         <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
           <p className={`text-lg font-bold ${sectionAccentClass}`}>{referralSummary.registrationCount} {referralSummary.registrationCount === 1 ? 'cadastro confirmado' : 'cadastros confirmados'}</p>
-          <p className="mt-2 break-all text-sm text-slate-500">{referralUrl}</p>
-          <button type="button" onClick={() => navigator.clipboard.writeText(referralUrl).then(() => showToast('Link de indicacao copiado.', 'success')).catch(() => showToast(referralUrl, 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
+          <p className="mt-2 break-all text-sm text-slate-500">{withUtm('referral_invite', referralUrl)}</p>
+          <button type="button" onClick={() => navigator.clipboard.writeText(withUtm('referral_invite', referralUrl)).then(() => showToast('Link de indicacao copiado.', 'success')).catch(() => showToast(withUtm('referral_invite', referralUrl), 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
             <Copy size={14} />
             Copiar
           </button>

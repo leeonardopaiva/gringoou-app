@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
+import { useUtmRules } from '@/lib/utm-client';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -303,6 +304,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   const activeName = user.name;
   const activeAvatar = user.avatar;
   const shortRegionLabel = activeRegion.label?.split(',')[0]?.trim() || 'Região';
+
+  useUtmRules();
 
   React.useEffect(() => {
     setActiveRegion({ key: user.regionKey || '', label: user.location });

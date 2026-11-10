@@ -12,6 +12,7 @@ import MessageReportsSection from '@/components/admin/MessageReportsSection';
 import NewsCommentReportsSection from '@/components/admin/NewsCommentReportsSection';
 import InvitesSection from '@/components/admin/InvitesSection';
 import MarketingSection from '@/components/admin/MarketingSection';
+import UtmSection from '@/components/admin/UtmSection';
 import IntegrationsSection from '@/components/admin/IntegrationsSection';
 import NewsEditorialSection from '@/components/admin/NewsEditorialSection';
 import { UserRole, type User } from '@/types';
@@ -37,6 +38,10 @@ const AdminAccessDenied: React.FC = () => (
 
 const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }) => {
   const isModerator = currentUser.role === UserRole.MODERATOR;
+  // UTM: aberto a quem tem a permissão dedicada (inclusive fora de admin/moderação); a API confere o acesso no servidor.
+  if (pathname.split('/')[2] === 'utm') {
+    return <AdminShell user={currentUser}><UtmSection /></AdminShell>;
+  }
   if (currentUser.role !== UserRole.ADMIN && !isModerator) {
     return <AdminAccessDenied />;
   }

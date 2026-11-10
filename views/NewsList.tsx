@@ -20,6 +20,7 @@ import { useLanguage } from '../components/i18n/LanguageProvider';
 import { useIntersectionTrigger } from '../hooks/useIntersectionTrigger';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '../lib/news';
 import type { NewsArticleContract, NewsInitialData } from '../lib/content-contracts';
+import { withUtm } from '@/lib/utm-client';
 
 const ALL = 'all';
 const CATEGORY_TABS = [{ id: ALL, label: 'Todas' }, ...NEWS_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))];
@@ -89,7 +90,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
 
   const handleShare = async () => {
     // Compartilha a página da notícia no Gringoou, não o link da matéria original.
-    const shareUrl = `${window.location.origin}${article.path}`;
+    const shareUrl = withUtm('share_news', article.path, { id: article.id });
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({ title: article.title, text: article.subtitle ?? undefined, url: shareUrl });
