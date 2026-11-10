@@ -238,11 +238,7 @@ export const authOptions: NextAuthOptions = {
       try {
         const target = new URL(url);
         const currentBase = new URL(baseUrl);
-        if (
-          target.origin === currentBase.origin ||
-          target.hostname === 'emigrei.com' ||
-          target.hostname === 'www.emigrei.com'
-        ) {
+        if (target.origin === currentBase.origin) {
           return `${targetOrigin}${target.pathname}${target.search}${target.hash}`;
         }
         if (target.origin === targetOrigin) return target.toString();

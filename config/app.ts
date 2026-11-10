@@ -47,10 +47,7 @@ export const RESERVED_PUBLIC_ROUTES = new Set([
 
 // ─── Middleware ────────────────────────────────────────────
 export const CANONICAL_HOST = 'gringoou.com';
-export const REDIRECT_HOSTS = new Set([
-  'emigrei.com',
-  'www.emigrei.com',
-]);
+export const REDIRECT_HOSTS = new Set(['www.gringoou.com']);
 
 export const PUBLIC_ASSET_PREFIXES = [
   '/_next/',
