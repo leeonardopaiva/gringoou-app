@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Copy, ExternalLink, Link2, Share2 } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
+import { withUtm } from '@/lib/utm-client';
 
 export type PublicLinkItem = {
   id: string;
@@ -17,7 +18,7 @@ export function PublicLinksBlock({ links }: { links: PublicLinkItem[] }) {
     typeof window === 'undefined' ? path : new URL(path, window.location.origin).toString();
 
   const copy = async (item: PublicLinkItem) => {
-    const url = absoluteUrl(item.path);
+    const url = withUtm('share_public_link', absoluteUrl(item.path), { id: item.label });
     try {
       await navigator.clipboard.writeText(url);
       showToast(`Link de ${item.label.toLowerCase()} copiado.`, 'success');
@@ -27,7 +28,7 @@ export function PublicLinksBlock({ links }: { links: PublicLinkItem[] }) {
   };
 
   const share = async (item: PublicLinkItem) => {
-    const url = absoluteUrl(item.path);
+    const url = withUtm('share_public_link', absoluteUrl(item.path), { id: item.label });
     if (navigator.share) {
       try {
         await navigator.share({ title: item.label, url });

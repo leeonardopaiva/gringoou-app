@@ -10,6 +10,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import type { Post, User } from '@/types';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
+import { withUtm } from '@/lib/utm-client';
 
 type GroupFeedProps = { groupId: string; groupSlug: string; user?: User | null; canPost: boolean };
 
@@ -79,7 +80,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
   };
   const refreshAction = async (url: string, init?: RequestInit) => { const payload = await request(url, init); await loadPosts(); if (payload?.message) showToast(payload.message, 'success'); };
   const share = async (post: Post) => {
-    const url = `${window.location.origin}/groups/${groupSlug}?post=${post.id}`;
+    const url = withUtm('share_group_post', `/groups/${groupSlug}?post=${post.id}`, { id: post.id });
     if (navigator.share) { try { await navigator.share({ title: 'Publicação em grupo na Gringoou', text: post.content, url }); return; } catch { /* use clipboard */ } }
     await navigator.clipboard.writeText(url); showToast('Link copiado.', 'success');
   };

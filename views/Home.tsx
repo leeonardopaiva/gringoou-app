@@ -25,6 +25,7 @@ import { ViewableAdSlot } from '../components/ads/ViewableAdSlot';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { ServiceCard } from '../components/ui/ServiceCard';
 import { useActiveRegion } from '../components/RegionContext';
+import { withUtm } from '@/lib/utm-client';
 
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
   const router = useRouter();
@@ -128,7 +129,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       regionKey: user.regionKey,
     });
 
-    window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
+    window.open(withUtm('paid_banner_cta', banner.targetUrl, { id: banner.id, campanha: banner.name, posicao: banner.placement }), '_blank', 'noopener,noreferrer');
   };
 
   const handleBannerRegistration = async (banner: BannerAd) => {

@@ -20,6 +20,7 @@ import { useMessaging } from '../lib/MessagingProvider';
 import { useActiveRegion } from '../components/RegionContext';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
+import { withUtm } from '@/lib/utm-client';
 
 const CONDITION_LABELS: Record<string, string> = {
   NEW: 'Novo',
@@ -148,7 +149,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   };
 
   const handleShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const url = typeof window !== 'undefined' ? withUtm('share_marketplace', `/marketplace/${item?.id ?? ''}`, { id: item?.id }) : '';
     try {
       if (navigator.share) {
         await navigator.share({ title: item?.title, url });

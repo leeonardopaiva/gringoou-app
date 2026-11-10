@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useRootAdmin } from '@/hooks/useRootAdmin';
+import { useUtmAccess } from '@/hooks/useUtmAccess';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -28,6 +29,7 @@ import {
   Ticket,
   Users,
   X,
+  Link2,
 } from 'lucide-react';
 import GringoouLogo from '@/components/icons/GringoouLogo';
 import FriendRequestBell from '@/components/feedback/FriendRequestBell';
@@ -51,6 +53,7 @@ const navigation: Array<{ href: string; label: string; icon: React.ElementType; 
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/invites', label: 'Convites', icon: Ticket },
   { href: '/admin/marketing', label: 'Marketing', icon: Mail },
+  { href: '/admin/utm', label: 'UTM', icon: Link2 },
   { href: '/admin/integrations', label: 'Integrações', icon: Plug, rootOnly: true },
   { href: '/admin/plans', label: 'Planos de anúncios', icon: WalletCards, rootOnly: true },
   { href: '/admin/coupons', label: 'Cupons de cortesia', icon: Gift, rootOnly: true },
@@ -63,6 +66,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isRoot = useRootAdmin() === true;
+  const canManageUtm = useUtmAccess();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') ?? '');
   const segment = pathname.split('/')[2] || '';
@@ -87,7 +91,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="flex-1 overflow-y-auto px-3 py-5">
         <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Principal</p>
         <nav className="space-y-1" aria-label="Navegacao administrativa">
-          {navigation.filter((item) => (!item.rootOnly || isRoot) && (user.role !== UserRole.MODERATOR || item.href === '/admin/moderation' || item.href === '/admin/news')).map((item) => {
+          {navigation.filter((item) => (!item.rootOnly || isRoot) && (item.href === '/admin/utm' ? canManageUtm : user.role === UserRole.ADMIN || (user.role === UserRole.MODERATOR && (item.href === '/admin/moderation' || item.href === '/admin/news')))).map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (

@@ -35,6 +35,7 @@ import { ImageLightbox } from '../components/community/ImageLightbox';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
 import { useMessaging } from '../lib/MessagingProvider';
+import { withUtm } from '@/lib/utm-client';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -235,9 +236,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   const handleCopyUrl = async () => {
     const publicUrl =
-      typeof window === 'undefined'
-        ? business.publicPath
-        : `${window.location.origin}${business.publicPath}`;
+      withUtm('share_business', business.publicPath, { id: business.id });
 
     try {
       await navigator.clipboard.writeText(publicUrl);
@@ -249,9 +248,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   const handleShare = async () => {
     const publicUrl =
-      typeof window === 'undefined'
-        ? business.publicPath
-        : `${window.location.origin}${business.publicPath}`;
+      withUtm('share_business', business.publicPath, { id: business.id });
 
     if (navigator.share) {
       try {

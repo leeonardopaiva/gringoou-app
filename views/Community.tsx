@@ -26,6 +26,7 @@ import { SubHeader } from '@/components/ui/SubHeader';
 import PageHeader from '@/components/navigation/PageHeader';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
+import { withUtm } from '@/lib/utm-client';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
 
@@ -305,10 +306,10 @@ const Community: React.FC<{
     }
 
     try {
-      await navigator.clipboard.writeText(referralSummary.referralUrl);
+      await navigator.clipboard.writeText(withUtm('referral_invite', referralSummary.referralUrl));
       showToast('Link de indicacao copiado.', 'success');
     } catch {
-      showToast(referralSummary.referralUrl, 'info', 5000);
+      showToast(withUtm('referral_invite', referralSummary.referralUrl), 'info', 5000);
     }
   };
 
@@ -323,7 +324,7 @@ const Community: React.FC<{
         await navigator.share({
           title: 'Gringoou',
           text: 'Entre para a comunidade brasileira no exterior pela Gringoou.',
-          url: referralSummary.referralUrl,
+          url: withUtm('referral_invite', referralSummary.referralUrl),
         });
         return;
       } catch {
@@ -760,9 +761,7 @@ const Community: React.FC<{
   const handleSharePost = async (post: Post) => {
     const postPath = `/community?post=${post.id}`;
     const postUrl =
-      typeof window === 'undefined'
-        ? postPath
-        : `${window.location.origin}${postPath}`;
+      withUtm('share_community_post', postPath, { id: post.id });
 
     if (navigator.share) {
       try {
@@ -801,7 +800,7 @@ const Community: React.FC<{
       regionKey: user.regionKey,
     });
 
-    window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
+    window.open(withUtm('paid_banner_cta', banner.targetUrl, { id: banner.id, campanha: banner.name, posicao: banner.placement }), '_blank', 'noopener,noreferrer');
   };
 
   const handleBannerRegistration = async (banner: BannerAd) => {

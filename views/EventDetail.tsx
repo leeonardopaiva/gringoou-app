@@ -35,6 +35,7 @@ import { useMessaging } from '../lib/MessagingProvider';
 import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
+import { withUtm } from '@/lib/utm-client';
 
 interface EventDetailProps {
   eventId?: string;
@@ -247,9 +248,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   }, [eventId, showToast, initialEvent]);
 
   const publicUrl =
-    typeof window === 'undefined'
-      ? event.publicPath
-      : `${window.location.origin}${event.publicPath}`;
+    withUtm('share_event', event.publicPath, { id: event.id });
 
   const handleCopyUrl = async () => {
     try {

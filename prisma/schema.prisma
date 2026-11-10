@@ -207,6 +207,8 @@ model User {
   interests                 String[]                   @default([])
   profileObjective          String?
   adsPersonalizationEnabled Boolean                    @default(true)
+  /// Pode gerenciar as regras de UTM no admin (administradores sempre podem). Concedido por um administrador.
+  canManageUtm              Boolean                    @default(false)
   galleryUrls               String[]                   @default([])
   role                      UserRole                   @default(USER)
   phone                     String?
@@ -963,6 +965,22 @@ model Suggestion {
   @@index([userId, createdAt])
 }
 
+/// Regra de UTM por tipo de link. Só guarda OVERRIDES dos padrões definidos em lib/utm.ts (sem linha = usa o padrão).
+model UtmRule {
+  id          String   @id @default(cuid())
+  /// Chave do ponto de origem (ex.: share_marketplace, paid_banner_cta). Valores válidos em lib/utm.ts.
+  key         String   @unique
+  enabled     Boolean  @default(true)
+  source      String
+  medium      String
+  campaign    String
+  content     String?
+  term        String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model AnalyticsEvent {
   id            String   @id @default(cuid())
   type          String
@@ -972,6 +990,8 @@ model AnalyticsEvent {
   sourcePath    String?
   sourceSection String?
   regionKey     String?
+  /// utm_* da última origem de chegada da pessoa (ver lib/utm-capture.ts).
+  utm           Json?
   userId        String?
   createdAt     DateTime @default(now())
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)

@@ -5,6 +5,7 @@ import { Providers } from './providers';
 import { isInviteOnlyRegistration } from '@/lib/invites';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 import { Analytics } from '@vercel/analytics/next';
+import UtmCapture from '@/components/analytics/UtmCapture';
 
 // Local/mock dev has no real traffic to measure, so skip the Vercel beacon entirely.
 const shouldLoadVercelAnalytics = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_USE_MOCKS !== 'true';
@@ -60,6 +61,7 @@ export default async function RootLayout({
           data-app="gringoou-app"
         />
         <Providers session={session} inviteRequired={isInviteOnlyRegistration()}>{children}</Providers>
+        <UtmCapture />
         {shouldLoadVercelAnalytics ? <Analytics /> : null}
       </body>
     </html>
