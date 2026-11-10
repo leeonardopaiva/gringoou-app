@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw, Edit, Map } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, Maximize2, MessageCircle, MoreHorizontal, Share2, ShoppingBag, Trash2, User as UserIcon, X, RotateCcw, Edit, Map, CheckCircle2, PauseCircle } from 'lucide-react';
 import PageHeader from '../components/navigation/PageHeader';
 import { ApproximateAreaMap } from '../components/ui/ApproximateAreaMap';
 import { MarketplaceCard, formatPrice, formatRelativeTime } from '../components/marketplace/MarketplaceCard';
@@ -402,10 +402,11 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge tone="neutro">{item.category}</Badge>
-              <Badge tone="primary" variant="outline">
+              <Badge tone="neutro" variant="outline">
                 {CONDITION_LABELS[item.condition] ?? item.condition}
               </Badge>
               {item.status === 'SOLD' ? <Badge tone="erro">Vendido</Badge> : null}
+              {item.status === 'UNAVAILABLE' ? <Badge tone="neutro">Indisponível no momento</Badge> : null}
               {item.status === 'PENDING_REVIEW' ? <Badge tone="neutro">Em análise</Badge> : null}
               {item.status === 'REJECTED' ? <Badge tone="erro">Rejeitado</Badge> : null}
               {item.status === 'REMOVED' ? <Badge tone="erro">Removido</Badge> : null}
@@ -423,17 +424,18 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <div className="mt-4 space-y-2">
                 {item.status === 'ACTIVE' ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => handleStatusChange('SOLD')}>
+                    {/* Ações discretas (borda cinza clara): a ação principal da tela é "Enviar Mensagem". */}
+                    <Button size="sm" variant="ghost" iconLeft={<CheckCircle2 size={15} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('SOLD')}>
                       Marcar vendido
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleStatusChange('UNAVAILABLE')}>
-                      Indisponível
+                    <Button size="sm" variant="ghost" iconLeft={<PauseCircle size={15} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('UNAVAILABLE')}>
+                      Pausar anúncio
                     </Button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
                     {item.status === 'SOLD' || item.status === 'UNAVAILABLE' ? (
-                    <Button size="sm" variant="secondary" iconLeft={<RotateCcw size={14} />} onClick={() => handleStatusChange('ACTIVE')}>
+                    <Button size="sm" variant="ghost" iconLeft={<RotateCcw size={14} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('ACTIVE')}>
                       Reativar
                     </Button>
                     ) : null}
