@@ -990,6 +990,8 @@ model AnalyticsEvent {
   sourcePath    String?
   sourceSection String?
   regionKey     String?
+  /// utm_* da última origem de chegada da pessoa (ver lib/utm-capture.ts).
+  utm           Json?
   userId        String?
   createdAt     DateTime @default(now())
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)

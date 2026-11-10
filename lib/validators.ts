@@ -431,6 +431,16 @@ export const analyticsEventSchema = z.object({
   sourcePath: z.string().trim().max(160).optional(),
   sourceSection: z.string().trim().max(80).optional(),
   regionKey: z.string().trim().max(80).optional(),
+  utm: z
+    .object({
+      utm_source: z.string().trim().max(100).optional(),
+      utm_medium: z.string().trim().max(100).optional(),
+      utm_campaign: z.string().trim().max(100).optional(),
+      utm_content: z.string().trim().max(100).optional(),
+      utm_term: z.string().trim().max(100).optional(),
+    })
+    .strict()
+    .optional(),
 });
 
 export const marketplaceItemSchema = z.object({

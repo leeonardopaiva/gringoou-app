@@ -17,4 +17,6 @@ CREATE TABLE "UtmRule" (
     CONSTRAINT "UtmRule_pkey" PRIMARY KEY ("id")
 );
 
+ALTER TABLE "AnalyticsEvent" ADD COLUMN "utm" JSONB;
+
 CREATE UNIQUE INDEX "UtmRule_key_key" ON "UtmRule"("key");
