@@ -47,7 +47,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   const { userId, response } = await requireUtmManager();
-  if (response || !userId) return response;
+  if (response) return response;
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const parsed = ruleSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
