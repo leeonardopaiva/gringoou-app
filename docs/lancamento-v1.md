@@ -61,7 +61,7 @@ Comece com equipe interna e uma região piloto. Mantenha um responsável por obs
 - `GET /api/health/ready` testa o banco (503 se indisponível). Aponte o monitor externo para ele; `/api/health` segue só como liveness.
 - CI (`.github/workflows/ci.yml`): validação do Prisma, typecheck com rotas tipadas e `npm audit` bloqueando crítico.
 
-**Migrations no deploy (opcional, decisão manual)**: `scripts/vercel-build.mjs` aplica `prisma migrate deploy` somente quando `VERCEL_ENV=production` (preview e build local nunca tocam o banco). Para ativar, trocar em `package.json`: `"build": "node scripts/vercel-build.mjs"` e garantir `DIRECT_URL` em Production. Enquanto não ativado, usar `scripts/prod-migrate.ps1`.
+**Migrations automáticas no deploy (ativo)**: `npm run build` executa `scripts/vercel-build.mjs`. Em produção (`VERCEL_ENV=production`) ele roda `prisma migrate deploy` (só aplica migrations novas; nunca reset). Antes, `scripts/migration-guard.mjs` inspeciona o SQL pendente e ABORTA o build se houver DROP TABLE/COLUMN/TYPE, TRUNCATE, DELETE FROM, UPDATE em massa ou troca de tipo de coluna (a versão anterior segue no ar). Para liberar uma migration destrutiva de forma consciente: backup no Neon, `ALLOW_DESTRUCTIVE_MIGRATIONS=true` na Vercel só para esse deploy e remover depois. Preview e build local nunca tocam o banco. `scripts/prod-migrate.ps1` segue como alternativa manual.
 
 **Ainda pendente (não é código)**
 - Rotacionar a senha do Neon exposta e atualizar `DATABASE_URL`/`DIRECT_URL` na Vercel.
