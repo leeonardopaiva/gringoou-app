@@ -19,4 +19,4 @@ export type CloudinaryFolder =
   | 'news';
 
 export const getCloudinaryFolderPath = (folder: CloudinaryFolder) =>
-  `emigrei/${folder}`;
+  `gringoou/${folder}`;

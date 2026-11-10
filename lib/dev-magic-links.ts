@@ -6,13 +6,13 @@ type DevMagicLinkRecord = {
 };
 
 declare global {
-  var __emigreiDevMagicLinks: Map<string, DevMagicLinkRecord> | undefined;
+  var __gringoouDevMagicLinks: Map<string, DevMagicLinkRecord> | undefined;
 }
 
-const devMagicLinks = globalThis.__emigreiDevMagicLinks ?? new Map<string, DevMagicLinkRecord>();
+const devMagicLinks = globalThis.__gringoouDevMagicLinks ?? new Map<string, DevMagicLinkRecord>();
 
-if (!globalThis.__emigreiDevMagicLinks) {
-  globalThis.__emigreiDevMagicLinks = devMagicLinks;
+if (!globalThis.__gringoouDevMagicLinks) {
+  globalThis.__gringoouDevMagicLinks = devMagicLinks;
 }
 
 export const isDevAuthEnabled =
