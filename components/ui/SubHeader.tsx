@@ -11,7 +11,8 @@ import { cn } from '@/lib/cn';
  * - Esquerda: abas com sublinhado (categoria/tipo/escopo da lista). Rolam na horizontal no celular.
  * - Direita: apenas um ícone de filtro discreto, que abre um popover (desktop) ou uma folha
  *   inferior (celular) com os campos. Sem `filters`, o ícone não aparece.
- * - Sem `tabs`, mostra só o ícone de filtro alinhado à direita.
+ * - Sem `tabs`, NÃO use o SubHeader: passe `filters` ao PageHeader, que mostra o ícone ao lado da ação principal
+ *   (ex.: "Criar vaga"), em vez de deixar o filtro solto numa linha.
  *
  * Uso:
  * ```tsx
@@ -184,7 +185,8 @@ const FilterForm: React.FC<{
   );
 };
 
-const FilterControl: React.FC<{ filters: SubHeaderFilters }> = ({ filters }) => {
+/** Ícone de filtro (popover no desktop / folha inferior no celular). Também usado dentro do PageHeader (prop `filters`). */
+export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filters }) => {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const isMobile = useIsMobile();
@@ -294,7 +296,7 @@ export const SubHeader: React.FC<SubHeaderProps> = ({ tabs, activeTab, onTabChan
           })}
         </div>
       ) : null}
-      {filters ? <FilterControl filters={filters} /> : null}
+      {filters ? <SubHeaderFilter filters={filters} /> : null}
     </div>
   );
 };

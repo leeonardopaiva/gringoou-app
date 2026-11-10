@@ -18,7 +18,6 @@ import {
 import { useToast } from "@/components/feedback/ToastProvider";
 import { User } from "@/types";
 import PageHeader from "@/components/navigation/PageHeader";
-import { SubHeader } from '../components/ui/SubHeader';
 import CloudinaryImageField from "@/components/forms/CloudinaryImageField";
 import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import RegionSelector from "@/components/RegionSelector";
@@ -150,25 +149,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
-      <PageHeader title="Vagas" action={
-        <Button
-          size="sm"
-          iconLeft={<Plus size={16} />}
-          onClick={() => {
-            if (!canPublish) {
-              setCompanyInviteOpen(true);
-              return;
-            }
-            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
-            setModalOpen(true);
-          }}
-        >
-          Criar vaga
-        </Button>
-      } />
-      <section className="space-y-3">
-        <SubHeader
-          filters={{
+      <PageHeader title="Vagas" filters={{
             fields: [
               { type: 'select', id: 'employmentType', label: 'Tipo de contrato', options: [{ value: '', label: 'Todos os contratos' }, ...['Tempo integral', 'Meio periodo', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
               { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
@@ -187,8 +168,23 @@ export default function JobList({ user, initialData }: { user: User; initialData
               setSalary('');
               setPage(1);
             },
+          }} action={
+        <Button
+          size="sm"
+          iconLeft={<Plus size={16} />}
+          onClick={() => {
+            if (!canPublish) {
+              setCompanyInviteOpen(true);
+              return;
+            }
+            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
+            setModalOpen(true);
           }}
-        />
+        >
+          Criar vaga
+        </Button>
+      } />
+      <section className="space-y-3">
         {loading ? (
           <div className="space-y-3" role="status" aria-label="Carregando vagas" aria-busy="true">
             {[0, 1, 2].map((key) => (

@@ -122,8 +122,10 @@ export default function JobDetail({ jobId }: { jobId: string }) {
     : '';
 
   return (
-    <ContentColumn size="compact" className="animate-in bg-white pb-24 fade-in duration-500">
+    <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
       <PageHeader title="Vagas" backHref="/jobs" historyBack />
+      {/* O voltar fica FORA do card (igual aos demais detalhes); o card começa na capa. */}
+      <div className="overflow-hidden bg-white pb-8 sm:rounded-card">
       <header className="relative flex min-h-72 items-end overflow-hidden bg-foreground p-6 text-white">
         {job.imageUrl ? (
           <img src={job.imageUrl} alt={'Capa da vaga ' + job.title} className="absolute inset-0 h-full w-full object-cover opacity-60" />
@@ -165,6 +167,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         </section>
         {job.galleryUrls?.length ? <section className="border-t border-border pt-6"><h2 className="text-h3 font-bold">Galeria</h2><div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">{job.galleryUrls.map((url, index) => <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-2xl bg-slate-100"><img src={url} alt={`${job.title} - foto ${index + 1}`} className="h-full w-full object-cover" /></button>)}</div></section> : null}
         <CommentWall endpoint={`/api/jobs/${jobId}/comments`} title="Comentários sobre a vaga" />
+      </div>
       </div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar vaga" description="Atualize os dados e a capa da publicação." className="max-w-xl">

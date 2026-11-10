@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Plus, Search, UsersRound } from 'lucide-react';
 import PageHeader from '@/components/navigation/PageHeader';
-import { SubHeader } from '@/components/ui/SubHeader';
 import { ContentColumn } from '@/components/ui/ContentColumn';
 import CreateGroupModal from '@/components/groups/CreateGroupModal';
 import { useIntersectionTrigger } from '@/hooks/useIntersectionTrigger';
@@ -182,21 +181,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
     <ContentColumn size="compact" className="animate-in pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <PageHeader
         title="Grupos"
-        action={
-          <button
-            type="button"
-            onClick={() => setCreateModalOpen(true)}
-            aria-label="Criar grupo"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-900 transition hover:bg-brand-50 hover:text-brand-700"
-          >
-            <Plus size={22} />
-          </button>
-        }
-      />
-
-      <div className="mt-4 space-y-6">
-        <SubHeader
-          filters={{
+        filters={{
             fields: [
               { type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar em todos os grupos' },
               { type: 'select', id: 'country', label: 'País', options: countries.map(([value, label]) => ({ value, label })) },
@@ -212,7 +197,19 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
               setCountry('US');
             },
           }}
-        />
+        action={
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            aria-label="Criar grupo"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-900 transition hover:bg-brand-50 hover:text-brand-700"
+          >
+            <Plus size={22} />
+          </button>
+        }
+      />
+
+      <div className="mt-4 space-y-6">
 
         {myGroups.length ? (
           <section className="space-y-2">

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { goBackOr } from '@/lib/navigation-history';
+import { SubHeaderFilter, type SubHeaderFilters } from '@/components/ui/SubHeader';
 
 type PageHeaderProps = {
   title: string;
@@ -17,6 +18,8 @@ type PageHeaderProps = {
   historyBack?: boolean;
   /** Handler opcional (ex.: voltar no histórico); `backHref` continua sendo o fallback. */
   onBack?: () => void;
+  /** Filtros de páginas SEM abas: o ícone aparece à direita, ao lado da ação principal (ver SubHeader para o formato). */
+  filters?: SubHeaderFilters;
   /** Ações contextuais alinhadas à direita. */
   action?: React.ReactNode;
   /** Navegação por abas exibida abaixo do título. */
@@ -33,6 +36,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   hideBack = false,
   historyBack = false,
   onBack,
+  filters,
   action,
   tabs,
   titleClassName,
@@ -63,7 +67,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </Link>
       )}
       <h1 className={cn('min-w-0 flex-1 truncate text-xl font-bold tracking-tight', titleClassName ?? 'text-foreground')}>{title}</h1>
-      {action ? <div className="ml-auto shrink-0">{action}</div> : null}
+      {filters || action ? (
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {filters ? <SubHeaderFilter filters={filters} /> : null}
+          {action}
+        </div>
+      ) : null}
     </div>
     {tabs ? <div className="mt-2">{tabs}</div> : null}
   </header>

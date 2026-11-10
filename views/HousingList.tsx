@@ -23,7 +23,6 @@ import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
-import { SubHeader } from '../components/ui/SubHeader';
 
 type Housing = {
   id: string;
@@ -125,21 +124,7 @@ export default function HousingList({ user }: { user: User }) {
   };
   return (
     <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
-      <PageHeader title="Moradia" action={
-        <Button
-          size="sm"
-          iconLeft={<Plus size={16} />}
-          onClick={() => {
-            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
-            setModalOpen(true);
-          }}
-        >
-          Criar anúncio
-        </Button>
-      } />
-      <section className="space-y-3">
-        <SubHeader
-          filters={{
+      <PageHeader title="Moradia" filters={{
             fields: [
               { type: 'select', id: 'propertyType', label: 'Tipo de imóvel', options: [{ value: '', label: 'Todos os tipos' }, ...['Apartamento', 'Casa', 'Quarto', 'Republica'].map((v) => ({ value: v, label: v }))] },
               { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
@@ -158,8 +143,19 @@ export default function HousingList({ user }: { user: User }) {
               setPrice('');
               setPage(1);
             },
+          }} action={
+        <Button
+          size="sm"
+          iconLeft={<Plus size={16} />}
+          onClick={() => {
+            setDraft((current) => ({ ...current, regionKey: current.regionKey || user.regionKey || "" }));
+            setModalOpen(true);
           }}
-        />
+        >
+          Criar anúncio
+        </Button>
+      } />
+      <section className="space-y-3">
         {loading ? (
           <div className="space-y-3" role="status" aria-label="Carregando moradias" aria-busy="true">
             {[0, 1, 2].map((key) => (
