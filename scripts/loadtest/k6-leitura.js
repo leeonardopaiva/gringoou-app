@@ -39,6 +39,23 @@ const PROFILES = {
   ],
 };
 
+// Perfis sob medida: -e PROFILE=alvo -e VUS=125 (sobe em 2 degraus, segura o pico 5 min, desce).
+//                    -e PROFILE=pico  -e VUS=125 (salto brusco ao alvo, simula divulgação/post viral).
+// Referência: 1 usuário virtual ≈ 8 pessoas reais (cerca de 1,7 req/s contra ~0,1-0,2 req/s de uma pessoa).
+const VUS = Math.max(1, Number(__ENV.VUS || 60));
+PROFILES.alvo = [
+  { duration: '3m', target: Math.ceil(VUS / 2) },
+  { duration: '3m', target: VUS },
+  { duration: '5m', target: VUS },
+  { duration: '2m', target: 0 },
+];
+PROFILES.pico = [
+  { duration: '1m', target: Math.ceil(VUS / 10) },
+  { duration: '20s', target: VUS },
+  { duration: '4m', target: VUS },
+  { duration: '1m', target: 0 },
+];
+
 export const options = {
   stages: PROFILES[__ENV.PROFILE || 'smoke'] || PROFILES.smoke,
   thresholds: {
