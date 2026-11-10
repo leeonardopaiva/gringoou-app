@@ -22,7 +22,7 @@ Por quê: no plano Free o histórico de restauração é curto, a computação s
 
 1. console.neon.tech → botão **Upgrade** (a cobrança passa pela Vercel, pois o banco foi instalado pela integração).
 2. Escolha o plano pago mais barato que ofereça **janela de restauração de pelo menos 7 dias** (confira a tabela de planos na hora: os limites mudam).
-3. Projeto `emigrei-db` → **Settings → Compute**:
+3. Projeto `gringoou-db` → **Settings → Compute**:
    - Se o plano permitir, **desative a suspensão por inatividade** na branch de produção (elimina o atraso da primeira requisição).
    - Defina autoscaling com mínimo baixo e **máximo de 2 a 4 CU** para absorver picos; ajuste depois do teste de carga.
 4. **Settings → Storage / History**: confirme a janela de restauração ativada.
@@ -37,7 +37,7 @@ Registro: data do upgrade, plano, janela de restauração, limite de autoscaling
 
 Objetivo: provar que um backup **restaura e abre**, e medir quanto tempo leva (RTO) e quanto dado se perde no pior caso (RPO). Não altera a produção: tudo é feito em uma branch separada.
 
-1. Neon → `emigrei-db` → **Branches**. Anote a hora atual (UTC).
+1. Neon → `gringoou-db` → **Branches**. Anote a hora atual (UTC).
 2. **Create branch** a partir da `main` escolhendo **um ponto no passado** (opção "Past data" / "Specific time"), por exemplo 1 hora atrás. Nome: `restore-test-AAAAMMDD`.
 3. Abra o **SQL Editor** na branch `restore-test-...` e rode (somente leitura):
 
