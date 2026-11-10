@@ -503,7 +503,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 <p className="truncate text-sm font-semibold text-text">{item.sellerName ?? 'Membro da comunidade'}</p>
                 <p className="truncate text-xs text-slate-400">
                   {item.sellerUsername ? `@${item.sellerUsername} · ` : ''}
-                  Localização aproximada: {item.sellerLocationLabel ?? sellerLocation}
+                  {item.sellerLocationLabel ?? sellerLocation}
                 </p>
               </div>
                   </>
@@ -516,25 +516,15 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   <div className="flex min-w-0 flex-1 items-center gap-3">{sellerContent}</div>
                 );
               })()}
-              {!item.isOwner && item.sellerUsername ? (
-                <Button
-                  size="sm"
-                  variant="primary"
-                  iconLeft={<MessageCircle size={14} />}
-                  loading={contacting}
-                  onClick={() => void handleContactSeller()}
-                  aria-label="Enviar mensagem ao anunciante"
-                  className="shrink-0"
-                >
-                  <span className="hidden sm:inline">Mensagem</span>
-                </Button>
-              ) : null}
             </div>
 
-            {/* Mapa da área aproximada: só existe se o anúncio tiver coordenadas (já aproximadas pelo servidor). */}
-            {item.latitude != null && item.longitude != null ? (
-              <ApproximateAreaMap title="Localização aproximada" latitude={item.latitude} longitude={item.longitude} label={`Área aproximada: ${sellerLocation}`} />
-            ) : null}
+            {/* Com coordenadas (já aproximadas pelo servidor): círculo de ~800 m. Sem coordenadas: mapa da região, sem círculo. */}
+            <ApproximateAreaMap
+              latitude={item.latitude}
+              longitude={item.longitude}
+              place={sellerLocation}
+              label={`Área aproximada: ${sellerLocation}`}
+            />
 
             <div className="mt-5 border-t border-slate-100 pt-4">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Descrição</h2>
