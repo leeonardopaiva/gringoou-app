@@ -79,9 +79,23 @@ export async function POST() {
       const endpoints = await stripe.webhookEndpoints.list({ limit: 100 });
       const base = (process.env.NEXTAUTH_URL || '').replace(/\/$/, '');
       const expectedUrl = base ? `${base}/api/webhooks/stripe` : null;
-      const endpoint = endpoints.data.find((item) => (expectedUrl ? item.url === expectedUrl : item.url.endsWith('/api/webhooks/stripe')));
+      const byPath = endpoints.data.filter((item) => item.url.endsWith('/api/webhooks/stripe'));
+      const endpoint = byPath.find((item) => item.url === expectedUrl) ?? byPath[0];
       if (!endpoint) {
-        checks.push({ id: 'endpoint', label: 'Endpoint do webhook', status: 'error', detail: `Nenhum endpoint cadastrado para ${expectedUrl ?? '/api/webhooks/stripe'}. Cadastre em Developers → Webhooks.` });
+        const registered = endpoints.data.map((item) => item.url);
+        checks.push({
+          id: 'endpoint',
+          label: 'Endpoint do webhook',
+          status: 'error',
+          detail: `Nenhum endpoint termina em /api/webhooks/stripe nesta conta (${secretMode ?? 'modo desconhecido'}). Cadastrados: ${registered.length ? registered.join(', ') : 'nenhum'}. Cadastre ${expectedUrl ?? 'a URL do site'}/api/webhooks/stripe em Developers → Webhooks, no mesmo modo da chave.`,
+        });
+      } else if (expectedUrl && endpoint.url !== expectedUrl) {
+        checks.push({
+          id: 'endpoint',
+          label: 'Endpoint do webhook',
+          status: 'error',
+          detail: `Cadastrado como ${endpoint.url}, mas o site usa ${expectedUrl}. O Stripe não segue redirecionamentos (ex.: sem www para www), então os avisos falham. Ajuste a URL do endpoint ou a NEXTAUTH_URL para ficarem iguais.`,
+        });
       } else {
         const missing = endpoint.enabled_events.includes('*') ? [] : REQUIRED_EVENTS.filter((event) => !endpoint.enabled_events.includes(event));
         checks.push({
