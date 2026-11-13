@@ -11,7 +11,7 @@ const STORAGE_KEY = 'gringoou:ad-wizard-draft';
 type AdReviewConfirmationProps = {
   headline: string | null;
   /** Como a campanha foi liberada: cortesia (sem cobrança), pagamento confirmado ou pagamento ainda em processamento. */
-  kind: 'courtesy' | 'paid' | 'processing';
+  kind: 'courtesy' | 'paid' | 'processing' | 'failed';
 };
 
 const COPY = {
@@ -30,6 +30,11 @@ const COPY = {
     title: 'Quase lá!',
     lead: 'Estamos confirmando o seu pagamento. Isso costuma levar poucos instantes.',
   },
+  failed: {
+    badge: 'Pagamento não aprovado',
+    title: 'Não foi possível confirmar o pagamento',
+    lead: 'O pagamento foi recusado ou não foi concluído, então a campanha não foi enviada para análise. Você não foi cobrado. Tente novamente com outro cartão ou forma de pagamento.',
+  },
 } as const;
 
 export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationProps) {
@@ -39,6 +44,22 @@ export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationPro
   useEffect(() => {
     sessionStorage.removeItem(STORAGE_KEY);
   }, []);
+
+  if (kind === 'failed') {
+    return (
+      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 py-8 sm:py-12">
+        <section className="rounded-3xl border border-red-100 bg-white px-6 py-9 text-center shadow-sm sm:px-10">
+          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">{copy.badge}</span>
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[#132f40] sm:text-3xl">{copy.title}</h1>
+          {headline ? <p className="mt-2 text-base font-semibold text-[#243b53]">“{headline}”</p> : null}
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{copy.lead}</p>
+        </section>
+        <div className="flex justify-center">
+          <Button onClick={() => router.push('/ads/overview')}>Ver minhas campanhas</Button>
+        </div>
+      </div>
+    );
+  }
 
   const steps = [
     { icon: Check, title: kind === 'courtesy' ? 'Cortesia recebida' : 'Pedido recebido', text: 'Sua campanha está registrada.', state: kind === 'processing' ? 'current' : 'done' },

@@ -1,5 +1,6 @@
 import { AdCampaignStatus, AdModerationStatus, AdPaymentStatus } from '@prisma/client';
 import { notifyCampaignEvent } from '@/lib/ads/notifications';
+import { confirmStripePayment, markStripePaymentFailed } from '@/lib/ads/payment-confirmation';
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/ads/server';
@@ -7,64 +8,6 @@ import { prisma } from '@/lib/prisma';
 
 const paymentIntentId = (session: Stripe.Checkout.Session) =>
   typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null;
-
-const confirmPayment = async (intent: Stripe.PaymentIntent) => {
-  const bannerId = intent.metadata.bannerId;
-  if (!bannerId || intent.currency.toLowerCase() !== 'usd') {
-    throw new Error('Pagamento sem campanha ou moeda USD valida.');
-  }
-
-  const campaign = await prisma.banner.findUnique({
-    where: { id: bannerId },
-    select: { contractAmountCents: true },
-  });
-  if (!campaign || campaign.contractAmountCents !== intent.amount_received) {
-    throw new Error('Valor do pagamento divergente do contrato.');
-  }
-
-  const couponId = intent.metadata.couponId;
-  const adAccountId = intent.metadata.adAccountId;
-  if (couponId && adAccountId) {
-    await prisma.adCouponRedemption
-      .create({ data: { couponId, adAccountId, bannerId, userId: intent.metadata.userId || 'unknown' } })
-      .catch(() => undefined); // já registrado (reenvio do webhook)
-  }
-
-  await prisma.$transaction([
-    prisma.adPayment.upsert({
-      where: { providerPaymentId: intent.id },
-      update: {
-        amountCents: intent.amount_received,
-        currency: 'USD',
-        status: AdPaymentStatus.PAID,
-        paidAt: new Date(),
-      },
-      create: {
-        bannerId,
-        provider: 'STRIPE',
-        providerPaymentId: intent.id,
-        amountCents: intent.amount_received,
-        currency: 'USD',
-        status: AdPaymentStatus.PAID,
-        paidAt: new Date(),
-      },
-    }),
-    prisma.banner.updateMany({
-      where: {
-        id: bannerId,
-        paymentStatus: AdPaymentStatus.PENDING,
-        moderationStatus: AdModerationStatus.DRAFT,
-      },
-      data: {
-        paymentStatus: AdPaymentStatus.PAID,
-        moderationStatus: AdModerationStatus.PENDING_REVIEW,
-        submittedAt: new Date(),
-        isActive: false,
-      },
-    }),
-  ]);
-  await notifyCampaignEvent(bannerId, 'PAYMENT_CONFIRMED');
-};
 
 const refundPayment = async (providerPaymentId: string) => {
   const payment = await prisma.adPayment.findUnique({ where: { providerPaymentId }, select: { id: true, bannerId: true, status: true } });
@@ -106,7 +49,7 @@ export async function POST(request: Request) {
 
   if (event.type === 'payment_intent.succeeded') {
     try {
-      await confirmPayment(event.data.object);
+      await confirmStripePayment(event.data.object);
     } catch (error) {
       console.error('Failed to confirm Stripe PaymentIntent:', error);
       return NextResponse.json({ error: error instanceof Error ? error.message : 'Pagamento invalido.' }, { status: 409 });
@@ -114,12 +57,7 @@ export async function POST(request: Request) {
   }
 
   if (event.type === 'payment_intent.payment_failed') {
-    const failedBannerId = event.data.object.metadata?.bannerId;
-    await prisma.adPayment.updateMany({
-      where: { providerPaymentId: event.data.object.id },
-      data: { status: AdPaymentStatus.FAILED },
-    });
-    if (failedBannerId) await notifyCampaignEvent(failedBannerId, 'PAYMENT_FAILED');
+    await markStripePaymentFailed(event.data.object.id, event.data.object.metadata?.bannerId);
   }
 
   if (event.type === 'payment_intent.canceled') {
