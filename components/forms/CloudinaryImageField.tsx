@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { ImageCropper, type ImageCropperHandle } from '@/components/ui/ImageCropper';
+import { Modal } from '@/components/ui/Modal';
 import { ImagePlus, LoaderCircle, Pencil, Trash2 } from 'lucide-react';
 import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type CloudinaryFolder } from '@/lib/cloudinary';
 import { isValidHttpUrl } from '@/lib/url';
@@ -25,6 +28,8 @@ type CloudinaryImageFieldProps = {
   disabled?: boolean;
   error?: string | null;
   onClearError?: () => void;
+  /** Se informado (largura/altura), permite ao usuário enquadrar a imagem antes de enviar. */
+  cropAspect?: number;
 };
 
 const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
@@ -38,12 +43,16 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
   disabled = false,
   error,
   onClearError,
+  cropAspect,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const currentImageUrl = imageUrl ?? value ?? '';
+  const cropperRef = useRef<ImageCropperHandle>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
 
   const openFilePicker = () => {
     if (!isCloudinaryEnabled || disabled || uploading) {
@@ -53,7 +62,18 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
     fileInputRef.current?.click();
   };
 
-  const uploadFile = async (file?: File) => {
+  useEffect(() => {
+    if (!pendingFile) {
+      setPendingPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPendingPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
+
+  /** Valida o arquivo; com `cropAspect`, abre o enquadramento antes de enviar. */
+  const selectFile = (file?: File) => {
     if (!file || !isCloudinaryEnabled || disabled) {
       return;
     }
@@ -69,6 +89,28 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       return;
     }
 
+    setUploadError(null);
+    if (cropAspect) {
+      setPendingFile(file);
+      return;
+    }
+    void uploadFile(file);
+  };
+
+  const confirmCrop = async () => {
+    if (!pendingFile) return;
+    try {
+      const blob = await cropperRef.current?.crop();
+      const file = blob ? new File([blob], 'recorte.jpg', { type: 'image/jpeg' }) : pendingFile;
+      setPendingFile(null);
+      await uploadFile(file);
+    } catch (cropFailure) {
+      setPendingFile(null);
+      setUploadError(cropFailure instanceof Error ? cropFailure.message : 'Não foi possível processar a imagem.');
+    }
+  };
+
+  const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', cloudinaryConfig.uploadPreset);
@@ -105,7 +147,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    await uploadFile(event.target.files?.[0]);
+    selectFile(event.target.files?.[0]);
     event.target.value = '';
   };
 
@@ -135,7 +177,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
           onDrop={(event) => {
             event.preventDefault();
             setDragging(false);
-            void uploadFile(event.dataTransfer.files?.[0]);
+            selectFile(event.dataTransfer.files?.[0]);
           }}
           style={{ width, height }}
           className={`group relative block max-w-full cursor-pointer overflow-hidden rounded-2xl border bg-slate-50 text-slate-600 outline-none transition focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${currentImageUrl ? 'border-slate-200' : 'border-dashed'} ${dragging ? 'border-brand-400 bg-brand-50' : currentImageUrl ? '' : 'border-slate-300 hover:border-brand-300'}`}
@@ -175,6 +217,22 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
         <FieldErrorMessage message={error} />
       </div>
       <FieldErrorMessage message={uploadError} />
+      {cropAspect ? (
+        <Modal
+          open={Boolean(pendingFile && pendingPreview)}
+          onClose={() => setPendingFile(null)}
+          title="Posicionar imagem"
+          description="Arraste para enquadrar e use o zoom para ajustar."
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setPendingFile(null)}>Cancelar</Button>
+              <Button onClick={() => void confirmCrop()}>Usar imagem</Button>
+            </>
+          }
+        >
+          {pendingPreview ? <ImageCropper ref={cropperRef} src={pendingPreview} aspect={cropAspect} outputWidth={1600} /> : null}
+        </Modal>
+      ) : null}
       <p className="px-1 text-xs text-slate-500">
         {hint ||
           (isCloudinaryEnabled

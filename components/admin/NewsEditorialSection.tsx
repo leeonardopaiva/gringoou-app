@@ -337,7 +337,7 @@ export default function NewsEditorialSection() {
           <div>
             <span className={labelClass}>Imagem de capa</span>
             <div className="mt-1">
-              <CloudinaryImageField value={form.imageUrl} onChange={setField('imageUrl')} folder="news" height={140} hint="Opcional. Sem imagem, o card usa um fallback." />
+              <CloudinaryImageField value={form.imageUrl} onChange={setField('imageUrl')} folder="news" cropAspect={16 / 9} height={140} hint="Opcional. Sem imagem, o card usa um fallback." />
             </div>
             <input
               type="url"
