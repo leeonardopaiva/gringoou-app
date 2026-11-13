@@ -49,6 +49,8 @@ export async function POST(request: Request, context: RouteContext) {
   const result = await prisma.banner.updateMany({
     where: { id, adAccountId: { not: null }, paymentStatus: AdPaymentStatus.PAID, moderationStatus: AdModerationStatus.PENDING_REVIEW },
     data: {
+      // Estornada: deixa de ser PAID, o que também impede o reenvio sem nova cobrança.
+      ...(refundedPaymentId ? { paymentStatus: AdPaymentStatus.REFUNDED } : {}),
       moderationStatus: AdModerationStatus.REJECTED,
       campaignStatus: AdCampaignStatus.PAUSED,
       rejectionReason: parsed.data.reason,
