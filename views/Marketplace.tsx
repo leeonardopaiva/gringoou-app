@@ -447,7 +447,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onClearError={() => clearFieldError('imageUrl')}
               error={fieldErrors.imageUrl}
-              folder="events"
+              folder="events" cropAspect={2}
               placeholder="Link da imagem do evento"
               hint=""
             />

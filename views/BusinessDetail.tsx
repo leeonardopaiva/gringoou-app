@@ -858,6 +858,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     onChange={setCoverDraft}
                     folder="businesses"
                     placeholder="Link da imagem de capa"
+                    cropAspect={2}
                     hint="Essa imagem aparece no topo da página do negócio."
                   />
 
@@ -865,6 +866,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     value={galleryDraft}
                     onChange={setGalleryDraft}
                     folder="businesses"
+                    cropAspect={1}
                     hint="Use a galeria para mostrar ambiente, produtos e serviços."
                   />
                 </>

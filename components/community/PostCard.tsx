@@ -272,7 +272,7 @@ const Editor: React.FC<EditorProps> = ({
     <CloudinaryImageField
       value={imageUrl}
       onChange={onImageChange}
-      folder="community"
+      folder="community" cropAspect={4 / 3}
       placeholder="Link da imagem do post"
       hint="Atualize a imagem da publicacao quando precisar."
     />

@@ -279,7 +279,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
               onChange={(value) => setBannerForm((current) => ({ ...current, imageUrl: value }))}
               onClearError={() => clearFieldError('imageUrl')}
               error={fieldErrors.imageUrl}
-              folder="banners"
+              folder="banners" cropAspect={4 / 3}
               placeholder="Link da imagem do banner"
               hint="Envie a imagem do banner do seu computador ou celular."
             />

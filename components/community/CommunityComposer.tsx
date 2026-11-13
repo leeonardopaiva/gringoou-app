@@ -187,7 +187,7 @@ const MediaField: React.FC<MediaFieldProps> = ({
       <CloudinaryImageField
         value={imageUrl}
         onChange={onImageChange}
-        folder="community"
+        folder="community" cropAspect={4 / 3}
         placeholder="Link da imagem do post"
         /* hint="Envie uma imagem pela Cloudinary ou cole uma URL publica." */
       />

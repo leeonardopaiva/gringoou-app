@@ -500,7 +500,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
                 setForm((current) => ({ ...current, imageUrl: value }));
                 clearFieldError('imageUrl');
               }}
-              folder="marketplace"
+              folder="marketplace" cropAspect={4 / 3}
               error={fieldErrors.imageUrl}
               onClearError={() => clearFieldError('imageUrl')}
             />

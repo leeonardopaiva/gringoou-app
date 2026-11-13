@@ -1978,11 +1978,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setBusinessForm((current) => ({ ...current, imageUrl: value }))
                         }
-                        folder="businesses"
+                        folder="businesses" cropAspect={2}
                         placeholder="Link da imagem"
                         hint="Envie uma imagem do seu computador ou celular."
                       />
-                      <ImageGalleryField
+                      <ImageGalleryField cropAspect={1}
                         value={businessForm.galleryUrls}
                         onChange={(value) =>
                           setBusinessForm((current) => ({ ...current, galleryUrls: value }))
@@ -2190,7 +2190,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setEventForm((current) => ({ ...current, imageUrl: value }))
                         }
-                        folder="events"
+                        folder="events" cropAspect={2}
                         placeholder="Link da imagem"
                         hint="Envie uma imagem do seu computador ou celular."
                       />
@@ -2444,7 +2444,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setUserForm((current) => ({ ...current, image: value }))
                         }
-                        folder="profiles"
+                        folder="profiles" cropAspect={1}
                         placeholder="Link da foto do usuario"
                         hint="Envie uma foto do seu computador ou celular."
                       />

@@ -269,7 +269,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
           <CloudinaryImageField
             value={draft.imageUrl}
             onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
-            folder="jobs"
+            folder="jobs" cropAspect={4 / 3}
             height={160}
             hint="Adicione uma capa para destacar a vaga."
           />

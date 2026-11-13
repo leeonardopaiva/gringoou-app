@@ -258,7 +258,7 @@ export default function HousingList({ user }: { user: User }) {
           <CloudinaryImageField
             value={draft.imageUrl}
             onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
-            folder="housing"
+            folder="housing" cropAspect={4 / 3}
             height={180}
             hint="Clique na area para selecionar a foto do anuncio."
           />
