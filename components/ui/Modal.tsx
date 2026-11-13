@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { Button } from './Button';
@@ -15,6 +16,8 @@ export interface ModalProps {
   className?: string;
   fullscreen?: boolean;
 }
+
+const openModals: React.RefObject<HTMLDivElement | null>[] = [];
 
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description, footer, children, className, fullscreen = false }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -35,7 +38,11 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
     const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
     const focusFirst = () => dialogRef.current?.querySelector<HTMLElement>(focusableSelector)?.focus();
     const frame = requestAnimationFrame(focusFirst);
+    openModals.push(dialogRef);
     const onKeyDown = (event: KeyboardEvent) => {
+      // Só o modal do topo reage (evita fechar o modal-pai junto com o filho).
+      const isTop = openModals[openModals.length - 1] === dialogRef;
+      if (!isTop) return;
       if (event.key === 'Escape') onCloseRef.current();
       if (event.key === 'Tab' && dialogRef.current) {
         const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector)];
@@ -54,15 +61,18 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
     document.addEventListener('keydown', onKeyDown);
     return () => {
       cancelAnimationFrame(frame);
+      const index = openModals.indexOf(dialogRef);
+      if (index >= 0) openModals.splice(index, 1);
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
       previouslyFocusedRef.current?.focus();
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
-  return (
+  // Portal: evita que ancestrais com transform/animação (containing block) quebrem o position: fixed.
+  return createPortal(
     <div className="fixed inset-0 z-[150] flex items-end justify-center bg-overlay p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div
         ref={dialogRef}
@@ -95,7 +105,8 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{children}</div>
         {footer && <div className="mt-5 flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-4">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

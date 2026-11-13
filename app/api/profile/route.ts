@@ -1,5 +1,6 @@
 ﻿import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
@@ -43,7 +44,17 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
-  const parsed = updateProfileSchema.safeParse(body);
+
+  // Quem já possui um nome reservado (ex.: a conta oficial) pode mantê-lo ao salvar outros campos;
+  // a regra de reserva só vale para trocar/escolher um nome.
+  const storedUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { username: true } });
+  const keepsCurrentUsername =
+    Boolean(storedUser?.username) && typeof body?.username === 'string' && body.username.trim() === storedUser?.username;
+
+  const parsed = (keepsCurrentUsername
+    ? updateProfileSchema.extend({ username: z.string().trim() })
+    : updateProfileSchema
+  ).safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -52,7 +63,9 @@ export async function PUT(request: Request) {
     );
   }
 
-  const usernameValidation = validateUsernameValue(parsed.data.username);
+  const usernameValidation = keepsCurrentUsername
+    ? { normalized: parsed.data.username, error: null }
+    : validateUsernameValue(parsed.data.username);
 
   if (usernameValidation.error) {
     return NextResponse.json({ error: usernameValidation.error }, { status: 400 });

@@ -6,6 +6,7 @@ import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type Cl
 import { useToast } from '@/components/feedback/ToastProvider';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
 import { Modal } from '@/components/ui/Modal';
+import { ImageCropper, type ImageCropperHandle } from '@/components/ui/ImageCropper';
 import { cn } from '@/lib/cn';
 
 type ImageEditMenuProps = {
@@ -29,6 +30,7 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
   const { showToast } = useToast();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cropperRef = useRef<ImageCropperHandle>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [viewing, setViewing] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -90,8 +92,9 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
     if (!file || saving) return;
     setSaving(true);
     try {
+      const cropped = await cropperRef.current?.crop();
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', cropped ?? file, cropped ? 'recorte.jpg' : file.name);
       formData.append('upload_preset', cloudinaryConfig.uploadPreset);
       formData.append('folder', getCloudinaryFolderPath(folder));
       const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudinaryConfig.cloudName)}/image/upload`, { method: 'POST', body: formData });
@@ -110,8 +113,6 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
       setSaving(false);
     }
   };
-
-  const shownImage = preview || src || null;
 
   return (
     <div ref={rootRef} className={cn('absolute z-10', className)}>
@@ -150,34 +151,48 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
         className={cn('!p-0 overflow-hidden sm:max-w-md sm:!p-0', '[&>div]:pr-0 [&>button]:bg-black/40 [&>button]:text-white [&>button:hover]:bg-black/60 [&>button:hover]:text-white')}
       >
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { pick(event.target.files?.[0]); event.target.value = ''; }} />
-        <div
-          className={cn('relative w-full overflow-hidden bg-slate-100', isCover ? 'aspect-[16/10]' : 'aspect-square')}
-          onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => { event.preventDefault(); setDragging(false); pick(event.dataTransfer.files?.[0]); }}
-        >
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            aria-label={file ? 'Escolher outra imagem' : 'Escolher imagem'}
-            className={cn('absolute inset-0 flex items-center justify-center transition', dragging ? 'bg-brand-50' : 'hover:bg-slate-200/60')}
+        {file && preview ? (
+          <div className="bg-white pb-4">
+            <ImageCropper ref={cropperRef} src={preview} aspect={isCover ? 2 : 1} round={!isCover} outputWidth={isCover ? 1920 : 800} />
+            <p className="px-4 pt-1 text-center text-xs text-slate-500">Arraste a imagem para posicionar.</p>
+            <div className="mt-3 flex items-center justify-between gap-3 px-4">
+              <button type="button" onClick={() => inputRef.current?.click()} disabled={saving} className="rounded-full px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50">
+                Escolher outra
+              </button>
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={saving}
+                aria-label="Salvar"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving ? <LoaderCircle size={17} className="animate-spin" /> : <Save size={17} />}
+                Salvar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={cn('relative w-full overflow-hidden bg-slate-100', isCover ? 'aspect-[16/10]' : 'aspect-square')}
+            onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => { event.preventDefault(); setDragging(false); pick(event.dataTransfer.files?.[0]); }}
           >
-            {shownImage ? <img src={shownImage} alt="" className="h-full w-full object-cover" /> : <ImagePlus size={34} className="text-slate-400" />}
-          </button>
-          <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-            {isCover ? 'Editar capa' : 'Editar foto'}
-          </span>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={!file || saving}
-            aria-label="Salvar"
-            title="Salvar"
-            className="absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {saving ? <LoaderCircle size={19} className="animate-spin" /> : <Save size={19} />}
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              aria-label="Escolher imagem"
+              className={cn('absolute inset-0 flex flex-col items-center justify-center gap-2 transition', dragging ? 'bg-brand-50' : 'hover:bg-slate-200/60')}
+            >
+              {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-60" /> : null}
+              <ImagePlus size={34} className="relative text-slate-500" />
+              <span className="relative text-sm font-semibold text-slate-600">Escolher imagem</span>
+            </button>
+            <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+              {isCover ? 'Editar capa' : 'Editar foto'}
+            </span>
+          </div>
+        )}
       </Modal>
     </div>
   );
