@@ -695,14 +695,14 @@ const Profile: React.FC<{
                   <div>
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Capa do perfil</h3>
                     <div className="space-y-3">
-                      <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" placeholder="Link da capa" hint="Use uma imagem horizontal para destacar seu perfil." />
+                      <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" cropAspect={2} placeholder="Link da capa" hint="Use uma imagem horizontal para destacar seu perfil." />
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Foto do perfil</h3>
                     <div className="space-y-3">
-                      <CloudinaryImageField value={profileEditDraft.image} onChange={(image) => setProfileEditDraft((c) => c ? { ...c, image } : null)} folder="profiles" placeholder="Link da foto do perfil" hint="Envie uma foto quadrada, com o rosto bem visível." />
+                      <CloudinaryImageField value={profileEditDraft.image} onChange={(image) => setProfileEditDraft((c) => c ? { ...c, image } : null)} folder="profiles" cropAspect={1} placeholder="Link da foto do perfil" hint="Envie uma foto quadrada, com o rosto bem visível." />
                     </div>
                   </div>
 

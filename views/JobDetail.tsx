@@ -172,7 +172,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar vaga" description="Atualize os dados e a capa da publicação." className="max-w-xl">
         <div className="space-y-3">
-          <CloudinaryImageField value={draft?.imageUrl || ''} onChange={(value) => updateDraft('imageUrl', value)} folder="jobs" height={180} hint="Clique na área para selecionar a capa da vaga." />
+          <CloudinaryImageField value={draft?.imageUrl || ''} onChange={(value) => updateDraft('imageUrl', value)} folder="jobs" cropAspect={4 / 3} height={180} hint="Clique na área para selecionar a capa da vaga." />
           <ImageGalleryField value={draft?.galleryUrls || []} onChange={(value) => updateDraft('galleryUrls', value)} folder="jobs" maxItems={6} hint="Adicione até 6 fotos da vaga, equipe ou ambiente." />
           <Input value={draft?.title || ''} onChange={(event) => updateDraft('title', event.target.value)} placeholder="Título" />
           <Input value={draft?.company || ''} onChange={(event) => updateDraft('company', event.target.value)} placeholder="Empresa ou responsável" disabled={Boolean(draft?.businessId)} />

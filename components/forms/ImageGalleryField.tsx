@@ -12,6 +12,8 @@ type ImageGalleryFieldProps = {
   maxItems?: number;
   hint?: string;
   disabled?: boolean;
+  /** Proporção (largura/altura) para o usuário enquadrar cada imagem antes de enviar. */
+  cropAspect?: number;
 };
 
 const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
@@ -21,6 +23,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
   maxItems = 8,
   hint,
   disabled = false,
+  cropAspect = 4 / 3,
 }) => {
   const gallery = value.length > 0 ? value : [''];
 
@@ -70,6 +73,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
               folder={folder}
               placeholder={`Imagem ${index + 1} da galeria`}
               disabled={disabled}
+              cropAspect={cropAspect}
             />
             <div className="flex justify-end">
               <button

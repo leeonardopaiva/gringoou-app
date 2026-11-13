@@ -712,7 +712,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               <CloudinaryImageField
                 value={coverDraft}
                 onChange={setCoverDraft}
-                folder="events"
+                folder="events" cropAspect={2}
                 placeholder="Link da imagem de capa"
                 hint="Essa imagem aparece no topo da pagina do evento."
               />

@@ -241,7 +241,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           <CloudinaryImageField
             value={form.imageUrl}
             onChange={(value) => setForm((c) => ({ ...c, imageUrl: value }))}
-            folder="marketplace"
+            folder="marketplace" cropAspect={4 / 3}
           />
         </div>
         <div>

@@ -339,7 +339,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 <input value={createForm.instagram} onChange={(event) => setCreateForm((current) => ({ ...current, instagram: event.target.value }))} placeholder="Instagram" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               </div>
               <FieldErrorMessage message={fieldErrors.website} />
-              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" placeholder="Link da imagem de capa" hint="Envie a capa pela Cloudinary ou cole uma URL publica." />
+              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" cropAspect={2} placeholder="Link da imagem de capa" hint="Envie a capa pela Cloudinary ou cole uma URL publica." />
               <button type="submit" disabled={submitting || !createForm.regionKey} className="theme-bg theme-bg-hover w-full rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-md disabled:opacity-60">
                 {submitting ? 'Enviando...' : 'Enviar para aprovacao'}
               </button>
