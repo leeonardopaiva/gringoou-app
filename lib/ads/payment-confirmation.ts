@@ -78,7 +78,9 @@ export const markStripePaymentFailed = async (intentId: string, bannerId?: strin
  * chegado (ex.: ambiente local sem `stripe listen`, atraso ou endpoint mal configurado).
  * Devolve o estado do pagamento da campanha.
  */
-export const syncCampaignPayment = async (bannerId: string): Promise<'paid' | 'failed' | 'pending'> => {
+export type PaymentSyncResult = { state: 'paid' | 'failed' | 'pending'; detail: string };
+
+export const syncCampaignPaymentDetailed = async (bannerId: string): Promise<PaymentSyncResult> => {
   const banner = await prisma.banner.findUnique({
     where: { id: bannerId },
     select: {
@@ -86,24 +88,28 @@ export const syncCampaignPayment = async (bannerId: string): Promise<'paid' | 'f
       payments: { where: { provider: 'STRIPE' }, orderBy: { createdAt: 'desc' }, take: 1, select: { providerPaymentId: true, status: true } },
     },
   });
-  if (!banner) return 'pending';
-  if (banner.paymentStatus === AdPaymentStatus.PAID) return 'paid';
+  if (!banner) return { state: 'pending', detail: 'Campanha nao encontrada.' };
+  if (banner.paymentStatus === AdPaymentStatus.PAID) return { state: 'paid', detail: 'Ja confirmada.' };
 
   const payment = banner.payments[0];
-  if (!payment?.providerPaymentId) return 'pending';
+  if (!payment?.providerPaymentId) return { state: 'pending', detail: 'Nenhum pagamento Stripe registrado para esta campanha.' };
 
   try {
     const intent = await getStripe().paymentIntents.retrieve(payment.providerPaymentId);
     if (intent.status === 'succeeded') {
       await confirmStripePayment(intent);
-      return 'paid';
+      return { state: 'paid', detail: 'Pagamento confirmado no Stripe.' };
     }
     if (intent.status === 'canceled' || (intent.status === 'requires_payment_method' && intent.last_payment_error)) {
       await markStripePaymentFailed(intent.id, bannerId);
-      return 'failed';
+      return { state: 'failed', detail: intent.last_payment_error?.message ?? `Pagamento ${intent.status}.` };
     }
+    return { state: 'pending', detail: `Stripe informa status "${intent.status}".` };
   } catch (error) {
     console.error('Failed to reconcile Stripe payment:', error);
+    const detail = error instanceof Error ? error.message : 'Erro ao consultar o Stripe.';
+    return { state: payment.status === AdPaymentStatus.FAILED ? 'failed' : 'pending', detail };
   }
-  return payment.status === AdPaymentStatus.FAILED ? 'failed' : 'pending';
 };
+
+export const syncCampaignPayment = async (bannerId: string) => (await syncCampaignPaymentDetailed(bannerId)).state;
