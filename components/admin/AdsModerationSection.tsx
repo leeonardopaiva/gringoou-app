@@ -80,6 +80,20 @@ export default function AdsModerationSection() {
 
   useEffect(() => { const timeout = window.setTimeout(() => void loadCampaigns(), search ? 250 : 0); return () => window.clearTimeout(timeout); }, [loadCampaigns, search]);
 
+  const [reconciling, setReconciling] = useState(false);
+  const reconcilePayments = async () => {
+    setReconciling(true);
+    try {
+      const response = await fetch('/api/admin/ads/reconcile', { method: 'POST' });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.error ?? 'Nao foi possivel verificar os pagamentos.');
+      const notMoved = (result.results as Array<{ headline: string | null; state: string; detail: string }>).filter((item) => item.state !== 'paid');
+      showToast(result.checked === 0 ? 'Nenhuma campanha aguardando confirmacao de pagamento.' : result.moved + ' de ' + result.checked + ' campanha(s) enviadas para revisao.' + (notMoved.length ? ' Pendentes: ' + notMoved.map((item) => (item.headline || 'Campanha') + ' (' + item.detail + ')').join('; ') : ''), result.moved > 0 || result.checked === 0 ? 'success' : 'error');
+      await loadCampaigns(true);
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Falha ao verificar pagamentos.', 'error'); }
+    finally { setReconciling(false); }
+  };
+
   const approve = async () => {
     if (!approving) return; setProcessingId(approving.id);
     try {
@@ -114,6 +128,8 @@ export default function AdsModerationSection() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">Anúncios pagos<InfoTip text="Revise as campanhas pagas antes de publicá-las." /></h1><button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing} onClick={() => void loadCampaigns(true)} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button></div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map((item) => { const Icon = item.icon; return <Card key={item.label} className="rounded-2xl border border-slate-200 p-5 shadow-[0_2px_12px_rgba(15,23,42,.035)]"><span className={`flex h-10 w-10 items-center justify-center rounded-full ${item.color}`}><Icon size={19} /></span><p className="mt-5 text-3xl font-extrabold">{item.value}</p><p className="mt-1 text-xs font-bold">{item.label}</p><p className="mt-1 text-[11px] text-slate-400">{item.caption}</p></Card>; })}</div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-slate-500">Pagou e a campanha nao apareceu? Confirme direto no Stripe.</span><Button variant="secondary" size="sm" loading={reconciling} onClick={() => void reconcilePayments()}>Verificar pagamentos pendentes</Button></div>
 
         <div className="inline-flex rounded-full border border-slate-200 bg-white p-1">{(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map((item) => <button key={item} type="button" onClick={() => { setStatus(item); setPage(1); setSelected(null); }} className={cn('rounded-full px-5 py-2 text-sm font-bold transition', status === item ? 'bg-[#EAF1FF] text-[#2B5DF5]' : 'text-slate-400 hover:text-slate-700')}>{statusLabels[item]} <span className="ml-1">{item === 'PENDING_REVIEW' ? payload?.stats.pending : item === 'APPROVED' ? payload?.stats.approved : payload?.stats.rejected}</span></button>)}</div>
 
