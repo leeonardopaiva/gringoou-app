@@ -5,6 +5,7 @@ import { ExternalLink, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
+import StripeIntegrationPanel from '@/components/admin/StripeIntegrationPanel';
 import type { IntegrationState, IntegrationStatus } from '@/lib/integrations';
 
 const STATUS: Record<IntegrationStatus, { label: string; dot: string; chip: string }> = {
@@ -59,6 +60,8 @@ export default function IntegrationsSection() {
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
+
+      <StripeIntegrationPanel />
 
       {loading && items.length === 0 ? (
         <div className="space-y-3" role="status" aria-label="Carregando integrações">
