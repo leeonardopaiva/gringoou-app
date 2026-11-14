@@ -126,6 +126,9 @@ const Community: React.FC<{
     if (!isComposerExpanded) return;
 
     const handleOutsideInteraction = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      // Modais (ex.: enquadrar imagem) renderizam em portal, fora do compositor: não contam como clique fora.
+      if (target?.closest?.('[role="dialog"]')) return;
       if (composerRef.current && !composerRef.current.contains(event.target as Node)) {
         setIsComposerExpanded(false);
       }
