@@ -10,7 +10,9 @@ export async function GET(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const adAccountId = new URL(request.url).searchParams.get('adAccountId');
+  const searchParams = new URL(request.url).searchParams;
+  const adAccountId = searchParams.get('adAccountId');
+  const requestedBannerId = searchParams.get('bannerId');
   if (!adAccountId) return NextResponse.json({ error: 'Informe a conta Ads.' }, { status: 400 });
 
   const membership = await prisma.adAccountUser.findUnique({
@@ -24,6 +26,7 @@ export async function GET(request: Request) {
   const draft = await prisma.banner.findFirst({
     where: {
       adAccountId,
+      ...(requestedBannerId ? { id: requestedBannerId } : {}),
       archivedAt: null,
       moderationStatus: AdModerationStatus.DRAFT,
       paymentStatus: AdPaymentStatus.PENDING,
