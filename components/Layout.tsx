@@ -95,8 +95,8 @@ type NavigationItem = {
 const navigationItems: NavigationItem[] = [
   { href: '/home', label: 'Home', icon: <HomeIcon size={22} /> },
   { href: '/businesses', label: 'Negócios', icon: <Store size={18} /> },
-  { href: '/community', label: 'Comunidade', icon: <Users size={18} /> },
-  { href: '/groups', label: 'Grupos', icon: <MessageCircle size={18} /> },
+  { href: '/community', label: 'Comunidade', icon: <Users size={24} /> },
+  { href: '/groups', label: 'Grupos', icon: <MessageCircle size={24} /> },
   { href: '/events', label: 'Eventos', icon: <Calendar size={18} /> },
   { href: '/jobs', label: 'Vagas', icon: <Briefcase size={18} /> },
   { href: '/housing', label: 'Moradia', icon: <House size={18} /> },
@@ -536,9 +536,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           ) : null}
 
           <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 lg:hidden">
-            <div className="relative flex w-full max-w-[300px] justify-center">
+            <div className="relative flex w-full max-w-[340px] justify-center">
               {isQuickMenuOpen ? (
-                <div className="absolute bottom-[58px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">
+                <div className="absolute bottom-[66px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">
                   <Button
                     variant="primary"
                     size="sm"
@@ -565,11 +565,11 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </div>
               ) : null}
 
-              <nav className="flex h-[52px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
-                <NavItem label="Home" icon={<HomeIcon size={18} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
+              <nav className="flex h-[60px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
+                <NavItem label="Home" icon={<HomeIcon size={24} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
                 <NavItem
                   label="Buscar"
-                  icon={<SearchIcon size={18} />}
+                  icon={<SearchIcon size={24} />}
                   active={isAssistantOpen}
                   onNavigate={() => {
                     setIsQuickMenuOpen(false);
@@ -582,15 +582,15 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   type="button"
                   onClick={() => setIsQuickMenuOpen((value) => !value)}
                   aria-label={isQuickMenuOpen ? 'Fechar menu de criacao' : 'Abrir menu de criacao'}
-                  className="-mt-6 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-md ring-[3px] ring-white transition-transform hover:brightness-105 active:scale-95"
+                  className="-mt-7 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-md ring-[3px] ring-white transition-transform hover:brightness-105 active:scale-95"
                 >
                   {isQuickMenuOpen ? <X size={19} /> : <Plus size={21} />}
                 </button>
 
-                <NavItem label="Comunidade" icon={<Users size={18} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
+                <NavItem label="Comunidade" icon={<Users size={24} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
                 <NavItem
                   label="Mensagens"
-                  icon={<MessageCircle size={18} />}
+                  icon={<MessageCircle size={24} />}
                   active={isActive('/inbox')}
                   badge={unreadCount}
                   onNavigate={() => handleNavigate('/inbox')}
@@ -651,19 +651,18 @@ const NavItem: React.FC<{
     type="button"
     onClick={onNavigate}
     aria-label={badge > 0 ? `${label}, ${badge} novas` : label}
-    className="flex w-12 flex-col items-center gap-0.5 py-1"
+    aria-current={active ? "page" : undefined}
+    className="flex h-full min-w-[56px] flex-1 flex-col items-center justify-center gap-0.5"
   >
     <span
-      className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+      className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
         active ? 'bg-brand-100 text-brand-500' : 'text-slate-400'
       }`}
     >
       {icon}
       {badge > 0 ? <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" aria-hidden /> : null}
     </span>
-    <span className={`text-[9px] leading-none ${active ? 'font-bold text-brand-500' : 'font-medium text-slate-400'}`}>
-      {label}
-    </span>
+    {active ? <span className="text-[10px] font-bold leading-none text-brand-500">{label}</span> : null}
   </button>
 );
 
