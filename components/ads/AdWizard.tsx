@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { Button, Skeleton } from '@/components/ui';
+import { Plus, Trash2 } from 'lucide-react';
+import { Button, ConfirmModal, Skeleton } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { adCreativeStepSchema, adGoalStepSchema, adReachStepSchema, type AdWizardData } from '@/lib/ads/validation';
 import { CheckoutStep, AD_PAYMENT_FORM_ID } from './steps/CheckoutStep';
@@ -64,6 +64,8 @@ export const AdWizard: React.FC = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountCents: number; payCents: number } | null>(null);
   const [courtesyApplied, setCourtesyApplied] = useState(false);
   const checkoutKeyRef = useRef<string | null>(null);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
   const { showToast } = useToast();
   const adPlans = useAdPlans();
   const selectedPlan = adPlans?.find((item) => item.plan === state.plan);
@@ -102,7 +104,8 @@ export const AdWizard: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`/api/banners/draft?adAccountId=${encodeURIComponent(accountId)}`, { cache: 'no-store' });
+        const wantedDraft = new URLSearchParams(window.location.search).get('draft');
+        const response = await fetch(`/api/banners/draft?adAccountId=${encodeURIComponent(accountId)}${wantedDraft ? `&bannerId=${encodeURIComponent(wantedDraft)}` : ''}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
         if (!cancelled && response.ok && payload?.draft) {
           const serverDraft = payload.draft as AdWizardData;
@@ -287,6 +290,24 @@ export const AdWizard: React.FC = () => {
     dispatch({ type: 'RESET' });
   };
 
+  const discardDraft = async () => {
+    if (!state.draftId) return;
+    setDiscarding(true);
+    try {
+      const response = await fetch(`/api/ads/${state.draftId}/discard`, { method: 'POST' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível descartar o rascunho.');
+      setDiscardOpen(false);
+      startNewCampaign();
+      router.replace('/ads/wizard');
+      showToast('Rascunho descartado.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Não foi possível descartar o rascunho.', 'error');
+    } finally {
+      setDiscarding(false);
+    }
+  };
+
   if (accountLoading || !account || !hydrated) {
     return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-white p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
   }
@@ -311,13 +332,27 @@ export const AdWizard: React.FC = () => {
           <h1 className="text-[28px] font-extrabold leading-tight text-[#132f40]">Novo Anuncio</h1>
           <div className="flex items-center gap-3">
             {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
-            {state.draftId || state.step > 1 ? (
-              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing} iconLeft={<Plus size={15} />} onClick={startNewCampaign}>Nova campanha</Button>
+            {state.draftId ? (
+              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing || discarding} iconLeft={<Trash2 size={15} />} onClick={() => setDiscardOpen(true)}>Descartar rascunho</Button>
+            ) : state.step > 1 ? (
+              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing} iconLeft={<Plus size={15} />} onClick={startNewCampaign}>Recomeçar</Button>
             ) : null}
           </div>
         </div>
         <WizardStepper currentStep={state.step} steps={STEPS} className="mt-5" />
       </header>
+
+      <ConfirmModal
+        open={discardOpen}
+        onClose={() => (discarding ? undefined : setDiscardOpen(false))}
+        title="Descartar rascunho?"
+        description="Os dados desta campanha serão apagados do painel e você começa uma nova do zero. Nenhuma cobrança é feita."
+        confirmLabel="Descartar"
+        cancelLabel="Manter rascunho"
+        destructive
+        loading={discarding}
+        onConfirm={() => void discardDraft()}
+      />
 
       {requestError ? <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-body-sm text-red-700">{requestError}</div> : null}
       {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">{courtesyApplied ? 'Cortesia aplicada! Sua campanha foi enviada para moderação e começa a ser exibida depois da aprovação. Ao final do período, contrate um pacote pelo fluxo normal para continuar anunciando.' : 'Pagamento recebido ou em processamento. A campanha será enviada para moderação assim que o pagamento for confirmado.'}</div> : null}
