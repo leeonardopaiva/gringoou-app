@@ -224,10 +224,8 @@ export async function middleware(request: NextRequest) {
     const blocked = isGeoBlockEnabled() ? isCountryBlocked(country) : isCountryBlockedByList(country);
 
     if (!isExempt && !isFounder && blocked) {
-      return new NextResponse(
-        '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gringoou</title><body style="font-family:sans-serif;padding:32px;color:#0f2b63"><h1>Gringoou ainda nao esta disponivel na sua regiao.</h1><p>Estamos liberando a plataforma aos poucos. Volte em breve.</p></body></html>',
-        { status: 403, headers: { 'content-type': 'text/html; charset=utf-8' } },
-      );
+      // Mantém a URL e responde 403, mas mostra a página amigável do app.
+      return NextResponse.rewrite(new URL('/region-unavailable', request.url), { status: 403 });
     }
   }
 

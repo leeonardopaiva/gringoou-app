@@ -74,6 +74,7 @@ const GEO_EXEMPT_PREFIXES = [
   '/api/health',
   '/api/geo-bypass',
   '/access-blocked',
+  '/region-unavailable',
   '/maintenance',
 ];
 
@@ -146,6 +147,27 @@ export const verifyGeoBypassToken = async (token?: string | null) => {
 };
 
 export const GEO_BYPASS_COOKIE_MAX_AGE_SECONDS = GEO_BYPASS_TTL_SECONDS;
+
+// Same rule as the middleware, for API routes the middleware leaves open (e.g. /api/auth/register),
+// so a blocked country cannot create accounts by calling the endpoint directly.
+export const isRequestGeoBlocked = async (request: Request) => {
+  if (!isGeoBlockEnabled() && !isGeoRestrictionEnabled()) return false;
+
+  const country = request.headers.get('x-vercel-ip-country');
+  const blocked = isGeoBlockEnabled() ? isCountryBlocked(country) : isCountryBlockedByList(country);
+  if (!blocked) return false;
+  if (isGeoBypassIp(getRequestIp(request))) return false;
+
+  const prefix = `${GEO_BYPASS_COOKIE_NAME}=`;
+  const cookie = request.headers
+    .get('cookie')
+    ?.split(';')
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(prefix))
+    ?.slice(prefix.length);
+
+  return !(await verifyGeoBypassToken(cookie));
+};
 
 // Compares the access key from the URL in constant time.
 export const isValidGeoBypassKey = (candidate: string) => {

@@ -40,8 +40,8 @@ export const INTEGRATIONS: IntegrationDefinition[] = [
     name: 'Twilio (SMS)',
     category: 'Mensagens e e-mail',
     description: 'Verifica o telefone dos membros por SMS.',
-    requiredEnv: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_FROM_NUMBER'],
-    optionalEnv: ['PHONE_VERIFICATION_ENABLED', 'PHONE_ALLOWED_COUNTRIES'],
+    requiredEnv: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_VERIFY_SERVICE_SID'],
+    optionalEnv: ['PHONE_VERIFICATION_ENABLED', 'PHONE_ALLOWED_COUNTRIES', 'TWILIO_FROM_NUMBER'],
     docsUrl: 'https://console.twilio.com',
   },
   {

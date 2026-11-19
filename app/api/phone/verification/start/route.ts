@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import {
-  isPhoneBlocked,
+  getPhoneBlockMessage,
   isPhoneVerificationConfigured,
   sendPhoneVerificationCode,
   toE164Phone,
@@ -49,11 +49,9 @@ export async function POST(request: Request) {
   }
 
   // Refused before any SMS is sent, so blocked numbers cost nothing.
-  if (isPhoneBlocked(phoneE164)) {
-    return NextResponse.json(
-      { error: 'Este numero nao esta disponivel nesta fase de acesso.' },
-      { status: 403 },
-    );
+  const blockMessage = getPhoneBlockMessage(phoneE164);
+  if (blockMessage) {
+    return NextResponse.json({ error: blockMessage }, { status: 403 });
   }
 
   // Per-user limit stops one account from spamming codes. The per-number limit
@@ -93,7 +91,15 @@ export async function POST(request: Request) {
 
     // 21211: invalid number. 21614: not a mobile number. 21608: trial account
     // can only send to numbers verified in the Twilio console.
-    if (twilioCode === 21211 || twilioCode === 21614) {
+    // Verify: 60200 invalid number, 60205 landline/no SMS. 60203: too many sends to this number.
+    if (twilioCode === 60203) {
+      return NextResponse.json(
+        { error: 'Muitos codigos enviados para este numero. Tente novamente mais tarde.' },
+        { status: 429 },
+      );
+    }
+
+    if (twilioCode === 21211 || twilioCode === 21614 || twilioCode === 60200 || twilioCode === 60205) {
       return NextResponse.json(
         { error: 'Nao foi possivel enviar SMS para este numero. Confira o telefone.' },
         { status: 400 },

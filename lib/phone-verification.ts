@@ -44,6 +44,18 @@ export const isPhoneBlocked = (phoneE164: string) => {
   return !country || !getAllowedCountries().includes(country);
 };
 
+// Message to show when the number is refused, or null when it is accepted. Tells an
+// invalid number apart from a country that is not open yet.
+export const getPhoneBlockMessage = (phoneE164: string) => {
+  if (!isPhoneBlocked(phoneE164)) {
+    return null;
+  }
+
+  return getPhoneCountry(phoneE164)
+    ? 'O Gringoou ainda nao esta disponivel para numeros deste pais.'
+    : 'Numero de telefone invalido. Confira o numero e o codigo do pais.';
+};
+
 // Country the request came from, provided by Vercel's edge. Null outside Vercel.
 export const getAccessCountry = (request: Request) =>
   request.headers.get('x-vercel-ip-country')?.trim().toUpperCase() || null;
@@ -55,11 +67,18 @@ const isDevSmsMode = process.env.NODE_ENV !== 'production' && process.env.PHONE_
 // Phone verification is opt-in. Off by default (Twilio not integrated yet).
 export const isPhoneVerificationEnabled = () => process.env.PHONE_VERIFICATION_ENABLED === 'true';
 
+// Twilio Verify (recommended): Twilio generates, sends and checks the code, so no sender
+// number or A2P registration is needed. Without a Verify service the app falls back to
+// plain SMS from TWILIO_FROM_NUMBER, with the code checked locally.
+const getVerifyServiceSid = () => process.env.TWILIO_VERIFY_SERVICE_SID?.trim() || null;
+
 export const isPhoneVerificationConfigured = Boolean(
   isPhoneVerificationEnabled() &&
     process.env.NEXTAUTH_SECRET &&
     (isDevSmsMode ||
-      (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER)),
+      (process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_AUTH_TOKEN &&
+        (process.env.TWILIO_VERIFY_SERVICE_SID || process.env.TWILIO_FROM_NUMBER))),
 );
 
 let cachedClient: ReturnType<typeof twilio> | null = null;
@@ -90,6 +109,13 @@ export const sendPhoneVerificationCode = async ({
   userId: string;
   phoneE164: string;
 }) => {
+  const verifyServiceSid = isDevSmsMode ? null : getVerifyServiceSid();
+
+  if (verifyServiceSid) {
+    await getTwilioClient().verify.v2.services(verifyServiceSid).verifications.create({ to: phoneE164, channel: 'sms' });
+    return;
+  }
+
   const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
 
   await prisma.$transaction([
@@ -130,6 +156,19 @@ export const checkPhoneVerificationCode = async ({
   phoneE164: string;
   code: string;
 }) => {
+  const verifyServiceSid = isDevSmsMode ? null : getVerifyServiceSid();
+
+  if (verifyServiceSid) {
+    try {
+      const check = await getTwilioClient().verify.v2.services(verifyServiceSid).verificationChecks.create({ to: phoneE164, code });
+      return check.status === 'approved';
+    } catch (error) {
+      // 20404: no pending verification (expired, already approved or max attempts reached).
+      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 404) return false;
+      throw error;
+    }
+  }
+
   const record = await prisma.phoneVerificationCode.findFirst({
     where: { userId, phone: phoneE164, usedAt: null, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: 'desc' },

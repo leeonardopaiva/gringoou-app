@@ -6,7 +6,7 @@ import {
   checkPhoneVerificationCode,
   getAccessCountry,
   getPhoneCountry,
-  isPhoneBlocked,
+  getPhoneBlockMessage,
   isPhoneVerificationConfigured,
   toE164Phone,
 } from '@/lib/phone-verification';
@@ -49,11 +49,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Telefone invalido.' }, { status: 400 });
   }
 
-  if (isPhoneBlocked(phoneE164)) {
-    return NextResponse.json(
-      { error: 'Este numero nao esta disponivel nesta fase de acesso.' },
-      { status: 403 },
-    );
+  const blockMessage = getPhoneBlockMessage(phoneE164);
+  if (blockMessage) {
+    return NextResponse.json({ error: blockMessage }, { status: 403 });
   }
 
   // Limits guessing: a 6-digit code has 1M combinations, so attempts must be capped.
@@ -71,11 +69,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const approved = await checkPhoneVerificationCode({
-    userId: session.user.id,
-    phoneE164,
-    code: parsed.data.code,
-  });
+  let approved = false;
+  try {
+    approved = await checkPhoneVerificationCode({
+      userId: session.user.id,
+      phoneE164,
+      code: parsed.data.code,
+    });
+  } catch (error) {
+    console.error('[phone-verification] falha ao conferir codigo', error);
+    return NextResponse.json({ error: 'Nao foi possivel conferir o codigo agora. Tente novamente.' }, { status: 502 });
+  }
 
   if (!approved) {
     return NextResponse.json(

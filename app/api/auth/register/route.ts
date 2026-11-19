@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isRequestGeoBlocked } from '@/lib/geo-access';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { getPasswordValidationIssues } from '@/lib/forms/password';
 import { hashPassword, normalizeAuthEmail } from '@/lib/password-auth';
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
       { error: 'Novos cadastros estao temporariamente pausados.' },
       { status: 503, headers: { 'Retry-After': '300' } },
     );
+  }
+
+  if (await isRequestGeoBlocked(request)) {
+    return NextResponse.json({ error: 'Gringoou ainda nao esta disponivel na sua regiao.' }, { status: 403 });
   }
 
   const rateLimit = await consumeRateLimit({
