@@ -88,6 +88,8 @@ const GEO_EXEMPT_PREFIXES = [
   '/api/webhooks/stripe',
   '/api/health',
   '/api/geo-bypass',
+  // "Avise-me" da página de região indisponível: precisa funcionar de países bloqueados.
+  '/api/waitlist',
   '/access-blocked',
   '/region-unavailable',
   '/maintenance',

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { ShieldAlert } from 'lucide-react';
-import { StatusPage } from '@/components/ui/StatusPage';
+import { BlockedPage } from '@/components/ui/BlockedPage';
 
 export const metadata: Metadata = {
   title: 'Gringoou - acesso bloqueado',
@@ -9,9 +8,7 @@ export const metadata: Metadata = {
 
 export default function AccessBlockedPage() {
   return (
-    <StatusPage
-      fullScreen
-      icon={<ShieldAlert size={30} />}
+    <BlockedPage
       title="Acesso bloqueado"
       description="Sua conta não está liberada para acessar o aplicativo neste momento. Se acredita que é um engano, entre em contato com o suporte."
       actions={[
