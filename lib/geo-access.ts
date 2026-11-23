@@ -11,7 +11,22 @@ export const EUROPE_COUNTRIES = [
   'RO', 'SE', 'SI', 'SK', 'SM', 'VA',
 ];
 
-export const DEFAULT_ALLOWED_COUNTRIES = ['US', 'CA', ...EUROPE_COUNTRIES];
+// Other European countries and territories (Balkans, Eastern Europe, Turkey, Crown
+// Dependencies, Gibraltar, Faroe Islands).
+export const EUROPE_EXTRA_COUNTRIES = [
+  'AL', 'BA', 'FO', 'GG', 'GI', 'IM', 'JE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK',
+];
+
+// US territories that use US phone numbers.
+export const US_TERRITORY_COUNTRIES = ['PR', 'VI'];
+
+export const DEFAULT_ALLOWED_COUNTRIES = [
+  'US',
+  'CA',
+  ...US_TERRITORY_COUNTRIES,
+  ...EUROPE_COUNTRIES,
+  ...EUROPE_EXTRA_COUNTRIES,
+];
 
 const splitList = (value?: string) =>
   (value ?? '')

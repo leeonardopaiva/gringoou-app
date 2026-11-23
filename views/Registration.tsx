@@ -9,12 +9,9 @@ import GoogleIcon from '../components/icons/GoogleIcon';
 import { GringoouLogo } from '../components/icons/GringoouLogo';
 import { CityAutocomplete } from '../components/ui/CityAutocomplete';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import {
-  COUNTRY_CALLING_CODE_OPTIONS,
-  findCountryByIso2,
-  splitPhoneNumber,
-} from '../lib/country-calling-codes';
-import { buildInternationalPhone, formatPhoneInputByCountry } from '../lib/forms/phone';
+import PhoneNumberField from '../components/forms/PhoneNumberField';
+import { findCountryByIso2, splitPhoneNumber } from '../lib/country-calling-codes';
+import { buildInternationalPhone } from '../lib/forms/phone';
 import {
   type FieldErrors,
   hasFieldErrors,
@@ -1512,56 +1509,24 @@ const Registration: React.FC<RegistrationProps> = ({
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="flex h-14 items-center rounded-full border border-slate-200 bg-white px-5 shadow-sm">
-                      <div className="flex w-full items-center gap-2">
-                        <img
-                          src={selectedCountry.flagUrl}
-                          className="w-5"
-                          alt={selectedCountry.iso2.toUpperCase()}
-                        />
-                        <select
-                          value={selectedCountryIso2}
-                          onChange={(event) => {
-                            setSelectedCountryIso2(event.target.value);
-                            clearFieldError('phone');
-                          }}
-                          className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-semibold text-slate-700 outline-none"
-                        >
-                          {COUNTRY_CALLING_CODE_OPTIONS.map((country) => (
-                            <option key={country.iso2} value={country.iso2}>
-                              {country.country}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="text-xs font-semibold text-slate-400">
-                          {selectedCountry.dialCode}
-                        </span>
-                      </div>
-                    </label>
-                    <div className="space-y-2">
-                     {/*  <p className={fieldLabel}>WhatsApp</p> */}
-                      <Input
-                        type="tel"
-                        placeholder="WhatsApp"
-                        value={formValues.phone}
-                        onChange={(event) =>
-                          setFormValues((current) => ({
-                            ...current,
-                            phone: formatPhoneInputByCountry(event.target.value, selectedCountry.iso2),
-                          }))
-                        }
-                        onInput={() => clearFieldError('phone')}
-                        aria-invalid={Boolean(fieldErrors.phone)}
-                        className={inputClass}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <PhoneNumberField
+                      countryIso2={selectedCountryIso2}
+                      onCountryChange={(iso2) => {
+                        setSelectedCountryIso2(iso2);
+                        clearFieldError('phone');
+                      }}
+                      value={formValues.phone}
+                      onValueChange={(phone) => setFormValues((current) => ({ ...current, phone }))}
+                      onInteract={() => clearFieldError('phone')}
+                      placeholder="WhatsApp"
+                      invalid={Boolean(fieldErrors.phone)}
+                    />
+                    <FieldErrorMessage message={fieldErrors.phone} />
+                    <p className="px-1 text-[11px] leading-5 text-slate-500">
+                      O número será salvo com código internacional ({selectedCountry.dialCode}).
+                    </p>
                   </div>
-                  <FieldErrorMessage message={fieldErrors.phone} />
-                  <p className="px-1 text-[11px] leading-5 text-slate-500">
-                    O número será salvo com código internacional: {selectedCountry.dialCode}{' '}
-                    99999-9999
-                  </p>
 
                   <div className="space-y-2">
                     <p className={fieldLabel}>Email</p>
