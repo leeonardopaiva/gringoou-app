@@ -53,8 +53,8 @@ export const formatVisibilityScopeLabel = (scope: VisibilityScope) => {
     case VisibilityScope.GLOBAL:
       return 'Global';
     case VisibilityScope.SPECIFIC_REGION:
-      return 'Regiao especifica';
+      return 'Região específica';
     default:
-      return 'Pela regiao do usuario';
+      return 'Pela região do usuário';
   }
 };

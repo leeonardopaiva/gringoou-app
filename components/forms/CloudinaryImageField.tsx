@@ -130,7 +130,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       const result = (await response.json()) as CloudinaryUploadResponse;
 
       if (!response.ok || !result.secure_url) {
-        throw new Error(result.error?.message || 'Nao foi possivel enviar a imagem.');
+        throw new Error(result.error?.message || 'Não foi possível enviar a imagem.');
       }
 
       onClearError?.();
@@ -139,7 +139,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       setUploadError(
         uploadFailure instanceof Error
           ? uploadFailure.message
-          : 'Nao foi possivel enviar a imagem.',
+          : 'Não foi possível enviar a imagem.',
       );
     } finally {
       setUploading(false);

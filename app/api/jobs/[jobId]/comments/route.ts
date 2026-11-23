@@ -30,7 +30,7 @@ const decorateComment = <
     const canManage = Boolean(session?.user?.id === item.authorId || manageListing);
     return {
       ...item,
-      content: item.isHidden && !canManage ? 'Comentario ocultado pela moderacao.' : item.content,
+      content: item.isHidden && !canManage ? 'Comentário ocultado pela moderação.' : item.content,
       canEdit: canManage,
       canDelete: canManage,
       canHide: manageListing,
@@ -55,7 +55,7 @@ export async function GET(_request: Request, context: Context) {
     select: { id: true, createdById: true },
   });
 
-  if (!job) return NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+  if (!job) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
 
   const comments = await prisma.jobComment.findMany({
     where: { jobId, parentId: null },
@@ -87,7 +87,7 @@ export async function POST(request: Request, context: Context) {
   const parsed = commentSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentario invalido.' }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentário inválido.' }, { status: 400 });
   }
 
   const parentId = typeof body.parentId === 'string' ? body.parentId : null;
@@ -95,11 +95,11 @@ export async function POST(request: Request, context: Context) {
   if (USE_MOCKS) {
     const comment = addMockJobComment(parsed.data.content, parentId, {
       id: session.user.id,
-      name: session.user.name || 'Usuario da comunidade',
+      name: session.user.name || 'Usuário da comunidade',
       username: session.user.username,
       image: session.user.image,
     });
-    if (!comment) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    if (!comment) return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
     return NextResponse.json({ comment }, { status: 201 });
   }
 
@@ -108,14 +108,14 @@ export async function POST(request: Request, context: Context) {
     select: { id: true, createdById: true },
   });
 
-  if (!job) return NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+  if (!job) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
 
   if (parentId) {
     const parent = await prisma.jobComment.findFirst({
       where: { id: parentId, jobId, parentId: null },
       select: { id: true },
     });
-    if (!parent) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    if (!parent) return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
   }
 
   const comment = await prisma.jobComment.create({

@@ -32,7 +32,7 @@ export async function GET(_request: Request, context: RouteContext) {
   });
 
   if (!user?.username) {
-    return NextResponse.json({ error: 'Perfil profissional nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Perfil profissional não encontrado.' }, { status: 404 });
   }
 
   const businessVisibilityWhere = {
@@ -85,7 +85,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   if (businessCount === 0 && eventCount === 0) {
     return NextResponse.json(
-      { error: 'Este perfil ainda nao possui uma vitrine profissional publica.' },
+      { error: 'Este perfil ainda não possui uma vitrine profissional pública.' },
       { status: 404 },
     );
   }
@@ -93,8 +93,8 @@ export async function GET(_request: Request, context: RouteContext) {
   const headline =
     user.bio ||
     (user.locationLabel
-      ? `Vitrine profissional com negocios e eventos em ${user.locationLabel}.`
-      : 'Vitrine profissional com negocios e eventos da comunidade.');
+      ? `Vitrine profissional com negócios e eventos em ${user.locationLabel}.`
+      : 'Vitrine profissional com negócios e eventos da comunidade.');
 
   return NextResponse.json({
     profile: {

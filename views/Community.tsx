@@ -254,7 +254,7 @@ const Community: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar seu link de indicacao.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar seu link de indicação.');
         }
 
         if (!ignore) {
@@ -304,13 +304,13 @@ const Community: React.FC<{
 
   const handleCopyReferralLink = async () => {
     if (!referralSummary.referralUrl) {
-      showToast('Seu link de indicacao ainda nao esta disponivel.', 'error');
+      showToast('Seu link de indicação ainda não está disponível.', 'error');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(withUtm('referral_invite', referralSummary.referralUrl));
-      showToast('Link de indicacao copiado.', 'success');
+      showToast('Link de indicação copiado.', 'success');
     } catch {
       showToast(withUtm('referral_invite', referralSummary.referralUrl), 'info', 5000);
     }
@@ -318,7 +318,7 @@ const Community: React.FC<{
 
   const handleShareReferralLink = async () => {
     if (!referralSummary.referralUrl) {
-      showToast('Seu link de indicacao ainda nao esta disponivel.', 'error');
+      showToast('Seu link de indicação ainda não está disponível.', 'error');
       return;
     }
 
@@ -349,24 +349,24 @@ const Community: React.FC<{
 
     if (composerMode === 'link') {
       if (!normalizedExternalUrl) {
-        showToast('Informe o link externo da publicacao.', 'error');
+        showToast('Informe o link externo da publicação.', 'error');
         return;
       }
 
       if (!postContent.trim()) {
-        showToast('Adicione uma descricao para o link.', 'error');
+        showToast('Adicione uma descrição para o link.', 'error');
         return;
       }
     }
 
     if (composerMode === 'video') {
       if (!normalizedExternalUrl) {
-        showToast('Informe o link do video.', 'error');
+        showToast('Informe o link do vídeo.', 'error');
         return;
       }
 
       if (!isYoutubeUrl(normalizedExternalUrl)) {
-        showToast('Por enquanto, o video externo precisa ser um link do YouTube.', 'error');
+        showToast('Por enquanto, o vídeo externo precisa ser um link do YouTube.', 'error');
         return;
       }
     }
@@ -381,7 +381,7 @@ const Community: React.FC<{
       (composerMode === 'photo'
         ? 'Compartilhando uma imagem com a comunidade.'
         : composerMode === 'video'
-          ? 'Compartilhando um video com a comunidade.'
+          ? 'Compartilhando um vídeo com a comunidade.'
           : 'Compartilhando algo com a comunidade.');
     const temporaryPostId = `optimistic-post-${crypto.randomUUID()}`;
     const optimisticPost: Post = {
@@ -447,7 +447,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel publicar agora.');
+        throw new Error(payload?.error ?? 'Não foi possível publicar agora.');
       }
 
       setPosts((current) =>
@@ -465,7 +465,7 @@ const Community: React.FC<{
           : current,
       );
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel publicar agora.',
+        error instanceof Error ? error.message : 'Não foi possível publicar agora.',
         'error',
       );
     }
@@ -515,7 +515,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel curtir o post.');
+        throw new Error(payload?.error ?? 'Não foi possível curtir o post.');
       }
 
       setPosts((current) =>
@@ -544,7 +544,7 @@ const Community: React.FC<{
             : post,
         ),
       );
-      showToast('Nao foi possivel curtir esse post agora.', 'error');
+      showToast('Não foi possível curtir esse post agora.', 'error');
     } finally {
       pendingLikeIdsRef.current.delete(postId);
     }
@@ -619,7 +619,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel comentar.');
+        throw new Error(payload?.error ?? 'Não foi possível comentar.');
       }
 
       setPosts((current) =>
@@ -628,12 +628,12 @@ const Community: React.FC<{
             ? {
                 ...post,
                 comments: post.comments.map((comment) =>
-                  parentId && comment.id === parentId ? { ...comment, replies: (comment.replies || []).map((reply) => reply.id === temporaryCommentId ? { ...payload.comment, author: { ...payload.comment.author, name: payload.comment.author.name || 'Usuario da comunidade' } } : reply) } : comment.id === temporaryCommentId
+                  parentId && comment.id === parentId ? { ...comment, replies: (comment.replies || []).map((reply) => reply.id === temporaryCommentId ? { ...payload.comment, author: { ...payload.comment.author, name: payload.comment.author.name || 'Usuário da comunidade' } } : reply) } : comment.id === temporaryCommentId
                     ? {
                         ...payload.comment,
                         author: {
                           ...payload.comment.author,
-                          name: payload.comment.author.name || 'Usuario da comunidade',
+                          name: payload.comment.author.name || 'Usuário da comunidade',
                         },
                       }
                     : comment,
@@ -657,7 +657,7 @@ const Community: React.FC<{
           };
         }),
       );
-      showToast('Nao foi possivel comentar agora.', 'error');
+      showToast('Não foi possível comentar agora.', 'error');
       throw error;
     }
   };
@@ -681,14 +681,14 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel atualizar a publicacao.');
+        throw new Error(payload?.error ?? 'Não foi possível atualizar a publicação.');
       }
 
-      showToast(payload?.message ?? 'Publicacao atualizada.', 'success');
+      showToast(payload?.message ?? 'Publicação atualizada.', 'success');
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel atualizar a publicacao.',
+        error instanceof Error ? error.message : 'Não foi possível atualizar a publicação.',
         'error',
       );
       throw error;
@@ -701,14 +701,14 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel remover a publicacao.');
+        throw new Error(payload?.error ?? 'Não foi possível remover a publicação.');
       }
 
-      showToast(payload?.message ?? 'Publicacao removida.', 'success');
+      showToast(payload?.message ?? 'Publicação removida.', 'success');
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel remover a publicacao.',
+        error instanceof Error ? error.message : 'Não foi possível remover a publicação.',
         'error',
       );
       throw error;
@@ -725,14 +725,14 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel atualizar o comentario.');
+        throw new Error(payload?.error ?? 'Não foi possível atualizar o comentário.');
       }
 
-      showToast(payload?.message ?? 'Comentario atualizado.', 'success');
+      showToast(payload?.message ?? 'Comentário atualizado.', 'success');
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel atualizar o comentario.',
+        error instanceof Error ? error.message : 'Não foi possível atualizar o comentário.',
         'error',
       );
       throw error;
@@ -747,14 +747,14 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel remover o comentario.');
+        throw new Error(payload?.error ?? 'Não foi possível remover o comentário.');
       }
 
-      showToast(payload?.message ?? 'Comentario removido.', 'success');
+      showToast(payload?.message ?? 'Comentário removido.', 'success');
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel remover o comentario.',
+        error instanceof Error ? error.message : 'Não foi possível remover o comentário.',
         'error',
       );
       throw error;
@@ -769,7 +769,7 @@ const Community: React.FC<{
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Publicacao na Gringoou',
+          title: 'Publicação na Gringoou',
           text: post.content,
           url: postUrl,
         });
@@ -781,7 +781,7 @@ const Community: React.FC<{
 
     try {
       await navigator.clipboard.writeText(postUrl);
-      showToast('Link da publicacao copiado.', 'success');
+      showToast('Link da publicação copiado.', 'success');
     } catch {
       showToast(postUrl, 'info', 5000);
     }
@@ -789,7 +789,7 @@ const Community: React.FC<{
 
   const handleBannerLinkClick = (banner: BannerAd) => {
     if (!banner.targetUrl) {
-      showToast('Esse banner ainda nao tem um link configurado.', 'error');
+      showToast('Esse banner ainda não tem um link configurado.', 'error');
       return;
     }
 
@@ -816,13 +816,13 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel registrar seu interesse.');
+        throw new Error(payload?.error ?? 'Não foi possível registrar seu interesse.');
       }
 
       showToast(payload?.message ?? 'Cadastro registrado.', 'success');
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel registrar seu interesse.',
+        error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.',
         'error',
       );
     } finally {
@@ -878,12 +878,12 @@ const Community: React.FC<{
                 autoFocus
                 placeholder={
                   composerMode === 'link'
-                    ? 'Adicione uma descricao para o link...'
+                    ? 'Adicione uma descrição para o link...'
                     : composerMode === 'video'
-                      ? 'Adicione um contexto para o video...'
+                      ? 'Adicione um contexto para o vídeo...'
                       : isProfessionalMode
                         ? `Publique como ${composerName}...`
-                        : 'No que voce esta pensando?'
+                        : 'No que você está pensando?'
                 }
               />
               <CommunityComposer.MediaField

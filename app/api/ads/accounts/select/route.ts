@@ -8,9 +8,9 @@ const selectSchema = z.object({ adAccountId: z.string().cuid() });
 
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   const parsed = selectSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: 'Conta comercial invalida.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: 'Conta comercial inválida.' }, { status: 400 });
 
   const membership = await prisma.adAccountUser.findUnique({
     where: { adAccountId_userId: { adAccountId: parsed.data.adAccountId, userId: session.user.id } },

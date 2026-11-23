@@ -5,7 +5,7 @@ import { waitlistSchema } from '@/lib/waitlist';
 
 export const runtime = 'nodejs';
 
-const SUCCESS_MESSAGE = 'Pronto! Voce esta na lista. Avisaremos por email assim que liberarmos o seu acesso.';
+const SUCCESS_MESSAGE = 'Pronto! Você está na lista. Avisaremos por email assim que liberarmos o seu acesso.';
 
 export async function POST(request: Request) {
   const rateLimit = await consumeRateLimit({
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' },
       { status: 400 },
     );
   }

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   const signature = request.headers.get('stripe-signature');
   if (!webhookSecret || !signature) {
-    return NextResponse.json({ error: 'Webhook Stripe nao configurado.' }, { status: 400 });
+    return NextResponse.json({ error: 'Webhook Stripe não configurado.' }, { status: 400 });
   }
 
   let event: Stripe.Event;
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     event = getStripe().webhooks.constructEvent(await request.text(), signature, webhookSecret);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Assinatura Stripe invalida.' },
+      { error: error instanceof Error ? error.message : 'Assinatura Stripe inválida.' },
       { status: 400 },
     );
   }
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       await confirmStripePayment(event.data.object);
     } catch (error) {
       console.error('Failed to confirm Stripe PaymentIntent:', error);
-      return NextResponse.json({ error: error instanceof Error ? error.message : 'Pagamento invalido.' }, { status: 409 });
+      return NextResponse.json({ error: error instanceof Error ? error.message : 'Pagamento inválido.' }, { status: 409 });
     }
   }
 
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     if (bannerId && checkout.payment_status === 'paid') {
       const amountCents = checkout.amount_total ?? 0;
       if (checkout.currency?.toLowerCase() !== 'usd') {
-        return NextResponse.json({ error: 'Moeda de pagamento invalida.' }, { status: 409 });
+        return NextResponse.json({ error: 'Moeda de pagamento inválida.' }, { status: 409 });
       }
       const campaign = await prisma.banner.findUnique({
         where: { id: bannerId },

@@ -338,7 +338,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel atualizar seus favoritos.', 'error');
+        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
         return;
       }
 
@@ -348,12 +348,12 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       }));
 
       showToast(
-        payload?.isFavorite ? 'Negocio adicionado aos favoritos.' : 'Negocio removido dos favoritos.',
+        payload?.isFavorite ? 'Negócio adicionado aos favoritos.' : 'Negócio removido dos favoritos.',
         'success',
       );
     } catch (error) {
       console.error('Failed to toggle business favorite:', error);
-      showToast('Nao foi possivel atualizar seus favoritos.', 'error');
+      showToast('Não foi possível atualizar seus favoritos.', 'error');
     }
   };
 
@@ -377,7 +377,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           }));
         }
 
-        showToast(payload?.error ?? 'Nao foi possivel registrar sua avaliacao.', 'error');
+        showToast(payload?.error ?? 'Não foi possível registrar sua avaliação.', 'error');
         return;
       }
 
@@ -388,10 +388,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         ratingCount: payload.ratingCount,
       }));
 
-      showToast('Sua avaliacao foi registrada.', 'success');
+      showToast('Sua avaliação foi registrada.', 'success');
     } catch (error) {
       console.error('Failed to rate business:', error);
-      showToast('Nao foi possivel registrar sua avaliacao.', 'error');
+      showToast('Não foi possível registrar sua avaliação.', 'error');
     }
   };
 
@@ -675,10 +675,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               <div>
                 <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
                   <PencilLine size={16} />
-                  Editar negocio
+                  Editar negócio
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
-                  Atualize apenas as informacoes basicas exibidas na pagina.
+                  Atualize apenas as informações básicas exibidas na página.
                 </p>
               </div>
 
@@ -742,7 +742,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       value={nameDraft}
                       onChange={(event) => setNameDraft(event.target.value)}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Nome do negocio"
+                      placeholder="Nome do negócio"
                     />
                   </div>
 
@@ -776,7 +776,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Descricao
+                      Descrição
                     </label>
                     <textarea
                       value={descriptionDraft}
@@ -784,7 +784,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       onChange={(event) => setDescriptionDraft(event.target.value)}
                       rows={5}
                       className="w-full resize-none rounded-md border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Descricao do negocio"
+                      placeholder="Descrição do negócio"
                     />
                     <div className="flex justify-end"><CharacterCounter current={descriptionDraft.length} max={600} /></div>
                   </div>
@@ -880,7 +880,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 disabled={savingBusiness}
                 className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60"
               >
-                {savingBusiness ? 'Salvando...' : 'Salvar alteracoes'}
+                {savingBusiness ? 'Salvando...' : 'Salvar alterações'}
               </button>
 
               <button

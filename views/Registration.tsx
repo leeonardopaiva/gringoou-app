@@ -274,14 +274,14 @@ const Registration: React.FC<RegistrationProps> = ({
   // Lists what still blocks the submit button, so the user is not left guessing.
   const onboardingMissing = isOnboarding
     ? [
-        !formValues.regionKey && 'regiao',
-        !formValues.gender && 'genero',
+        !formValues.regionKey && 'região',
+        !formValues.gender && 'gênero',
         !formValues.age && 'idade',
         !formValues.timeAbroad && 'tempo no exterior',
         !formValues.birthCity.trim() && 'cidade natal',
         (normalizedUsername.length < USERNAME_MIN_LENGTH || usernameAvailable === false) &&
-          'nome publico disponivel',
-        checkingUsername && 'aguarde a validacao do nome publico',
+          'nome público disponível',
+        checkingUsername && 'aguarde a validação do nome público',
       ].filter((item): item is string => Boolean(item))
     : [];
   const onboardingRequiredValues = [
@@ -362,7 +362,7 @@ const Registration: React.FC<RegistrationProps> = ({
     if (inviteValidated) return true;
 
     if (!inviteCode.trim()) {
-      setInviteError('Informe o codigo do convite.');
+      setInviteError('Informe o código do convite.');
       return false;
     }
 
@@ -376,13 +376,13 @@ const Registration: React.FC<RegistrationProps> = ({
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setInviteError(payload?.error ?? 'Codigo de convite invalido.');
+        setInviteError(payload?.error ?? 'Código de convite inválido.');
         return false;
       }
       setInviteValidated(true);
       return true;
     } catch {
-      setInviteError('Nao foi possivel validar o convite agora.');
+      setInviteError('Não foi possível validar o convite agora.');
       return false;
     } finally {
       setInviteValidating(false);
@@ -479,7 +479,7 @@ const Registration: React.FC<RegistrationProps> = ({
               {inviteRequired ? (
                 <div className="mt-8 w-full max-w-[360px] mx-auto">
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Codigo de convite
+                    Código de convite
                   </label>
                   <Input
                     type="text"
@@ -498,7 +498,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     <p className="mt-1 text-xs font-semibold text-emerald-600">Convite valido.</p>
                   ) : null}
                   <p className="mt-2 text-center text-[11px] text-slate-400">
-                    O cadastro esta em fase de convite. Informe o codigo para continuar.
+                    O cadastro está em fase de convite. Informe o código para continuar.
                   </p>
                 </div>
               ) : null}
@@ -673,7 +673,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       {submitting ? 'Entrando...' : passwordEnabled ? 'Entrar' : 'Receber link'}
                     </Button>
                     <p className="text-center text-[11px] leading-5 text-slate-500">
-                      Ao se cadastrar, voce concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Politica de Privacidade</a>.
+                      Ao se cadastrar, você concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
                     </p>
 
                     {passwordEnabled ? (
@@ -725,7 +725,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       }
 
                       if (!passwordSignUp.captchaAnswer.trim()) {
-                        nextErrors.captchaAnswer = 'Resolva o calculo de verificacao.';
+                        nextErrors.captchaAnswer = 'Resolva o calculo de verificação.';
                       }
 
                       setFieldErrors(nextErrors);
@@ -812,7 +812,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       <p className="flex-1 text-sm font-medium text-slate-700">
                         {loadingCaptcha
                           ? 'Carregando captcha...'
-                          : captchaPrompt || 'Captcha temporariamente indisponivel'}
+                          : captchaPrompt || 'Captcha temporariamente indisponível'}
                       </p>
                       <Button
                         type="button"
@@ -874,7 +874,7 @@ const Registration: React.FC<RegistrationProps> = ({
                 </a>
                 <span className="text-slate-300">•</span>
                 <a href="/politica-de-privacidade" className="transition-colors hover:text-slate-600 hover:underline">
-                  Politica de Privacidade
+                  Política de Privacidade
                 </a>
               </div>
 
@@ -1110,7 +1110,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           <div>
                             <p className="text-sm font-bold text-slate-900">Entrar com senha</p>
                             <p className="text-xs text-slate-500">
-                              Use sua conta temporaria de email e senha.
+                              Use sua conta temporária de email e senha.
                             </p>
                           </div>
                           <Button
@@ -1172,7 +1172,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           {submitting ? 'Entrando...' : 'Entrar com email e senha'}
                         </Button>
                         <p className="text-center text-[11px] leading-5 text-slate-500">
-                          Ao se cadastrar, voce concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Politica de Privacidade</a>.
+                          Ao se cadastrar, você concorda com nossos <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
                         </p>
                       </form>
                     ) : null}
@@ -1211,7 +1211,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           }
 
                           if (!passwordSignUp.captchaAnswer.trim()) {
-                            nextErrors.captchaAnswer = 'Resolva o calculo de verificacao.';
+                            nextErrors.captchaAnswer = 'Resolva o calculo de verificação.';
                           }
 
                           setFieldErrors(nextErrors);
@@ -1236,7 +1236,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           <div>
                             <p className="text-sm font-bold text-slate-900">Criar sua conta</p>
                             <p className="text-xs text-slate-500">
-                              Cadastro por email e senha sem verificacao por email.
+                              Cadastro por email e senha sem verificação por email.
                             </p>
                           </div>
                           <Button
@@ -1332,7 +1332,7 @@ const Registration: React.FC<RegistrationProps> = ({
                               <p className="text-sm font-semibold text-slate-700">
                                 {loadingCaptcha
                                   ? 'Carregando captcha...'
-                                  : captchaPrompt || 'Captcha temporariamente indisponivel'}
+                                  : captchaPrompt || 'Captcha temporariamente indisponível'}
                               </p>
                               <Button
                                 type="button"
@@ -1405,16 +1405,16 @@ const Registration: React.FC<RegistrationProps> = ({
                   }
 
                   if (!formValues.username.trim()) {
-                    nextErrors.username = requiredFieldError('seu nome publico');
+                    nextErrors.username = requiredFieldError('seu nome público');
                   } else if (usernameAvailable !== true) {
-                    nextErrors.username = usernameFeedback || 'Escolha um nome publico disponivel.';
+                    nextErrors.username = usernameFeedback || 'Escolha um nome público disponível.';
                   }
 
                   if (!formValues.regionKey.trim()) {
-                    nextErrors.regionKey = requiredFieldError('uma regiao');
+                    nextErrors.regionKey = requiredFieldError('uma região');
                   }
 
-                  if (!formValues.gender) nextErrors.gender = requiredFieldError('seu genero');
+                  if (!formValues.gender) nextErrors.gender = requiredFieldError('seu gênero');
                   const parsedAge = Number(formValues.age);
                   if (!formValues.age) nextErrors.age = requiredFieldError('sua idade');
                   else if (!Number.isInteger(parsedAge) || parsedAge < 18 || parsedAge > 120) nextErrors.age = 'Informe uma idade entre 18 e 120 anos.';
@@ -1440,7 +1440,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   });
                 }}
               >
-                <ProgressBar value={onboardingProgress} label="Conclusao do perfil" className="sticky top-0 z-20 -mx-1 rounded-2xl bg-white/95 p-3 backdrop-blur" />
+                <ProgressBar value={onboardingProgress} label="Conclusão do perfil" className="sticky top-0 z-20 -mx-1 rounded-2xl bg-white/95 p-3 backdrop-blur" />
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <p className={fieldLabel}>Nome completo</p>
@@ -1464,7 +1464,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     <Input
                       required
                       type="text"
-                      placeholder="Nome publico (ex: joao-em-boston)"
+                      placeholder="Nome público (ex: joao-em-boston)"
                       value={formValues.username}
                       onChange={(event) =>
                         setFormValues((current) => ({
@@ -1562,7 +1562,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <p className={fieldLabel}>Genero</p>
+                      <p className={fieldLabel}>Gênero</p>
                       <select
                         value={formValues.gender}
                         onChange={(event) => {
@@ -1576,7 +1576,7 @@ const Registration: React.FC<RegistrationProps> = ({
                         <option value="MALE">Masculino</option>
                         <option value="FEMALE">Feminino</option>
                         <option value="OTHER">Outro</option>
-                        <option value="PREFER_NOT_TO_SAY">Prefiro nao informar</option>
+                        <option value="PREFER_NOT_TO_SAY">Prefiro não informar</option>
                       </select>
                       <FieldErrorMessage message={fieldErrors.gender} />
                     </div>
@@ -1653,10 +1653,10 @@ const Registration: React.FC<RegistrationProps> = ({
                        : 'Continuar'}
                 </Button>
                 <p className="px-2 text-center text-[11px] leading-5 text-slate-500">
-                  Ao se cadastrar, voce concorda com nossos{' '}
+                  Ao se cadastrar, você concorda com nossos{' '}
                   <a href="/termos-de-uso" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a>
                   {' '}e{' '}
-                  <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Politica de Privacidade</a>.
+                  <a href="/politica-de-privacidade" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
                 </p>
               </form>
             )}

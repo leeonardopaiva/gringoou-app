@@ -57,8 +57,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   disabled = false,
   autoDetect = false,
   allowEmpty = false,
-  emptyLabel = 'Todas as regioes',
-  label = 'Regiao',
+  emptyLabel = 'Todas as regiões',
+  label = 'Região',
   hint,
   inlineMenu = false,
   citySearch = false,
@@ -160,12 +160,12 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
   const detectUserRegion = async () => {
     if (regionsLoaded && regions.length === 0) {
-      setLocationNotice('Nenhuma regiao ativa disponivel no momento. Fale com o administrador.');
+      setLocationNotice('Nenhuma região ativa disponível no momento. Fale com o administrador.');
       return;
     }
 
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocationNotice('Seu navegador nao suporta geolocalizacao. Escolha a regiao manualmente.');
+      setLocationNotice('Seu navegador não suporta geolocalização. Escolha a região manualmente.');
       return;
     }
 
@@ -181,11 +181,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
             regions,
           );
           onChange(nearestRegion);
-          setLocationNotice(`Regiao sugerida: ${nearestRegion.label}. Voce pode trocar abaixo.`);
+          setLocationNotice(`Região sugerida: ${nearestRegion.label}. Você pode trocar abaixo.`);
           resolve();
         },
         () => {
-          setLocationNotice('Nao foi possivel detectar sua localizacao. Escolha a regiao manualmente.');
+          setLocationNotice('Não foi possível detectar sua localização. Escolha a região manualmente.');
           resolve();
         },
         {
@@ -250,7 +250,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
       >
         <MapPin size={16} className="shrink-0 text-brand-500" />
         <span className={`min-w-0 flex-1 truncate ${selectedRegion ? 'font-semibold' : 'text-muted-foreground'}`}>
-          {selectedRegion?.label || (allowEmpty ? emptyLabel : 'Selecione uma regiao')}
+          {selectedRegion?.label || (allowEmpty ? emptyLabel : 'Selecione uma região')}
         </span>
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -266,7 +266,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={citySearch ? 'Buscar cidade dos EUA ou região' : 'Buscar regiao'}
+              placeholder={citySearch ? 'Buscar cidade dos EUA ou região' : 'Buscar região'}
               autoFocus
               className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-white pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
@@ -280,7 +280,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
             className="mt-2 inline-flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-caption font-semibold text-brand-500 transition hover:bg-brand-100 disabled:opacity-50"
           >
             <Crosshair size={14} />
-            {isLocating ? 'Localizando...' : 'Usar minha localizacao'}
+            {isLocating ? 'Localizando...' : 'Usar minha localização'}
           </button>
 
           <div className="mt-2 max-h-56 overflow-y-auto" role="listbox">
@@ -333,7 +333,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
                 {region.key === value ? <Check size={15} className="text-brand-500" /> : null}
               </button>
             ))}
-            {visibleRegions.length === 0 && !(citySearch && cityResults.length > 0) ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">Nenhuma regiao encontrada.</p> : null}
+            {visibleRegions.length === 0 && !(citySearch && cityResults.length > 0) ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">Nenhuma região encontrada.</p> : null}
           </div>
 
           {locationNotice ? <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-caption font-medium text-brand-600">{locationNotice}</p> : null}

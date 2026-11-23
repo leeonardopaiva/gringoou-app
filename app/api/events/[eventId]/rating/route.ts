@@ -25,7 +25,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Avaliacao invalida.' },
+      { error: parsed.error.issues[0]?.message ?? 'Avaliação inválida.' },
       { status: 400 },
     );
   }
@@ -51,7 +51,7 @@ export async function POST(request: Request, context: RouteContext) {
   });
 
   if (!event) {
-    return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
   }
 
   const isBusinessMember =
@@ -83,11 +83,11 @@ export async function POST(request: Request, context: RouteContext) {
     isBusinessMember;
 
   if (!canView) {
-    return NextResponse.json({ error: 'Evento indisponivel.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento indisponível.' }, { status: 404 });
   }
 
   if (session.user.role === 'ADMIN' || session.user.id === event.createdById || isBusinessMember) {
-    return NextResponse.json({ error: 'Voce nao pode avaliar o proprio evento.' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não pode avaliar o próprio evento.' }, { status: 403 });
   }
 
   const existingRating = await prisma.eventRating.findUnique({
@@ -103,7 +103,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (existingRating) {
     return NextResponse.json(
       {
-        error: 'Voce ja avaliou este evento.',
+        error: 'Você já avaliou este evento.',
         viewerRating: existingRating.stars,
       },
       { status: 409 },

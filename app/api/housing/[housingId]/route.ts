@@ -19,7 +19,7 @@ export async function GET(_request: Request, context: RouteContext) {
     where: { id: housingId },
     include: { createdBy: { select: { id: true, name: true, username: true, image: true } } },
   });
-  return housing ? NextResponse.json({ housing: { ...housing, publisher: buildPublisher(housing.createdBy, null, 'Membro da comunidade'), canEdit: session?.user?.id === housing.createdById || session?.user?.role === 'ADMIN' } }) : NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  return housing ? NextResponse.json({ housing: { ...housing, publisher: buildPublisher(housing.createdBy, null, 'Membro da comunidade'), canEdit: session?.user?.id === housing.createdById || session?.user?.role === 'ADMIN' } }) : NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: RouteContext) {
@@ -27,12 +27,12 @@ export async function PUT(request: Request, context: RouteContext) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { housingId } = await context.params;
   const current = await prisma.housing.findUnique({ where: { id: housingId }, select: { createdById: true } });
-  if (!current) return NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const parsed = housingSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   return NextResponse.json({ housing: await prisma.housing.update({ where: { id: housingId }, data: parsed.data }) });
 }
 
@@ -41,7 +41,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { housingId } = await context.params;
   const current = await prisma.housing.findUnique({ where: { id: housingId }, select: { createdById: true } });
-  if (!current) return NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

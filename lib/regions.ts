@@ -40,8 +40,8 @@ export const DEFAULT_REGION_OPTIONS: RegionOption[] = [
   { key: 'san-diego-ca', label: 'San Diego, CA', city: 'San Diego', state: 'CA', lat: 32.7157, lng: -117.1611, aliases: [] },
   {
     key: 'san-francisco-bay-area-ca',
-    label: 'San Francisco Bay Area, CA',
-    city: 'San Francisco Bay Area',
+    label: 'San Francisco Bay Área, CA',
+    city: 'San Francisco Bay Área',
     state: 'CA',
     lat: 37.7749,
     lng: -122.4194,

@@ -4,7 +4,7 @@ export const getPasswordValidationIssues = (password: string) => {
   const issues: string[] = [];
 
   if (password.length < PASSWORD_MIN_LENGTH) {
-    issues.push(`Use no minimo ${PASSWORD_MIN_LENGTH} caracteres.`);
+    issues.push(`Use no mínimo ${PASSWORD_MIN_LENGTH} caracteres.`);
   }
 
   if (!/[a-z]/.test(password)) {
@@ -16,7 +16,7 @@ export const getPasswordValidationIssues = (password: string) => {
   }
 
   if (!/\d/.test(password)) {
-    issues.push('Inclua ao menos um numero.');
+    issues.push('Inclua ao menos um número.');
   }
 
   if (!/[^A-Za-z0-9]/.test(password)) {

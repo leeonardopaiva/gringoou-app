@@ -49,7 +49,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!existingComment) {
-    return NextResponse.json({ error: 'Comentario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
   }
 
   if (!canManageComment(session, existingComment.authorId)) {
@@ -61,7 +61,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do comentario.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do comentário.' },
       { status: 400 },
     );
   }
@@ -92,7 +92,7 @@ export async function PUT(request: Request, context: RouteContext) {
       canEdit: true,
       canDelete: true,
     },
-    message: 'Comentario atualizado.',
+    message: 'Comentário atualizado.',
   });
 }
 
@@ -118,7 +118,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   });
 
   if (!existingComment) {
-    return NextResponse.json({ error: 'Comentario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
   }
 
   if (!canManageComment(session, existingComment.authorId) && !permissions.canManage) {
@@ -129,5 +129,5 @@ export async function DELETE(_request: Request, context: RouteContext) {
     where: { id: existingComment.id },
   });
 
-  return NextResponse.json({ message: 'Comentario removido.' });
+  return NextResponse.json({ message: 'Comentário removido.' });
 }

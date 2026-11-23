@@ -35,11 +35,11 @@ export async function DELETE(request: Request) {
 
   const parsed = deleteSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Digite seu nome de usuario para confirmar.' }, { status: 400 });
+    return NextResponse.json({ error: 'Digite seu nome de usuário para confirmar.' }, { status: 400 });
   }
 
   const impact = await getUserDeletionImpact(userId);
-  if (!impact) return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+  if (!impact) return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
 
   // Administradores são removidos por outro administrador (evita ficar sem ninguém no comando).
   if (impact.user.role === 'ADMIN') {
@@ -50,13 +50,13 @@ export async function DELETE(request: Request) {
   }
 
   if (normalize(parsed.data.confirmation) !== normalize(impact.confirmationValue)) {
-    return NextResponse.json({ error: 'A confirmacao digitada nao corresponde a sua conta.' }, { status: 400 });
+    return NextResponse.json({ error: 'A confirmação digitada não corresponde a sua conta.' }, { status: 400 });
   }
 
   // Conta de anúncios que ficaria sem responsável: o usuário precisa transferir antes.
   if (impact.requiresAdAccountTransfer) {
     return NextResponse.json(
-      { error: 'Voce e o unico responsavel por uma conta de anuncios. Transfira ou encerre a conta de anuncios antes de excluir seu perfil.' },
+      { error: 'Você e o único responsável por uma conta de anúncios. Transfira ou encerre a conta de anúncios antes de excluir seu perfil.' },
       { status: 409 },
     );
   }
@@ -67,10 +67,10 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
     }
     if (error instanceof Error && error.message === 'AD_ACCOUNT_TRANSFER_REQUIRED') {
-      return NextResponse.json({ error: 'Transfira sua conta de anuncios antes de excluir o perfil.' }, { status: 409 });
+      return NextResponse.json({ error: 'Transfira sua conta de anúncios antes de excluir o perfil.' }, { status: 409 });
     }
     throw error;
   }

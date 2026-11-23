@@ -79,7 +79,7 @@ const defaultEvent: EventDetailState = {
   slug: '',
   title: 'Evento da comunidade',
   category: 'Outros',
-  description: 'Os detalhes deste evento ainda nao foram carregados.',
+  description: 'Os detalhes deste evento ainda não foram carregados.',
   venueName: 'Local a definir',
   startsAt: new Date().toISOString(),
   endsAt: null,
@@ -189,7 +189,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Evento nao encontrado.');
+          throw new Error(payload?.error ?? 'Evento não encontrado.');
         }
 
         if (!ignore) {
@@ -231,7 +231,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       } catch (error) {
         console.error('Failed to load event detail:', error);
         if (!ignore) {
-          showToast(error instanceof Error ? error.message : 'Nao foi possivel carregar o evento.', 'error');
+          showToast(error instanceof Error ? error.message : 'Não foi possível carregar o evento.', 'error');
         }
       } finally {
         if (!ignore) {
@@ -310,7 +310,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   const handleSaveDetails = async () => {
     if (!detailsDraft.title.trim() || !detailsDraft.description.trim() || !detailsDraft.venueName.trim() || !detailsDraft.regionKey || !detailsDraft.startsAt) {
-      showToast('Preencha os campos obrigatorios do evento.', 'error');
+      showToast('Preencha os campos obrigatórios do evento.', 'error');
       return;
     }
 
@@ -327,7 +327,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar o evento.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar o evento.');
 
       setEvent((current) => ({
         ...current,
@@ -343,9 +343,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       }));
       setEditingDetails(false);
       notifyContentUpdated();
-      showToast('Informacoes do evento atualizadas.', 'success');
+      showToast('Informações do evento atualizadas.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar o evento.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar o evento.', 'error');
     } finally {
       setSavingDetails(false);
     }
@@ -359,7 +359,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel atualizar seus favoritos.', 'error');
+        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
         return;
       }
 
@@ -373,7 +373,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       );
     } catch (error) {
       console.error('Failed to toggle event favorite:', error);
-      showToast('Nao foi possivel atualizar seus favoritos.', 'error');
+      showToast('Não foi possível atualizar seus favoritos.', 'error');
     }
   };
 
@@ -396,7 +396,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
           }));
         }
 
-        showToast(payload?.error ?? 'Nao foi possivel registrar sua avaliacao.', 'error');
+        showToast(payload?.error ?? 'Não foi possível registrar sua avaliação.', 'error');
         return;
       }
 
@@ -406,10 +406,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         ratingAverage: payload.ratingAverage,
         ratingCount: payload.ratingCount,
       }));
-      showToast('Sua avaliacao foi registrada.', 'success');
+      showToast('Sua avaliação foi registrada.', 'success');
     } catch (error) {
       console.error('Failed to rate event:', error);
-      showToast('Nao foi possivel registrar sua avaliacao.', 'error');
+      showToast('Não foi possível registrar sua avaliação.', 'error');
     }
   };
 
@@ -431,7 +431,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel salvar a galeria do evento.', 'error');
+        showToast(payload?.error ?? 'Não foi possível salvar a galeria do evento.', 'error');
         return;
       }
 
@@ -450,7 +450,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       showToast('Capa e galeria do evento atualizadas.', 'success');
     } catch (error) {
       console.error('Failed to save event media:', error);
-      showToast('Nao foi possivel salvar a galeria do evento.', 'error');
+      showToast('Não foi possível salvar a galeria do evento.', 'error');
     } finally {
       setSavingMedia(false);
     }
@@ -688,7 +688,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 <p className="mt-1 text-xs text-slate-500">
                   {user.role === 'ADMIN'
                     ? 'Atualize a capa e a galeria deste evento como administrador.'
-                    : 'Atualize a capa e a galeria exibidas na pagina.'}
+                    : 'Atualize a capa e a galeria exibidas na página.'}
                 </p>
               </div>
 
@@ -714,7 +714,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 onChange={setCoverDraft}
                 folder="events" cropAspect={2}
                 placeholder="Link da imagem de capa"
-                hint="Essa imagem aparece no topo da pagina do evento."
+                hint="Essa imagem aparece no topo da página do evento."
               />
               <ImageGalleryField
                 value={galleryDraft}
@@ -731,7 +731,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 disabled={savingMedia}
                 className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60"
               >
-                {savingMedia ? 'Salvando...' : 'Salvar midia'}
+                {savingMedia ? 'Salvando...' : 'Salvar mídia'}
               </button>
               <button
                 type="button"

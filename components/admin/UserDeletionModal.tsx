@@ -19,17 +19,17 @@ type Impact = {
 };
 
 const labels: Record<string, string> = {
-  posts: 'Posts', comments: 'Comentarios', reactions: 'Reacoes', reports: 'Denuncias',
-  businesses: 'Negocios', events: 'Eventos', jobs: 'Vagas', housing: 'Moradias', groups: 'Grupos',
-  suggestions: 'Sugestoes', favorites: 'Favoritos', ratings: 'Avaliacoes', friendRequests: 'Conexoes',
-  bannerRegistrations: 'Cadastros em banners', businessMemberships: 'Vinculos com negocios',
-  groupMemberships: 'Vinculos com grupos', adAccountMemberships: 'Vinculos com Ads', authRecords: 'Registros de acesso',
+  posts: 'Posts', comments: 'Comentários', reactions: 'Reações', reports: 'Denuncias',
+  businesses: 'Negócios', events: 'Eventos', jobs: 'Vagas', housing: 'Moradias', groups: 'Grupos',
+  suggestions: 'Sugestoes', favorites: 'Favoritos', ratings: 'Avaliações', friendRequests: 'Conexoes',
+  bannerRegistrations: 'Cadastros em banners', businessMemberships: 'Vínculos com negócios',
+  groupMemberships: 'Vínculos com grupos', adAccountMemberships: 'Vínculos com Ads', authRecords: 'Registros de acesso',
 };
 const cascadeLabels: Record<string, string> = {
-  businessMembers: 'Membros dos negocios', businessFavorites: 'Favoritos nos negocios',
-  businessRatings: 'Avaliacoes dos negocios', eventFavorites: 'Favoritos nos eventos',
-  eventRatings: 'Avaliacoes dos eventos', postComments: 'Comentarios nos posts',
-  postReactions: 'Reacoes nos posts', postReports: 'Denuncias dos posts', groupMembers: 'Membros dos grupos',
+  businessMembers: 'Membros dos negócios', businessFavorites: 'Favoritos nos negócios',
+  businessRatings: 'Avaliações dos negócios', eventFavorites: 'Favoritos nos eventos',
+  eventRatings: 'Avaliações dos eventos', postComments: 'Comentários nos posts',
+  postReactions: 'Reações nos posts', postReports: 'Denúncias dos posts', groupMembers: 'Membros dos grupos',
 };
 
 export default function UserDeletionModal({ target, onClose, onDeleted }: {
@@ -53,13 +53,13 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
     void fetch(`/api/admin/users/${target.id}`, { cache: 'no-store', signal: controller.signal })
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error || 'Nao foi possivel analisar a exclusao.');
+        if (!response.ok) throw new Error(payload?.error || 'Não foi possível analisar a exclusão.');
         setImpact(payload.impact);
         setTransferCandidates(Array.isArray(payload.transferCandidates) ? payload.transferCandidates : []);
       })
       .catch((loadError) => {
         if (loadError instanceof DOMException && loadError.name === 'AbortError') return;
-        setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel analisar a exclusao.');
+        setError(loadError instanceof Error ? loadError.message : 'Não foi possível analisar a exclusão.');
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -92,43 +92,43 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Nao foi possivel excluir o usuario.');
+      if (!response.ok) throw new Error(payload?.error || 'Não foi possível excluir o usuário.');
       await onDeleted();
-      showToast(hasTransfer ? 'Usuario excluido, propriedades transferidas e dados pessoais removidos.' : 'Usuario e dados vinculados excluidos.', 'success');
+      showToast(hasTransfer ? 'Usuário excluído, propriedades transferidas e dados pessoais removidos.' : 'Usuário e dados vinculados excluidos.', 'success');
       onClose();
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Nao foi possivel excluir o usuario.');
+      setError(deleteError instanceof Error ? deleteError.message : 'Não foi possível excluir o usuário.');
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <Modal open onClose={deleting ? () => undefined : onClose} title="Exclusao segura de usuario" description={target.name || target.email || target.username || target.id} className="max-w-2xl">
+    <Modal open onClose={deleting ? () => undefined : onClose} title="Exclusão segura de usuário" description={target.name || target.email || target.username || target.id} className="max-w-2xl">
       {loading ? <div className="space-y-3"><div className="h-24 animate-pulse rounded-2xl bg-slate-100" /><div className="h-32 animate-pulse rounded-2xl bg-slate-100" /></div> : null}
       {error ? <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
       {impact ? <div className="space-y-5">
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><AlertTriangle className="mt-0.5 shrink-0 text-amber-600" size={20} /><div><p className="font-bold text-amber-900">Revise o impacto antes de continuar</p><p className="mt-1 text-sm text-amber-800">Sem transferencia, conteudos pertencentes ao usuario serao removidos pelo banco.</p></div></div></div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><AlertTriangle className="mt-0.5 shrink-0 text-amber-600" size={20} /><div><p className="font-bold text-amber-900">Revise o impacto antes de continuar</p><p className="mt-1 text-sm text-amber-800">Sem transferência, conteúdos pertencentes ao usuário serão removidos pelo banco.</p></div></div></div>
 
-        <section><p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Registros afetados</p>{affectedItems.length ? <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{affectedItems.map(([key, count]) => <div key={key} className="rounded-xl bg-slate-50 px-3 py-2"><strong className="block text-lg text-slate-900">{count}</strong><span className="text-xs text-slate-500">{labels[key] || key}</span></div>)}</div> : <p className="mt-2 text-sm text-slate-500">Nenhum conteudo dependente encontrado.</p>}</section>
+        <section><p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Registros afetados</p>{affectedItems.length ? <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{affectedItems.map(([key, count]) => <div key={key} className="rounded-xl bg-slate-50 px-3 py-2"><strong className="block text-lg text-slate-900">{count}</strong><span className="text-xs text-slate-500">{labels[key] || key}</span></div>)}</div> : <p className="mt-2 text-sm text-slate-500">Nenhum conteúdo dependente encontrado.</p>}</section>
 
         {destructiveCascadeItems.length ? <section><p className="text-[11px] font-extrabold uppercase tracking-wider text-red-500">Impacto em dados de outras pessoas</p><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{destructiveCascadeItems.map(([key, count]) => <div key={key} className="rounded-xl border border-red-100 bg-red-50 px-3 py-2"><strong className="block text-lg text-red-700">{count}</strong><span className="text-xs text-red-600">{cascadeLabels[key] || key}</span></div>)}</div></section> : null}
 
-        {effectiveDetachedCount > 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">{effectiveDetachedCount} evento(s) ou post(s) criados por terceiros permanecerao, mas perderao o vinculo com negocios que forem excluidos.</p> : null}
+        {effectiveDetachedCount > 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">{effectiveDetachedCount} evento(s) ou post(s) criados por terceiros permanecerão, mas perderão o vinculo com negócios que forem excluidos.</p> : null}
 
-        {anonymousCount > 0 ? <div className="flex gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4"><Database size={19} className="shrink-0 text-sky-600" /><p className="text-sm text-sky-900"><strong>{anonymousCount} registros historicos</strong> de Analytics, impressoes, cobrancas ou campanhas serao preservados sem a identificacao do usuario.</p></div> : null}
+        {anonymousCount > 0 ? <div className="flex gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4"><Database size={19} className="shrink-0 text-sky-600" /><p className="text-sm text-sky-900"><strong>{anonymousCount} registros históricos</strong> de Analytics, impressões, cobranças ou campanhas serão preservados sem a identificação do usuário.</p></div> : null}
 
-        {impact.criticalAdAccounts.length ? <section className="rounded-2xl border border-red-200 bg-red-50 p-4"><div className="flex gap-3"><ShieldAlert size={20} className="shrink-0 text-red-600" /><div className="min-w-0"><p className="font-bold text-red-900">Transferencia obrigatoria para contas Ads</p><div className="mt-2 space-y-1 text-sm text-red-800">{impact.criticalAdAccounts.map((account) => <p key={account.id}>{account.name}: {account.reason}{account.activeCampaigns ? `, ${account.activeCampaigns} campanha(s) ativa(s)` : ''}.</p>)}</div></div></div></section> : null}
+        {impact.criticalAdAccounts.length ? <section className="rounded-2xl border border-red-200 bg-red-50 p-4"><div className="flex gap-3"><ShieldAlert size={20} className="shrink-0 text-red-600" /><div className="min-w-0"><p className="font-bold text-red-900">Transferência obrigatória para contas Ads</p><div className="mt-2 space-y-1 text-sm text-red-800">{impact.criticalAdAccounts.map((account) => <p key={account.id}>{account.name}: {account.reason}{account.activeCampaigns ? `, ${account.activeCampaigns} campanha(s) ativa(s)` : ''}.</p>)}</div></div></div></section> : null}
 
         <label className="block"><span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700"><ArrowRightLeft size={17} />Transferir propriedades antes de excluir</span><Select value={transferToUserId} onChange={(event) => { setTransferToUserId(event.target.value); setAcknowledged(false); }}><option value="">Não transferir</option>{transferCandidates.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name || candidate.username || 'Usuário'} · {candidate.email || 'sem e-mail'}</option>)}</Select><p className="mt-2 text-xs leading-5 text-slate-500">A transferência preserva negócios, eventos, vagas, moradias, grupos e contas Ads críticas. Posts e interações pessoais não são atribuídos a outra pessoa.</p></label>
 
-        {needsAcknowledgement ? <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4 accent-red-600" /><span className="text-sm text-slate-700"><strong className="block text-slate-900">Revisei e aceito a exclusao dos registros indicados</strong>Mesmo com transferencia, dados pessoais, posts e interacoes do usuario serao removidos. Interacoes de terceiros dentro de posts excluidos tambem podem ser afetadas.</span></label> : null}
+        {needsAcknowledgement ? <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4 accent-red-600" /><span className="text-sm text-slate-700"><strong className="block text-slate-900">Revisei e aceito a exclusão dos registros indicados</strong>Mesmo com transferência, dados pessoais, posts e interações do usuário serão removidos. Interações de terceiros dentro de posts excluidos também podem ser afetadas.</span></label> : null}
 
-        {impact.externalAssetUrls.length ? <p className="text-xs leading-5 text-slate-500">Atenção: {impact.externalAssetUrls.length} arquivo(s) externo(s) podem permanecer no serviço de imagens. Eles nao serao removidos automaticamente sem uma credencial segura de exclusao.</p> : null}
+        {impact.externalAssetUrls.length ? <p className="text-xs leading-5 text-slate-500">Atenção: {impact.externalAssetUrls.length} arquivo(s) externo(s) podem permanecer no serviço de imagens. Eles não serão removidos automaticamente sem uma credencial segura de exclusão.</p> : null}
 
         <label className="block"><span className="text-sm font-bold text-slate-700">Digite <code className="rounded bg-slate-100 px-1.5 py-0.5">{impact.confirmationValue}</code> para confirmar</span><input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100" /></label>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end"><Button variant="secondary" onClick={onClose} disabled={deleting}>Cancelar</Button><Button className="!bg-red-600 hover:!bg-red-700" onClick={() => void submit()} disabled={!canDelete} loading={deleting}>Excluir usuario</Button></div>
+        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end"><Button variant="secondary" onClick={onClose} disabled={deleting}>Cancelar</Button><Button className="!bg-red-600 hover:!bg-red-700" onClick={() => void submit()} disabled={!canDelete} loading={deleting}>Excluir usuário</Button></div>
       </div> : null}
     </Modal>
   );

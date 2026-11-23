@@ -50,13 +50,13 @@ export function PreLaunchGateForm() {
       });
 
       if (!response.ok) {
-        setError('Codigo de acesso invalido.');
+        setError('Código de acesso inválido.');
         return;
       }
 
       window.location.assign(nextPath);
     } catch {
-      setError('Nao foi possivel validar o codigo agora. Tente novamente.');
+      setError('Não foi possível validar o código agora. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -74,12 +74,12 @@ export function PreLaunchGateForm() {
             Acesso restrito
           </p>
           <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-slate-500 sm:text-base">
-            Estamos em fase de pre-lancamento. Informe o codigo de acesso para continuar.
+            Estamos em fase de pre-lancamento. Informe o código de acesso para continuar.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4 text-left">
             <label htmlFor="pre-launch-code" className="text-sm font-semibold text-slate-700">
-              Codigo de acesso
+              Código de acesso
             </label>
             <Input
               id="pre-launch-code"
@@ -92,7 +92,7 @@ export function PreLaunchGateForm() {
               onChange={(event) => setCode(event.target.value)}
               state={error ? 'error' : 'default'}
               helperText={error ?? undefined}
-              placeholder="Digite o codigo"
+              placeholder="Digite o código"
             />
             <Button type="submit" size="lg" fullWidth loading={loading} disabled={!code.trim()}>
               Continuar

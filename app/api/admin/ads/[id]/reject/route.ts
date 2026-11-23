@@ -29,10 +29,10 @@ export async function POST(request: Request, context: RouteContext) {
       where: { id, adAccountId: { not: null }, paymentStatus: AdPaymentStatus.PAID, moderationStatus: AdModerationStatus.PENDING_REVIEW },
       select: { payments: { where: { provider: 'STRIPE', status: AdPaymentStatus.PAID }, orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, providerPaymentId: true } } },
     });
-    if (!pending) return NextResponse.json({ error: 'Campanha pendente de revisao nao encontrada.' }, { status: 404 });
+    if (!pending) return NextResponse.json({ error: 'Campanha pendente de revisão não encontrada.' }, { status: 404 });
     const payment = pending.payments[0];
     if (!payment?.providerPaymentId) {
-      return NextResponse.json({ error: 'Esta campanha nao tem pagamento Stripe para estornar (ex.: cortesia).' }, { status: 409 });
+      return NextResponse.json({ error: 'Esta campanha não tem pagamento Stripe para estornar (ex.: cortesia).' }, { status: 409 });
     }
     try {
       await getStripe().refunds.create(
@@ -41,7 +41,7 @@ export async function POST(request: Request, context: RouteContext) {
       );
     } catch (error) {
       console.error('Failed to refund rejected ad campaign:', error);
-      return NextResponse.json({ error: `O Stripe nao concluiu o estorno: ${error instanceof Error ? error.message : 'erro desconhecido'}. A campanha nao foi rejeitada.` }, { status: 502 });
+      return NextResponse.json({ error: `O Stripe não concluiu o estorno: ${error instanceof Error ? error.message : 'erro desconhecido'}. A campanha não foi rejeitada.` }, { status: 502 });
     }
     refundedPaymentId = payment.id;
   }
@@ -60,7 +60,7 @@ export async function POST(request: Request, context: RouteContext) {
     },
   });
   if (result.count === 0) {
-    return NextResponse.json({ error: 'Campanha pendente de revisao nao encontrada.' }, { status: 404 });
+    return NextResponse.json({ error: 'Campanha pendente de revisão não encontrada.' }, { status: 404 });
   }
 
   if (refundedPaymentId) {

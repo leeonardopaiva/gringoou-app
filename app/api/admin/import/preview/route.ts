@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   // XLSX é um zip: limitar o tamanho evita estouro de memória ao descompactar.
   if (file.size > MAX_IMPORT_BYTES) {
-    return NextResponse.json({ error: 'O arquivo excede 5 MB. Divida a importacao em partes menores.' }, { status: 413 });
+    return NextResponse.json({ error: 'O arquivo excede 5 MB. Divida a importação em partes menores.' }, { status: 413 });
   }
 
   try {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     console.error('Failed to preview admin import:', error);
 
     return NextResponse.json(
-      { error: 'Nao foi possivel ler o XLSX. Baixe o modelo novamente e confira as abas.' },
+      { error: 'Não foi possível ler o XLSX. Baixe o modelo novamente e confira as abas.' },
       { status: 400 },
     );
   }

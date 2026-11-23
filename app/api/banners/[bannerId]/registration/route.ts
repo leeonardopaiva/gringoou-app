@@ -38,7 +38,7 @@ export async function POST(_request: Request, context: RouteContext) {
   });
 
   if (!banner) {
-    return NextResponse.json({ error: 'Banner de cadastro nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Banner de cadastro não encontrado.' }, { status: 404 });
   }
 
   const registration = await prisma.bannerRegistration.upsert({

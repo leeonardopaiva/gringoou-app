@@ -52,7 +52,7 @@ const requiredUrl = z
 
 const optionalUrlArray = z
   .array(z.string())
-  .max(12, 'Use no maximo 12 imagens na galeria')
+  .max(12, 'Use no máximo 12 imagens na galeria')
   .transform((values) =>
     Array.from(
       new Set(
@@ -95,17 +95,17 @@ const optionalContact = z
   });
 
 const profileGalleryUrls = optionalUrlArray.refine((values) => values.length <= 8, {
-  message: 'Use no maximo 8 imagens na galeria do perfil',
+  message: 'Use no máximo 8 imagens na galeria do perfil',
 });
 
 export const usernameSchema = z
   .string()
   .trim()
-  .min(USERNAME_MIN_LENGTH, 'Use ao menos 3 caracteres para seu nome publico')
-  .max(USERNAME_MAX_LENGTH, `Use no maximo ${USERNAME_MAX_LENGTH} caracteres`)
-  .regex(USERNAME_PATTERN, 'Use apenas letras minusculas, numeros e hifens')
+  .min(USERNAME_MIN_LENGTH, 'Use ao menos 3 caracteres para seu nome público')
+  .max(USERNAME_MAX_LENGTH, `Use no máximo ${USERNAME_MAX_LENGTH} caracteres`)
+  .regex(USERNAME_PATTERN, 'Use apenas letras minúsculas, números e hífens')
   .refine((value) => !isReservedUsername(value), {
-    message: 'Esse nome esta reservado pela plataforma',
+    message: 'Esse nome está reservado pela plataforma',
   });
 
 export const onboardingSchema = z.object({
@@ -113,14 +113,14 @@ export const onboardingSchema = z.object({
   username: usernameSchema,
   email: z.string().email().optional(),
   phone: optionalPhone,
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
-    message: 'Selecione uma opcao de genero',
+    message: 'Selecione uma opção de gênero',
   }),
-  age: z.coerce.number().int().min(18, 'Voce deve ter pelo menos 18 anos').max(120, 'Informe uma idade valida'),
+  age: z.coerce.number().int().min(18, 'Você deve ter pelo menos 18 anos').max(120, 'Informe uma idade valida'),
   timeAbroad: z.enum(
     ['LESS_THAN_ONE_YEAR', 'ONE_TO_THREE_YEARS', 'THREE_TO_FIVE_YEARS', 'MORE_THAN_FIVE_YEARS'],
-    { message: 'Selecione ha quanto tempo voce esta no exterior' },
+    { message: 'Selecione há quanto tempo você está no exterior' },
   ),
   birthCity: z.string().trim().min(2, 'Informe sua cidade natal').max(100),
   referralUsername: z
@@ -144,7 +144,7 @@ export const jobSchema = z.object({
   salary: optionalString,
   contactUrl: optionalContact,
   imageUrl: optionalUrl,
-  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no maximo 6 fotos.').default([]),
+  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no máximo 6 fotos.').default([]),
   businessId: z.string().trim().min(1).optional(),
   isActive: z.boolean().optional(),
 });
@@ -157,13 +157,13 @@ export const housingSchema = z.object({
   regionKey: z.string().trim().min(2).max(80).optional(),
   price: z.string().trim().min(1).max(80),
   imageUrl: optionalUrl,
-  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no maximo 6 fotos.').default([]),
+  galleryUrls: z.array(z.string().url()).max(6, 'Adicione no máximo 6 fotos.').default([]),
   contactUrl: optionalContact,
   isActive: z.boolean().optional(),
 });
 
 export const updateRegionSchema = z.object({
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
 });
 
 export const updateProfileImageSchema = z.object({
@@ -184,7 +184,7 @@ export const updateProfileSchema = z.object({
   bio: z
     .string()
     .trim()
-    .max(220, 'Use no maximo 220 caracteres na apresentacao.')
+    .max(220, 'Use no máximo 220 caracteres na apresentação.')
     .nullish()
     .transform((value) => {
       const normalized = value?.trim();
@@ -194,7 +194,7 @@ export const updateProfileSchema = z.object({
   galleryUrls: profileGalleryUrls,
   interests: z
     .array(z.string().trim().min(2).max(40))
-    .max(8, 'Use no maximo 8 interesses')
+    .max(8, 'Use no máximo 8 interesses')
     .transform((values) =>
       Array.from(
         new Set(
@@ -226,7 +226,7 @@ const regionKeySchema = z
   .trim()
   .min(3)
   .max(80)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use apenas letras minusculas, numeros e hifens');
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use apenas letras minúsculas, números e hífens');
 
 export const adminRegionSchema = z.object({
   key: regionKeySchema.optional(),
@@ -276,7 +276,7 @@ const visibilitySettingsSchema = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['visibilityRegionKey'],
-        message: 'Selecione uma regiao para a visibilidade especifica.',
+        message: 'Selecione uma região para a visibilidade específica.',
       });
     }
   });
@@ -286,7 +286,7 @@ export const businessSchema = z.object({
   category: z.string().trim().min(2).max(40),
   description: z.string().trim().min(10).max(600),
   address: z.string().trim().min(5).max(140),
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
   phone: optionalPhone,
   whatsapp: optionalPhone,
   website: optionalUrl,
@@ -302,7 +302,7 @@ export const eventSchema = z.object({
   category: z.string().trim().min(2).max(60).default('Outros'),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime().optional(),
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
   businessId: z.string().trim().min(1).optional(),
   externalUrl: optionalUrl,
   imageUrl: optionalUrl,
@@ -324,12 +324,12 @@ export const adminUserSchema = z.object({
   phone: optionalPhone,
   image: optionalUrl,
   role: z.nativeEnum(UserRole),
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
   onboardingCompleted: z.boolean().default(true),
 });
 
 export const communityPostSchema = z.object({
-  content: z.string().trim().min(5).max(600, 'Use no maximo 600 caracteres'),
+  content: z.string().trim().min(5).max(600, 'Use no máximo 600 caracteres'),
   imageUrl: optionalUrl,
   externalUrl: optionalUrl,
   personaMode: z.enum(['personal', 'professional']).default('personal'),
@@ -343,7 +343,7 @@ export const commentSchema = z.object({
 
 export const suggestionSchema = z.object({
   category: z.nativeEnum(SuggestionCategory),
-  message: z.string().trim().min(8, 'Descreva melhor a sua sugestao').max(600),
+  message: z.string().trim().min(8, 'Descreva melhor a sua sugestão').max(600),
 });
 
 export const friendRequestCreateSchema = z
@@ -364,7 +364,7 @@ export const communityGroupSchema = z.object({
   description: z
     .string()
     .trim()
-    .max(360, 'Use no maximo 360 caracteres na descricao.')
+    .max(360, 'Use no máximo 360 caracteres na descrição.')
     .nullish()
     .transform((value) => {
       const normalized = value?.trim();
@@ -373,7 +373,7 @@ export const communityGroupSchema = z.object({
   category: z
     .string()
     .trim()
-    .max(40, 'Use no maximo 40 caracteres na categoria.')
+    .max(40, 'Use no máximo 40 caracteres na categoria.')
     .nullish()
     .transform((value) => {
       const normalized = value?.trim();
@@ -444,13 +444,13 @@ export const analyticsEventSchema = z.object({
 });
 
 export const marketplaceItemSchema = z.object({
-  title: z.string().trim().min(3, 'Informe um titulo com ao menos 3 caracteres').max(120),
-  description: z.string().trim().min(10, 'Descreva melhor o anuncio').max(4000),
+  title: z.string().trim().min(3, 'Informe um título com ao menos 3 caracteres').max(120),
+  description: z.string().trim().min(10, 'Descreva melhor o anúncio').max(4000),
   category: z.string().trim().min(2, 'Selecione uma categoria').max(60),
   priceCents: z.coerce.number().int().min(0).max(100_000_000).nullable().optional(),
   isFree: z.boolean().default(false),
-  condition: z.nativeEnum(MarketplaceCondition, { message: 'Selecione a condicao do item' }),
-  regionKey: z.string().trim().min(2, 'Selecione uma regiao valida'),
+  condition: z.nativeEnum(MarketplaceCondition, { message: 'Selecione a condição do item' }),
+  regionKey: z.string().trim().min(2, 'Selecione uma região valida'),
   locationLabel: z.string().trim().max(160).optional(),
   imageUrl: optionalUrl.nullable(),
   galleryUrls: optionalUrlArray,
@@ -461,7 +461,7 @@ export const marketplaceItemSchema = z.object({
 export const marketplaceCreateSchema = marketplaceItemSchema.refine(
   (value) => !value.isFree || value.priceCents == null || value.priceCents === 0,
   {
-    message: 'Itens gratuitos nao devem ter preco.',
+    message: 'Itens gratuitos não devem ter preço.',
     path: ['priceCents'],
   },
 );

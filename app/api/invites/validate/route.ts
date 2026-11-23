@@ -7,7 +7,7 @@ import { z } from 'zod';
 export const runtime = 'nodejs';
 
 const validateSchema = z.object({
-  code: z.string().trim().min(1, 'Informe o codigo do convite.'),
+  code: z.string().trim().min(1, 'Informe o código do convite.'),
   email: z.string().trim().email('Informe um email valido.').optional(),
 });
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' },
       { status: 400 },
     );
   }

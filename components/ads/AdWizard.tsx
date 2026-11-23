@@ -164,13 +164,13 @@ export const AdWizard: React.FC = () => {
         body: JSON.stringify({ ...state, bannerId: state.draftId, adAccountId: account?.id }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel salvar o rascunho.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar o rascunho.');
       const draftId = payload.banner.id as string;
       dispatch({ type: 'PATCH', payload: { draftId } });
       if (showSuccess) showToast('Rascunho salvo.', 'success');
       return draftId;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Nao foi possivel salvar o rascunho.';
+      const message = error instanceof Error ? error.message : 'Não foi possível salvar o rascunho.';
       setRequestError(message);
       if (showSuccess) showToast(message, 'error');
       return null;
@@ -228,12 +228,12 @@ export const AdWizard: React.FC = () => {
         body: JSON.stringify({ ...state, bannerId: draftId, adAccountId: account?.id, idempotencyKey: checkoutKeyRef.current, couponCode: appliedCoupon?.code }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel preparar o pagamento.');
-      if (!payload?.clientSecret) throw new Error('O Stripe nao retornou o client secret.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível preparar o pagamento.');
+      if (!payload?.clientSecret) throw new Error('O Stripe não retornou o client secret.');
       setClientSecret(payload.clientSecret);
       return true;
     } catch (error) {
-      setRequestError(error instanceof Error ? error.message : 'Nao foi possivel preparar o pagamento.');
+      setRequestError(error instanceof Error ? error.message : 'Não foi possível preparar o pagamento.');
       return false;
     } finally {
       setSaving(false);
@@ -327,9 +327,9 @@ export const AdWizard: React.FC = () => {
     <div className="mx-auto w-full max-w-[1160px] pb-28">
       {!businessApproved ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">Página em análise. Você pode montar e salvar o rascunho agora; checkout e publicação serão liberados após a aprovação.</div> : null}
       <header className="mb-8">
-        <p className="text-[10px] font-bold text-slate-400">Criar Anuncio</p>
+        <p className="text-[10px] font-bold text-slate-400">Criar Anúncio</p>
         <div className="mt-1 flex items-end justify-between gap-4">
-          <h1 className="text-[28px] font-extrabold leading-tight text-[#132f40]">Novo Anuncio</h1>
+          <h1 className="text-[28px] font-extrabold leading-tight text-[#132f40]">Novo Anúncio</h1>
           <div className="flex items-center gap-3">
             {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
             {state.draftId ? (
@@ -363,7 +363,7 @@ export const AdWizard: React.FC = () => {
       {state.step === 4 ? <CheckoutStep appliedCoupon={appliedCoupon} onRedeemCoupon={redeemCoupon} state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
         setPaymentSubmitted(true);
         if (storageKey) sessionStorage.removeItem(storageKey);
-        showToast('Pagamento enviado. Campanha aguardando moderacao.', 'success');
+        showToast('Pagamento enviado. Campanha aguardando moderação.', 'success');
         router.replace(`/ads/anuncio-em-analise${state.draftId ? `?campaign=${encodeURIComponent(state.draftId)}` : ''}`);
       }} /> : null}
 

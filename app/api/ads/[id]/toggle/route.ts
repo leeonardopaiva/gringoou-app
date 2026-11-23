@@ -10,9 +10,9 @@ const toggleSchema = z.object({ isActive: z.boolean() });
 
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   const parsed = toggleSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: 'Estado invalido.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 });
   const { id } = await context.params;
 
   const banner = await prisma.banner.findFirst({
@@ -46,7 +46,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     (banner.startsAt && banner.startsAt > now) ||
     (banner.endsAt && banner.endsAt < now)
   )) {
-    return NextResponse.json({ error: 'Apenas campanhas pagas, aprovadas e dentro da vigencia podem ser ativadas.' }, { status: 409 });
+    return NextResponse.json({ error: 'Apenas campanhas pagas, aprovadas e dentro da vigência podem ser ativadas.' }, { status: 409 });
   }
 
   const updated = await prisma.banner.update({

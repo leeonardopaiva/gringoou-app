@@ -6,7 +6,7 @@ import { marketplaceUseCases } from '@/lib/server/marketplace-usecases';
 import { getStoredUserRole } from '@/lib/admin';
 
 export const metadata: Metadata = {
-  title: 'Anuncio — Gringoou',
+  title: 'Anúncio — Gringoou',
 };
 
 export default async function MarketplaceDetailRoute({

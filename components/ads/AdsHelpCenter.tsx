@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { ChevronDown, Search } from 'lucide-react';
 
 const sections = [
-  { title: 'Top articles', articles: ['Como criar sua conta comercial', 'Especificacoes de criativos', 'Primeiros passos para anunciar'] },
-  { title: 'Gestao de Contas', articles: ['Editar dados da empresa', 'Convidar usuarios e definir roles', 'Alternar entre contas comerciais'] },
-  { title: 'Formatos de Anuncios', articles: ['Campanhas para WhatsApp', 'Campanhas para URL externa', 'Promover Marketplace e Moradia'] },
-  { title: 'Segmentacao', articles: ['Selecionar uma regiao', 'Como funciona a prioridade dos planos', 'Boas praticas de alcance local'] },
-  { title: 'Faturamento e Pagamentos', articles: ['Pagamento seguro com Stripe', 'Status de pagamento e moderacao', 'Reembolsos e campanhas pausadas'] },
+  { title: 'Top articles', articles: ['Como criar sua conta comercial', 'Especificações de criativos', 'Primeiros passos para anunciar'] },
+  { title: 'Gestão de Contas', articles: ['Editar dados da empresa', 'Convidar usuários e definir roles', 'Alternar entre contas comerciais'] },
+  { title: 'Formatos de Anúncios', articles: ['Campanhas para WhatsApp', 'Campanhas para URL externa', 'Promover Marketplace e Moradia'] },
+  { title: 'Segmentação', articles: ['Selecionar uma região', 'Como funciona a prioridade dos planos', 'Boas práticas de alcance local'] },
+  { title: 'Faturamento e Pagamentos', articles: ['Pagamento seguro com Stripe', 'Status de pagamento e moderação', 'Reembolsos e campanhas pausadas'] },
 ];
 const frequent = ['best practices', 'billing', 'campaigns', 'getting started'];
 
@@ -37,7 +37,7 @@ export function AdsHelpCenter() {
         <aside className="self-start rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-24"><h2 className="text-lg font-extrabold text-[#132f40]">Buscas frequentes</h2><div className="mt-5 flex flex-wrap gap-2">{frequent.map((item) => <button key={item} type="button" onClick={() => setQuery(item)} className="rounded-full bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700 hover:bg-brand-100">{item}</button>)}</div><p className="mt-7 text-sm leading-6 text-slate-500">Ainda precisa de ajuda? Nossa equipe pode orientar sobre campanhas, criativos e faturamento.</p><a href="mailto:ads@gringoou.com" className="mt-4 inline-flex text-sm font-bold text-brand-600">Falar com o suporte</a></aside>
       </div>
 
-      <footer className="grid gap-6 rounded-3xl bg-[#132f40] p-8 text-white sm:grid-cols-3"><div><p className="font-extrabold">Documentacao</p><Link href="/ads/wizard" className="mt-3 block text-sm text-slate-300">Criar campanha</Link><Link href="/ads/reports" className="mt-2 block text-sm text-slate-300">Relatorios</Link></div><div><p className="font-extrabold">Conta</p><Link href="/ads/settings" className="mt-3 block text-sm text-slate-300">Configuracoes</Link><Link href="/termos-de-uso" className="mt-2 block text-sm text-slate-300">Termos de Uso</Link></div><div><p className="font-extrabold">Suporte</p><a href="mailto:ads@gringoou.com" className="mt-3 block text-sm text-slate-300">ads@gringoou.com</a><Link href="/politica-de-privacidade" className="mt-2 block text-sm text-slate-300">Privacidade</Link></div></footer>
+      <footer className="grid gap-6 rounded-3xl bg-[#132f40] p-8 text-white sm:grid-cols-3"><div><p className="font-extrabold">Documentação</p><Link href="/ads/wizard" className="mt-3 block text-sm text-slate-300">Criar campanha</Link><Link href="/ads/reports" className="mt-2 block text-sm text-slate-300">Relatórios</Link></div><div><p className="font-extrabold">Conta</p><Link href="/ads/settings" className="mt-3 block text-sm text-slate-300">Configurações</Link><Link href="/termos-de-uso" className="mt-2 block text-sm text-slate-300">Termos de Uso</Link></div><div><p className="font-extrabold">Suporte</p><a href="mailto:ads@gringoou.com" className="mt-3 block text-sm text-slate-300">ads@gringoou.com</a><Link href="/politica-de-privacidade" className="mt-2 block text-sm text-slate-300">Privacidade</Link></div></footer>
     </div>
   );
 }

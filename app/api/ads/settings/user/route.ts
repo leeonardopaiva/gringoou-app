@@ -15,9 +15,9 @@ const userSettingsSchema = z.object({
 
 export async function PATCH(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   const parsed = userSettingsSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   try {
     const user = await prisma.user.update({
       where: { id: session.user.id },
@@ -31,7 +31,7 @@ export async function PATCH(request: Request) {
     });
     return NextResponse.json({ user });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return NextResponse.json({ error: 'Este email ja esta em uso.' }, { status: 409 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return NextResponse.json({ error: 'Este email já está em uso.' }, { status: 409 });
     throw error;
   }
 }

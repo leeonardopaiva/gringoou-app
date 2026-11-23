@@ -157,7 +157,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do grupo.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do grupo.' },
       { status: 400 },
     );
   }
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
     : null;
 
   if (parsed.data.regionKey && !region) {
-    return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Selecione uma região valida.' }, { status: 400 });
   }
 
   // Mantém a URL legível, mas inclui um código estável para impedir colisões

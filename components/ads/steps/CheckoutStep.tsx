@@ -34,7 +34,7 @@ function PaymentForm({ campaignId, onProcessing, onSuccess, onError }: { campaig
           redirect: 'if_required',
         });
         onProcessing(false);
-        if (result.error) return onError(result.error.message ?? 'Nao foi possivel confirmar o pagamento.');
+        if (result.error) return onError(result.error.message ?? 'Não foi possível confirmar o pagamento.');
         if (result.paymentIntent?.status === 'succeeded' || result.paymentIntent?.status === 'processing') onSuccess();
       }}
     >
@@ -60,10 +60,10 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
       <Card className="border border-slate-200 bg-[#fbfcfd] shadow-none">
         <Card.Title>Resumo do contrato</Card.Title>
         <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-white px-5">
-          {[['Plano', planInfo.name], ['Vigencia', `${state.durationMonths} ${state.durationMonths === 1 ? 'mes' : 'meses'}`], ['Regiao', state.regionKey]].map(([label, value]) => <div key={label} className="flex items-center justify-between gap-4 py-3.5 text-body-sm"><span className="text-muted-foreground">{label}</span><strong className="text-right text-text">{value}</strong></div>)}
+          {[['Plano', planInfo.name], ['Vigência', `${state.durationMonths} ${state.durationMonths === 1 ? 'mês' : 'meses'}`], ['Região', state.regionKey]].map(([label, value]) => <div key={label} className="flex items-center justify-between gap-4 py-3.5 text-body-sm"><span className="text-muted-foreground">{label}</span><strong className="text-right text-text">{value}</strong></div>)}
         </div>
         <div className="mt-5 rounded-2xl bg-[#eaf5ff] p-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#176daa]">Total em dolar americano</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#176daa]">Total em dólar americano</p>
           {appliedCoupon ? (
             <div className="mt-1 space-y-1">
               <p className="text-sm text-slate-500 line-through">{formatAdCurrency(amount)}</p>
@@ -71,7 +71,7 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
               <p className="text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(appliedCoupon.payCents)}</p>
             </div>
           ) : <p className="mt-1 text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(amount)}</p>}
-          <p className="mt-2 text-xs leading-5 text-slate-500">Valor calculado e validado no servidor. A campanha segue para analise depois da confirmacao do Stripe.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">Valor calculado e validado no servidor. A campanha segue para análise depois da confirmação do Stripe.</p>
         </div>
       </Card>
       <Card className="self-start border border-slate-200 bg-[#fbfcfd] shadow-none">
@@ -102,8 +102,8 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
           )}
         </div>
         <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-emerald-600" /><Card.Title>Pagamento seguro</Card.Title></div>
-        <Card.Description className="mb-5 mt-1">Seus dados de cartao sao processados diretamente pelo Stripe.</Card.Description>
-        {!publishableKey ? <Alert tone="erro" title="Stripe nao configurado" description="Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY." /> : null}
+        <Card.Description className="mb-5 mt-1">Seus dados de cartão sao processados diretamente pelo Stripe.</Card.Description>
+        {!publishableKey ? <Alert tone="erro" title="Stripe não configurado" description="Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY." /> : null}
         {error ? <Alert className="mb-4" tone="erro" title="Falha no pagamento" description={error} /> : null}
         {stripePromise && clientSecret ? (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#6d28d9', borderRadius: '16px' } } }}>
@@ -114,7 +114,7 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
               onError={onError}
             />
           </Elements>
-        ) : publishableKey ? <p className="text-body-sm text-muted-foreground">Preparando formulario de pagamento...</p> : null}
+        ) : publishableKey ? <p className="text-body-sm text-muted-foreground">Preparando formulário de pagamento...</p> : null}
         <div className="mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500"><LockKeyhole size={14} /> Dados criptografados e protegidos pelo Stripe.</div>
       </Card>
       </div>

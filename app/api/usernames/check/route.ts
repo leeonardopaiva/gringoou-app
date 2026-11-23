@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { available: false, reason: 'Muitas verificacoes em pouco tempo.' },
+      { available: false, reason: 'Muitas verificações em pouco tempo.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       available: false,
       username: validation.normalized,
-      reason: 'Esse nome ja esta em uso.',
+      reason: 'Esse nome já está em uso.',
     });
   }
 

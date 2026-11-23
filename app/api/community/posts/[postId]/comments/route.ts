@@ -28,7 +28,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Comentarios demais em pouco tempo. Aguarde alguns minutos.' },
+      { error: 'Comentários demais em pouco tempo. Aguarde alguns minutos.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -50,7 +50,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (USE_MOCKS) {
     const comment = addMockPostComment(postId, parsed.data.content, parentId, {
       id: session.user.id,
-      name: session.user.name || 'Usuario da comunidade',
+      name: session.user.name || 'Usuário da comunidade',
       username: session.user.username,
       image: session.user.image,
     });

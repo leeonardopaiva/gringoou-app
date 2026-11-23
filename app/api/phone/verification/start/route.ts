@@ -19,12 +19,12 @@ export async function POST(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   }
 
   if (!isPhoneVerificationConfigured) {
     return NextResponse.json(
-      { error: 'A verificacao por telefone ainda nao esta disponivel.' },
+      { error: 'A verificação por telefone ainda não está disponível.' },
       { status: 503 },
     );
   }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Telefone invalido.' },
+      { error: parsed.error.issues[0]?.message ?? 'Telefone inválido.' },
       { status: 400 },
     );
   }
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   if (!phoneE164) {
     return NextResponse.json(
-      { error: 'Use o telefone com o codigo do pais, por exemplo +1 305 000 0000.' },
+      { error: 'Use o telefone com o código do país, por exemplo +1 305 000 0000.' },
       { status: 400 },
     );
   }
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   if (!userLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitos codigos solicitados. Tente novamente mais tarde.' },
+      { error: 'Muitos códigos solicitados. Tente novamente mais tarde.' },
       { status: 429, headers: buildRateLimitHeaders(userLimit) },
     );
   }
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
 
   if (!phoneLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitos codigos enviados para este numero. Tente novamente mais tarde.' },
+      { error: 'Muitos códigos enviados para este número. Tente novamente mais tarde.' },
       { status: 429, headers: buildRateLimitHeaders(phoneLimit) },
     );
   }
@@ -94,28 +94,28 @@ export async function POST(request: Request) {
     // Verify: 60200 invalid number, 60205 landline/no SMS. 60203: too many sends to this number.
     if (twilioCode === 60203) {
       return NextResponse.json(
-        { error: 'Muitos codigos enviados para este numero. Tente novamente mais tarde.' },
+        { error: 'Muitos códigos enviados para este número. Tente novamente mais tarde.' },
         { status: 429 },
       );
     }
 
     if (twilioCode === 21211 || twilioCode === 21614 || twilioCode === 60200 || twilioCode === 60205) {
       return NextResponse.json(
-        { error: 'Nao foi possivel enviar SMS para este numero. Confira o telefone.' },
+        { error: 'Não foi possível enviar SMS para este número. Confira o telefone.' },
         { status: 400 },
       );
     }
 
     if (twilioCode === 21608) {
       return NextResponse.json(
-        { error: 'Este numero ainda nao esta verificado na conta de teste do Twilio.' },
+        { error: 'Este número ainda não está verificado na conta de teste do Twilio.' },
         { status: 400 },
       );
     }
 
-    console.error('[phone-verification] falha ao enviar codigo', twilioCode ?? error);
+    console.error('[phone-verification] falha ao enviar código', twilioCode ?? error);
     return NextResponse.json(
-      { error: 'Nao foi possivel enviar o codigo agora. Tente novamente.' },
+      { error: 'Não foi possível enviar o código agora. Tente novamente.' },
       { status: 502 },
     );
   }
@@ -123,6 +123,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     phone: phoneE164,
-    message: 'Enviamos um codigo por SMS.',
+    message: 'Enviamos um código por SMS.',
   });
 }

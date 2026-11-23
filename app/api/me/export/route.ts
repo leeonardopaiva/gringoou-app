@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   });
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Voce ja exportou seus dados recentemente. Tente novamente mais tarde.' },
+      { error: 'Você já exportou seus dados recentemente. Tente novamente mais tarde.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
 
   const payload = {
     exportedAt: new Date().toISOString(),
-    notice: 'Dados pessoais associados a sua conta. Mensagens recebidas de terceiros nao estao incluidas.',
+    notice: 'Dados pessoais associados a sua conta. Mensagens recebidas de terceiros não estão incluidas.',
     profile,
     content: { posts, comments, businesses, events, jobs, housing, marketplaceItems },
     messagesSent: messages,

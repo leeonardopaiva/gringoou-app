@@ -8,7 +8,7 @@ import type { MarketplaceInitialData } from '@/lib/content-contracts';
 export const metadata: Metadata = {
   title: 'Marketplace — Gringoou',
   description:
-    'Compre, venda e doe itens com a comunidade brasileira no exterior. Anuncios perto de voce.',
+    'Compre, venda e doe itens com a comunidade brasileira no exterior. Anúncios perto de você.',
 };
 
 export default async function MarketplaceRoute() {

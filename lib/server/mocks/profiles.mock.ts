@@ -101,17 +101,17 @@ const usernameFromMockRequestId = (id: string) => id.replace(/^mock-(author|frie
 export function sendMockFriendRequest(recipientId: string) {
   const normalized = usernameFromMockRequestId(recipientId);
   const existing = mockFriendStatuses.get(normalized);
-  if (existing === 'accepted') return { status: 'accepted', requestId: `mock-friend-request-${normalized}`, message: 'Voces ja estao conectados.' };
+  if (existing === 'accepted') return { status: 'accepted', requestId: `mock-friend-request-${normalized}`, message: 'Vocês já estão conectados.' };
   mockFriendStatuses.set(normalized, 'pending_sent');
-  return { status: 'pending', requestId: `mock-friend-request-${normalized}`, message: 'Solicitacao enviada.' };
+  return { status: 'pending', requestId: `mock-friend-request-${normalized}`, message: 'Solicitação enviada.' };
 }
 
 export function decideMockFriendRequest(requestId: string, action: 'accept' | 'decline') {
   const normalized = usernameFromMockRequestId(requestId);
   if (action === 'accept') {
     mockFriendStatuses.set(normalized, 'accepted');
-    return { request: { id: requestId, status: 'ACCEPTED' }, message: 'Conexao aceita.' };
+    return { request: { id: requestId, status: 'ACCEPTED' }, message: 'Conexão aceita.' };
   }
   mockFriendStatuses.delete(normalized);
-  return { request: { id: requestId, status: 'DECLINED' }, message: 'Solicitacao recusada.' };
+  return { request: { id: requestId, status: 'DECLINED' }, message: 'Solicitação recusada.' };
 }

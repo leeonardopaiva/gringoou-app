@@ -25,7 +25,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Avaliacao invalida.' },
+      { error: parsed.error.issues[0]?.message ?? 'Avaliação inválida.' },
       { status: 400 },
     );
   }
@@ -56,7 +56,7 @@ export async function POST(request: Request, context: RouteContext) {
   });
 
   if (!business) {
-    return NextResponse.json({ error: 'Negocio nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio não encontrado.' }, { status: 404 });
   }
 
   const canView =
@@ -73,11 +73,11 @@ export async function POST(request: Request, context: RouteContext) {
     session.user.id === business.createdById;
 
   if (!canView) {
-    return NextResponse.json({ error: 'Negocio indisponivel.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio indisponível.' }, { status: 404 });
   }
 
   if (session.user.role === 'ADMIN' || session.user.id === business.createdById || business.members.length > 0) {
-    return NextResponse.json({ error: 'Voce nao pode avaliar o proprio negocio.' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não pode avaliar o próprio negócio.' }, { status: 403 });
   }
 
   const existingRating = await prisma.businessRating.findUnique({
@@ -93,7 +93,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (existingRating) {
     return NextResponse.json(
       {
-        error: 'Voce ja avaliou este negocio.',
+        error: 'Você já avaliou este negócio.',
         viewerRating: existingRating.stars,
       },
       { status: 409 },

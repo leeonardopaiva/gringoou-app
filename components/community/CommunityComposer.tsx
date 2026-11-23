@@ -129,7 +129,7 @@ const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
       }`}
     >
       <BriefcaseBusiness size={15} />
-      <span className="truncate">Como {professionalName || 'negocio'}</span>
+      <span className="truncate">Como {professionalName || 'negócio'}</span>
     </button>
   </div>
 );

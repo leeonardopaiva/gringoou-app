@@ -26,7 +26,7 @@ const updateSchema = z.object({
 
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   const { id } = await context.params;
   const membership = await prisma.adAccountUser.findUnique({
     where: { adAccountId_userId: { adAccountId: id, userId: session.user.id } },
@@ -36,7 +36,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Apenas administradores podem editar a conta.' }, { status: 403 });
   }
   const parsed = updateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   const account = await prisma.$transaction(async (tx) => {
     const updatedAccount = await tx.adAccount.update({
       where: { id },

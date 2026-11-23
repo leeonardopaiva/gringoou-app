@@ -44,5 +44,5 @@ export const validatePhoneField = (value: string, label: string) => {
     return null;
   }
 
-  return digits.length >= 8 ? null : `${label} esta muito curto.`;
+  return digits.length >= 8 ? null : `${label} está muito curto.`;
 };

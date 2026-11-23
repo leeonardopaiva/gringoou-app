@@ -134,7 +134,7 @@ const App: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar o perfil profissional.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar o perfil profissional.');
         }
 
         if (!ignore) {
@@ -247,7 +247,7 @@ const App: React.FC<{
       }
     } catch (error) {
       console.error('Google sign-in failed:', error);
-      setRegistrationError('Nao foi possivel entrar com Google agora.');
+      setRegistrationError('Não foi possível entrar com Google agora.');
     }
   };
 
@@ -275,7 +275,7 @@ const App: React.FC<{
       }
     } catch (error) {
       console.error('Mock sign-in failed:', error);
-      setRegistrationError('Nao foi possivel entrar com o usuario de teste agora.');
+      setRegistrationError('Não foi possível entrar com o usuário de teste agora.');
     }
   };
 
@@ -352,7 +352,7 @@ const App: React.FC<{
 
       setRegistrationNotice(
         isLocalTest
-          ? 'Magic link de teste gerado. Se o redirecionamento nao abrir, confira o terminal local.'
+          ? 'Magic link de teste gerado. Se o redirecionamento não abrir, confira o terminal local.'
           : 'Enviamos o link de confirmação no seu email.',
       );
     } catch (error) {
@@ -378,7 +378,7 @@ const App: React.FC<{
     if (!result || result.error) {
       return {
         ok: false,
-        error: result?.error || 'Nao foi possivel entrar com email e senha.',
+        error: result?.error || 'Não foi possível entrar com email e senha.',
       };
     }
 
@@ -400,11 +400,11 @@ const App: React.FC<{
       const result = await performPasswordLogin(values.email, values.password);
 
       if (!result.ok) {
-        setRegistrationError('Email ou senha invalidos.');
+        setRegistrationError('Email ou senha inválidos.');
       }
     } catch (error) {
       console.error('Credentials sign-in failed:', error);
-      setRegistrationError('Nao foi possivel entrar com email e senha.');
+      setRegistrationError('Não foi possível entrar com email e senha.');
     } finally {
       setAuthSubmitting(false);
     }
@@ -448,7 +448,7 @@ const App: React.FC<{
       await requestMagicLink(values.email, false, true);
     } catch (error) {
       console.error('Password registration failed:', error);
-      setRegistrationError('Nao foi possivel criar a conta.');
+      setRegistrationError('Não foi possível criar a conta.');
     } finally {
       setAuthSubmitting(false);
     }
@@ -487,14 +487,14 @@ const App: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setRegistrationError(payload?.error ?? 'Nao foi possivel salvar seu perfil.');
+        setRegistrationError(payload?.error ?? 'Não foi possível salvar seu perfil.');
         return;
       }
 
       await update();
     } catch (error) {
       console.error('Profile completion failed:', error);
-      setRegistrationError('Nao foi possivel salvar seu perfil.');
+      setRegistrationError('Não foi possível salvar seu perfil.');
     } finally {
       setSavingProfile(false);
     }

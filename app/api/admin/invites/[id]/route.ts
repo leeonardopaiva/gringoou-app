@@ -14,7 +14,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
   const invite = await getInvite(id);
 
   if (!invite) {
-    return NextResponse.json({ error: 'Convite nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Convite não encontrado.' }, { status: 404 });
   }
 
   return NextResponse.json({ invite });
@@ -29,7 +29,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
 
   if (!revoked) {
     return NextResponse.json(
-      { error: 'Nao foi possivel revogar este convite (ja utilizado ou revogado).' },
+      { error: 'Não foi possível revogar este convite (já utilizado ou revogado).' },
       { status: 400 },
     );
   }

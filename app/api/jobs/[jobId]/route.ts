@@ -24,7 +24,7 @@ export async function GET(_request: Request, context: RouteContext) {
   });
   return job
     ? NextResponse.json({ job: { ...job, publisher: buildPublisher(job.createdBy, job.business, job.company), canEdit: session?.user?.id === job.createdById || session?.user?.role === 'ADMIN' } })
-    : NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+    : NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: RouteContext) {
@@ -32,12 +32,12 @@ export async function PUT(request: Request, context: RouteContext) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { jobId } = await context.params;
   const current = await prisma.job.findUnique({ where: { id: jobId }, select: { createdById: true } });
-  if (!current) return NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const parsed = jobSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   const business = parsed.data.businessId
     ? await prisma.business.findFirst({ where: { id: parsed.data.businessId, OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }] }, select: { id: true, name: true } })
     : null;
@@ -50,7 +50,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { jobId } = await context.params;
   const current = await prisma.job.findUnique({ where: { id: jobId }, select: { createdById: true } });
-  if (!current) return NextResponse.json({ error: 'Vaga nao encontrada.' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

@@ -155,7 +155,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!existingBusiness) {
-    return NextResponse.json({ error: 'Negocio nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio não encontrado.' }, { status: 404 });
   }
 
   const canEdit =

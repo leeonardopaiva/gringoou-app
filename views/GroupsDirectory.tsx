@@ -230,7 +230,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
 
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Grupos perto de voce</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Grupos perto de você</h2>
             <span className="text-xs font-bold text-slate-400">{filteredGroups.length}</span>
           </div>
 

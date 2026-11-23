@@ -19,7 +19,7 @@ export default function AdsLoginPage() {
     setError(null);
     const result = await signIn('google', { callbackUrl: '/ads/overview', redirect: false });
     if (result?.error) {
-      setError('Nao foi possivel entrar com Google.');
+      setError('Não foi possível entrar com Google.');
       setLoading(false);
     }
   }
@@ -30,7 +30,7 @@ export default function AdsLoginPage() {
     setError(null);
     const result = await signIn('credentials', { email, password, redirect: false });
     if (result?.error) {
-      setError('Email ou senha invalidos.');
+      setError('Email ou senha inválidos.');
       setLoading(false);
       return;
     }

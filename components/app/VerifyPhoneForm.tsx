@@ -40,14 +40,14 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
       const { ok, data } = await postJson('/api/phone/verification/start', { phone });
 
       if (!ok) {
-        setError(data?.error ?? 'Nao foi possivel enviar o codigo agora.');
+        setError(data?.error ?? 'Não foi possível enviar o código agora.');
         return;
       }
 
       setStep('code');
       setCode('');
     } catch {
-      setError('Nao foi possivel enviar o codigo agora. Tente novamente.');
+      setError('Não foi possível enviar o código agora. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
       const { ok, data } = await postJson('/api/phone/verification/check', { phone, code });
 
       if (!ok) {
-        setError(data?.error ?? 'Codigo invalido. Tente novamente.');
+        setError(data?.error ?? 'Código inválido. Tente novamente.');
         return;
       }
 
@@ -72,7 +72,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
       setStep('done');
       onVerified?.();
     } catch {
-      setError('Nao foi possivel confirmar o codigo agora. Tente novamente.');
+      setError('Não foi possível confirmar o código agora. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -92,11 +92,11 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
     return (
       <form onSubmit={confirmCode} className="flex flex-col gap-4 text-center" noValidate>
         <p className="text-sm text-[#4a5672]">
-          Enviamos um codigo por SMS para <strong className="text-[#0f2b63]">{phone}</strong>.
+          Enviamos um código por SMS para <strong className="text-[#0f2b63]">{phone}</strong>.
         </p>
 
         <label htmlFor="verify-code" className="text-sm font-semibold text-[#0f2b63]">
-          Codigo recebido
+          Código recebido
         </label>
         <input
           id="verify-code"
@@ -119,7 +119,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
         )}
 
         <button type="submit" disabled={loading || code.length < 4} className={`${buttonClassName} w-full`}>
-          {loading ? 'Confirmando...' : 'Confirmar codigo'}
+          {loading ? 'Confirmando...' : 'Confirmar código'}
         </button>
         <button
           type="button"
@@ -130,7 +130,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
           }}
           className="text-sm font-semibold text-brand-500 disabled:opacity-60"
         >
-          Usar outro telefone ou reenviar codigo
+          Usar outro telefone ou reenviar código
         </button>
       </form>
     );
@@ -139,7 +139,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-4 text-center" noValidate>
       <label htmlFor="verify-phone" className="text-sm font-semibold text-[#0f2b63]">
-        Telefone com codigo do pais
+        Telefone com código do país
       </label>
       <input
         id="verify-phone"
@@ -162,7 +162,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
       )}
 
       <button type="submit" disabled={loading || phone.replace(/\D/g, '').length < 8} className={`${buttonClassName} w-full`}>
-        {loading ? 'Enviando...' : 'Enviar codigo por SMS'}
+        {loading ? 'Enviando...' : 'Enviar código por SMS'}
       </button>
     </form>
   );

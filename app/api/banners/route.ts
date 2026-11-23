@@ -73,7 +73,7 @@ export async function GET(request: Request) {
   }
 
   if (placementParam !== 'feed') {
-    return NextResponse.json({ error: 'Local de exibicao invalido.' }, { status: 400 });
+    return NextResponse.json({ error: 'Local de exibição inválido.' }, { status: 400 });
   }
 
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1_000);

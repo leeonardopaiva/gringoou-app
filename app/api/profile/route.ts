@@ -17,7 +17,7 @@ export async function GET() {
 
   const data = await getProfileData(session.user.id);
   if (!data) {
-    return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
   }
   return NextResponse.json(data);
 }
@@ -38,7 +38,7 @@ export async function PUT(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitas atualizacoes em pouco tempo. Tente novamente em alguns minutos.' },
+      { error: 'Muitas atualizações em pouco tempo. Tente novamente em alguns minutos.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -58,7 +58,7 @@ export async function PUT(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do perfil.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do perfil.' },
       { status: 400 },
     );
   }
@@ -84,7 +84,7 @@ export async function PUT(request: Request) {
   });
 
   if (existingUser) {
-    return NextResponse.json({ error: 'Esse nome publico ja esta em uso.' }, { status: 409 });
+    return NextResponse.json({ error: 'Esse nome público já está em uso.' }, { status: 409 });
   }
 
   const currentUser = await prisma.user.findUnique({
@@ -104,7 +104,7 @@ export async function PUT(request: Request) {
 
   if (requestedEmail !== currentEmail) {
     return NextResponse.json(
-      { error: 'A troca de email exige verificacao e ficou bloqueada nesta versao.' },
+      { error: 'A troca de email exige verificação e ficou bloqueada nesta versão.' },
       { status: 400 },
     );
   }
@@ -151,7 +151,7 @@ export async function PUT(request: Request) {
       error.code === 'P2002'
     ) {
       return NextResponse.json(
-        { error: 'Email ou nome publico ja esta em uso.' },
+        { error: 'Email ou nome público já está em uso.' },
         { status: 409 },
       );
     }

@@ -48,7 +48,7 @@ export async function validateInvite(
 ): Promise<InviteValidationResult> {
   const normalized = code.trim().toUpperCase();
   if (!normalized) {
-    return { ok: false, error: 'Informe o codigo do convite.' };
+    return { ok: false, error: 'Informe o código do convite.' };
   }
 
   const invite = await prisma.invite.findUnique({
@@ -64,7 +64,7 @@ export async function validateInvite(
   });
 
   if (!invite) {
-    return { ok: false, error: 'Codigo de convite invalido.' };
+    return { ok: false, error: 'Código de convite inválido.' };
   }
 
   if (invite.status === InviteStatus.REVOKED) {
@@ -72,7 +72,7 @@ export async function validateInvite(
   }
 
   if (invite.status === InviteStatus.USED) {
-    return { ok: false, error: 'Este convite ja foi utilizado.' };
+    return { ok: false, error: 'Este convite já foi utilizado.' };
   }
 
   if (invite.expiresAt && invite.expiresAt < new Date()) {
@@ -84,7 +84,7 @@ export async function validateInvite(
   }
 
   if (invite.email && email && invite.email.toLowerCase() !== email.toLowerCase()) {
-    return { ok: false, error: 'Este convite esta vinculado a outro email.' };
+    return { ok: false, error: 'Este convite está vinculado a outro email.' };
   }
 
   return { ok: true, inviteId: invite.id };
@@ -102,7 +102,7 @@ export async function consumeInviteInTx(
 ): Promise<{ ok: boolean; error?: string }> {
   const normalized = code.trim().toUpperCase();
   if (!normalized) {
-    return { ok: false, error: 'Informe o codigo do convite.' };
+    return { ok: false, error: 'Informe o código do convite.' };
   }
 
   const codeHash = hashInviteCode(normalized);
@@ -119,13 +119,13 @@ export async function consumeInviteInTx(
     },
   });
 
-  if (!invite) return { ok: false, error: 'Codigo de convite invalido.' };
+  if (!invite) return { ok: false, error: 'Código de convite inválido.' };
   if (invite.status === InviteStatus.REVOKED) return { ok: false, error: 'Este convite foi revogado.' };
-  if (invite.status === InviteStatus.USED) return { ok: false, error: 'Este convite ja foi utilizado.' };
+  if (invite.status === InviteStatus.USED) return { ok: false, error: 'Este convite já foi utilizado.' };
   if (invite.expiresAt && invite.expiresAt < new Date()) return { ok: false, error: 'Este convite expirou.' };
   if (invite.usedCount >= invite.usageLimit) return { ok: false, error: 'Este convite atingiu o limite de usos.' };
   if (invite.email && invite.email.toLowerCase() !== email.toLowerCase()) {
-    return { ok: false, error: 'Este convite esta vinculado a outro email.' };
+    return { ok: false, error: 'Este convite está vinculado a outro email.' };
   }
 
   // Consumo atômico: só incrementa se ainda houver cota disponível.
@@ -140,7 +140,7 @@ export async function consumeInviteInTx(
   });
 
   if (updated.count === 0) {
-    return { ok: false, error: 'Este convite nao pode ser utilizado agora.' };
+    return { ok: false, error: 'Este convite não pode ser utilizado agora.' };
   }
 
   await tx.inviteUsage.create({ data: { inviteId: invite.id, userId } });
@@ -179,7 +179,7 @@ export async function consumeInvite(
     return await prisma.$transaction((tx) => consumeInviteInTx(tx, code, email, userId));
   } catch (error) {
     console.error('[invites] consumeInvite failed:', error);
-    return { ok: false, error: 'Nao foi possivel validar o convite agora.' };
+    return { ok: false, error: 'Não foi possível validar o convite agora.' };
   }
 }
 

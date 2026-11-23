@@ -12,7 +12,7 @@ import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 export async function POST(request: Request) {
   if (!isOperationalFeatureEnabled('adsCheckout')) {
     return NextResponse.json(
-      { error: 'A contratacao de anuncios esta temporariamente pausada.' },
+      { error: 'A contratação de anúncios está temporariamente pausada.' },
       { status: 503, headers: { 'Retry-After': '300' } },
     );
   }
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const parsed = adCheckoutSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   }
 
   const membership = await prisma.adAccountUser.findUnique({
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     },
   });
   if (!membership || !canManageAdBilling(membership.role)) {
-    return NextResponse.json({ error: 'Apenas o administrador principal da conta pode contratar e pagar anuncios.' }, { status: 403 });
+    return NextResponse.json({ error: 'Apenas o administrador principal da conta pode contratar e pagar anúncios.' }, { status: 403 });
   }
   const eligibilityError = getPromotionEligibilityError(membership.adAccount);
   if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       },
     },
   });
-  if (!banner) return NextResponse.json({ error: 'Rascunho nao encontrado ou indisponivel.' }, { status: 404 });
+  if (!banner) return NextResponse.json({ error: 'Rascunho não encontrado ou indisponível.' }, { status: 404 });
 
   const planInfo = (await getAdPlanCatalog()).find((item) => item.plan === parsed.data.plan);
   if (!planInfo || !planInfo.isActive || planInfo.durationMonths !== parsed.data.durationMonths) {
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ clientSecret: existingIntent.client_secret });
       }
       if (existingIntent.status === 'processing' || existingIntent.status === 'succeeded') {
-        return NextResponse.json({ error: 'Pagamento em processamento. Aguarde a confirmacao do Stripe.' }, { status: 409 });
+        return NextResponse.json({ error: 'Pagamento em processamento. Aguarde a confirmação do Stripe.' }, { status: 409 });
       }
     } catch (error) {
       console.error('Failed to recover pending Stripe checkout:', error);
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
   }
 
   const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });
-  if (!region) return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
+  if (!region) return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
 
   const destinationFields = getAdDestinationFields(parsed.data.goal, parsed.data.destination);
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
       {
         amount: amountCents,
         currency: 'usd',
-        description: `Campanha ${planInfo.name} - ${parsed.data.durationMonths} mes(es): ${parsed.data.headline}`,
+        description: `Campanha ${planInfo.name} - ${parsed.data.durationMonths} mês(es): ${parsed.data.headline}`,
         receipt_email: session.user.email ?? undefined,
         metadata: { bannerId: banner.id, userId: session.user.id, adAccountId: parsed.data.adAccountId, ...(appliedCouponId ? { couponId: appliedCouponId } : {}) },
       },
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Failed to create Stripe checkout:', error);
     return NextResponse.json(
-      { error: 'Nao foi possivel iniciar o pagamento. Tente novamente em instantes.' },
+      { error: 'Não foi possível iniciar o pagamento. Tente novamente em instantes.' },
       { status: 503 },
     );
   }

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' },
       { status: 400 },
     );
   }

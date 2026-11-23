@@ -33,7 +33,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const eventScope = event as unknown as { regionKey?: string | null; createdById?: string | null };
   if (!event || isOutsideViewerRegion(session, { regionKey: eventScope.regionKey, ownerId: eventScope.createdById })) {
-    return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
   }
 
   return NextResponse.json({ event });
@@ -51,7 +51,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do evento.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do evento.' },
       { status: 400 },
     );
   }
@@ -70,7 +70,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!existingEvent) {
-    return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
   }
 
   const canEdit =
@@ -97,7 +97,7 @@ export async function PUT(request: Request, context: RouteContext) {
     ? await findRegionByKey(parsed.data.regionKey, { activeOnly: true })
     : null;
   if (parsed.data.regionKey && !region) {
-    return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Selecione uma região valida.' }, { status: 400 });
   }
 
   const event = await prisma.event.update({

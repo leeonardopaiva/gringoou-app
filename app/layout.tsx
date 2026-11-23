@@ -20,7 +20,7 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: 'Gringoou - Comunidade Brasileira',
   description:
-    'Uma plataforma completa para a comunidade brasileira no exterior, oferecendo servicos de moradia, empregos, negocios locais, noticias e rede social.',
+    'Uma plataforma completa para a comunidade brasileira no exterior, oferecendo serviços de moradia, empregos, negócios locais, notícias e rede social.',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [

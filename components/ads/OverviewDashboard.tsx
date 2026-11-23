@@ -30,8 +30,8 @@ function getStatus(row: AdsOverviewRow, enabled: boolean): StatusView {
   if (row.moderationStatus === 'DRAFT') return { label: 'Rascunho', tone: 'neutro' };
   if (row.moderationStatus === 'REJECTED') return { label: 'Rejeitado', tone: 'erro' };
   if (!enabled && row.moderationStatus === 'APPROVED' && !(row.endsAt && new Date(row.endsAt).getTime() < Date.now())) return { label: 'Pausado', tone: 'erro' };
-  if (row.moderationStatus === 'PENDING_REVIEW') return { label: 'Em analise', tone: 'destaque' };
-  if (row.endsAt && new Date(row.endsAt).getTime() < Date.now()) return { label: 'Concluido', tone: 'neutro' };
+  if (row.moderationStatus === 'PENDING_REVIEW') return { label: 'Em análise', tone: 'destaque' };
+  if (row.endsAt && new Date(row.endsAt).getTime() < Date.now()) return { label: 'Concluído', tone: 'neutro' };
   if (row.moderationStatus === 'APPROVED' && row.paymentStatus === 'PAID') return { label: 'Ativo', tone: 'success' };
   return { label: 'Inativo', tone: 'neutro' };
 }
@@ -40,11 +40,11 @@ type TabKey = 'all' | 'active' | 'review' | 'draft' | 'rejected' | 'paused' | 'e
 const TABS: Array<{ key: TabKey; label: string; labels: string[] | null }> = [
   { key: 'all', label: 'Todas', labels: null },
   { key: 'active', label: 'Ativas', labels: ['Ativo'] },
-  { key: 'review', label: 'Em análise', labels: ['Em analise'] },
+  { key: 'review', label: 'Em análise', labels: ['Em análise'] },
   { key: 'draft', label: 'Rascunhos', labels: ['Rascunho'] },
   { key: 'rejected', label: 'Rejeitadas', labels: ['Rejeitado'] },
   { key: 'paused', label: 'Pausadas', labels: ['Pausado', 'Inativo'] },
-  { key: 'ended', label: 'Concluídas', labels: ['Concluido'] },
+  { key: 'ended', label: 'Concluídas', labels: ['Concluído'] },
 ];
 const GOAL_LABELS: Record<string, string> = { WHATSAPP: 'WhatsApp', EXTERNAL_URL: 'Link externo', MARKETPLACE: 'Marketplace' };
 
@@ -167,7 +167,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
   };
   const rangeCaption = data.range.from && data.range.key !== 'all'
     ? `${formatDate(data.range.from.toISOString())} - ${formatDate(data.range.to.toISOString())}`
-    : 'Todo o periodo';
+    : 'Todo o período';
   const canToggle = (row: AdsOverviewRow) => row.moderationStatus === 'APPROVED' && row.paymentStatus === 'PAID' && (!row.endsAt || new Date(row.endsAt).getTime() > Date.now());
   const toggleCampaign = async (row: AdsOverviewRow) => {
     const previous = enabledRows[row.id] ?? false;
@@ -176,11 +176,11 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     try {
       const response = await fetch(`/api/ads/${row.id}/toggle`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: next }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar a campanha.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a campanha.');
       router.refresh();
     } catch (reason) {
       setEnabledRows((current) => ({ ...current, [row.id]: previous }));
-      showToast(reason instanceof Error ? reason.message : 'Nao foi possivel atualizar a campanha.', 'error');
+      showToast(reason instanceof Error ? reason.message : 'Não foi possível atualizar a campanha.', 'error');
     }
   };
   const openRevision = (row: AdsOverviewRow) => {
@@ -203,22 +203,22 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         body: JSON.stringify({ ...revisionForm, goal: revising.goal }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel reenviar a campanha.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível reenviar a campanha.');
       setRevising(null);
       setRevisionForm(null);
-      showToast('Criativo reenviado para analise sem nova cobranca.', 'success');
+      showToast('Criativo reenviado para análise sem nova cobrança.', 'success');
       router.refresh();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel reenviar a campanha.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível reenviar a campanha.', 'error');
     } finally {
       setResubmitting(false);
     }
   };
   const stats = [
-    { label: 'Gasto faturavel', value: formatUsd(data.stats.spendCents), caption: rangeCaption },
-    { label: 'Impressoes', value: formatNumber(data.stats.impressions), caption: rangeCaption },
+    { label: 'Gasto faturável', value: formatUsd(data.stats.spendCents), caption: rangeCaption },
+    { label: 'Impressões', value: formatNumber(data.stats.impressions), caption: rangeCaption },
     { label: 'Campanhas ativas', value: String(data.stats.activeCampaigns), caption: `de ${data.rows.length} campanhas totais`, accent: true },
-    { label: 'Criativos rejeitados', value: String(data.stats.rejectedCreatives), caption: data.stats.rejectedCreatives ? 'requer sua atencao' : 'nenhuma pendencia' },
+    { label: 'Criativos rejeitados', value: String(data.stats.rejectedCreatives), caption: data.stats.rejectedCreatives ? 'requer sua atenção' : 'nenhuma pendência' },
   ];
 
   return (
@@ -237,7 +237,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         <h1 className="text-2xl font-extrabold leading-none text-[#132f40] sm:text-[34px]">Visão geral</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Select value={data.range.key} prefixIcon={<CalendarDays size={17} />} onChange={(event) => router.push(`/ads/overview?range=${event.target.value}`)} className="min-w-[150px]">
-            <option value="7d">Ultimos 7 dias</option><option value="month">Este mes</option><option value="all">Total</option>
+            <option value="7d">Últimos 7 dias</option><option value="month">Este mês</option><option value="all">Total</option>
           </Select>
           <Button iconLeft={<Plus size={19} />} onClick={() => router.push('/ads/wizard')}>Criar Campanha</Button>
         </div>
@@ -301,7 +301,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] border-collapse text-left">
             <thead><tr className="border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
-              {['Nome', 'On/Off', 'Status', 'Inicio', 'Fim', 'Impressoes', 'Cliques', 'Conv.', 'Gasto', 'CTR', 'CPC', 'Ações'].map((label) => <th key={label} className="px-5 py-4">{label}</th>)}
+              {['Nome', 'On/Off', 'Status', 'Início', 'Fim', 'Impressões', 'Cliques', 'Conv.', 'Gasto', 'CTR', 'CPC', 'Ações'].map((label) => <th key={label} className="px-5 py-4">{label}</th>)}
             </tr></thead>
             <tbody>
               {visibleRows.map((row) => {
@@ -369,14 +369,14 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <Modal
         open={Boolean(revising && revisionForm)}
         onClose={() => { if (!resubmitting) { setRevising(null); setRevisionForm(null); } }}
-        title="Corrigir anuncio rejeitado"
-        description={revising?.rejectionReason ? `Motivo da rejeicao: ${revising.rejectionReason}` : 'Ajuste o criativo e envie novamente. Nao havera uma nova cobranca.'}
+        title="Corrigir anúncio rejeitado"
+        description={revising?.rejectionReason ? `Motivo da rejeição: ${revising.rejectionReason}` : 'Ajuste o criativo e envie novamente. Não havera uma nova cobrança.'}
         className="max-w-2xl"
-        footer={<><Button variant="secondary" disabled={resubmitting} onClick={() => { setRevising(null); setRevisionForm(null); }}>Cancelar</Button><Button loading={resubmitting} disabled={!revisionForm?.headline.trim() || !revisionForm?.description.trim() || !revisionForm?.imageUrl || !revisionForm?.destination.trim()} onClick={() => void resubmit()}>Reenviar para analise</Button></>}
+        footer={<><Button variant="secondary" disabled={resubmitting} onClick={() => { setRevising(null); setRevisionForm(null); }}>Cancelar</Button><Button loading={resubmitting} disabled={!revisionForm?.headline.trim() || !revisionForm?.description.trim() || !revisionForm?.imageUrl || !revisionForm?.destination.trim()} onClick={() => void resubmit()}>Reenviar para análise</Button></>}
       >
         {revisionForm ? <div className="max-h-[65dvh] space-y-4 overflow-y-auto pr-1">
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Titulo</label><Input value={revisionForm.headline} maxLength={70} onChange={(event) => setRevisionForm((current) => current ? { ...current, headline: event.target.value } : current)} /></div>
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Descricao</label><Textarea value={revisionForm.description} maxLength={600} onChange={(event) => setRevisionForm((current) => current ? { ...current, description: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Título</label><Input value={revisionForm.headline} maxLength={70} onChange={(event) => setRevisionForm((current) => current ? { ...current, headline: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Descrição</label><Textarea value={revisionForm.description} maxLength={600} onChange={(event) => setRevisionForm((current) => current ? { ...current, description: event.target.value } : current)} /></div>
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Imagem</label><CloudinaryImageField value={revisionForm.imageUrl} onChange={(imageUrl) => setRevisionForm((current) => current ? { ...current, imageUrl } : current)} folder="banners" cropAspect={4 / 3} height={200} /></div>
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">CTA</label><Input value={revisionForm.ctaLabel} maxLength={40} onChange={(event) => setRevisionForm((current) => current ? { ...current, ctaLabel: event.target.value } : current)} /></div>
           <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Destino</label><Input value={revisionForm.destination} maxLength={500} onChange={(event) => setRevisionForm((current) => current ? { ...current, destination: event.target.value } : current)} /></div>

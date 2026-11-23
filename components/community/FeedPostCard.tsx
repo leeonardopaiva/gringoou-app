@@ -117,7 +117,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   };
 
   const handleDeletePost = async () => {
-    if (typeof window !== 'undefined' && !window.confirm('Deseja apagar esta publicacao?')) {
+    if (typeof window !== 'undefined' && !window.confirm('Deseja apagar esta publicação?')) {
       return;
     }
 
@@ -148,7 +148,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (typeof window !== 'undefined' && !window.confirm('Deseja apagar este comentario?')) {
+    if (typeof window !== 'undefined' && !window.confirm('Deseja apagar este comentário?')) {
       return;
     }
 
@@ -174,8 +174,8 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   const loadedCommentCount = post.comments.length;
   const collapsedCommentsLabel =
     post.commentCount > loadedCommentCount
-      ? `Ver ${loadedCommentCount} comentarios recentes`
-      : `Ver ${loadedCommentCount} comentarios`;
+      ? `Ver ${loadedCommentCount} comentários recentes`
+      : `Ver ${loadedCommentCount} comentários`;
 
   const likesPreviewContent =
     post.likeCount > 0 ? (
@@ -215,7 +215,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
     <PostCard.Root flat={flat} className={isPendingReview ? 'opacity-65' : ''}>
       {isPendingReview ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-          Aguardando aprovacao da administracao. Esta publicacao esta visivel apenas para voce e administradores.
+          Aguardando aprovação da administração. Esta publicação está visível apenas para você e administradores.
         </div>
       ) : null}
       <PostCard.Header
@@ -342,7 +342,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
           onClick={() => setCommentsExpanded((current) => !current)}
           className="w-fit text-xs font-bold text-brand-500 transition hover:text-brand-600"
         >
-          {commentsExpanded ? 'Ocultar comentarios' : collapsedCommentsLabel}
+          {commentsExpanded ? 'Ocultar comentários' : collapsedCommentsLabel}
         </button>
       ) : null}
 

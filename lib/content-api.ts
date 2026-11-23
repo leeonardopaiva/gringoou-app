@@ -14,7 +14,7 @@ const fetchJson = async <T,>(url: string): Promise<JsonResponse<T>> => {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(payload?.error ?? 'Nao foi possivel carregar os dados.');
+    throw new Error(payload?.error ?? 'Não foi possível carregar os dados.');
   }
 
   return payload as JsonResponse<T>;

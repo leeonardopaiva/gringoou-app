@@ -69,7 +69,7 @@ const groupedDimensions = [
 
 const groupedMetrics = [
   {
-    title: 'Basico',
+    title: 'Básico',
     items: reportMetricCatalog,
   },
 ];
@@ -144,7 +144,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error ?? 'Nao foi possivel gerar o relatorio.');
+        throw new Error(payload?.error ?? 'Não foi possível gerar o relatório.');
       }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -154,7 +154,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
       link.click();
       URL.revokeObjectURL(url);
     } catch (reason) {
-      showToast(reason instanceof Error ? reason.message : 'Nao foi possivel gerar o relatorio.', 'error');
+      showToast(reason instanceof Error ? reason.message : 'Não foi possível gerar o relatório.', 'error');
     } finally {
       setExporting(false);
     }
@@ -162,7 +162,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
 
   const saveReport = () => {
     localStorage.setItem(`${storageKey}:saved`, JSON.stringify(state));
-    showToast('Relatorio salvo localmente.', 'success');
+    showToast('Relatório salvo localmente.', 'success');
   };
 
   return (
@@ -264,7 +264,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   >
                     <option value="campaign">Campanha</option>
                     <option value="group">Grupo</option>
-                    <option value="ad">Anuncio</option>
+                    <option value="ad">Anúncio</option>
                   </Select>
                   <Input
                     value={state.search}
@@ -277,7 +277,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
               <div>
                 <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Attribution window</p>
                 <Select value="7d">
-                  <option value="7d">7 dias apos clique</option>
+                  <option value="7d">7 dias após clique</option>
                 </Select>
               </div>
             </div>
@@ -319,7 +319,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 </div>
                 <div className="p-5">
                   <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected dimensions</p>
-                  <p className="text-[12px] text-slate-400">Seu relatorio vai baixar nesta ordem de coluna.</p>
+                  <p className="text-[12px] text-slate-400">Seu relatório vai baixar nesta ordem de coluna.</p>
                   <div className="mt-4 space-y-2">
                     {selectedDimensionItems.map((item) => (
                       <button
@@ -342,7 +342,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
               <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
                   <h2 className="text-[17px] font-bold text-[#132f40]">Metrics</h2>
-                  <p className="text-[12px] text-slate-400">Selecione as metricas para incluir no export.</p>
+                  <p className="text-[12px] text-slate-400">Selecione as métricas para incluir no export.</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setState((current) => ({ ...current, selectedMetrics: defaultReportMetrics, selectedDimensions: defaultReportDimensions }))}>
                   Select All
@@ -373,7 +373,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 </div>
                 <div className="p-5">
                   <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected metrics</p>
-                  <p className="text-[12px] text-slate-400">Seu relatorio vai baixar nesta ordem de coluna.</p>
+                  <p className="text-[12px] text-slate-400">Seu relatório vai baixar nesta ordem de coluna.</p>
                   <div className="mt-4 space-y-2">
                     {selectedMetricItems.map((item) => (
                       <button
@@ -398,12 +398,12 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
               <div>
                 <p className="text-[16px] font-bold text-[#132f40]">Pronto para gerar?</p>
                 <p className="text-[12px] text-slate-400">
-                  {selectedMetricItems.length} metricas, {selectedDimensionItems.length} dimensoes e {filteredRows.length} campanhas no filtro
+                  {selectedMetricItems.length} métricas, {selectedDimensionItems.length} dimensões e {filteredRows.length} campanhas no filtro
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" iconLeft={<Save size={16} />} onClick={saveReport}>
-                  Salvar Relatorio
+                  Salvar Relatório
                 </Button>
                 <Button iconLeft={<Download size={16} />} onClick={() => void downloadReport()} loading={exporting}>
                   Run report

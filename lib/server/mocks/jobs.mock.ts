@@ -59,7 +59,7 @@ export const MOCK_JOBS: MockJobRecord[] = [
     title: 'Motorista de entregas',
     company: 'Sabor Brasil Mercado',
     description: 'Entregas locais de segunda a sexta, veículo próprio necessário, ajuda de combustível inclusa.',
-    employmentType: 'Meio periodo',
+    employmentType: 'Meio período',
     locationLabel: 'Somerville, MA',
     countryCode: 'US',
     regionKey: 'boston-ma',

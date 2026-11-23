@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
   const itemScope = item as unknown as { regionKey?: string | null; createdById?: string | null } | null;
   if (!item || isOutsideViewerRegion(session, { regionKey: itemScope?.regionKey, ownerId: itemScope?.createdById })) {
-    return NextResponse.json({ error: 'Anuncio nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Anúncio não encontrado.' }, { status: 404 });
   }
 
   return NextResponse.json({ item });
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   if (parsed.data.regionKey) {
     const region = await findRegionByKey(parsed.data.regionKey, { activeOnly: true });
     if (!region) {
-      return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Selecione uma região valida.' }, { status: 400 });
     }
   }
 
@@ -70,12 +70,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   if (!item) {
     return NextResponse.json(
-      { error: 'Voce nao tem permissao para editar este anuncio.' },
+      { error: 'Você não tem permissão para editar este anúncio.' },
       { status: 403 },
     );
   }
 
-  return NextResponse.json({ item, message: 'Anuncio atualizado.' });
+  return NextResponse.json({ item, message: 'Anúncio atualizado.' });
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
@@ -95,10 +95,10 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 
   if (!removed) {
     return NextResponse.json(
-      { error: 'Voce nao tem permissao para excluir este anuncio.' },
+      { error: 'Você não tem permissão para excluir este anúncio.' },
       { status: 403 },
     );
   }
 
-  return NextResponse.json({ message: 'Anuncio removido.' });
+  return NextResponse.json({ message: 'Anúncio removido.' });
 }

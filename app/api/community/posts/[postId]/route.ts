@@ -22,7 +22,7 @@ export async function PUT(request: Request, context: RouteContext) {
   const existingPost = permissions?.post;
 
   if (!existingPost) {
-    return NextResponse.json({ error: 'Publicacao nao encontrada.' }, { status: 404 });
+    return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
   }
 
   if (!permissions.canView) {
@@ -38,7 +38,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos da publicacao.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos da publicação.' },
       { status: 400 },
     );
   }
@@ -59,7 +59,7 @@ export async function PUT(request: Request, context: RouteContext) {
     },
   });
 
-  return NextResponse.json({ post: updatedPost, message: 'Publicacao atualizada.' });
+  return NextResponse.json({ post: updatedPost, message: 'Publicação atualizada.' });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
@@ -74,7 +74,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const existingPost = permissions?.post;
 
   if (!existingPost) {
-    return NextResponse.json({ error: 'Publicacao nao encontrada.' }, { status: 404 });
+    return NextResponse.json({ error: 'Publicação não encontrada.' }, { status: 404 });
   }
 
   if (!permissions?.canManage) {
@@ -85,5 +85,5 @@ export async function DELETE(_request: Request, context: RouteContext) {
     where: { id: existingPost.id },
   });
 
-  return NextResponse.json({ message: 'Publicacao removida.' });
+  return NextResponse.json({ message: 'Publicação removida.' });
 }

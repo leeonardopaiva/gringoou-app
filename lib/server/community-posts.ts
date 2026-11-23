@@ -116,7 +116,7 @@ export async function getCommunityPostsPage({
             image: post.businessAuthor.imageUrl,
             locationLabel: post.businessAuthor.locationLabel,
           }
-        : { ...post.author, name: post.author.name || 'Usuario da comunidade' };
+        : { ...post.author, name: post.author.name || 'Usuário da comunidade' };
 
       return {
         id: post.id,
@@ -139,8 +139,8 @@ export async function getCommunityPostsPage({
             id: comment.id,
             content: comment.content,
             createdAt: comment.createdAt.toISOString(),
-            author: { ...comment.author, name: comment.author.name || 'Usuario da comunidade' },
-            replies: comment.replies.map((reply) => ({ id: reply.id, parentId: comment.id, content: reply.content, createdAt: reply.createdAt.toISOString(), author: { ...reply.author, name: reply.author.name || 'Usuario da comunidade' }, canEdit: isAdmin || canManageGroup || session?.user?.id === reply.authorId, canDelete: isAdmin || canManageGroup || session?.user?.id === reply.authorId })),
+            author: { ...comment.author, name: comment.author.name || 'Usuário da comunidade' },
+            replies: comment.replies.map((reply) => ({ id: reply.id, parentId: comment.id, content: reply.content, createdAt: reply.createdAt.toISOString(), author: { ...reply.author, name: reply.author.name || 'Usuário da comunidade' }, canEdit: isAdmin || canManageGroup || session?.user?.id === reply.authorId, canDelete: isAdmin || canManageGroup || session?.user?.id === reply.authorId })),
             canEdit: canManageComment,
             canDelete: canManageComment,
           };
@@ -150,7 +150,7 @@ export async function getCommunityPostsPage({
         viewerHasLiked: Boolean(session?.user?.id && post.reactions.some((reaction) => reaction.authorId === session.user.id)),
         likedBy: post.reactions.slice(0, LIKERS_PREVIEW_LIMIT).map((reaction) => ({
           id: reaction.author.id,
-          name: reaction.author.name || 'Usuario da comunidade',
+          name: reaction.author.name || 'Usuário da comunidade',
           username: reaction.author.username,
           image: reaction.author.image,
         })),

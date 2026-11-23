@@ -209,7 +209,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-950">
           <iframe
             src={youtubeEmbedUrl}
-            title={`Video externo ${postId}`}
+            title={`Vídeo externo ${postId}`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="aspect-video w-full"
@@ -274,7 +274,7 @@ const Editor: React.FC<EditorProps> = ({
       onChange={onImageChange}
       folder="community" cropAspect={4 / 3}
       placeholder="Link da imagem do post"
-      hint="Atualize a imagem da publicacao quando precisar."
+      hint="Atualize a imagem da publicação quando precisar."
     />
     <input
       type="url"
@@ -285,7 +285,7 @@ const Editor: React.FC<EditorProps> = ({
     />
     <div className="flex gap-2">
       <Button type="button" onClick={onSave} disabled={saving} loading={saving} fullWidth size="sm">
-        {saving ? 'Salvando...' : 'Salvar publicacao'}
+        {saving ? 'Salvando...' : 'Salvar publicação'}
       </Button>
       <Button type="button" onClick={onCancel} disabled={saving} variant="ghost" size="sm">
         Cancelar
@@ -402,7 +402,7 @@ const CommentComposer: React.FC<CommentComposerProps> = ({
   onKeyDown,
 }) => (
   <div className="flex items-center gap-2">
-    <MentionInput value={value} onChange={onChange} onKeyDown={onKeyDown} placeholder="Escreva um comentario... (use @ para marcar)" />
+    <MentionInput value={value} onChange={onChange} onKeyDown={onKeyDown} placeholder="Escreva um comentário... (use @ para marcar)" />
     <Button type="button" onClick={onSubmit} size="xs">
       Responder
     </Button>

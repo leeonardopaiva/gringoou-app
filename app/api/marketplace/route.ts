@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Cadastros demais em pouco tempo. Aguarde antes de publicar outro anuncio.' },
+      { error: 'Cadastros demais em pouco tempo. Aguarde antes de publicar outro anúncio.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   const region = await findRegionByKey(parsed.data.regionKey, { activeOnly: true });
   if (!region) {
-    return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Selecione uma região valida.' }, { status: 400 });
   }
 
   const item = await marketplaceUseCases.createMarketplace({
@@ -103,6 +103,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     item,
-    message: 'Anuncio enviado para aprovacao.',
+    message: 'Anúncio enviado para aprovação.',
   });
 }

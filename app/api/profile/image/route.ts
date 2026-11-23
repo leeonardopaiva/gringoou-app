@@ -20,7 +20,7 @@ export async function PUT(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitas alteracoes de imagem em pouco tempo.' },
+      { error: 'Muitas alterações de imagem em pouco tempo.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -30,7 +30,7 @@ export async function PUT(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Imagem invalida.' },
+      { error: parsed.error.issues[0]?.message ?? 'Imagem inválida.' },
       { status: 400 },
     );
   }

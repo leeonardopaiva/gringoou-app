@@ -92,7 +92,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     type="button"
                     onClick={() => dismissToast(toast.id)}
                     className="rounded-full p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
-                    aria-label="Fechar notificacao"
+                    aria-label="Fechar notificação"
                   >
                     <X size={16} />
                   </button>

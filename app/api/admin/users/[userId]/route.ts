@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: RouteContext) {
   ]);
   return impact
     ? NextResponse.json({ impact, transferCandidates })
-    : NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+    : NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: RouteContext) {
@@ -54,7 +54,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do usuario.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do usuário.' },
       { status: 400 },
     );
   }
@@ -69,12 +69,12 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!targetUser) {
-    return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
   }
 
   if (userId === session.user.id && parsed.data.role !== 'ADMIN') {
     return NextResponse.json(
-      { error: 'Voce nao pode remover sua propria permissao de administrador.' },
+      { error: 'Você não pode remover sua própria permissão de administrador.' },
       { status: 400 },
     );
   }
@@ -88,7 +88,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     if (adminCount <= 1) {
       return NextResponse.json(
-        { error: 'Nao e permitido rebaixar o ultimo administrador da plataforma.' },
+        { error: 'Não é permitido rebaixar o último administrador da plataforma.' },
         { status: 400 },
       );
     }
@@ -97,7 +97,7 @@ export async function PUT(request: Request, context: RouteContext) {
   const region = await findRegionByKey(parsed.data.regionKey);
 
   if (!region) {
-    return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
   }
 
   const usernameValidation = validateUsernameValue(parsed.data.username);
@@ -119,7 +119,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (existingUser) {
-    return NextResponse.json({ error: 'Esse nome publico ja esta em uso.' }, { status: 409 });
+    return NextResponse.json({ error: 'Esse nome público já está em uso.' }, { status: 409 });
   }
 
   try {
@@ -158,7 +158,7 @@ export async function PUT(request: Request, context: RouteContext) {
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2025'
     ) {
-      return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
     }
 
     if (
@@ -166,7 +166,7 @@ export async function PUT(request: Request, context: RouteContext) {
       error.code === 'P2002'
     ) {
       return NextResponse.json(
-        { error: 'Email ou nome publico ja esta em uso.' },
+        { error: 'Email ou nome público já está em uso.' },
         { status: 409 },
       );
     }
@@ -190,7 +190,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   if (userId === session.user.id) {
     return NextResponse.json(
-      { error: 'Voce nao pode excluir a propria conta de administrador.' },
+      { error: 'Você não pode excluir a própria conta de administrador.' },
       { status: 400 },
     );
   }
@@ -204,7 +204,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   });
 
   if (!targetUser) {
-    return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
   }
 
   if (targetUser.role === 'ADMIN') {
@@ -216,7 +216,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (adminCount <= 1) {
       return NextResponse.json(
-        { error: 'Nao e permitido excluir o ultimo administrador da plataforma.' },
+        { error: 'Não é permitido excluir o último administrador da plataforma.' },
         { status: 400 },
       );
     }
@@ -224,13 +224,13 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   const parsed = deleteUserSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Revise a confirmacao e as opcoes de exclusao.' }, { status: 400 });
+    return NextResponse.json({ error: 'Revise a confirmação e as opções de exclusão.' }, { status: 400 });
   }
 
   const impact = await getUserDeletionImpact(userId);
-  if (!impact) return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+  if (!impact) return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
   if (parsed.data.confirmation !== impact.confirmationValue) {
-    return NextResponse.json({ error: 'A confirmacao digitada nao corresponde ao usuario.' }, { status: 400 });
+    return NextResponse.json({ error: 'A confirmação digitada não corresponde ao usuário.' }, { status: 400 });
   }
 
   try {
@@ -251,12 +251,12 @@ export async function DELETE(request: Request, context: RouteContext) {
   } catch (error) {
     if (error instanceof Error) {
       const errors: Record<string, { message: string; status: number }> = {
-        USER_NOT_FOUND: { message: 'Usuario nao encontrado.', status: 404 },
-        INVALID_TRANSFER_TARGET: { message: 'Selecione outro usuario para receber os dados.', status: 400 },
-        TRANSFER_TARGET_NOT_FOUND: { message: 'O usuario selecionado para transferencia nao existe.', status: 400 },
-        TRANSFER_ACCOUNT_LIMIT: { message: 'O usuario selecionado ultrapassaria o limite de contas Ads. Escolha outro responsavel.', status: 409 },
-        AD_ACCOUNT_TRANSFER_REQUIRED: { message: 'A conta Ads ficaria sem responsavel. Selecione um usuario para transferencia.', status: 409 },
-        DATA_LOSS_ACKNOWLEDGEMENT_REQUIRED: { message: 'Confirme que os conteudos vinculados podem ser excluidos.', status: 409 },
+        USER_NOT_FOUND: { message: 'Usuário não encontrado.', status: 404 },
+        INVALID_TRANSFER_TARGET: { message: 'Selecione outro usuário para receber os dados.', status: 400 },
+        TRANSFER_TARGET_NOT_FOUND: { message: 'O usuário selecionado para transferência não existe.', status: 400 },
+        TRANSFER_ACCOUNT_LIMIT: { message: 'O usuário selecionado ultrapassaria o limite de contas Ads. Escolha outro responsável.', status: 409 },
+        AD_ACCOUNT_TRANSFER_REQUIRED: { message: 'A conta Ads ficaria sem responsável. Selecione um usuário para transferência.', status: 409 },
+        DATA_LOSS_ACKNOWLEDGEMENT_REQUIRED: { message: 'Confirme que os conteúdos vinculados podem ser excluidos.', status: 409 },
       };
       const mapped = errors[error.message];
       if (mapped) return NextResponse.json({ error: mapped.message }, { status: mapped.status });
@@ -265,7 +265,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2025'
     ) {
-      return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
     }
 
     throw error;

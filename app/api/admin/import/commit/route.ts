@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   const draft = body?.draft as AdminImportDraft | undefined;
 
   if (!draft || !Array.isArray(draft.regions) || !Array.isArray(draft.businesses) || !Array.isArray(draft.events)) {
-    return NextResponse.json({ error: 'Previa de importacao invalida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Previa de importação inválida.' }, { status: 400 });
   }
 
   try {
@@ -23,13 +23,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       result,
-      message: 'Importacao concluida.',
+      message: 'Importação concluída.',
     });
   } catch (error) {
     console.error('Failed to commit admin import:', error);
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Nao foi possivel concluir a importacao.' },
+      { error: error instanceof Error ? error.message : 'Não foi possível concluir a importação.' },
       { status: 400 },
     );
   }

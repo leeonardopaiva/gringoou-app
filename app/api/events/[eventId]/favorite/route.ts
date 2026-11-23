@@ -42,7 +42,7 @@ export async function POST(_request: Request, context: RouteContext) {
   const event = await loadEventForFavorite(eventId);
 
   if (!event) {
-    return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
   }
 
   const isBusinessMember =
@@ -74,7 +74,7 @@ export async function POST(_request: Request, context: RouteContext) {
     isBusinessMember;
 
   if (!canView) {
-    return NextResponse.json({ error: 'Evento indisponivel.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento indisponível.' }, { status: 404 });
   }
 
   await prisma.eventFavorite.upsert({
@@ -110,7 +110,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const event = await loadEventForFavorite(eventId);
 
   if (!event) {
-    return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
   }
 
   await prisma.eventFavorite.deleteMany({

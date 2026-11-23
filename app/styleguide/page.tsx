@@ -176,7 +176,7 @@ import { Input, Textarea, Select, Checkbox, Toggle } from '@/components/ui/Input
           <div className="space-y-4">
             <div>
               <p className="mb-1.5 text-caption font-bold text-slate-500">Progresso</p>
-              <ProgressBar value={65} label="Conclusao do perfil" />
+              <ProgressBar value={65} label="Conclusão do perfil" />
             </div>
             <div>
               <p className="mb-1.5 text-caption font-bold text-slate-500">Autocomplete</p>
@@ -284,7 +284,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 
 <Alert tone="info" title="Informação" description="Uma atualização está disponível." onClose={fn} />
 <Alert tone="success" title="Sucesso" description="Seu perfil foi atualizado." onClose={fn} />
-<Alert tone="atencao" title="Atenção" description="Seu plano vence em 3 dias." onClose={fn} />
+<Alert tone="atenção" title="Atenção" description="Seu plano vence em 3 dias." onClose={fn} />
 <Alert tone="erro" title="Erro" description="Não foi possível processar o pagamento." onClose={fn} />
 
 const { showToast } = useToast();
@@ -597,7 +597,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 
       <Section
         index="11"
-        eyebrow="Conteudo social"
+        eyebrow="Conteúdo social"
         title="Feed cards & content columns"
         code={`
 import { ContentColumn, FeedCard, CharacterCounter } from '@/components/ui';
@@ -629,7 +629,7 @@ import { ContentColumn, FeedCard, CharacterCounter } from '@/components/ui';
                 subtitle="Boston, MA"
                 badge={<FeedCard.SponsoredBadge />}
               />
-              <FeedCard.Content text="Produtos brasileiros perto de voce, atendimento em portugues e entrega na regiao. Passe para conhecer as novidades desta semana." />
+              <FeedCard.Content text="Produtos brasileiros perto de você, atendimento em português e entrega na região. Passe para conhecer as novidades desta semana." />
               <FeedCard.Media src="https://picsum.photos/seed/gringoou-feed-card/900/675" alt="Produtos do mercado" />
               <FeedCard.Headline>Sabores do Brasil perto da sua comunidade</FeedCard.Headline>
               <div className="px-5 pb-4 pt-3">

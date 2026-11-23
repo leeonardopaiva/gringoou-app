@@ -146,7 +146,7 @@ export const sendTransactionalEmail = async ({
     const failedRecipients = result.rejected.concat(result.pending).filter(Boolean);
 
     if (failedRecipients.length > 0) {
-      throw new Error(`Nao foi possivel entregar o email para ${failedRecipients.join(', ')}`);
+      throw new Error(`Não foi possível entregar o email para ${failedRecipients.join(', ')}`);
     }
 
     return;
@@ -159,7 +159,7 @@ export const sendTransactionalEmail = async ({
   }
 
   throw new Error(
-    'Envio de email indisponivel. Configure SMTP ou habilite DEV_AUTH_ENABLED localmente.',
+    'Envio de email indisponível. Configure SMTP ou habilite DEV_AUTH_ENABLED localmente.',
   );
 };
 

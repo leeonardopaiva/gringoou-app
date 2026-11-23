@@ -21,10 +21,10 @@ export async function PUT(request: Request, context: Context) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
-  if (!access) return NextResponse.json({ error: 'Comentario nao encontrado.' }, { status: 404 });
+  if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
   if (!access.allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const parsed = commentSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentario invalido.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentário inválido.' }, { status: 400 });
   const comment = await prisma.jobComment.update({ where: { id: commentId }, data: { content: parsed.data.content }, include: { author: { select: authorSelect } } });
   return NextResponse.json({ comment: { ...comment, canEdit: true, canDelete: true, canHide: access.manage } });
 }
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, context: Context) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
-  if (!access) return NextResponse.json({ error: 'Comentario nao encontrado.' }, { status: 404 });
+  if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
   if (!access.manage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const body = await request.json().catch(() => ({}));
   const hide = body.action !== 'unhide';
@@ -47,8 +47,8 @@ export async function DELETE(_request: Request, context: Context) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
-  if (!access) return NextResponse.json({ error: 'Comentario nao encontrado.' }, { status: 404 });
+  if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
   if (!access.allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   await prisma.jobComment.delete({ where: { id: commentId } });
-  return NextResponse.json({ message: 'Comentario removido.' });
+  return NextResponse.json({ message: 'Comentário removido.' });
 }

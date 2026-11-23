@@ -11,7 +11,7 @@ export function PhoneVerificationGate({ onVerified }: { onVerified: () => void }
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold tracking-tight text-[#0f2b63]">Confirme seu telefone</h1>
           <p className="text-sm leading-6 text-[#4a5672]">
-            Para continuar, confirme o seu numero de telefone com um codigo enviado por SMS.
+            Para continuar, confirme o seu número de telefone com um código enviado por SMS.
           </p>
         </div>
         <VerifyPhoneForm onVerified={onVerified} />

@@ -56,7 +56,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
             Galeria de imagens
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            {hint || `Adicione ate ${maxItems} imagens extras para destacar o negocio.`}
+            {hint || `Adicione até ${maxItems} imagens extras para destacar o negócio.`}
           </p>
         </div>
         <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500">

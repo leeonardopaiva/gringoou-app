@@ -38,8 +38,8 @@ const VISIBLE_SUGGESTIONS_COUNT = 3;
 
 const loadingSteps = [
   'Entendendo sua pergunta',
-  'Buscando em negocios, eventos e publicacoes',
-  'Cruzando recomendacoes da comunidade',
+  'Buscando em negócios, eventos e publicações',
+  'Cruzando recomendações da comunidade',
   'Organizando a resposta',
 ];
 
@@ -331,7 +331,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                     </span>
                     <div className="min-w-0">
                       <p className="font-extrabold text-slate-900">{loadingSteps[loadingStepIndex]}</p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">Resumo gerado a partir do que a comunidade ja publicou.</p>
+                      <p className="mt-0.5 text-xs font-medium text-slate-500">Resumo gerado a partir do que a comunidade já publicou.</p>
                     </div>
                   </div>
                   {loadingPreview.length ? (

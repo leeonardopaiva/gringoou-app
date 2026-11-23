@@ -164,7 +164,7 @@ const Profile: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.user) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar seu perfil.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar seu perfil.');
         }
 
         if (!ignore) {
@@ -219,7 +219,7 @@ const Profile: React.FC<{
       } catch (error) {
         console.error('Failed to load profile:', error);
         if (!ignore) {
-          showToast('Nao foi possivel carregar todos os dados do perfil.', 'error');
+          showToast('Não foi possível carregar todos os dados do perfil.', 'error');
         }
       } finally {
         if (!ignore) {
@@ -243,7 +243,7 @@ const Profile: React.FC<{
       void update();
       showToast('Seu email foi confirmado e atualizado com sucesso.', 'success');
     } else {
-      showToast('Nao foi possivel validar esse link de troca de email.', 'error');
+      showToast('Não foi possível validar esse link de troca de email.', 'error');
     }
 
     router.replace('/profile');
@@ -328,7 +328,7 @@ const Profile: React.FC<{
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar seu perfil.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar seu perfil.');
       const persistedProfile: Partial<ProfileState> = {
         name: payload?.user?.name || nextProfile.name,
         username: payload?.user?.username || normalizeUsernameInput(nextProfile.username),
@@ -366,7 +366,7 @@ const Profile: React.FC<{
       return true;
     } catch (error) {
       console.error('Failed to save profile:', error);
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel salvar o perfil.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível salvar o perfil.', 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -382,7 +382,7 @@ const Profile: React.FC<{
         body: JSON.stringify({ image: normalizeUrlFieldValue(value) || undefined }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar sua foto.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua foto.');
       const nextImage = payload?.user?.image || '';
       setProfile((current) => ({ ...current, image: nextImage }));
       setAvatarDraft(nextImage);
@@ -393,7 +393,7 @@ const Profile: React.FC<{
       return true;
     } catch (error) {
       console.error('Failed to update avatar:', error);
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar sua foto.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua foto.', 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -413,11 +413,11 @@ const Profile: React.FC<{
         body: JSON.stringify({ email: requestedEmail.trim() }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel iniciar a troca de email.');
-      showToast('Enviamos um link de confirmacao para o novo email.', 'success');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível iniciar a troca de email.');
+      showToast('Enviamos um link de confirmação para o novo email.', 'success');
     } catch (error) {
       console.error('Failed to request email change:', error);
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel iniciar a troca de email.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível iniciar a troca de email.', 'error');
     } finally {
       setRequestingEmailChange(false);
     }
@@ -425,7 +425,7 @@ const Profile: React.FC<{
 
   const saveRegion = async (regionKey: string = selectedRegionKey, quiet = false): Promise<boolean> => {
     if (!regionKey) {
-      showToast('Selecione uma regiao valida antes de salvar.', 'error');
+      showToast('Selecione uma região valida antes de salvar.', 'error');
       return false;
     }
     setSavingKey('region');
@@ -436,7 +436,7 @@ const Profile: React.FC<{
         body: JSON.stringify({ regionKey }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar sua regiao.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua região.');
       setProfile((current) => ({
         ...current,
         regionKey: payload?.user?.regionKey || regionKey,
@@ -444,11 +444,11 @@ const Profile: React.FC<{
       }));
       await update();
       setEditing((current) => ({ ...current, region: false }));
-      if (!quiet) showToast('Regiao atualizada com sucesso.', 'success');
+      if (!quiet) showToast('Região atualizada com sucesso.', 'success');
       return true;
     } catch (error) {
       console.error('Failed to save region:', error);
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel atualizar sua regiao.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua região.', 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -463,7 +463,7 @@ const Profile: React.FC<{
       return;
     }
     if (interestDrafts.length >= 8) {
-      showToast('Voce pode usar no maximo 8 interesses.', 'error');
+      showToast('Você pode usar no máximo 8 interesses.', 'error');
       return;
     }
     setInterestDrafts((current) => [...current, normalized]);
@@ -665,7 +665,7 @@ const Profile: React.FC<{
                   value={personaMode}
                   onChange={onPersonaModeChange}
                   personalSubtitle={`@${profile.username || 'defina-seu-nome'}`}
-                  professionalSubtitle={professionalIdentity ? `@${professionalIdentity.slug}` : 'Cadastre um negocio'}
+                  professionalSubtitle={professionalIdentity ? `@${professionalIdentity.slug}` : 'Cadastre um negócio'}
                   professionalDisabled={!professionalIdentity}
                 />
               ) : null}
@@ -710,7 +710,7 @@ const Profile: React.FC<{
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Informações pessoais</h3>
                     <div className="space-y-3">
                       <Input value={profileEditDraft.name} onChange={(name) => setProfileEditDraft((c) => c ? { ...c, name } : null)} placeholder="Nome completo" icon={<UserRound size={16} />} />
-                      <Input value={profileEditDraft.username} onChange={(username) => setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null)} placeholder="Nome publico" icon={<Globe size={16} />} />
+                      <Input value={profileEditDraft.username} onChange={(username) => setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null)} placeholder="Nome público" icon={<Globe size={16} />} />
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Input value={profileEditDraft.phone} onChange={(phone) => setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null)} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
                         <CityAutocomplete value={profileEditDraft.birthCity} scope="world" onChange={(birthCity) => setProfileEditDraft((c) => c ? { ...c, birthCity } : null)} placeholder="Cidade natal" />
@@ -720,7 +720,7 @@ const Profile: React.FC<{
                         <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={profileEditDraft.gender} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
                       </div>
                       <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={profileEditDraft.timeAbroad} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
-                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500 block">Sobre você</span><textarea rows={4} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre voce" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" /></label>
+                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500 block">Sobre você</span><textarea rows={4} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre você" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" /></label>
                     </div>
                   </div>
 
@@ -737,19 +737,19 @@ const Profile: React.FC<{
                             {interest}
                             <button type="button" onClick={() => setProfileEditDraft((c) => c ? { ...c, interests: c.interests.filter((i) => i !== interest) } : null)} className="rounded-full bg-slate-100 p-1 text-slate-500"><X size={12} /></button>
                           </span>
-                        )) : <p className="text-sm text-slate-500">Adicione ate 8 interesses.</p>}
+                        )) : <p className="text-sm text-slate-500">Adicione até 8 interesses.</p>}
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Galeria</h3>
-                    <ImageGalleryField value={profileEditDraft.galleryUrls} onChange={(galleryUrls) => setProfileEditDraft((c) => c ? { ...c, galleryUrls } : null)} folder="profiles" maxItems={6} hint="Adicione ate 6 fotos pessoais, do trabalho ou da comunidade." />
+                    <ImageGalleryField value={profileEditDraft.galleryUrls} onChange={(galleryUrls) => setProfileEditDraft((c) => c ? { ...c, galleryUrls } : null)} folder="profiles" maxItems={6} hint="Adicione até 6 fotos pessoais, do trabalho ou da comunidade." />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
-                    <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negocios e eventos priorizam esta regiao." />
+                    <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negócios e eventos priorizam esta região." />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
@@ -788,19 +788,19 @@ const Profile: React.FC<{
         <>
       <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="space-y-4">
-            <p className="text-base leading-7 text-slate-700">{profile.bio || 'Adicione uma frase sobre voce para personalizar seu perfil publico.'}</p>
+            <p className="text-base leading-7 text-slate-700">{profile.bio || 'Adicione uma frase sobre você para personalizar seu perfil público.'}</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Meta label="Email" value={profile.email || 'Nao informado'} icon={<Mail size={16} />} />
-              <Meta label="Telefone" value={profile.phone || 'Nao informado'} icon={<Phone size={16} />} />
+              <Meta label="Email" value={profile.email || 'Não informado'} icon={<Mail size={16} />} />
+              <Meta label="Telefone" value={profile.phone || 'Não informado'} icon={<Phone size={16} />} />
             </div>
-            <Meta label="Regiao atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
-            <Meta label="URL publica" value={publicProfileUrl} icon={<Globe size={16} />} />
+            <Meta label="Região atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
+            <Meta label="URL pública" value={publicProfileUrl} icon={<Globe size={16} />} />
           </div>
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Interesses" description="Mostre os assuntos, servicos e temas que representam voce." editing={false} onToggle={openEditProfileModal} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Interesses" description="Mostre os assuntos, serviços e temas que representam você." editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="flex flex-wrap gap-2">
-            {profile.interests.length > 0 ? profile.interests.map((interest) => <span key={interest} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">{interest}</span>) : <p className="text-sm text-slate-500">Ainda nao ha interesses cadastrados para este perfil.</p>}
+            {profile.interests.length > 0 ? profile.interests.map((interest) => <span key={interest} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">{interest}</span>) : <p className="text-sm text-slate-500">Ainda não há interesses cadastrados para este perfil.</p>}
           </div>
       </Section>
 
@@ -818,11 +818,11 @@ const Profile: React.FC<{
         )}
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Indicacoes" description="Compartilhe seu link publico e acompanhe quantos cadastros chegaram por ele." editing={false} onToggle={() => undefined} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Indicações" description="Compartilhe seu link público e acompanhe quantos cadastros chegaram por ele." editing={false} onToggle={() => undefined} hideAction>
         <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
           <p className={`text-lg font-bold ${sectionAccentClass}`}>{referralSummary.registrationCount} {referralSummary.registrationCount === 1 ? 'cadastro confirmado' : 'cadastros confirmados'}</p>
           <p className="mt-2 break-all text-sm text-slate-500">{withUtm('referral_invite', referralUrl)}</p>
-          <button type="button" onClick={() => navigator.clipboard.writeText(withUtm('referral_invite', referralUrl)).then(() => showToast('Link de indicacao copiado.', 'success')).catch(() => showToast(withUtm('referral_invite', referralUrl), 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
+          <button type="button" onClick={() => navigator.clipboard.writeText(withUtm('referral_invite', referralUrl)).then(() => showToast('Link de indicação copiado.', 'success')).catch(() => showToast(withUtm('referral_invite', referralUrl), 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
             <Copy size={14} />
             Copiar
           </button>

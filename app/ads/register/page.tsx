@@ -30,13 +30,13 @@ export default function AdsRegisterPage() {
       if (payload?.code === 'ACCOUNT_ALREADY_EXISTS') {
         throw new Error(payload?.error ?? 'Esse e-mail já está cadastrado.');
       }
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel criar a conta.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível criar a conta.');
       const result = await signIn('credentials', { email: form.email, password: form.password, redirect: false });
-      if (result?.error) throw new Error('Conta criada, mas nao foi possivel iniciar a sessao.');
+      if (result?.error) throw new Error('Conta criada, mas não foi possível iniciar a sessão.');
       router.replace('/ads/onboarding');
       router.refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Nao foi possivel criar a conta.');
+      setError(reason instanceof Error ? reason.message : 'Não foi possível criar a conta.');
     } finally {
       setLoading(false);
     }

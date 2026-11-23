@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Voce ja enviou muitas sugestoes hoje. Tente novamente amanha.' },
+      { error: 'Você já enviou muitas sugestões hoje. Tente novamente amanha.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos para a sugestao.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos para a sugestão.' },
       { status: 400 },
     );
   }
@@ -51,6 +51,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     suggestion,
-    message: 'Sugestao enviada com sucesso.',
+    message: 'Sugestão enviada com sucesso.',
   });
 }

@@ -62,7 +62,7 @@ const normalizeRequestPayload = (value: unknown) => {
 export async function POST(request: Request) {
   if (!isOperationalFeatureEnabled('aiAssistant')) {
     return NextResponse.json(
-      { error: 'O assistente esta temporariamente pausado.' },
+      { error: 'O assistente está temporariamente pausado.' },
       { status: 503, headers: { 'Retry-After': '300' } },
     );
   }

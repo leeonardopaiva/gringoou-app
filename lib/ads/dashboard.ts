@@ -114,9 +114,9 @@ export function resolveAdsDateRange(range: string | null | undefined): AdsDateRa
     key,
     label:
       key === '7d'
-        ? 'Ultimos 7 dias'
+        ? 'Últimos 7 dias'
         : key === 'month'
-          ? 'Este mes'
+          ? 'Este mês'
           : 'Total',
     from,
     to,
@@ -334,7 +334,7 @@ export async function buildAdsReportData(userId: string, adAccountId?: string): 
   ]);
 
   return {
-    reportName: `Relatorio de anuncios ${new Date().toISOString().slice(0, 10)}`,
+    reportName: `Relatório de anúncios ${new Date().toISOString().slice(0, 10)}`,
     activeCampaigns: banners.map((banner) => ({
       id: banner.id,
       label: banner.headline || banner.name,
@@ -351,9 +351,9 @@ export async function buildAdsReportData(userId: string, adAccountId?: string): 
 export const reportDimensionCatalog = [
   { id: 'campaign_name', label: 'Nome da Campanha', accessor: (row: AdsOverviewRow) => row.label },
   { id: 'campaign_id', label: 'ID da Campanha', accessor: (row: AdsOverviewRow) => row.id },
-  { id: 'group_name', label: 'Nome do Grupo', accessor: () => 'Grupo padrao' },
+  { id: 'group_name', label: 'Nome do Grupo', accessor: () => 'Grupo padrão' },
   { id: 'group_id', label: 'ID do Grupo', accessor: () => 'default' },
-  { id: 'ad_name', label: 'Nome do Anuncio', accessor: (row: AdsOverviewRow) => row.label },
+  { id: 'ad_name', label: 'Nome do Anúncio', accessor: (row: AdsOverviewRow) => row.label },
   { id: 'objective', label: 'Objetivo', accessor: (row: AdsOverviewRow) => row.goal ?? 'Sem objetivo' },
   {
     id: 'platform',
@@ -390,7 +390,7 @@ export const reportMetricCatalog = [
   },
   {
     id: 'billable_spend',
-    label: 'Gasto Faturavel',
+    label: 'Gasto Faturável',
     accessor: (row: AdsOverviewRow) => formatUsdWithCents(row.contractAmountCents ?? row.spendCents),
   },
   {
@@ -400,7 +400,7 @@ export const reportMetricCatalog = [
   },
   {
     id: 'conversions',
-    label: 'Conversoes',
+    label: 'Conversões',
     accessor: (row: AdsOverviewRow) => row.conversions.toString(),
   },
   {

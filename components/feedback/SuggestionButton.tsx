@@ -81,7 +81,7 @@ const SuggestionButton: React.FC = () => {
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possível enviar sua sugestão.', 'error');
+        showToast(payload?.error ?? 'Não foi possível enviar sua sugestão.', 'error');
         return;
       }
 
@@ -116,18 +116,18 @@ const SuggestionButton: React.FC = () => {
               Cancelar
             </Button>
             <Button variant="primary" fullWidth loading={submitting} onClick={() => void submitSuggestion()}>
-              Enviar sugestao
+              Enviar sugestão
             </Button>
           </>
         }
       >
         <div className="theme-soft-surface inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
           <Lightbulb size={14} />
-          Sugestao
+          Sugestão
         </div>
-        <h2 className="mt-3 text-h3 font-bold text-slate-900">Envie suas sugestoes</h2>
+        <h2 className="mt-3 text-h3 font-bold text-slate-900">Envie suas sugestões</h2>
         <p className="mt-2 text-body-sm leading-relaxed text-slate-500">
-          Escolha o tipo de sugestao e descreva o que faria diferenca para voce na comunidade.
+          Escolha o tipo de sugestão e descreva o que faria diferenca para você na comunidade.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">

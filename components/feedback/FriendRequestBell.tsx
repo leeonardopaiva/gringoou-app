@@ -64,7 +64,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await friendResponse.json().catch(() => null);
 
       if (!friendResponse.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel carregar solicitacoes.');
+        throw new Error(payload?.error ?? 'Não foi possível carregar solicitações.');
       }
 
       setRequests(Array.isArray(payload?.requests) ? payload.requests : []);
@@ -94,13 +94,13 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel revisar a publicacao.');
+        throw new Error(payload?.error ?? 'Não foi possível revisar a publicação.');
       }
 
       setPendingPosts((current) => current.filter((post) => post.id !== postId));
-      showToast(action === 'approve' ? 'Publicacao aprovada.' : 'Publicacao recusada.', 'success');
+      showToast(action === 'approve' ? 'Publicação aprovada.' : 'Publicação recusada.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel revisar a publicacao.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível revisar a publicação.', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -120,13 +120,13 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel responder a mensagem.');
+        throw new Error(payload?.error ?? 'Não foi possível responder a mensagem.');
       }
 
       setMessageRequests((current) => current.filter((request) => request.id !== conversationId));
       showToast(payload?.message ?? 'Pronto.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel responder a mensagem.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível responder a mensagem.', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -151,13 +151,13 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel responder a solicitacao.');
+        throw new Error(payload?.error ?? 'Não foi possível responder a solicitação.');
       }
 
       setRequests((current) => current.filter((request) => request.id !== requestId));
-      showToast(payload?.message ?? 'Solicitacao respondida.', 'success');
+      showToast(payload?.message ?? 'Solicitação respondida.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Nao foi possivel responder a solicitacao.', 'error');
+      showToast(error instanceof Error ? error.message : 'Não foi possível responder a solicitação.', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -246,7 +246,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                   );
                 })}
                 {requests.map((request) => {
-                  const requesterName = request.requester.name || 'Usuario da comunidade';
+                  const requesterName = request.requester.name || 'Usuário da comunidade';
 
                   return (
                     <li key={request.id} className="flex items-center gap-3 px-4 py-3.5">
@@ -285,7 +285,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                   );
                 })}
                 {pendingPosts.map((post) => {
-                  const authorName = post.author.name || 'Usuario da comunidade';
+                  const authorName = post.author.name || 'Usuário da comunidade';
 
                   return (
                     <li key={post.id} className="px-4 py-3.5">

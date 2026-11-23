@@ -10,11 +10,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
 
   const parsed = adCreativeStepSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Criativo invalido.' }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Criativo inválido.' }, { status: 400 });
   }
 
   const { id } = await context.params;
@@ -38,7 +38,7 @@ export async function POST(request: Request, context: RouteContext) {
   });
   const role = campaign?.adAccount?.users[0]?.role;
   if (!campaign || !role || !canEditAdDraft(role)) {
-    return NextResponse.json({ error: 'Campanha rejeitada nao encontrada ou sem permissao.' }, { status: 403 });
+    return NextResponse.json({ error: 'Campanha rejeitada não encontrada ou sem permissão.' }, { status: 403 });
   }
   if (!campaign.adAccount) {
     return NextResponse.json({ error: 'Conta Ads não encontrada.' }, { status: 409 });
@@ -66,7 +66,7 @@ export async function POST(request: Request, context: RouteContext) {
     },
   });
   if (result.count === 0) {
-    return NextResponse.json({ error: 'A campanha mudou de status. Atualize a pagina.' }, { status: 409 });
+    return NextResponse.json({ error: 'A campanha mudou de status. Atualize a página.' }, { status: 409 });
   }
 
   return NextResponse.json({ ok: true, bannerId: id });

@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitas trocas de regiao em pouco tempo.' },
+      { error: 'Muitas trocas de região em pouco tempo.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }

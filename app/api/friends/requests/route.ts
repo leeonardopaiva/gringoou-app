@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' },
       { status: 400 },
     );
   }
@@ -75,11 +75,11 @@ export async function POST(request: Request) {
   });
 
   if (!recipient) {
-    return NextResponse.json({ error: 'Perfil nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Perfil não encontrado.' }, { status: 404 });
   }
 
   if (recipient.id === session.user.id) {
-    return NextResponse.json({ error: 'Voce nao pode adicionar seu proprio perfil.' }, { status: 400 });
+    return NextResponse.json({ error: 'Você não pode adicionar seu próprio perfil.' }, { status: 400 });
   }
 
   const existingAccepted = await prisma.friendRequest.findFirst({
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       status: 'accepted',
       requestId: existingAccepted.id,
-      message: 'Voces ja estao conectados.',
+      message: 'Vocês já estão conectados.',
     });
   }
 
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       status: 'accepted',
       requestId: accepted.id,
-      message: 'Conexao aceita.',
+      message: 'Conexão aceita.',
     });
   }
 
@@ -152,6 +152,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     status: outgoing.status.toLowerCase(),
     requestId: outgoing.id,
-    message: 'Solicitacao enviada.',
+    message: 'Solicitação enviada.',
   });
 }

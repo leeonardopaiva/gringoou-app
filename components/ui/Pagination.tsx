@@ -36,7 +36,7 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChan
       onClick={() => onChange(Math.max(1, page - 1))}
       disabled={page <= 1}
       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-      aria-label="Pagina anterior"
+      aria-label="Página anterior"
     >
       <ChevronLeft size={16} />
     </button>
@@ -66,7 +66,7 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChan
       onClick={() => onChange(Math.min(totalPages, page + 1))}
       disabled={page >= totalPages}
       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-      aria-label="Proxima pagina"
+      aria-label="Próxima página"
     >
       <ChevronRight size={16} />
     </button>

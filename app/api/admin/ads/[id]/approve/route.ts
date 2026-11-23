@@ -23,10 +23,10 @@ export async function POST(_request: Request, context: RouteContext) {
     select: { id: true, plan: true, durationMonths: true },
   });
   if (!campaign) {
-    return NextResponse.json({ error: 'Campanha paga e pendente de revisao nao encontrada.' }, { status: 409 });
+    return NextResponse.json({ error: 'Campanha paga e pendente de revisão não encontrada.' }, { status: 409 });
   }
   if (!campaign.plan || !campaign.durationMonths || !(AD_DURATIONS as readonly number[]).includes(campaign.durationMonths)) {
-    return NextResponse.json({ error: 'Plano e vigencia da campanha sao invalidos.' }, { status: 409 });
+    return NextResponse.json({ error: 'Plano e vigência da campanha sao inválidos.' }, { status: 409 });
   }
 
   const startsAt = new Date();
@@ -53,7 +53,7 @@ export async function POST(_request: Request, context: RouteContext) {
     },
   });
   if (result.count === 0) {
-    return NextResponse.json({ error: 'A campanha ja foi revisada por outro administrador.' }, { status: 409 });
+    return NextResponse.json({ error: 'A campanha já foi revisada por outro administrador.' }, { status: 409 });
   }
 
   const banner = await prisma.banner.findUnique({

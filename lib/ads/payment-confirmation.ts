@@ -13,7 +13,7 @@ import { prisma } from '@/lib/prisma';
  */
 export const confirmStripePayment = async (intent: Stripe.PaymentIntent) => {
   if (intent.status !== 'succeeded') {
-    throw new Error(`Pagamento nao concluido (status: ${intent.status}).`);
+    throw new Error(`Pagamento não concluído (status: ${intent.status}).`);
   }
   const bannerId = intent.metadata.bannerId;
   if (!bannerId || intent.currency.toLowerCase() !== 'usd') {
@@ -88,8 +88,8 @@ export const syncCampaignPaymentDetailed = async (bannerId: string): Promise<Pay
       payments: { where: { provider: 'STRIPE' }, orderBy: { createdAt: 'desc' }, take: 1, select: { providerPaymentId: true, status: true } },
     },
   });
-  if (!banner) return { state: 'pending', detail: 'Campanha nao encontrada.' };
-  if (banner.paymentStatus === AdPaymentStatus.PAID) return { state: 'paid', detail: 'Ja confirmada.' };
+  if (!banner) return { state: 'pending', detail: 'Campanha não encontrada.' };
+  if (banner.paymentStatus === AdPaymentStatus.PAID) return { state: 'paid', detail: 'Já confirmada.' };
 
   const payment = banner.payments[0];
   if (!payment?.providerPaymentId) return { state: 'pending', detail: 'Nenhum pagamento Stripe registrado para esta campanha.' };

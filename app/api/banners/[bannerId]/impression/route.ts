@@ -14,7 +14,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const parsed = payloadSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: 'Impressao invalida.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: 'Impressão inválida.' }, { status: 400 });
   const { bannerId } = await context.params;
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1_000);
@@ -43,7 +43,7 @@ export async function POST(request: Request, context: RouteContext) {
       spentCents: true,
     },
   });
-  if (!banner) return NextResponse.json({ error: 'Campanha indisponivel.' }, { status: 404 });
+  if (!banner) return NextResponse.json({ error: 'Campanha indisponível.' }, { status: 404 });
 
   const isHomeBanner = banner.adAccountId === null;
   const validPlacement = isHomeBanner
@@ -55,7 +55,7 @@ export async function POST(request: Request, context: RouteContext) {
     (isHomeBanner || banner.paymentStatus === 'PAID');
 
   if (!validPlacement || !campaignIsEligible) {
-    return NextResponse.json({ error: 'Campanha indisponivel.' }, { status: 404 });
+    return NextResponse.json({ error: 'Campanha indisponível.' }, { status: 404 });
   }
 
   const [recentCount, duplicate] = await Promise.all([

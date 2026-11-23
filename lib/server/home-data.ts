@@ -53,7 +53,7 @@ export async function getHomeInitialData(regionKey?: string | null): Promise<Hom
       latestPost: post
         ? {
             id: post.id,
-            author: { ...post.author, name: post.author.name || 'Usuario da comunidade' },
+            author: { ...post.author, name: post.author.name || 'Usuário da comunidade' },
             content: post.content,
             createdAt: post.createdAt.toISOString(),
             locationLabel: post.locationLabel,

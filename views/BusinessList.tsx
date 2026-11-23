@@ -160,7 +160,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar negocios.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar negócios.');
         }
 
         if (!ignore) {
@@ -191,7 +191,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
     const nextErrors: FieldErrors<BusinessField> = {};
 
     if (!createForm.name.trim()) {
-      nextErrors.name = requiredFieldError('o nome do negocio');
+      nextErrors.name = requiredFieldError('o nome do negócio');
     }
 
     if (!createForm.phone.trim()) {
@@ -204,15 +204,15 @@ const BusinessList: React.FC<BusinessListProps> = ({
     }
 
     if (!createForm.address.trim()) {
-      nextErrors.address = requiredFieldError('o endereco');
+      nextErrors.address = requiredFieldError('o endereço');
     }
 
     if (!createForm.regionKey.trim()) {
-      nextErrors.regionKey = requiredFieldError('uma regiao');
+      nextErrors.regionKey = requiredFieldError('uma região');
     }
 
     if (!createForm.description.trim()) {
-      nextErrors.description = requiredFieldError('a descricao');
+      nextErrors.description = requiredFieldError('a descrição');
     }
 
     const websiteError = validateOptionalUrlField(createForm.website, 'O website');
@@ -250,7 +250,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel enviar seu negocio.', 'error');
+        showToast(payload?.error ?? 'Não foi possível enviar seu negócio.', 'error');
         return;
       }
 
@@ -267,7 +267,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       if (legacyAdAccountId) router.push('/ads/overview');
     } catch (error) {
       console.error('Failed to create business:', error);
-      showToast('Nao foi possivel enviar seu negocio.', 'error');
+      showToast('Não foi possível enviar seu negócio.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -281,7 +281,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel atualizar seus favoritos.', 'error');
+        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
         return;
       }
 
@@ -297,7 +297,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       );
     } catch (error) {
       console.error('Failed to toggle business favorite from list:', error);
-      showToast('Nao foi possivel atualizar seus favoritos.', 'error');
+      showToast('Não foi possível atualizar seus favoritos.', 'error');
     }
   };
 
@@ -318,7 +318,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
               <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Fechar</button>
             </div>
             <form onSubmit={handleCreateBusiness} className="space-y-3">
-              <input required value={createForm.name} onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))} onInput={() => clearFieldError('name')} aria-invalid={Boolean(fieldErrors.name)} placeholder="Nome do negocio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <input required value={createForm.name} onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))} onInput={() => clearFieldError('name')} aria-invalid={Boolean(fieldErrors.name)} placeholder="Nome do negócio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <FieldErrorMessage message={fieldErrors.name} />
               <div className="grid grid-cols-2 gap-3">
                 <select value={createForm.category} onChange={(event) => setCreateForm((current) => ({ ...current, category: event.target.value }))} className="theme-outline-ring h-11 w-full appearance-none rounded-full border-2 border-border bg-surface px-4 text-body-sm text-foreground outline-none">
@@ -329,9 +329,9 @@ const BusinessList: React.FC<BusinessListProps> = ({
               <FieldErrorMessage message={fieldErrors.phone} />
               <AddressAutocomplete value={createForm.address} onChange={(address) => { setCreateForm((current) => ({ ...current, address })); clearFieldError('address'); }} placeholder="Pesquise rua, número, cidade e estado" />
               <FieldErrorMessage message={fieldErrors.address} />
-              <RegionSelector value={createForm.regionKey} onChange={(region) => { clearFieldError('regionKey'); setCreateForm((current) => ({ ...current, regionKey: region.key })); }} hint="Escolha uma regiao existente para padronizar a publicacao." />
+              <RegionSelector value={createForm.regionKey} onChange={(region) => { clearFieldError('regionKey'); setCreateForm((current) => ({ ...current, regionKey: region.key })); }} hint="Escolha uma região existente para padronizar a publicação." />
               <FieldErrorMessage message={fieldErrors.regionKey} />
-              <textarea required rows={3} maxLength={600} value={createForm.description} onChange={(event) => setCreateForm((current) => ({ ...current, description: event.target.value }))} onInput={() => clearFieldError('description')} aria-invalid={Boolean(fieldErrors.description)} placeholder="Descricao do negocio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <textarea required rows={3} maxLength={600} value={createForm.description} onChange={(event) => setCreateForm((current) => ({ ...current, description: event.target.value }))} onInput={() => clearFieldError('description')} aria-invalid={Boolean(fieldErrors.description)} placeholder="Descrição do negócio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <div className="flex justify-end"><CharacterCounter current={createForm.description.length} max={600} /></div>
               <FieldErrorMessage message={fieldErrors.description} />
               <div className="grid grid-cols-2 gap-3">
@@ -339,9 +339,9 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 <input value={createForm.instagram} onChange={(event) => setCreateForm((current) => ({ ...current, instagram: event.target.value }))} placeholder="Instagram" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               </div>
               <FieldErrorMessage message={fieldErrors.website} />
-              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" cropAspect={2} placeholder="Link da imagem de capa" hint="Envie a capa pela Cloudinary ou cole uma URL publica." />
+              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" cropAspect={2} placeholder="Link da imagem de capa" hint="Envie a capa pela Cloudinary ou cole uma URL pública." />
               <button type="submit" disabled={submitting || !createForm.regionKey} className="theme-bg theme-bg-hover w-full rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-md disabled:opacity-60">
-                {submitting ? 'Enviando...' : 'Enviar para aprovacao'}
+                {submitting ? 'Enviando...' : 'Enviar para aprovação'}
               </button>
             </form>
           </div>
@@ -358,7 +358,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       <div className="space-y-4 pb-20">
         {resultScope === 'global' && businesses.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
-            Ainda nao ha negocios publicados na sua regiao. Mostrando resultados de outras regioes.
+            Ainda não há negócios publicados na sua região. Mostrando resultados de outras regiões.
           </div>
         ) : null}
         {businesses.length === 0 ? (
@@ -379,13 +379,13 @@ const BusinessList: React.FC<BusinessListProps> = ({
               title={business.name}
               subtitle={`${business.category} · ${business.locationLabel || business.address}`}
               href={`/businesses/${business.slug || business.id}`}
-              badge={isPendingReview ? <Badge tone="destaque">Em analise</Badge> : <Badge tone="primary">Negocio</Badge>}
+              badge={isPendingReview ? <Badge tone="destaque">Em análise</Badge> : <Badge tone="primary">Negócio</Badge>}
               action={!isPendingReview ? (
                 <button
                   type="button"
                   onClick={() => void handleFavoriteToggle(business)}
                   className={`rounded-full p-2 transition ${business.isFavorite ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                  aria-label={business.isFavorite ? 'Remover dos favoritos' : 'Favoritar negocio'}
+                  aria-label={business.isFavorite ? 'Remover dos favoritos' : 'Favoritar negócio'}
                 >
                   <Heart size={16} fill={business.isFavorite ? 'currentColor' : 'none'} />
                 </button>

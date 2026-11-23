@@ -24,7 +24,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos da regiao' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos da região' },
       { status: 400 },
     );
   }
@@ -39,7 +39,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!currentRegion) {
-    return NextResponse.json({ error: 'Regiao nao encontrada' }, { status: 404 });
+    return NextResponse.json({ error: 'Região não encontrada' }, { status: 404 });
   }
 
   try {
@@ -98,7 +98,7 @@ export async function PUT(request: Request, context: RouteContext) {
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      return NextResponse.json({ error: 'Ja existe uma regiao com esse nome.' }, { status: 409 });
+      return NextResponse.json({ error: 'Já existe uma região com esse nome.' }, { status: 409 });
     }
 
     throw error;

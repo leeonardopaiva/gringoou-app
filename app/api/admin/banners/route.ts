@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do banner.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do banner.' },
       { status: 400 },
     );
   }
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const region = await findRegionByKey(parsed.data.regionKey);
 
     if (!region) {
-      return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
+      return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
     }
   }
 

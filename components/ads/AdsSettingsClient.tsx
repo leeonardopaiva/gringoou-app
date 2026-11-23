@@ -45,7 +45,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
     try {
       const response = await fetch(`/api/ads/accounts/${account.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(accountForm) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel atualizar a empresa.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a empresa.');
       setAccount((current) => ({ ...current, ...payload.account }));
       await refreshAccounts();
       setEditOpen(false);
@@ -59,7 +59,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
     try {
       const response = await fetch('/api/ads/settings/user', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userForm) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel salvar seus dados.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar seus dados.');
       showToast('Dados pessoais atualizados.', 'success');
     } catch (reason) { showToast(reason instanceof Error ? reason.message : 'Falha ao salvar seus dados.', 'error'); }
     finally { setSavingUser(false); }
@@ -93,10 +93,10 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
 
       <Card className="rounded-3xl border border-slate-200 p-6 shadow-sm">
         <div className="flex items-center gap-3"><Building2 className="text-brand-500" /><Card.Title>Membros e permissões</Card.Title></div>
-        <div className="mt-5 divide-y divide-slate-100">{account.users.map((membership) => <div key={membership.id} className="flex items-center gap-3 py-4"><Avatar src={membership.user.image} name={membership.user.name ?? membership.user.email ?? 'Usuario'} size="md" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#243b53]">{membership.user.name ?? 'Usuario'}</p><p className="truncate text-xs text-slate-400">{membership.user.email}</p></div><Badge tone={membership.role.includes('ADMIN') ? 'primary' : 'neutro'} className="normal-case">{membership.role}</Badge></div>)}</div>
+        <div className="mt-5 divide-y divide-slate-100">{account.users.map((membership) => <div key={membership.id} className="flex items-center gap-3 py-4"><Avatar src={membership.user.image} name={membership.user.name ?? membership.user.email ?? 'Usuário'} size="md" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#243b53]">{membership.user.name ?? 'Usuário'}</p><p className="truncate text-xs text-slate-400">{membership.user.email}</p></div><Badge tone={membership.role.includes('ADMIN') ? 'primary' : 'neutro'} className="normal-case">{membership.role}</Badge></div>)}</div>
       </Card>
 
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar conta comercial" description="Atualize as informações da conta do seu negócio." className="max-w-2xl" footer={<><Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button><Button loading={savingAccount} onClick={() => void saveAccount()}>Salvar alteracoes</Button></>}>
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar conta comercial" description="Atualize as informações da conta do seu negócio." className="max-w-2xl" footer={<><Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button><Button loading={savingAccount} onClick={() => void saveAccount()}>Salvar alterações</Button></>}>
         <div className="max-h-[70dvh] space-y-5 overflow-y-auto pr-1">
           <div><span className="mb-2 block text-sm font-bold">Logo da empresa</span><CloudinaryImageField value={accountForm.logoUrl ?? ''} onChange={(logoUrl) => setAccountForm((current) => ({ ...current, logoUrl }))} folder="businesses" cropAspect={1} width={120} height={120} /></div>
           <label className="block space-y-2"><span className="text-sm font-bold">Nome da empresa</span><Input value={accountForm.name} onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))} /></label>

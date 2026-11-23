@@ -53,13 +53,13 @@ export const formatRelativeTime = (value: string) => {
   const diffMinutes = Math.max(1, Math.round((Date.now() - date) / 60000));
 
   if (diffMinutes < 60) {
-    return `${diffMinutes} min atras`;
+    return `${diffMinutes} min atrás`;
   }
 
   const diffHours = Math.round(diffMinutes / 60);
   if (diffHours < 24) {
-    return `${diffHours} h atras`;
+    return `${diffHours} h atrás`;
   }
 
-  return `${Math.round(diffHours / 24)} d atras`;
+  return `${Math.round(diffHours / 24)} d atrás`;
 };

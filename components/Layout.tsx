@@ -204,7 +204,7 @@ const SidebarContent: React.FC<{
                 onClick={() => onNavigate(user.role === UserRole.MODERATOR ? '/admin/moderation' : '/admin')}
               />
               {user.role === UserRole.ADMIN ? <SidebarMenuItem
-                label="Moderar anuncios"
+                label="Moderar anúncios"
                 icon={<ShieldCheck size={18} />}
                 active={isActive('/admin/ads')}
                 collapsed={collapsed}
@@ -581,7 +581,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsQuickMenuOpen((value) => !value)}
-                  aria-label={isQuickMenuOpen ? 'Fechar menu de criacao' : 'Abrir menu de criacao'}
+                  aria-label={isQuickMenuOpen ? 'Fechar menu de criação' : 'Abrir menu de criação'}
                   className="-mt-7 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-md ring-[3px] ring-white transition-transform hover:brightness-105 active:scale-95"
                 >
                   {isQuickMenuOpen ? <X size={19} /> : <Plus size={21} />}

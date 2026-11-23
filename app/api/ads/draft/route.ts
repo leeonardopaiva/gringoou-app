@@ -80,7 +80,7 @@ async function saveDraft(request: Request, requireExisting: boolean) {
 
   const parsed = adDraftSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   }
 
   const membership = await prisma.adAccountUser.findUnique({
@@ -93,14 +93,14 @@ async function saveDraft(request: Request, requireExisting: boolean) {
     },
   });
   if (!membership || !canEditAdDraft(membership.role)) {
-    return NextResponse.json({ error: 'Sem permissao para criar anuncios nesta conta.' }, { status: 403 });
+    return NextResponse.json({ error: 'Sem permissão para criar anúncios nesta conta.' }, { status: 403 });
   }
   const eligibilityError = getCampaignDraftEligibilityError(membership.adAccount);
   if (eligibilityError) return NextResponse.json(eligibilityError, { status: 409 });
 
   if (parsed.data.regionKey) {
     const region = await prisma.region.findFirst({ where: { key: parsed.data.regionKey, isActive: true }, select: { key: true } });
-    if (!region) return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
+    if (!region) return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
   }
 
   const destinationFields = getAdDestinationFields(parsed.data.goal, parsed.data.destination);

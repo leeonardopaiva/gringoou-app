@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!session.user.onboardingCompleted) return NextResponse.json({ error: 'Complete seu perfil antes de publicar.' }, { status: 403 });
   const parsed = housingSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   const regionKey = parsed.data.regionKey ?? session.user.regionKey ?? null;
   const housing = await prisma.housing.create({ data: { ...parsed.data, regionKey, createdById: session.user.id } });
   return NextResponse.json({ housing }, { status: 201 });

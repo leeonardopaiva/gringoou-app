@@ -46,7 +46,7 @@ const buildReactionPayload = async (postId: string) => {
     likeCount,
     likedBy: reactions.map((reaction) => ({
       id: reaction.author.id,
-      name: reaction.author.name || 'Usuario da comunidade',
+      name: reaction.author.name || 'Usuário da comunidade',
       username: reaction.author.username,
       image: reaction.author.image,
     })),
@@ -69,7 +69,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitas interacoes em pouco tempo. Aguarde um minuto.' },
+      { error: 'Muitas interações em pouco tempo. Aguarde um minuto.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -79,7 +79,7 @@ export async function POST(_request: Request, context: RouteContext) {
   if (USE_MOCKS) {
     const result = toggleMockPostReaction(postId, {
       id: session.user.id,
-      name: session.user.name || 'Usuario da comunidade',
+      name: session.user.name || 'Usuário da comunidade',
       username: session.user.username,
       image: session.user.image,
     });

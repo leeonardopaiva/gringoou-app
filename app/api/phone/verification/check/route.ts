@@ -16,19 +16,19 @@ export const runtime = 'nodejs';
 
 const checkSchema = z.object({
   phone: z.string().trim().min(8, 'Informe um telefone valido').max(30),
-  code: z.string().trim().regex(/^\d{4,8}$/, 'Digite o codigo recebido por SMS'),
+  code: z.string().trim().regex(/^\d{4,8}$/, 'Digite o código recebido por SMS'),
 });
 
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+    return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   }
 
   if (!isPhoneVerificationConfigured) {
     return NextResponse.json(
-      { error: 'A verificacao por telefone ainda nao esta disponivel.' },
+      { error: 'A verificação por telefone ainda não está disponível.' },
       { status: 503 },
     );
   }
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' },
       { status: 400 },
     );
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   const phoneE164 = toE164Phone(parsed.data.phone);
 
   if (!phoneE164) {
-    return NextResponse.json({ error: 'Telefone invalido.' }, { status: 400 });
+    return NextResponse.json({ error: 'Telefone inválido.' }, { status: 400 });
   }
 
   const blockMessage = getPhoneBlockMessage(phoneE164);
@@ -77,13 +77,13 @@ export async function POST(request: Request) {
       code: parsed.data.code,
     });
   } catch (error) {
-    console.error('[phone-verification] falha ao conferir codigo', error);
-    return NextResponse.json({ error: 'Nao foi possivel conferir o codigo agora. Tente novamente.' }, { status: 502 });
+    console.error('[phone-verification] falha ao conferir código', error);
+    return NextResponse.json({ error: 'Não foi possível conferir o código agora. Tente novamente.' }, { status: 502 });
   }
 
   if (!approved) {
     return NextResponse.json(
-      { error: 'Codigo invalido ou expirado. Solicite um novo codigo.' },
+      { error: 'Código inválido ou expirado. Solicite um novo código.' },
       { status: 400 },
     );
   }
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
   if (alreadyUsed) {
     return NextResponse.json(
-      { error: 'Este telefone ja esta vinculado a outra conta.' },
+      { error: 'Este telefone já está vinculado a outra conta.' },
       { status: 409 },
     );
   }

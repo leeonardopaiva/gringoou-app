@@ -14,20 +14,20 @@ const registerSchema = z.object({
   email: z.string().trim().email('Informe um email valido.'),
   password: z.string().min(8, 'Use uma senha mais forte.'),
   captchaToken: z.string().min(10),
-  captchaAnswer: z.string().trim().min(1, 'Resolva o calculo de verificacao.'),
+  captchaAnswer: z.string().trim().min(1, 'Resolva o calculo de verificação.'),
   inviteCode: z.string().trim().optional(),
 });
 
 export async function POST(request: Request) {
   if (!isOperationalFeatureEnabled('registration')) {
     return NextResponse.json(
-      { error: 'Novos cadastros estao temporariamente pausados.' },
+      { error: 'Novos cadastros estão temporariamente pausados.' },
       { status: 503, headers: { 'Retry-After': '300' } },
     );
   }
 
   if (await isRequestGeoBlocked(request)) {
-    return NextResponse.json({ error: 'Gringoou ainda nao esta disponivel na sua regiao.' }, { status: 403 });
+    return NextResponse.json({ error: 'Gringoou ainda não está disponível na sua região.' }, { status: 403 });
   }
 
   const rateLimit = await consumeRateLimit({
@@ -49,13 +49,13 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos para cadastro.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos para cadastro.' },
       { status: 400 },
     );
   }
 
   if (!verifySimpleCaptcha(parsed.data.captchaToken, parsed.data.captchaAnswer)) {
-    return NextResponse.json({ error: 'Verificacao incorreta ou expirada. Resolva a nova conta mostrada e tente novamente.' }, { status: 400 });
+    return NextResponse.json({ error: 'Verificação incorreta ou expirada. Resolva a nova conta mostrada e tente novamente.' }, { status: 400 });
   }
 
   const passwordIssues = getPasswordValidationIssues(parsed.data.password);
@@ -74,14 +74,14 @@ export async function POST(request: Request) {
   });
 
   if (existingUser) {
-    return NextResponse.json({ error: 'Esse email ja esta cadastrado.' }, { status: 409 });
+    return NextResponse.json({ error: 'Esse email já está cadastrado.' }, { status: 409 });
   }
 
   // Private Beta: novos cadastros exigem convite válido.
   const inviteRequired = isInviteOnlyRegistration();
   if (inviteRequired && !parsed.data.inviteCode) {
     return NextResponse.json(
-      { error: 'O cadastro esta em fase de convite. Informe o codigo do convite.' },
+      { error: 'O cadastro está em fase de convite. Informe o código do convite.' },
       { status: 403 },
     );
   }
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       if (inviteRequired && parsed.data.inviteCode) {
         const consumed = await consumeInviteInTx(tx, parsed.data.inviteCode, email, created.id);
         if (!consumed.ok) {
-          throw new InviteRejectedError(consumed.error ?? 'Convite invalido.');
+          throw new InviteRejectedError(consumed.error ?? 'Convite inválido.');
         }
       }
 
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'Esse email ja esta cadastrado.' }, { status: 409 });
+      return NextResponse.json({ error: 'Esse email já está cadastrado.' }, { status: 409 });
     }
 
     throw error;

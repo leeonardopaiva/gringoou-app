@@ -32,16 +32,16 @@ const safeFilename = (value: string) => value.replace(/[^a-zA-Z0-9_-]+/g, '-').r
 
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
   const parsed = exportSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Relatorio invalido.' }, { status: 400 });
-  if (parsed.data.startDate > parsed.data.endDate) return NextResponse.json({ error: 'Periodo do relatorio invalido.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Relatório inválido.' }, { status: 400 });
+  if (parsed.data.startDate > parsed.data.endDate) return NextResponse.json({ error: 'Período do relatório inválido.' }, { status: 400 });
 
   const membership = await getAdAccountMembership(session.user.id);
-  if (!membership) return NextResponse.json({ error: 'Conta comercial nao encontrada.' }, { status: 403 });
+  if (!membership) return NextResponse.json({ error: 'Conta comercial não encontrada.' }, { status: 403 });
   const endDate = new Date(parsed.data.endDate);
   endDate.setHours(23, 59, 59, 999);
-  const range: AdsDateRange = { key: 'all', label: 'Periodo personalizado', from: parsed.data.startDate, to: endDate };
+  const range: AdsDateRange = { key: 'all', label: 'Período personalizado', from: parsed.data.startDate, to: endDate };
   const overview = await buildAdsOverviewData(session.user.id, range, membership.adAccountId);
   const search = parsed.data.search.toLowerCase();
   const rows = sortReportRows(overview.rows.filter((row) => !search || [row.label, row.goal, row.plan, row.regionLabel].filter(Boolean).some((value) => String(value).toLowerCase().includes(search))));

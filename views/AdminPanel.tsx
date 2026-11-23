@@ -588,7 +588,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel carregar o painel admin.');
+        throw new Error(payload?.error ?? 'Não foi possível carregar o painel admin.');
       }
 
       startTransition(() => {
@@ -596,7 +596,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       });
     } catch (loadError) {
       console.error('Failed to load admin dashboard:', loadError);
-      setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar o painel admin.');
+      setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar o painel admin.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -617,7 +617,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel carregar os analytics.');
+        throw new Error(payload?.error ?? 'Não foi possível carregar os analytics.');
       }
 
       startTransition(() => {
@@ -625,7 +625,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       });
     } catch (loadError) {
       console.error('Failed to load admin analytics:', loadError);
-      setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar os analytics.');
+      setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os analytics.');
     } finally {
       setAnalyticsLoading(false);
     }
@@ -704,8 +704,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
         }),
-      action === 'approve' ? 'Negocio aprovado e publicado.' : 'Negocio atualizado na fila.',
-      'Nao foi possivel revisar o negocio.',
+      action === 'approve' ? 'Negócio aprovado e publicado.' : 'Negócio atualizado na fila.',
+      'Não foi possível revisar o negócio.',
     );
 
   const submitEventReview = (eventId: string, action: EventAction) =>
@@ -718,7 +718,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           body: JSON.stringify({ action }),
         }),
       action === 'approve' ? 'Evento aprovado e publicado.' : 'Evento atualizado na fila.',
-      'Nao foi possivel revisar o evento.',
+      'Não foi possível revisar o evento.',
     );
 
   const submitPostReview = (postId: string, action: PostAction) =>
@@ -730,8 +730,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
         }),
-      action === 'approve' ? 'Publicacao aprovada e liberada.' : 'Publicacao removida.',
-      'Nao foi possivel revisar a publicacao.',
+      action === 'approve' ? 'Publicação aprovada e liberada.' : 'Publicação removida.',
+      'Não foi possível revisar a publicação.',
     );
 
   const resetRegionForm = () => {
@@ -759,7 +759,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const submitRegion = async () => {
     if (!regionForm.label.trim() || !regionForm.city.trim() || !regionForm.state.trim()) {
-      setError('Preencha nome, cidade e estado da regiao.');
+      setError('Preencha nome, cidade e estado da região.');
       return;
     }
 
@@ -792,8 +792,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             isActive: regionForm.isActive,
           }),
         }),
-      editingRegionKey ? 'Regiao atualizada.' : 'Regiao criada.',
-      'Nao foi possivel salvar a regiao.',
+      editingRegionKey ? 'Região atualizada.' : 'Região criada.',
+      'Não foi possível salvar a região.',
       resetRegionForm,
     );
   };
@@ -815,8 +815,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             isActive: !region.isActive,
           }),
         }),
-      region.isActive ? 'Regiao desativada.' : 'Regiao ativada.',
-      'Nao foi possivel atualizar a regiao.',
+      region.isActive ? 'Região desativada.' : 'Região ativada.',
+      'Não foi possível atualizar a região.',
     );
   };
 
@@ -869,8 +869,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 : undefined,
           }),
         }),
-      'Negocio atualizado.',
-      'Nao foi possivel salvar o negocio.',
+      'Negócio atualizado.',
+      'Não foi possível salvar o negócio.',
       resetBusinessForm,
     );
   };
@@ -909,17 +909,17 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     const parsedEndsAt = eventForm.endsAt ? parseDateTimeInputPtBr(eventForm.endsAt) : null;
 
     if (!parsedStartsAt) {
-      setError('Selecione uma data e horario validos para o inicio do evento.');
+      setError('Selecione uma data e horário validos para o início do evento.');
       return;
     }
 
     if (eventForm.endsAt && !parsedEndsAt) {
-      setError('Selecione uma data e horario validos para o encerramento do evento.');
+      setError('Selecione uma data e horário validos para o encerramento do evento.');
       return;
     }
 
     if (parsedEndsAt && new Date(parsedEndsAt) < new Date(parsedStartsAt)) {
-      setError('O encerramento nao pode ser antes do inicio do evento.');
+      setError('O encerramento não pode ser antes do início do evento.');
       return;
     }
 
@@ -943,7 +943,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           }),
         }),
       'Evento atualizado.',
-      'Nao foi possivel salvar o evento.',
+      'Não foi possível salvar o evento.',
       resetEventForm,
     );
   };
@@ -987,8 +987,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             image: normalizeUrlFieldValue(userForm.image),
           }),
         }),
-      'Usuario atualizado.',
-      'Nao foi possivel salvar o usuario.',
+      'Usuário atualizado.',
+      'Não foi possível salvar o usuário.',
       resetUserForm,
     );
   };
@@ -1001,9 +1001,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
     if (isPromotingToAdmin) {
       setConfirmationDialog({
-        title: 'Confirmar nova permissao de admin',
-        description: `Voce esta concedendo acesso total de administrador para ${managedUser.name || managedUser.email || managedUser.username || 'este usuario'}.`,
-        confirmLabel: 'Confirmar promocao',
+        title: 'Confirmar nova permissão de admin',
+        description: `Você está concedendo acesso total de administrador para ${managedUser.name || managedUser.email || managedUser.username || 'este usuário'}.`,
+        confirmLabel: 'Confirmar promoção',
         tone: 'primary',
         onConfirm: async () => {
           await submitUserUpdate();
@@ -1014,8 +1014,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
     if (isDemotingAdmin) {
       setConfirmationDialog({
-        title: 'Confirmar remocao de admin',
-        description: `Voce esta removendo a permissao de administrador de ${managedUser.name || managedUser.email || managedUser.username || 'este usuario'}.`,
+        title: 'Confirmar remoção de admin',
+        description: `Você está removendo a permissão de administrador de ${managedUser.name || managedUser.email || managedUser.username || 'este usuário'}.`,
         confirmLabel: 'Confirmar rebaixamento',
         tone: 'danger',
         onConfirm: async () => {
@@ -1041,9 +1041,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           body: JSON.stringify({ status }),
         }),
       status === 'REVIEWED'
-        ? 'Sugestao marcada como revisada.'
-        : 'Sugestao reaberta para analise.',
-      'Nao foi possivel atualizar a sugestao.',
+        ? 'Sugestão marcada como revisada.'
+        : 'Sugestão reaberta para análise.',
+      'Não foi possível atualizar a sugestão.',
     );
   };
 
@@ -1069,7 +1069,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel validar o arquivo.');
+        throw new Error(payload?.error ?? 'Não foi possível validar o arquivo.');
       }
 
       setImportPreview(payload);
@@ -1077,11 +1077,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       if (payload.errors?.length) {
         setError('Arquivo validado com erros. Corrija as linhas indicadas antes de importar.');
       } else {
-        setMessage('Arquivo validado sem erros. Revise a previa e confirme a importacao.');
+        setMessage('Arquivo validado sem erros. Revise a prévia e confirme a importação.');
       }
     } catch (importError) {
       console.error('Failed to preview admin import:', importError);
-      setError(importError instanceof Error ? importError.message : 'Nao foi possivel validar o arquivo.');
+      setError(importError instanceof Error ? importError.message : 'Não foi possível validar o arquivo.');
     } finally {
       setProcessingKey(null);
     }
@@ -1089,7 +1089,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const confirmImport = async () => {
     if (!importPreview || importPreview.errors.length > 0) {
-      setError('Valide um arquivo sem erros antes de confirmar a importacao.');
+      setError('Valide um arquivo sem erros antes de confirmar a importação.');
       return;
     }
 
@@ -1101,8 +1101,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ draft: importPreview.draft }),
         }),
-      'Importacao concluida.',
-      'Nao foi possivel concluir a importacao.',
+      'Importação concluída.',
+      'Não foi possível concluir a importação.',
       () => {
         setImportPreview(null);
         setImportFileName(null);
@@ -1117,12 +1117,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const statsCards = dashboard
     ? [
-        { label: 'Usuarios', value: dashboard.stats.totalUsers, icon: <Users size={20} />, accent: 'theme-soft-surface theme-text', section: 'users' as const },
-        { label: 'Donos de negocios', value: dashboard.stats.businessOwners, icon: <Store size={20} />, accent: 'bg-emerald-50 text-emerald-800', section: 'users' as const },
-        { label: 'Negocios publicados', value: dashboard.stats.publishedBusinesses, icon: <Building2 size={20} />, accent: 'bg-orange-50 text-orange-800', section: 'businesses' as const },
+        { label: 'Usuários', value: dashboard.stats.totalUsers, icon: <Users size={20} />, accent: 'theme-soft-surface theme-text', section: 'users' as const },
+        { label: 'Donos de negócios', value: dashboard.stats.businessOwners, icon: <Store size={20} />, accent: 'bg-emerald-50 text-emerald-800', section: 'users' as const },
+        { label: 'Negócios publicados', value: dashboard.stats.publishedBusinesses, icon: <Building2 size={20} />, accent: 'bg-orange-50 text-orange-800', section: 'businesses' as const },
         { label: 'Eventos publicados', value: dashboard.stats.publishedEvents, icon: <CalendarDays size={20} />, accent: 'theme-soft-surface theme-text', section: 'events' as const },
         { label: 'Posts publicados', value: dashboard.stats.publishedPosts, icon: <MessageSquareText size={20} />, accent: 'bg-violet-50 text-violet-800', section: 'moderation' as const },
-        { label: 'Regioes ativas', value: dashboard.stats.activeRegions, icon: <Globe2 size={20} />, accent: 'bg-sky-50 text-sky-800', section: 'regions' as const },
+        { label: 'Regiões ativas', value: dashboard.stats.activeRegions, icon: <Globe2 size={20} />, accent: 'bg-sky-50 text-sky-800', section: 'regions' as const },
       ]
     : [];
 
@@ -1364,13 +1364,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'regions' ? (
           <section className="space-y-3">
-          <div className="flex items-center justify-between"><SectionHeader title="Gestão de regiões" count={dashboard?.stats.totalRegions ?? 0} /><Button size="sm" iconLeft={<Plus size={15} />} onClick={() => { resetRegionForm(); setRegionModalOpen(true); }}>Nova regiao</Button></div>
-          <Modal open={regionModalOpen} onClose={resetRegionForm} title={editingRegionKey ? 'Editar regiao' : 'Nova regiao'} description="O cadastro alimenta onboarding, perfil e filtros locais." className="max-w-xl">
+          <div className="flex items-center justify-between"><SectionHeader title="Gestão de regiões" count={dashboard?.stats.totalRegions ?? 0} /><Button size="sm" iconLeft={<Plus size={15} />} onClick={() => { resetRegionForm(); setRegionModalOpen(true); }}>Nova região</Button></div>
+          <Modal open={regionModalOpen} onClose={resetRegionForm} title={editingRegionKey ? 'Editar região' : 'Nova região'} description="O cadastro alimenta onboarding, perfil e filtros locais." className="max-w-xl">
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-bold text-slate-700">
-                  {editingRegionKey ? 'Editar regiao' : 'Nova regiao'}
+                  {editingRegionKey ? 'Editar região' : 'Nova região'}
                 </p>
                 <p className="text-xs text-slate-400">
                   O cadastro abaixo alimenta onboarding, perfil e filtros locais.
@@ -1383,7 +1383,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 className="col-span-2"
                 value={regionForm.label}
                 onChange={(value) => setRegionForm((current) => ({ ...current, label: value }))}
-                placeholder="Nome da regiao"
+                placeholder="Nome da região"
               />
               <FormInput
                 value={regionForm.city}
@@ -1416,7 +1416,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 />
               ) : (
                 <div className="col-span-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                  Chave da regiao: <span className="font-bold text-slate-700">{editingRegionKey}</span>
+                  Chave da região: <span className="font-bold text-slate-700">{editingRegionKey}</span>
                 </div>
               )}
               <FormInput
@@ -1436,7 +1436,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 }
                 className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
               />
-              Regiao ativa para novos usuarios e novos cadastros
+              Região ativa para novos usuários e novos cadastros
             </label>
 
             <button
@@ -1451,11 +1451,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {editingRegionKey ? <PencilLine size={16} /> : <Plus size={16} />}
               {editingRegionKey
                 ? processingKey === `region:${editingRegionKey}:save`
-                  ? 'Salvando regiao...'
-                  : 'Salvar alteracoes'
+                  ? 'Salvando região...'
+                  : 'Salvar alterações'
                 : processingKey === 'region:create'
-                  ? 'Criando regiao...'
-                  : 'Cadastrar regiao'}
+                  ? 'Criando região...'
+                  : 'Cadastrar região'}
             </button>
           </div>
           </Modal>
@@ -1465,7 +1465,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         {activeSection === 'imports' ? (
           <section className="space-y-4">
             <SectionHeader
-              title="Importacao em massa"
+              title="Importação em massa"
               count={
                 importPreview
                   ? importPreview.summary.regions +
@@ -1474,7 +1474,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   : 0
               }
             />
-            <SupportText text="Baixe o modelo XLSX, preencha as abas Regioes, Negocios e Eventos, valide o arquivo e confirme apenas quando nao houver erros." />
+            <SupportText text="Baixe o modelo XLSX, preencha as abas Regiões, Negócios e Eventos, valide o arquivo e confirme apenas quando não houver erros." />
 
             <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
               <div className="flex items-start gap-4">
@@ -1484,7 +1484,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-slate-800">Modelo oficial</p>
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    O arquivo inclui instrucoes, exemplos e listas para regioes existentes. Nao renomeie abas ou cabecalhos.
+                    O arquivo inclui instruções, exemplos e listas para regiões existentes. Não renomeie abas ou cabecalhos.
                   </p>
                 </div>
               </div>
@@ -1516,7 +1516,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
               {importFileName ? (
                 <p className="mt-4 text-xs font-medium text-slate-400">
-                  Ultimo arquivo validado: <span className="text-slate-600">{importFileName}</span>
+                  Último arquivo validado: <span className="text-slate-600">{importFileName}</span>
                 </p>
               ) : null}
             </div>
@@ -1528,8 +1528,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             {importPreview ? (
               <div className="space-y-3 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
                 <div className="grid grid-cols-3 gap-3">
-                  <ImportMetric label="Regioes" value={importPreview.summary.regions} />
-                  <ImportMetric label="Negocios" value={importPreview.summary.businesses} />
+                  <ImportMetric label="Regiões" value={importPreview.summary.regions} />
+                  <ImportMetric label="Negócios" value={importPreview.summary.businesses} />
                   <ImportMetric label="Eventos" value={importPreview.summary.events} />
                 </div>
 
@@ -1558,20 +1558,20 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
                 ) : (
                   <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-700">
-                    Arquivo pronto para importacao. A confirmacao criara/atualizara regioes e criara novos negocios e eventos.
+                    Arquivo pronto para importação. A confirmação criara/atualizara regiões e criara novos negócios e eventos.
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <ActionButton
-                    label="Confirmar importacao"
+                    label="Confirmar importação"
                     tone="primary"
                     disabled={processingKey !== null || importPreview.errors.length > 0}
                     loading={processingKey === 'import:commit'}
                     onClick={() => void confirmImport()}
                   />
                   <ActionButton
-                    label="Limpar previa"
+                    label="Limpar prévia"
                     tone="neutral"
                     disabled={processingKey !== null}
                     onClick={() => {
@@ -1669,7 +1669,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             </div>
           ))}
           {dashboard && dashboard.regions.length === 0 ? (
-            <EmptyState text="Nenhuma regiao cadastrada ainda." />
+            <EmptyState text="Nenhuma região cadastrada ainda." />
           ) : null}
           </div>
         ) : null}
@@ -1681,9 +1681,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         <MessageReportsSection />
         <NewsCommentReportsSection />
         <ModerationSection
-          title="Negocios em aprovacao"
+          title="Negócios em aprovação"
           count={dashboard?.pendingBusinesses.length ?? 0}
-          emptyLabel="Nenhum negocio aguardando revisao."
+          emptyLabel="Nenhum negócio aguardando revisão."
           loading={loading && !dashboard}
         >
           {dashboard?.pendingBusinesses.map((business) => (
@@ -1693,7 +1693,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               subtitle={business.category}
               lines={[
                 business.locationLabel || business.address,
-                `Criado por ${business.createdBy.name || business.createdBy.email || 'Usuario'}`,
+                `Criado por ${business.createdBy.name || business.createdBy.email || 'Usuário'}`,
                 `Enviado em ${formatDateTime(business.createdAt)}`,
               ]}
             >
@@ -1716,9 +1716,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         </ModerationSection>
 
         <ModerationSection
-          title="Eventos em aprovacao"
+          title="Eventos em aprovação"
           count={dashboard?.pendingEvents.length ?? 0}
-          emptyLabel="Nenhum evento aguardando revisao."
+          emptyLabel="Nenhum evento aguardando revisão."
           loading={loading && !dashboard}
         >
           {dashboard?.pendingEvents.map((event) => (
@@ -1728,8 +1728,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               subtitle={event.venueName}
               lines={[
                 event.locationLabel,
-                `Comeca em ${formatDateTime(event.startsAt)}`,
-                `Enviado por ${event.createdBy.name || event.createdBy.email || 'Usuario'}`,
+                `Começa em ${formatDateTime(event.startsAt)}`,
+                `Enviado por ${event.createdBy.name || event.createdBy.email || 'Usuário'}`,
               ]}
             >
               <ActionButton
@@ -1751,9 +1751,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         </ModerationSection>
 
         <ModerationSection
-          title="Posts em revisao"
+          title="Posts em revisão"
           count={dashboard?.pendingPosts.length ?? 0}
-          emptyLabel="Nenhuma publicacao aguardando moderacao."
+          emptyLabel="Nenhuma publicação aguardando moderação."
           loading={loading && !dashboard}
         >
           {dashboard?.pendingPosts.map((post) => (
@@ -1762,7 +1762,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 <Avatar src={post.author.image} name={post.author.name || 'Autor'} size="sm" className="!h-10 !w-10" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold theme-text">
-                    {post.author.name || 'Usuario da comunidade'}
+                    {post.author.name || 'Usuário da comunidade'}
                   </p>
                   <p className="text-xs text-slate-400">
                     {post.locationLabel} | {formatDateTime(post.createdAt)}
@@ -1796,12 +1796,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'businesses' ? (
           <section className="space-y-3">
-          <SectionHeader title="Negocios cadastrados" count={filteredBusinesses.length} />
-          <SupportText text="Lista operacional dos ultimos negocios para ajuste de dados, imagem, regiao e status." />
+          <SectionHeader title="Negócios cadastrados" count={filteredBusinesses.length} />
+          <SupportText text="Lista operacional dos últimos negócios para ajuste de dados, imagem, região e status." />
           <SearchFilterInput
             value={businessSearch}
             onChange={setBusinessSearch}
-            placeholder="Filtrar negocios por nome, slug, categoria ou regiao"
+            placeholder="Filtrar negócios por nome, slug, categoria ou região"
           />
           {!deferredBusinessSearch.trim() && filteredBusinesses.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -1848,7 +1848,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           {business.visibilityRegion?.label ? ` (${business.visibilityRegion.label})` : ''}
                         </p>
                         <p>
-                          Responsavel: {business.createdBy.name || business.createdBy.email || 'Usuario'}
+                          Responsável: {business.createdBy.name || business.createdBy.email || 'Usuário'}
                         </p>
                         <p>Atualizado em {formatDateTime(business.updatedAt)}</p>
                       </div>
@@ -1867,12 +1867,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
 
                   {editingBusinessId === business.id ? (
-                    <Modal open onClose={resetBusinessForm} title="Editar negocio" description={business.name} className="max-w-3xl">
+                    <Modal open onClose={resetBusinessForm} title="Editar negócio" description={business.name} className="max-w-3xl">
                     <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={businessForm.name}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, name: value }))}
-                        placeholder="Nome do negocio"
+                        placeholder="Nome do negócio"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -1891,19 +1891,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <FormTextarea
                         value={businessForm.description}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, description: value }))}
-                        placeholder="Descricao"
+                        placeholder="Descrição"
                       />
                       <FormInput
                         value={businessForm.address}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, address: value }))}
-                        placeholder="Endereco"
+                        placeholder="Endereço"
                       />
                       <RegionSelector
                         value={businessForm.regionKey}
                         onChange={(region) =>
                           setBusinessForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="Use somente regioes cadastradas para manter o catalogo padronizado."
+                        hint="Use somente regiões cadastradas para manter o catalogo padronizado."
                       />
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <FormSelect
@@ -1927,13 +1927,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                                 visibilityRegionKey: region.key,
                               }))
                             }
-                            hint="Defina a regiao exata onde este negocio deve aparecer."
+                            hint="Defina a região exata onde este negócio deve aparecer."
                           />
                         ) : (
                           <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
                             {businessForm.visibilityScope === 'GLOBAL'
-                              ? 'Este negocio podera aparecer para usuarios de qualquer regiao.'
-                              : 'Este negocio aparece para usuarios cuja regiao coincide com a regiao cadastrada acima.'}
+                              ? 'Este negócio poderá aparecer para usuários de qualquer região.'
+                              : 'Este negócio aparece para usuários cuja região coincide com a região cadastrada acima.'}
                           </div>
                         )}
                       </div>
@@ -1988,11 +1988,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setBusinessForm((current) => ({ ...current, galleryUrls: value }))
                         }
                         folder="businesses"
-                        hint="Use a galeria para mostrar ambiente, servicos e produtos do negocio."
+                        hint="Use a galeria para mostrar ambiente, serviços e produtos do negócio."
                       />
                       <div className="flex gap-2">
                         <ActionButton
-                          label="Salvar negocio"
+                          label="Salvar negócio"
                           tone="primary"
                           disabled={processingKey !== null}
                           loading={processingKey === `business:${business.id}:save`}
@@ -2012,7 +2012,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum negocio encontrado para gestao." />
+            <EmptyState text="Nenhum negócio encontrado para gestão." />
           )}
           </section>
         ) : null}
@@ -2020,11 +2020,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         {activeSection === 'events' ? (
           <section className="space-y-3">
           <SectionHeader title="Eventos cadastrados" count={filteredEvents.length} />
-          <SupportText text="Edite dados da agenda, imagem, links e regiao dos ultimos eventos." />
+          <SupportText text="Edite dados da agenda, imagem, links e região dos últimos eventos." />
           <SearchFilterInput
             value={eventSearch}
             onChange={setEventSearch}
-            placeholder="Filtrar eventos por titulo, slug, local ou regiao"
+            placeholder="Filtrar eventos por título, slug, local ou região"
           />
           {!deferredEventSearch.trim() && filteredEvents.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2065,13 +2065,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{event.locationLabel}</p>
                         <p>/events/{event.slug}</p>
-                        <p>Inicio: {formatDateTime(event.startsAt)}</p>
+                        <p>Início: {formatDateTime(event.startsAt)}</p>
                         <p>
                           Visibilidade: {formatVisibilityScopeLabel(event.visibilityScope)}
                           {event.visibilityRegion?.label ? ` (${event.visibilityRegion.label})` : ''}
                         </p>
                         <p>
-                          Responsavel: {event.createdBy.name || event.createdBy.email || 'Usuario'}
+                          Responsável: {event.createdBy.name || event.createdBy.email || 'Usuário'}
                         </p>
                         <p>Atualizado em {formatDateTime(event.updatedAt)}</p>
                       </div>
@@ -2093,7 +2093,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <FormInput
                         value={eventForm.title}
                         onChange={(value) => setEventForm((current) => ({ ...current, title: value }))}
-                        placeholder="Titulo do evento"
+                        placeholder="Título do evento"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -2116,7 +2116,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setEventForm((current) => ({ ...current, description: value }))
                         }
-                        placeholder="Descricao"
+                        placeholder="Descrição"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -2125,7 +2125,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           onChange={(value) =>
                             setEventForm((current) => ({ ...current, startsAt: value }))
                           }
-                          placeholder="Inicio"
+                          placeholder="Início"
                         />
                         <FormInput
                           type="datetime-local"
@@ -2137,14 +2137,14 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         />
                       </div>
                       <p className="text-xs font-medium text-slate-400">
-                        Use o seletor para escolher data e horario.
+                        Use o seletor para escolher data e horário.
                       </p>
                       <RegionSelector
                         value={eventForm.regionKey}
                         onChange={(region) =>
                           setEventForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="Use somente regioes do catalogo para padronizar a agenda."
+                        hint="Use somente regiões do catalogo para padronizar a agenda."
                       />
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <FormSelect
@@ -2168,13 +2168,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                                 visibilityRegionKey: region.key,
                               }))
                             }
-                            hint="Defina a regiao exata onde este evento deve aparecer."
+                            hint="Defina a região exata onde este evento deve aparecer."
                           />
                         ) : (
                           <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
                             {eventForm.visibilityScope === 'GLOBAL'
-                              ? 'Este evento podera aparecer para usuarios de qualquer regiao.'
-                              : 'Este evento aparece para usuarios cuja regiao coincide com a regiao cadastrada acima.'}
+                              ? 'Este evento poderá aparecer para usuários de qualquer região.'
+                              : 'Este evento aparece para usuários cuja região coincide com a região cadastrada acima.'}
                           </div>
                         )}
                       </div>
@@ -2200,7 +2200,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setEventForm((current) => ({ ...current, galleryUrls: value }))
                         }
                         folder="events"
-                        hint="Adicione imagens extras para enriquecer a pagina do evento."
+                        hint="Adicione imagens extras para enriquecer a página do evento."
                       />
                       <div className="flex gap-2">
                         <ActionButton
@@ -2224,19 +2224,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum evento encontrado para gestao." />
+            <EmptyState text="Nenhum evento encontrado para gestão." />
           )}
           </section>
         ) : null}
 
         {activeSection === 'suggestions' ? (
           <section className="space-y-3">
-          <SectionHeader title="Sugestoes recebidas" count={filteredSuggestions.length} />
-          <SupportText text="Feedback direto dos usuarios para priorizar novas funcionalidades e melhorias." />
+          <SectionHeader title="Sugestões recebidas" count={filteredSuggestions.length} />
+          <SupportText text="Feedback direto dos usuários para priorizar novas funcionalidades e melhorias." />
           <SearchFilterInput
             value={suggestionSearch}
             onChange={setSuggestionSearch}
-            placeholder="Filtrar sugestoes por texto, usuario, email ou categoria"
+            placeholder="Filtrar sugestões por texto, usuário, email ou categoria"
           />
           {!deferredSuggestionSearch.trim() && filteredSuggestions.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2264,7 +2264,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">
-                            {suggestion.user.name || 'Usuario da plataforma'}
+                            {suggestion.user.name || 'Usuário da plataforma'}
                           </p>
                           <p className="text-sm font-medium text-slate-500">
                             @{suggestion.user.username || 'sem-username'}
@@ -2280,7 +2280,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{suggestion.user.email || 'Sem email'}</p>
-                        <p>{suggestion.user.locationLabel || 'Sem regiao definida'}</p>
+                        <p>{suggestion.user.locationLabel || 'Sem região definida'}</p>
                         <p>Recebida em {formatDateTime(suggestion.createdAt)}</p>
                       </div>
                       <div className="mt-4 rounded-3xl bg-slate-50 px-4 py-4 text-sm leading-relaxed text-slate-700">
@@ -2310,7 +2310,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhuma sugestao encontrada para essa busca." />
+            <EmptyState text="Nenhuma sugestão encontrada para essa busca." />
           )}
           </section>
         ) : null}
@@ -2331,12 +2331,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'users' ? (
           <section className="space-y-3">
-          <SectionHeader title="Usuarios" count={filteredUsers.length} />
-          <SupportText text="Visualize perfis, ajuste papel, regiao, nome publico e exclua usuarios quando necessario." />
+          <SectionHeader title="Usuários" count={filteredUsers.length} />
+          <SupportText text="Visualize perfis, ajuste papel, região, nome público e exclua usuários quando necessário." />
           <SearchFilterInput
             value={userSearch}
             onChange={setUserSearch}
-            placeholder="Filtrar usuarios por nome, username, email ou regiao"
+            placeholder="Filtrar usuários por nome, username, email ou região"
           />
           {!deferredUserSearch.trim() && filteredUsers.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2364,7 +2364,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">
-                            {managedUser.name || 'Usuario sem nome'}
+                            {managedUser.name || 'Usuário sem nome'}
                           </p>
                           <p className="text-sm font-medium text-slate-500">
                             @{managedUser.username || 'sem-username'}
@@ -2374,9 +2374,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{managedUser.email || 'Sem email'}</p>
-                        <p>{managedUser.locationLabel || 'Sem regiao definida'}</p>
+                        <p>{managedUser.locationLabel || 'Sem região definida'}</p>
                         <p>
-                          Cadastro {managedUser.onboardingCompleted ? 'concluido' : 'pendente'}
+                          Cadastro {managedUser.onboardingCompleted ? 'concluído' : 'pendente'}
                         </p>
                         <p>Atualizado em {formatDateTime(managedUser.updatedAt)}</p>
                       </div>
@@ -2405,7 +2405,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
 
                   {editingUserId === managedUser.id ? (
-                    <Modal open onClose={resetUserForm} title="Editar usuario" description={managedUser.name || managedUser.email || 'Usuario'} className="max-w-2xl">
+                    <Modal open onClose={resetUserForm} title="Editar usuário" description={managedUser.name || managedUser.email || 'Usuário'} className="max-w-2xl">
                     <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={userForm.name}
@@ -2420,7 +2420,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             username: normalizeUsernameInput(value),
                           }))
                         }
-                        placeholder="Nome publico"
+                        placeholder="Nome público"
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -2445,7 +2445,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setUserForm((current) => ({ ...current, image: value }))
                         }
                         folder="profiles" cropAspect={1}
-                        placeholder="Link da foto do usuario"
+                        placeholder="Link da foto do usuário"
                         hint="Envie uma foto do seu computador ou celular."
                       />
                       <div className="grid grid-cols-2 gap-3">
@@ -2468,7 +2468,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             }
                             className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
                           />
-                          Cadastro concluido
+                          Cadastro concluído
                         </label>
                       </div>
                       <RegionSelector
@@ -2476,11 +2476,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(region) =>
                           setUserForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="A regiao do usuario controla feed, negocios e eventos priorizados."
+                        hint="A região do usuário controla feed, negócios e eventos priorizados."
                       />
                       <div className="flex gap-2">
                         <ActionButton
-                          label="Salvar usuario"
+                          label="Salvar usuário"
                           tone="primary"
                           disabled={processingKey !== null}
                           loading={processingKey === `user:${managedUser.id}:save`}
@@ -2500,7 +2500,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum usuario encontrado para gestao." />
+            <EmptyState text="Nenhum usuário encontrado para gestão." />
           )}
           </section>
         ) : null}

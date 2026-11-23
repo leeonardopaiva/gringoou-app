@@ -42,7 +42,7 @@ export async function POST(_request: Request, context: RouteContext) {
   const business = await loadBusinessForFavorite(businessId);
 
   if (!business) {
-    return NextResponse.json({ error: 'Negocio nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio não encontrado.' }, { status: 404 });
   }
 
   const canView =
@@ -59,7 +59,7 @@ export async function POST(_request: Request, context: RouteContext) {
     session.user.id === business.createdById;
 
   if (!canView) {
-    return NextResponse.json({ error: 'Negocio indisponivel.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio indisponível.' }, { status: 404 });
   }
 
   await prisma.businessFavorite.upsert({
@@ -95,7 +95,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const business = await loadBusinessForFavorite(businessId);
 
   if (!business) {
-    return NextResponse.json({ error: 'Negocio nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio não encontrado.' }, { status: 404 });
   }
 
   await prisma.businessFavorite.deleteMany({

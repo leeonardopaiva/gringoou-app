@@ -102,7 +102,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
           showToast(
             error instanceof Error
               ? error.message
-              : "Nao foi possivel carregar as vagas.",
+              : "Não foi possível carregar as vagas.",
             "error",
           );
       } finally {
@@ -130,7 +130,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
-        throw new Error(payload?.error || "Nao foi possivel publicar a vaga.");
+        throw new Error(payload?.error || "Não foi possível publicar a vaga.");
       setJobs((current) => [payload.job, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);
@@ -139,7 +139,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       showToast(
         error instanceof Error
           ? error.message
-          : "Nao foi possivel publicar a vaga.",
+          : "Não foi possível publicar a vaga.",
         "error",
       );
     } finally {
@@ -151,7 +151,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
     <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
       <PageHeader title="Vagas" filters={{
             fields: [
-              { type: 'select', id: 'employmentType', label: 'Tipo de contrato', options: [{ value: '', label: 'Todos os contratos' }, ...['Tempo integral', 'Meio periodo', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
+              { type: 'select', id: 'employmentType', label: 'Tipo de contrato', options: [{ value: '', label: 'Todos os contratos' }, ...['Tempo integral', 'Meio período', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
               { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
               { type: 'text', id: 'salary', label: 'Faixa salarial', placeholder: 'Ex.: 3000' },
             ],
@@ -212,7 +212,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
                   <MapPin size={13} /> {job.locationLabel}
                 </p>
                 <p className="mt-1 text-sm font-bold">
-                  {job.salary || "Salario a combinar"}
+                  {job.salary || "Salário a combinar"}
                 </p>
                 <Link
                   href={`/jobs/${job.id}`}
@@ -275,7 +275,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
           />
           <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="jobs" maxItems={6} hint="Adicione até 6 fotos da vaga, equipe ou ambiente." />
           <Input
-            placeholder="Titulo"
+            placeholder="Título"
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
           />
@@ -286,7 +286,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
             disabled={publishAs === 'business' && Boolean(draft.businessId)}
           />
           <Textarea
-            placeholder="Descricao"
+            placeholder="Descrição"
             value={draft.description}
             onChange={(e) =>
               setDraft({ ...draft, description: e.target.value })
@@ -299,11 +299,11 @@ export default function JobList({ user, initialData }: { user: User; initialData
             }
           >
             <option>Tempo integral</option>
-            <option>Meio periodo</option>
+            <option>Meio período</option>
             <option>Freelancer</option>
           </Select>
           <Input
-            placeholder="Localizacao"
+            placeholder="Localização"
             value={draft.locationLabel}
             onChange={(e) =>
               setDraft({ ...draft, locationLabel: e.target.value })
@@ -319,7 +319,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
             <option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option>
           </Select>
           <Input
-            placeholder="Salario"
+            placeholder="Salário"
             value={draft.salary}
             onChange={(e) => setDraft({ ...draft, salary: e.target.value })}
           />

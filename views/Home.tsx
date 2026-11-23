@@ -115,7 +115,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
 
   const handleBannerLinkClick = (banner: BannerAd) => {
     if (!banner.targetUrl) {
-      showToast('Esse banner ainda nao tem um link configurado.', 'error');
+      showToast('Esse banner ainda não tem um link configurado.', 'error');
       return;
     }
 
@@ -142,13 +142,13 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel registrar seu interesse.');
+        throw new Error(payload?.error ?? 'Não foi possível registrar seu interesse.');
       }
 
       showToast(payload?.message ?? 'Cadastro registrado.', 'success');
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Nao foi possivel registrar seu interesse.',
+        error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.',
         'error',
       );
     } finally {
@@ -166,7 +166,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <ServiceCard href="/businesses" icon={Building2} label="Negocios" onActivate={() => router.push('/businesses')} />
+        <ServiceCard href="/businesses" icon={Building2} label="Negócios" onActivate={() => router.push('/businesses')} />
         <ServiceCard href="/community" icon={Users} label="Comunidade" onActivate={() => router.push('/community')} />
         <ServiceCard href="/events" icon={CalendarDays} label="Eventos" onActivate={() => router.push('/events')} />
         <ServiceCard

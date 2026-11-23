@@ -86,7 +86,7 @@ export default function HousingList({ user }: { user: User }) {
           showToast(
             error instanceof Error
               ? error.message
-              : "Nao foi possivel carregar moradias.",
+              : "Não foi possível carregar moradias.",
             "error",
           );
       } finally {
@@ -108,14 +108,14 @@ export default function HousingList({ user }: { user: User }) {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
-        throw new Error(payload?.error || "Nao foi possivel publicar.");
+        throw new Error(payload?.error || "Não foi possível publicar.");
       setItems((current) => [payload.housing, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);
-      showToast("Anuncio publicado.", "success");
+      showToast("Anúncio publicado.", "success");
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : "Nao foi possivel publicar.",
+        error instanceof Error ? error.message : "Não foi possível publicar.",
         "error",
       );
     } finally {
@@ -213,16 +213,16 @@ export default function HousingList({ user }: { user: User }) {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Criar anuncio de moradia"
+        title="Criar anúncio de moradia"
       >
         <div className="space-y-3">
           <Input
-            placeholder="Titulo"
+            placeholder="Título"
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
           />
           <Textarea
-            placeholder="Descricao"
+            placeholder="Descrição"
             value={draft.description}
             onChange={(e) =>
               setDraft({ ...draft, description: e.target.value })
@@ -237,7 +237,7 @@ export default function HousingList({ user }: { user: User }) {
             <option>Apartamento</option>
             <option>Casa</option>
             <option>Quarto</option>
-            <option>Republica</option>
+            <option>República</option>
           </Select>
           <AddressAutocomplete
             placeholder="Pesquise cidade, rua ou endereço"
@@ -251,7 +251,7 @@ export default function HousingList({ user }: { user: User }) {
             hint="O anúncio será exibido para esta região."
           />
           <Input
-            placeholder="Preco"
+            placeholder="Preço"
             value={draft.price}
             onChange={(e) => setDraft({ ...draft, price: e.target.value })}
           />
@@ -260,7 +260,7 @@ export default function HousingList({ user }: { user: User }) {
             onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
             folder="housing" cropAspect={4 / 3}
             height={180}
-            hint="Clique na area para selecionar a foto do anuncio."
+            hint="Clique na área para selecionar a foto do anúncio."
           />
           <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="housing" maxItems={6} hint="Adicione até 6 fotos dos ambientes da moradia." />
           <Input
@@ -273,7 +273,7 @@ export default function HousingList({ user }: { user: User }) {
             loading={saving}
             onClick={() => void createHousing()}
           >
-            Publicar anuncio
+            Publicar anúncio
           </Button>
         </div>
       </Modal>

@@ -23,7 +23,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos do evento.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos do evento.' },
       { status: 400 },
     );
   }
@@ -35,11 +35,11 @@ export async function PUT(request: Request, context: RouteContext) {
       : null;
 
   if (!region) {
-    return NextResponse.json({ error: 'Regiao invalida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Região inválida.' }, { status: 400 });
   }
 
   if (parsed.data.visibilityScope === 'SPECIFIC_REGION' && !visibilityRegion) {
-    return NextResponse.json({ error: 'Regiao de visibilidade invalida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Região de visibilidade inválida.' }, { status: 400 });
   }
 
   const { eventId } = await context.params;
@@ -105,7 +105,7 @@ export async function PUT(request: Request, context: RouteContext) {
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2025'
     ) {
-      return NextResponse.json({ error: 'Evento nao encontrado.' }, { status: 404 });
+      return NextResponse.json({ error: 'Evento não encontrado.' }, { status: 404 });
     }
 
     throw error;

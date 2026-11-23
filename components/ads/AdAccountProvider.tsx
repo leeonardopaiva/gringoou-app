@@ -67,13 +67,13 @@ export function AdAccountProvider({ children }: { children: React.ReactNode }) {
   }, [refreshAccounts]);
 
   const selectAccount = useCallback(async (accountId: string) => {
-    if (accountSwitchLocked) throw new Error('Aguarde a confirmacao do pagamento antes de trocar de conta.');
+    if (accountSwitchLocked) throw new Error('Aguarde a confirmação do pagamento antes de trocar de conta.');
     const response = await fetch('/api/ads/accounts/select', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adAccountId: accountId }),
     });
-    if (!response.ok) throw new Error('Nao foi possivel trocar a conta comercial.');
+    if (!response.ok) throw new Error('Não foi possível trocar a conta comercial.');
     setSelectedAccountId(accountId);
     router.refresh();
   }, [accountSwitchLocked, router]);

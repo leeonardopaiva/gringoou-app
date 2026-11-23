@@ -13,7 +13,7 @@ export default function VerifyPhonePage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold tracking-tight text-[#0f2b63]">Confirme seu telefone</h1>
           <p className="text-sm leading-6 text-[#4a5672]">
-            Enviaremos um codigo por SMS para confirmar o numero da sua conta.
+            Enviaremos um código por SMS para confirmar o número da sua conta.
           </p>
         </div>
         <VerifyPhoneForm />

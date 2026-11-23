@@ -41,7 +41,7 @@ function useAsyncResource<T>(loader: () => Promise<T>, enabled: boolean, initial
       setData(nextData);
     } catch (loadError) {
       setData(initialValue);
-      setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar os dados.');
+      setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os dados.');
     } finally {
       setLoading(false);
     }

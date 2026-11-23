@@ -84,7 +84,7 @@ const RATE_LIMIT_EXEMPT_PATHS = ['/api/webhooks/'];
 
 const tooManyRequests = (resetAt: number) =>
   NextResponse.json(
-    { error: 'Muitas requisicoes. Aguarde um instante e tente novamente.' },
+    { error: 'Muitas requisições. Aguarde um instante e tente novamente.' },
     {
       status: 429,
       headers: {
@@ -160,7 +160,7 @@ const buildMaintenanceResponse = (request: NextRequest) => {
 
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
-      { error: 'A plataforma esta temporariamente em manutencao.' },
+      { error: 'A plataforma está temporariamente em manutenção.' },
       { status: 503 },
     );
   }
@@ -176,7 +176,7 @@ const buildAccessBlockedResponse = (request: NextRequest) => {
 
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
-      { error: 'Seu acesso nao esta liberado.' },
+      { error: 'Seu acesso não está liberado.' },
       { status: 403 },
     );
   }
@@ -189,7 +189,7 @@ const buildAccessBlockedResponse = (request: NextRequest) => {
 
 const buildDeletedAccountResponse = (request: NextRequest) => {
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    return NextResponse.json({ error: 'Esta conta foi excluida.' }, { status: 401 });
+    return NextResponse.json({ error: 'Esta conta foi excluída.' }, { status: 401 });
   }
   const url = request.nextUrl.clone();
   url.pathname = '/login';
@@ -259,7 +259,7 @@ export async function middleware(request: NextRequest) {
 
       if (!token) {
         if (isApiRequest) {
-          return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+          return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
         }
 
         if (isOAuthCallback) {
@@ -278,7 +278,7 @@ export async function middleware(request: NextRequest) {
         if (isApiRequest) {
           return NextResponse.json(
             {
-              error: 'A plataforma esta temporariamente em manutencao.',
+              error: 'A plataforma está temporariamente em manutenção.',
             },
             { status: 503 },
           );

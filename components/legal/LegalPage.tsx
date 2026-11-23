@@ -17,7 +17,7 @@ export default function LegalPage({ title, updatedAt, sections }: { title: strin
             <header className="border-b border-border pb-6">
               <p className="text-caption font-bold uppercase tracking-wide text-brand-500">Gringoou</p>
               <h1 className="mt-2 text-h1 font-extrabold text-foreground">{title}</h1>
-              <p className="mt-2 text-body-sm text-muted-foreground">Ultima atualizacao: {updatedAt}</p>
+              <p className="mt-2 text-body-sm text-muted-foreground">Última atualização: {updatedAt}</p>
             </header>
             {sections.map((section) => (
               <section key={section.title} className="space-y-3">

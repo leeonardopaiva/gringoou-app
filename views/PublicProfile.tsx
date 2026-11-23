@@ -94,11 +94,11 @@ const formatMembershipDuration = (value: string) => {
   }
 
   if (monthDiff >= 1) {
-    return `Gringo ha ${monthDiff} ${monthDiff === 1 ? 'mes' : 'meses'}`;
+    return `Gringo há ${monthDiff} ${monthDiff === 1 ? 'mês' : 'meses'}`;
   }
 
   const dayDiff = Math.max(1, Math.floor((now.getTime() - joinedAt.getTime()) / (1000 * 60 * 60 * 24)));
-  return `Gringo ha ${dayDiff} ${dayDiff === 1 ? 'dia' : 'dias'}`;
+  return `Gringo há ${dayDiff} ${dayDiff === 1 ? 'dia' : 'dias'}`;
 };
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
@@ -151,7 +151,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.profile) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar este perfil publico.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar este perfil público.');
         }
 
         if (!ignore) {
@@ -159,7 +159,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         }
       } catch (loadError) {
         if (!ignore) {
-          setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar este perfil.');
+          setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar este perfil.');
         }
       } finally {
         if (!ignore) {
@@ -205,7 +205,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     profile.bio ||
     (profile.locationLabel && (profile.stats.businessCount > 0 || profile.stats.eventCount > 0)
       ? `Conectando brasileiros e oportunidades em ${profile.locationLabel}.`
-      : 'Compartilhando experiencias e fortalecendo a comunidade brasileira.');
+      : 'Compartilhando experiências e fortalecendo a comunidade brasileira.');
   const pageContainerClass = embedded
     ? 'animate-in pb-24 fade-in duration-500'
     : 'min-h-dvh bg-texture px-4 py-5 sm:px-6 lg:px-8 lg:py-8';
@@ -284,14 +284,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel atualizar a conexao.');
+        throw new Error(payload?.error ?? 'Não foi possível atualizar a conexão.');
       }
 
-      showToast(payload?.message ?? 'Conexao atualizada.', 'success');
+      showToast(payload?.message ?? 'Conexão atualizada.', 'success');
       refreshProfile();
     } catch (actionError) {
       showToast(
-        actionError instanceof Error ? actionError.message : 'Nao foi possivel atualizar a conexao.',
+        actionError instanceof Error ? actionError.message : 'Não foi possível atualizar a conexão.',
         'error',
       );
     } finally {
@@ -548,7 +548,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 </div>
 
                 {profile.friends.length === 0 ? (
-                  <EmptyPublicState text="Ainda nao ha conexoes publicas neste perfil." />
+                  <EmptyPublicState text="Ainda não há conexões públicas neste perfil." />
                 ) : (
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {profile.friends.map((friend) => (
@@ -617,7 +617,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   </div>
 
                   {profile.groups.length === 0 ? (
-                    <EmptyPublicState text="Ainda nao ha grupos publicos neste perfil." />
+                    <EmptyPublicState text="Ainda não há grupos públicos neste perfil." />
                   ) : (
                     <div className="mt-4 grid gap-x-5 sm:grid-cols-2">
                       {profile.groups.map((group) => (
@@ -662,7 +662,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <section className="mt-6 px-1 py-3">
                 <h2 className="text-2xl font-bold text-slate-900">Interesses</h2>
                 {interests.length === 0 ? (
-                  <EmptyPublicState text="Ainda nao ha interesses publicos suficientes para este perfil." />
+                  <EmptyPublicState text="Ainda não há interesses públicos suficientes para este perfil." />
                 ) : (
                   <div className="mt-5 flex flex-wrap gap-3">
                     {interests.map((interest) => (
@@ -780,7 +780,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 ) : null}
 
                 {profile.businesses.length === 0 && profile.events.length === 0 ? (
-                  <EmptyPublicState text="Ainda nao ha negocios ou eventos suficientes para montar recomendacoes." />
+                  <EmptyPublicState text="Ainda não há negócios ou eventos suficientes para montar recomendações." />
                 ) : null}
               </section>
             ) : null}

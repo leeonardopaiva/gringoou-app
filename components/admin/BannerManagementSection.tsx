@@ -143,12 +143,12 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
     try {
       const response = await request();
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel salvar o banner.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar o banner.');
       if (resetForm) resetBannerForm();
       onMessage(successMessage);
       await onRefresh();
     } catch (error) {
-      onError(error instanceof Error ? error.message : 'Nao foi possivel salvar o banner.');
+      onError(error instanceof Error ? error.message : 'Não foi possível salvar o banner.');
     } finally {
       setProcessingKey(null);
     }
@@ -242,7 +242,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
       >
         <form id={BANNER_FORM_ID} onSubmit={submitBanner} className="max-h-[68dvh] space-y-5 overflow-y-auto pr-1">
           <section className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Conteudo</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Conteúdo</p>
             <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(180px,1fr)]">
               <label className="space-y-2">
                 <span className="text-xs font-bold text-slate-600">Nome interno</span>
@@ -258,7 +258,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                 />
               </label>
               <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-600">Tipo de acao</span>
+                <span className="text-xs font-bold text-slate-600">Tipo de ação</span>
                 <div className="grid grid-cols-2 gap-1 rounded-full bg-slate-100 p-1">
                   {([{ value: 'LINK', label: 'Link' }, { value: 'REGISTRATION', label: 'Cadastro' }] as const).map((option) => (
                     <button
@@ -304,7 +304,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
           </section>
 
           <section className="space-y-4 border-t border-slate-100 pt-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Publicacao</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Publicação</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <RegionSelector
@@ -313,11 +313,11 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                   onClear={() => setBannerForm((current) => ({ ...current, regionKey: '' }))}
                   allowEmpty
                   emptyLabel="Global"
-                  hint="Deixe global ou escolha uma regiao especifica."
+                  hint="Deixe global ou escolha uma região específica."
                 />
               </div>
               <label className="space-y-2">
-                <span className="flex items-center gap-2 text-xs font-bold text-slate-600"><CalendarDays size={14} /> Inicio</span>
+                <span className="flex items-center gap-2 text-xs font-bold text-slate-600"><CalendarDays size={14} /> Início</span>
                 <Input type="datetime-local" value={bannerForm.startsAt} onChange={(event) => setBannerForm((current) => ({ ...current, startsAt: event.target.value }))} />
               </label>
               <label className="space-y-2">
@@ -328,7 +328,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                 <Toggle
                   checked={bannerForm.isActive}
                   onChange={(isActive) => setBannerForm((current) => ({ ...current, isActive }))}
-                  label={<span><span className="block font-semibold">Banner ativo</span><span className="text-xs text-slate-500">A agenda de inicio e termino continua sendo respeitada.</span></span>}
+                  label={<span><span className="block font-semibold">Banner ativo</span><span className="text-xs text-slate-500">A agenda de início e termino continua sendo respeitada.</span></span>}
                 />
               </div>
             </div>
@@ -356,13 +356,13 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="truncate text-base font-bold theme-text">{banner.name}</h3>
-                      <p className="mt-1 text-xs font-medium text-slate-500">{banner.region?.label || 'Todas as regioes'} · {banner.type === 'LINK' ? 'Link externo' : 'Cadastro de interesse'}</p>
+                      <p className="mt-1 text-xs font-medium text-slate-500">{banner.region?.label || 'Todas as regiões'} · {banner.type === 'LINK' ? 'Link externo' : 'Cadastro de interesse'}</p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${banner.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{banner.isActive ? 'Ativo' : 'Oculto'}</span>
                   </div>
 
                   <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
-                    <div className="rounded-2xl bg-slate-50 px-3 py-2"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Impressoes</p><p className="text-sm font-bold text-slate-700">{banner._count?.impressions ?? 0}</p></div>
+                    <div className="rounded-2xl bg-slate-50 px-3 py-2"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Impressões</p><p className="text-sm font-bold text-slate-700">{banner._count?.impressions ?? 0}</p></div>
                     <div className="rounded-2xl bg-slate-50 px-3 py-2"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Cadastros</p><p className="text-sm font-bold text-slate-700">{banner._count?.registrations ?? 0}</p></div>
                   </div>
 
@@ -370,7 +370,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                   {banner.type === 'LINK' && banner.targetUrl ? (
                     <a href={banner.targetUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-xs font-semibold theme-text"><ExternalLink size={14} /> Abrir destino</a>
                   ) : banner.registrations?.length ? (
-                    <p className="mt-3 truncate text-xs text-slate-500">Ultimo cadastro: {banner.registrations[0].name || banner.registrations[0].email || 'Usuario'}</p>
+                    <p className="mt-3 truncate text-xs text-slate-500">Último cadastro: {banner.registrations[0].name || banner.registrations[0].email || 'Usuário'}</p>
                   ) : null}
                 </div>
               </div>

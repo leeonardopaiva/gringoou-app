@@ -36,7 +36,7 @@ const DEFAULT_TEMPLATE = `<!doctype html>
             </a>
           </td></tr>
           <tr><td style="padding:16px 32px;text-align:center;color:#8a94a8;font-size:12px;">
-            Voce esta recebendo este e-mail porque faz parte da comunidade Gringoou.
+            Você está recebendo este e-mail porque faz parte da comunidade Gringoou.
           </td></tr>
         </table>
       </td></tr>

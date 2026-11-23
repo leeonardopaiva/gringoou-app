@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const code = typeof body?.code === 'string' ? body.code : '';
 
   if (!isValidPreLaunchCode(code)) {
-    return NextResponse.json({ error: 'Codigo de acesso invalido.' }, { status: 401 });
+    return NextResponse.json({ error: 'Código de acesso inválido.' }, { status: 401 });
   }
 
   const token = await createPreLaunchToken();

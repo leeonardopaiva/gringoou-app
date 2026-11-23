@@ -21,7 +21,7 @@ export function WaitlistSection() {
 
   const detectLocation = () => {
     if (!('geolocation' in navigator)) {
-      setError('Seu navegador nao suporta localizacao. Selecione o pais manualmente.');
+      setError('Seu navegador não suporta localização. Selecione o país manualmente.');
       return;
     }
 
@@ -55,17 +55,17 @@ export function WaitlistSection() {
           if (match) {
             setCountry(match.country);
           } else {
-            setError('Nao foi possivel detectar o pais. Selecione manualmente.');
+            setError('Não foi possível detectar o país. Selecione manualmente.');
           }
         } catch {
-          setError('Nao foi possivel detectar o pais. Selecione manualmente.');
+          setError('Não foi possível detectar o país. Selecione manualmente.');
         } finally {
           setLocating(false);
         }
       },
       () => {
         setLocating(false);
-        setError('Permita o acesso a localizacao para detectar o pais automaticamente.');
+        setError('Permita o acesso a localização para detectar o país automaticamente.');
       },
       { timeout: 10000 },
     );
@@ -81,7 +81,7 @@ export function WaitlistSection() {
     const parsed = waitlistSchema.safeParse({ email, name, country, website });
 
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Dados invalidos.');
+      setError(parsed.error.issues[0]?.message ?? 'Dados inválidos.');
       return;
     }
 
@@ -97,13 +97,13 @@ export function WaitlistSection() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(data?.error ?? 'Nao foi possivel concluir agora. Tente novamente.');
+        setError(data?.error ?? 'Não foi possível concluir agora. Tente novamente.');
         return;
       }
 
-      setSuccess(data?.message ?? 'Pronto! Voce esta na lista.');
+      setSuccess(data?.message ?? 'Pronto! Você está na lista.');
     } catch {
-      setError('Nao foi possivel concluir agora. Tente novamente.');
+      setError('Não foi possível concluir agora. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ export function WaitlistSection() {
             Entre na lista de espera
           </h2>
           <p className="text-sm leading-6 text-[#4a5672] sm:text-base">
-            Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponivel.
+            Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponível.
           </p>
         </div>
 
@@ -162,7 +162,7 @@ export function WaitlistSection() {
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <label htmlFor="waitlist-country" className="sr-only">
-                  Pais onde voce mora
+                  Pais onde você mora
                 </label>
                 <select
                   id="waitlist-country"
@@ -172,7 +172,7 @@ export function WaitlistSection() {
                   onChange={(event) => setCountry(event.target.value)}
                   className={inputClassName}
                 >
-                  <option value="">Selecione o pais</option>
+                  <option value="">Selecione o país</option>
                   {COUNTRY_CALLING_CODE_OPTIONS.map((option) => (
                     <option key={option.iso2} value={option.country}>
                       {option.country}
@@ -184,8 +184,8 @@ export function WaitlistSection() {
                 type="button"
                 onClick={detectLocation}
                 disabled={locating}
-                aria-label="Usar minha localizacao"
-                title="Usar minha localizacao"
+                aria-label="Usar minha localização"
+                title="Usar minha localização"
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-brand-500 transition hover:bg-[#f0f7ff] disabled:opacity-60"
               >
                 <LocateFixed size={18} className={locating ? 'animate-pulse' : ''} />

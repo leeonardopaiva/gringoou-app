@@ -20,7 +20,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos para a sugestao.' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos para a sugestão.' },
       { status: 400 },
     );
   }
@@ -33,7 +33,7 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 
   if (!suggestion) {
-    return NextResponse.json({ error: 'Sugestao nao encontrada.' }, { status: 404 });
+    return NextResponse.json({ error: 'Sugestão não encontrada.' }, { status: 404 });
   }
 
   const updatedSuggestion = await prisma.suggestion.update({
@@ -51,7 +51,7 @@ export async function PUT(request: Request, context: RouteContext) {
     suggestion: updatedSuggestion,
     message:
       updatedSuggestion.status === SuggestionStatus.REVIEWED
-        ? 'Sugestao marcada como revisada.'
-        : 'Sugestao reaberta para analise.',
+        ? 'Sugestão marcada como revisada.'
+        : 'Sugestão reaberta para análise.',
   });
 }

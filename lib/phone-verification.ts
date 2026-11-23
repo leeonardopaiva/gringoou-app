@@ -52,8 +52,8 @@ export const getPhoneBlockMessage = (phoneE164: string) => {
   }
 
   return getPhoneCountry(phoneE164)
-    ? 'O Gringoou ainda nao esta disponivel para numeros deste pais.'
-    : 'Numero de telefone invalido. Confira o numero e o codigo do pais.';
+    ? 'O Gringoou ainda não está disponível para números deste país.'
+    : 'Número de telefone inválido. Confira o número e o código do país.';
 };
 
 // Country the request came from, provided by Vercel's edge. Null outside Vercel.
@@ -134,14 +134,14 @@ export const sendPhoneVerificationCode = async ({
   ]);
 
   if (isDevSmsMode) {
-    console.log(`[phone-verification] codigo de teste para ${phoneE164}: ${code}`);
+    console.log(`[phone-verification] código de teste para ${phoneE164}: ${code}`);
     return;
   }
 
   await getTwilioClient().messages.create({
     to: phoneE164,
     from: process.env.TWILIO_FROM_NUMBER!,
-    body: `Seu codigo Gringoou e ${code}. Ele expira em 5 minutos. Nao compartilhe este codigo.`,
+    body: `Seu código Gringoou e ${code}. Ele expira em 5 minutos. Não compartilhe este código.`,
   });
 };
 

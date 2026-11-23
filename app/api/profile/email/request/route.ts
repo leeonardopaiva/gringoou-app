@@ -18,13 +18,13 @@ export const runtime = 'nodejs';
 
 const buildEmailChangeText = (url: string) =>
   [
-    'Confirmacao de troca de email na Gringoou',
+    'Confirmação de troca de email na Gringoou',
     '',
     'Recebemos um pedido para alterar o email da sua conta.',
-    'Use o link abaixo para confirmar a mudanca:',
+    'Use o link abaixo para confirmar a mudança:',
     url,
     '',
-    'Se voce nao solicitou essa troca, ignore este email.',
+    'Se você não solicitou essa troca, ignore este email.',
   ].join('\n');
 
 const buildEmailChangeHtml = (url: string) => `
@@ -37,7 +37,7 @@ const buildEmailChangeHtml = (url: string) => `
         Confirme seu novo email
       </h1>
       <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#475569;">
-        Clique no botao abaixo para concluir a troca do email da sua conta com seguranca.
+        Clique no botão abaixo para concluir a troca do email da sua conta com segurança.
       </p>
       <a
         href="${url}"
@@ -46,7 +46,7 @@ const buildEmailChangeHtml = (url: string) => `
         Confirmar novo email
       </a>
       <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#64748b;">
-        Se voce nao solicitou esta alteracao, ignore este email e sua conta continuara igual.
+        Se você não solicitou esta alteração, ignore este email e sua conta continuará igual.
       </p>
     </div>
   </div>
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Muitas solicitacoes de troca de email. Aguarde antes de tentar novamente.' },
+      { error: 'Muitas solicitações de troca de email. Aguarde antes de tentar novamente.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Email invalido.' },
+      { error: parsed.error.issues[0]?.message ?? 'Email inválido.' },
       { status: 400 },
     );
   }
@@ -94,18 +94,18 @@ export async function POST(request: Request) {
   });
 
   if (!currentUser) {
-    return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
   }
 
   const currentEmail = currentUser.email ? normalizeEmail(currentUser.email) : '';
 
   if (nextEmail === currentEmail) {
-    return NextResponse.json({ error: 'Esse ja e o email atual da sua conta.' }, { status: 400 });
+    return NextResponse.json({ error: 'Esse já é o email atual da sua conta.' }, { status: 400 });
   }
 
   if (!canSelfServeEmailChange(nextEmail, currentUser.role === UserRole.ADMIN)) {
     return NextResponse.json(
-      { error: 'Esse email e restrito e nao pode ser usado no autoatendimento.' },
+      { error: 'Esse email e restrito e não pode ser usado no autoatendimento.' },
       { status: 400 },
     );
   }
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
   });
 
   if (existingUser) {
-    return NextResponse.json({ error: 'Esse email ja esta em uso.' }, { status: 409 });
+    return NextResponse.json({ error: 'Esse email já está em uso.' }, { status: 409 });
   }
 
   const rawToken = createEmailChangeToken();
@@ -157,6 +157,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     success: true,
-    message: 'Enviamos um link de confirmacao para o novo email.',
+    message: 'Enviamos um link de confirmação para o novo email.',
   });
 }

@@ -19,7 +19,7 @@ const registerSchema = z.object({
 export async function POST(request: Request) {
   if (!isOperationalFeatureEnabled('registration')) {
     return NextResponse.json(
-      { error: 'Novos cadastros estao temporariamente pausados.' },
+      { error: 'Novos cadastros estão temporariamente pausados.' },
       { status: 503, headers: { 'Retry-After': '300' } },
     );
   }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   }
 
   const parsed = registerSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados invalidos.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
   const passwordIssues = getPasswordValidationIssues(parsed.data.password);
   if (passwordIssues.length) return NextResponse.json({ error: passwordIssues[0] }, { status: 400 });
 

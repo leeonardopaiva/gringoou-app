@@ -34,7 +34,7 @@ export function buildCurrentUser(sessionUser: {
     username: sessionUser.username,
     role: mapUserRole(sessionUser.role),
     avatar: sessionUser.image || DEFAULT_AVATAR_URL,
-    location: sessionUser.locationLabel || 'Defina sua regiao',
+    location: sessionUser.locationLabel || 'Defina sua região',
     regionKey: sessionUser.regionKey,
     email: sessionUser.email,
     phone: sessionUser.phone,

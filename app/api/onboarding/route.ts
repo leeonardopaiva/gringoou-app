@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   });
 
   if (existingUser) {
-    return NextResponse.json({ error: 'Esse nome publico ja esta em uso.' }, { status: 409 });
+    return NextResponse.json({ error: 'Esse nome público já está em uso.' }, { status: 409 });
   }
 
   const currentUser = await prisma.user.findUnique({

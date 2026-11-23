@@ -167,7 +167,7 @@ export async function GET(request: Request) {
     (event, count) => ({
       term: event.label,
       regionKey: event.regionKey,
-      regionLabel: event.regionKey || 'Sem regiao',
+      regionLabel: event.regionKey || 'Sem região',
       count,
     }),
   ).slice(0, 12);

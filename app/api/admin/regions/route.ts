@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Dados invalidos da regiao' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos da região' },
       { status: 400 },
     );
   }
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       error.code === 'P2002'
     ) {
       return NextResponse.json(
-        { error: 'Ja existe uma regiao com essa chave ou nome.' },
+        { error: 'Já existe uma região com essa chave ou nome.' },
         { status: 409 },
       );
     }

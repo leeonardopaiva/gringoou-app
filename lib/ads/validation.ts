@@ -2,7 +2,7 @@ import '@/lib/zod-messages';
 import { z } from 'zod';
 import { AD_DURATIONS, AD_GOALS, AD_PLANS } from './contracts';
 
-const destinationSchema = z.string().trim().min(1, 'Informe o destino do anuncio.').max(500);
+const destinationSchema = z.string().trim().min(1, 'Informe o destino do anúncio.').max(500);
 
 export const adGoalStepSchema = z.object({
   goal: z.enum(AD_GOALS, { message: 'Selecione um objetivo.' }),
@@ -11,10 +11,10 @@ export const adGoalStepSchema = z.object({
 export const adCreativeStepSchema = z
   .object({
     goal: z.enum(AD_GOALS),
-    headline: z.string().trim().min(2, 'Informe um titulo.').max(70, 'Use no maximo 70 caracteres.'),
-    description: z.string().trim().min(10, 'Descreva melhor o anuncio.').max(600, 'Use no maximo 600 caracteres.'),
+    headline: z.string().trim().min(2, 'Informe um título.').max(70, 'Use no máximo 70 caracteres.'),
+    description: z.string().trim().min(10, 'Descreva melhor o anúncio.').max(600, 'Use no máximo 600 caracteres.'),
     imageUrl: z.string().url('Envie uma imagem valida.'),
-    ctaLabel: z.string().trim().min(2, 'Selecione uma chamada para acao.').max(40),
+    ctaLabel: z.string().trim().min(2, 'Selecione uma chamada para ação.').max(40),
     destination: destinationSchema,
   })
   .superRefine((data, context) => {
@@ -34,11 +34,11 @@ export const adCreativeStepSchema = z
   });
 
 export const adReachStepSchema = z.object({
-  regionKey: z.string().trim().min(1, 'Selecione uma regiao.'),
+  regionKey: z.string().trim().min(1, 'Selecione uma região.'),
   plan: z.enum(AD_PLANS, { message: 'Selecione um plano.' }),
   durationMonths: z.coerce.number().refine(
     (value): value is (typeof AD_DURATIONS)[number] => AD_DURATIONS.includes(value as never),
-    'Selecione uma vigencia de 1, 3 ou 6 meses.',
+    'Selecione uma vigência de 1, 3 ou 6 meses.',
   ),
 });
 
@@ -53,7 +53,7 @@ export const adDraftSchema = adCreativeStepSchema.and(
     plan: z.enum(AD_PLANS).optional(),
     durationMonths: z.coerce.number().refine(
       (value) => AD_DURATIONS.includes(value as never),
-      'Vigencia invalida.',
+      'Vigência inválida.',
     ).optional(),
   }),
 );

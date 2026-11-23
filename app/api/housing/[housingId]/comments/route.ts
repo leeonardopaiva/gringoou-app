@@ -18,7 +18,7 @@ const decorateComment = <
     const allowed = Boolean(session?.user?.id === item.authorId || manageListing);
     return {
       ...item,
-      content: item.isHidden && !allowed ? 'Comentario ocultado pela moderacao.' : item.content,
+      content: item.isHidden && !allowed ? 'Comentário ocultado pela moderação.' : item.content,
       canEdit: allowed,
       canDelete: allowed,
       canHide: manageListing,
@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: Context) {
   const session = await getServerAuthSession();
   const { housingId } = await context.params;
   const housing = await prisma.housing.findFirst({ where: { id: housingId, isActive: true }, select: { id: true, createdById: true } });
-  if (!housing) return NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  if (!housing) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
 
   const comments = await prisma.housingComment.findMany({
     where: { housingId, parentId: null },
@@ -54,27 +54,27 @@ export async function POST(request: Request, context: Context) {
   const { housingId } = await context.params;
   const body = await request.json();
   const parsed = commentSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentario invalido.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentário inválido.' }, { status: 400 });
 
   const parentId = typeof body.parentId === 'string' ? body.parentId : null;
 
   if (USE_MOCKS) {
     const comment = addMockHousingComment(parsed.data.content, parentId, {
       id: session.user.id,
-      name: session.user.name || 'Usuario da comunidade',
+      name: session.user.name || 'Usuário da comunidade',
       username: session.user.username,
       image: session.user.image,
     });
-    if (!comment) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    if (!comment) return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
     return NextResponse.json({ comment }, { status: 201 });
   }
 
   const housing = await prisma.housing.findFirst({ where: { id: housingId, isActive: true }, select: { id: true, createdById: true } });
-  if (!housing) return NextResponse.json({ error: 'Moradia nao encontrada.' }, { status: 404 });
+  if (!housing) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
 
   if (parentId) {
     const parent = await prisma.housingComment.findFirst({ where: { id: parentId, housingId, parentId: null }, select: { id: true } });
-    if (!parent) return NextResponse.json({ error: 'Comentario pai invalido.' }, { status: 400 });
+    if (!parent) return NextResponse.json({ error: 'Comentário pai inválido.' }, { status: 400 });
   }
 
   const comment = await prisma.housingComment.create({

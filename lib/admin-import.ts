@@ -42,7 +42,7 @@ const regionColumns: ColumnSpec[] = [
 const businessColumns: ColumnSpec[] = [
   { key: 'name', label: 'name', required: true, width: 30, example: 'Brasil Market' },
   { key: 'category', label: 'category', required: true, width: 20, example: 'Mercado' },
-  { key: 'description', label: 'description', required: true, width: 48, example: 'Produtos brasileiros e atendimento em portugues.' },
+  { key: 'description', label: 'description', required: true, width: 48, example: 'Produtos brasileiros e atendimento em português.' },
   { key: 'address', label: 'address', required: true, width: 42, example: '123 Main St, Miami, FL' },
   { key: 'regionKey', label: 'regionKey', required: true, width: 24, example: 'miami-fl' },
   { key: 'phone', label: 'phone', width: 20, example: '+1 305 000 0000' },
@@ -58,7 +58,7 @@ const businessColumns: ColumnSpec[] = [
 
 const eventColumns: ColumnSpec[] = [
   { key: 'title', label: 'title', required: true, width: 32, example: 'Feijoada da Comunidade' },
-  { key: 'description', label: 'description', required: true, width: 48, example: 'Encontro com comida brasileira e musica ao vivo.' },
+  { key: 'description', label: 'description', required: true, width: 48, example: 'Encontro com comida brasileira e música ao vivo.' },
   { key: 'venueName', label: 'venueName', required: true, width: 28, example: 'Brazilian Center' },
   { key: 'startsAt', label: 'startsAt', required: true, width: 22, example: '24/05/2026 18:00' },
   { key: 'endsAt', label: 'endsAt', width: 22, example: '24/05/2026 22:00' },
@@ -289,7 +289,7 @@ const addSheet = (
     if (column.required) {
       cell.fill = requiredFill;
       cell.font = { bold: true, color: { argb: 'FF1F2937' } };
-      cell.note = 'Campo obrigatorio';
+      cell.note = 'Campo obrigatório';
     }
   });
 
@@ -386,13 +386,13 @@ export const buildAdminImportTemplate = async () => {
   const readme = workbook.addWorksheet(SHEET_NAMES.readme);
   readme.columns = [{ width: 34 }, { width: 96 }];
   readme.addRows([
-    ['Objetivo', 'Use este arquivo para importar regioes, negocios e eventos em massa pelo painel admin.'],
-    ['Fluxo seguro', 'Primeiro envie o arquivo para validacao. O banco so sera alterado apos a confirmacao no painel.'],
-    ['Campos obrigatorios', 'Cabecalhos amarelos nas abas de dados. Nao renomeie os cabecalhos.'],
+    ['Objetivo', 'Use este arquivo para importar regiões, negócios e eventos em massa pelo painel admin.'],
+    ['Fluxo seguro', 'Primeiro envie o arquivo para validação. O banco so será alterado após a confirmação no painel.'],
+    ['Campos obrigatórios', 'Cabecalhos amarelos nas abas de dados. Não renomeie os cabecalhos.'],
     ['Exemplos', 'Consulte a aba Exemplos. As abas Regioes, Negocios e Eventos devem conter apenas dados reais.'],
     ['Datas', 'Eventos aceitam dd/mm/aaaa hh:mm ou datas nativas do Excel.'],
     ['Listas', 'Use ponto e virgula para aliases e galleryUrls.'],
-    ['Status padrao', 'Negocios e eventos sem status entram como PENDING_REVIEW.'],
+    ['Status padrão', 'Negócios e eventos sem status entram como PENDING_REVIEW.'],
     ['Visibilidade', 'Use USER_REGION, SPECIFIC_REGION ou GLOBAL. Para SPECIFIC_REGION preencha visibilityRegionKey.'],
   ]);
   readme.getColumn(1).font = { bold: true };
@@ -535,7 +535,7 @@ export const previewAdminImportWorkbook = async (buffer: Buffer): Promise<AdminI
     }
 
     if (seenRegionLabels.has(labelKey)) {
-      appendValidationError(errors, SHEET_NAMES.regions, row.rowNumber, 'label', 'Nome de regiao duplicado no arquivo.');
+      appendValidationError(errors, SHEET_NAMES.regions, row.rowNumber, 'label', 'Nome de região duplicado no arquivo.');
       return [];
     }
 
@@ -545,7 +545,7 @@ export const previewAdminImportWorkbook = async (buffer: Buffer): Promise<AdminI
         SHEET_NAMES.regions,
         row.rowNumber,
         'label',
-        `Ja existe uma regiao com esse nome usando a chave ${existingByLabel.key}.`,
+        `Já existe uma região com esse nome usando a chave ${existingByLabel.key}.`,
       );
       return [];
     }
@@ -569,7 +569,7 @@ export const previewAdminImportWorkbook = async (buffer: Buffer): Promise<AdminI
 
   const validateRegionKey = (sheet: string, row: number, field: string, value: string) => {
     if (!regionKeys.has(value)) {
-      appendValidationError(errors, sheet, row, field, `Regiao ${value || '(vazia)'} nao existe na aba Regioes nem no catalogo.`);
+      appendValidationError(errors, sheet, row, field, `Região ${value || '(vazia)'} não existe na aba Regiões nem no catalogo.`);
       return false;
     }
 
@@ -668,7 +668,7 @@ export const previewAdminImportWorkbook = async (buffer: Buffer): Promise<AdminI
     }
 
     if (parsed.data.endsAt && new Date(parsed.data.endsAt) < new Date(parsed.data.startsAt)) {
-      appendValidationError(errors, SHEET_NAMES.events, row.rowNumber, 'endsAt', 'Fim nao pode ser antes do inicio.');
+      appendValidationError(errors, SHEET_NAMES.events, row.rowNumber, 'endsAt', 'Fim não pode ser antes do início.');
       return [];
     }
 
@@ -779,7 +779,7 @@ export const commitAdminImport = async (draft: AdminImportDraft, createdById: st
       const locationLabel = regionLabelsByKey.get(business.regionKey);
 
       if (!locationLabel) {
-        throw new Error(`Regiao ${business.regionKey} nao encontrada para negocio ${business.name}.`);
+        throw new Error(`Região ${business.regionKey} não encontrada para negócio ${business.name}.`);
       }
 
       await tx.business.create({
@@ -819,7 +819,7 @@ export const commitAdminImport = async (draft: AdminImportDraft, createdById: st
       const locationLabel = regionLabelsByKey.get(event.regionKey);
 
       if (!locationLabel) {
-        throw new Error(`Regiao ${event.regionKey} nao encontrada para evento ${event.title}.`);
+        throw new Error(`Região ${event.regionKey} não encontrada para evento ${event.title}.`);
       }
 
       await tx.event.create({

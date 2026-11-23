@@ -75,7 +75,7 @@ const StarRating: React.FC<StarRatingProps> = ({
         })}
       </div>
       <p className={`${compact ? 'text-[11px]' : 'text-sm'} font-medium text-slate-500`}>
-        {count > 0 ? `${average.toFixed(1)} (${count} ${count === 1 ? 'avaliacao' : 'avaliacoes'})` : 'Sem avaliacoes ainda'}
+        {count > 0 ? `${average.toFixed(1)} (${count} ${count === 1 ? 'avaliação' : 'avaliações'})` : 'Sem avaliações ainda'}
       </p>
     </div>
   );

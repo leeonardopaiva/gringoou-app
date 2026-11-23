@@ -30,7 +30,7 @@ const AdminAccessDenied: React.FC = () => (
       </div>
       <h1 className="mt-5 text-h2 font-bold text-foreground">Acesso restrito</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">
-        Seu usuario nao possui permissao de administrador para acessar esta area.
+        Seu usuário não possui permissão de administrador para acessar esta área.
       </p>
     </div>
   </div>

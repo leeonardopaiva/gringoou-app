@@ -86,7 +86,7 @@ export async function POST(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Publicacoes demais em pouco tempo. Tente novamente mais tarde.' },
+      { error: 'Publicações demais em pouco tempo. Tente novamente mais tarde.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
   if (parsed.data.personaMode === 'professional' && !professionalBusiness) {
     return NextResponse.json(
-      { error: 'Selecione um perfil profissional valido para publicar como pagina.' },
+      { error: 'Selecione um perfil profissional valido para publicar como página.' },
       { status: 403 },
     );
   }

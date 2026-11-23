@@ -49,7 +49,7 @@ const normalize = (value: string) =>
  */
 const PT_ALIASES: Record<string, string> = {
   lisboa: 'lisbon', londres: 'london', 'nova york': 'new york city', 'nova iorque': 'new york city',
-  roma: 'rome', pequim: 'beijing', toquio: 'tokyo', 'cidade do mexico': 'mexico city',
+  roma: 'rome', pequim: 'beijing', toquio: 'tokyo', 'cidade do mexico': 'México city',
   genebra: 'geneva', milao: 'milan', veneza: 'venice', florenca: 'florence', moscou: 'moscow',
   viena: 'vienna', bruxelas: 'brussels', copenhague: 'copenhagen', praga: 'prague',
   varsovia: 'warsaw', atenas: 'athens', 'xangai': 'shanghai', 'cantao': 'guangzhou',

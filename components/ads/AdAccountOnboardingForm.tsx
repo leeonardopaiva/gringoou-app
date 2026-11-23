@@ -53,12 +53,12 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
     try {
       const response = await fetch('/api/ads/accounts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Nao foi possivel cadastrar a empresa.');
+      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível cadastrar a empresa.');
       await refreshAccounts();
       router.replace('/ads/overview');
       router.refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Nao foi possivel cadastrar a empresa.');
+      setError(reason instanceof Error ? reason.message : 'Não foi possível cadastrar a empresa.');
     } finally {
       setLoading(false);
     }

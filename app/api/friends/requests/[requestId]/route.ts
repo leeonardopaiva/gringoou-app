@@ -23,7 +23,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Acao invalida.' },
+      { error: parsed.error.issues[0]?.message ?? 'Ação inválida.' },
       { status: 400 },
     );
   }
@@ -44,11 +44,11 @@ export async function PATCH(request: Request, context: RouteContext) {
   });
 
   if (!friendRequest || friendRequest.recipientId !== session.user.id) {
-    return NextResponse.json({ error: 'Solicitacao nao encontrada.' }, { status: 404 });
+    return NextResponse.json({ error: 'Solicitação não encontrada.' }, { status: 404 });
   }
 
   if (friendRequest.status !== FriendRequestStatus.PENDING) {
-    return NextResponse.json({ error: 'Essa solicitacao ja foi respondida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Essa solicitação já foi respondida.' }, { status: 400 });
   }
 
   const nextStatus =
@@ -67,6 +67,6 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   return NextResponse.json({
     request: updated,
-    message: nextStatus === FriendRequestStatus.ACCEPTED ? 'Conexao aceita.' : 'Solicitacao recusada.',
+    message: nextStatus === FriendRequestStatus.ACCEPTED ? 'Conexão aceita.' : 'Solicitação recusada.',
   });
 }

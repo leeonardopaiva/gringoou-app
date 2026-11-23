@@ -30,7 +30,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { DateTimeField } from '../components/ui/DateTimeField';
 import { useActiveRegion } from '../components/RegionContext';
 
-const EVENT_TABS = ['Hoje', 'Esta semana', 'Proximos', 'Cultural', 'Networking', 'Outros', 'Passados'];
+const EVENT_TABS = ['Hoje', 'Esta semana', 'Próximos', 'Cultural', 'Networking', 'Outros', 'Passados'];
 const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
 
 const isSameLocalDay = (left: Date, right: Date) =>
@@ -100,7 +100,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState('Proximos');
+  const [activeTab, setActiveTab] = useState('Próximos');
   const isPastTab = activeTab === 'Passados';
   const [search, setSearch] = useState('');
   const [events, setEvents] = useState<EventItem[]>(initialData?.events ?? []);
@@ -164,7 +164,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar eventos.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar eventos.');
         }
 
         if (!ignore) {
@@ -201,11 +201,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       : null;
 
     if (!createForm.title.trim()) {
-      nextErrors.title = requiredFieldError('o titulo do evento');
+      nextErrors.title = requiredFieldError('o título do evento');
     }
 
     if (!createForm.description.trim()) {
-      nextErrors.description = requiredFieldError('a descricao do evento');
+      nextErrors.description = requiredFieldError('a descrição do evento');
     }
 
     if (!createForm.venueName.trim()) {
@@ -213,17 +213,17 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     }
 
     if (!createForm.startsAt.trim()) {
-      nextErrors.startsAt = requiredFieldError('a data de inicio');
+      nextErrors.startsAt = requiredFieldError('a data de início');
     } else if (!parsedStartsAt) {
-      nextErrors.startsAt = 'Selecione uma data e horario validos.';
+      nextErrors.startsAt = 'Selecione uma data e horário validos.';
     } else if (createForm.endsAt.trim() && !parsedEndsAt) {
-      nextErrors.startsAt = 'Selecione uma data e horario validos.';
+      nextErrors.startsAt = 'Selecione uma data e horário validos.';
     } else if (parsedEndsAt && new Date(parsedEndsAt) < new Date(parsedStartsAt)) {
-      nextErrors.startsAt = 'O encerramento nao pode ser antes do inicio.';
+      nextErrors.startsAt = 'O encerramento não pode ser antes do início.';
     }
 
     if (!createForm.regionKey.trim()) {
-      nextErrors.regionKey = requiredFieldError('uma regiao');
+      nextErrors.regionKey = requiredFieldError('uma região');
     }
 
     const externalUrlError = validateOptionalUrlField(createForm.externalUrl, 'O link externo');
@@ -264,17 +264,17 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel enviar o evento.', 'error');
+        showToast(payload?.error ?? 'Não foi possível enviar o evento.', 'error');
         return;
       }
 
-      showToast('Seu evento foi enviado para aprovacao.', 'success');
+      showToast('Seu evento foi enviado para aprovação.', 'success');
       setCreateForm(emptyForm);
       setShowCreateForm(false);
       setRefreshKey((current) => current + 1);
     } catch (error) {
       console.error('Failed to create event:', error);
-      showToast('Nao foi possivel enviar o evento.', 'error');
+      showToast('Não foi possível enviar o evento.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -289,7 +289,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Nao foi possivel atualizar seus favoritos.', 'error');
+        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
         return;
       }
 
@@ -309,7 +309,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       );
     } catch (error) {
       console.error('Failed to toggle event favorite from list:', error);
-      showToast('Nao foi possivel atualizar seus favoritos.', 'error');
+      showToast('Não foi possível atualizar seus favoritos.', 'error');
     } finally {
       setTogglingInterestId(null);
     }
@@ -342,7 +342,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       return eventDate >= todayStart && eventDate <= weekEnd;
     }
 
-    if (activeTab !== 'Proximos') {
+    if (activeTab !== 'Próximos') {
       return item.category === activeTab;
     }
 
@@ -370,7 +370,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('title')}
               aria-invalid={Boolean(fieldErrors.title)}
-              placeholder="Titulo do evento"
+              placeholder="Título do evento"
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.title} />
@@ -383,7 +383,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('description')}
               aria-invalid={Boolean(fieldErrors.description)}
-              placeholder="Descricao do evento"
+              placeholder="Descrição do evento"
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.description} />
@@ -426,7 +426,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                 clearFieldError('regionKey');
                 setCreateForm((current) => ({ ...current, regionKey: region.key }));
               }}
-              hint="Escolha uma regiao existente para padronizar a agenda."
+              hint="Escolha uma região existente para padronizar a agenda."
             />
             <FieldErrorMessage message={fieldErrors.regionKey} />
             <input
@@ -457,14 +457,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                 setCreateForm((current) => ({ ...current, galleryUrls: value }))
               }
               folder="events"
-              hint="Adicione mais imagens para a pagina detalhada do evento."
+              hint="Adicione mais imagens para a página detalhada do evento."
             />
                 <button
                   type="submit"
                   disabled={submitting || !createForm.regionKey}
                   className="theme-bg theme-bg-hover w-full rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-md disabled:opacity-60"
                 >
-                  {submitting ? 'Enviando...' : 'Enviar para aprovacao'}
+                  {submitting ? 'Enviando...' : 'Enviar para aprovação'}
                 </button>
               </form>
         </Modal>
@@ -485,7 +485,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         />
         {resultScope === 'global' && events.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
-            Ainda nao ha eventos publicados na sua regiao. Mostrando eventos de outras regioes.
+            Ainda não há eventos publicados na sua região. Mostrando eventos de outras regiões.
           </div>
         ) : null}
         {displayedEvents.length === 0 ? (
@@ -601,7 +601,7 @@ const EventCard: React.FC<{
                 </div>
                 {item.status === 'PENDING_REVIEW' || item.isPendingReview ? (
                   <span className="mt-2 inline-flex w-fit rounded-xl border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                    Aguardando aprovacao
+                    Aguardando aprovação
                   </span>
                 ) : null}
                 <p className="text-slate-500 text-[10px] mt-1 font-medium">{date}</p>
@@ -634,7 +634,7 @@ const EventCard: React.FC<{
                 {interestExpanded ? (
                   <p className="mt-1 text-[10px] text-slate-500">
                     {item.canViewInterestedUsers
-                      ? (item.interestPreview ?? []).map((person) => person.name || 'Usuario').join(', ') || 'Sem nomes disponiveis.'
+                      ? (item.interestPreview ?? []).map((person) => person.name || 'Usuário').join(', ') || 'Sem nomes disponíveis.'
                       : item.canUnlockInterestedUsers
                         ? 'Lista de pessoas: recurso premium em breve. Hoje exibimos apenas a quantidade.'
                         : `${item.interestCount ?? 0} pessoas confirmaram interesse.`}

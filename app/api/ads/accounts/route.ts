@@ -29,7 +29,7 @@ const accountSchema = z.object({
 
 export async function GET() {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
 
   const [memberships, selected, businesses] = await Promise.all([
     prisma.adAccountUser.findMany({
@@ -108,11 +108,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
 
   const parsed = accountSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados da empresa invalidos.' }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados da empresa inválidos.' }, { status: 400 });
   }
 
   const business = await prisma.business.findFirst({
@@ -182,7 +182,7 @@ export async function POST(request: Request) {
 
   if (!account) {
     return NextResponse.json(
-      { error: `Voce pode gerenciar no maximo ${MAX_AD_ACCOUNTS_PER_USER} contas de negocio.`, code: 'AD_ACCOUNT_LIMIT_REACHED' },
+      { error: `Você pode gerenciar no máximo ${MAX_AD_ACCOUNTS_PER_USER} contas de negócio.`, code: 'AD_ACCOUNT_LIMIT_REACHED' },
       { status: 409 },
     );
   }

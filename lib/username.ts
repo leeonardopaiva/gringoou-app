@@ -70,28 +70,28 @@ export const validateUsernameValue = (value: string) => {
   if (normalized.length < USERNAME_MIN_LENGTH) {
     return {
       normalized,
-      error: 'Use ao menos 3 caracteres para seu nome publico.',
+      error: 'Use ao menos 3 caracteres para seu nome público.',
     };
   }
 
   if (normalized.length > USERNAME_MAX_LENGTH) {
     return {
       normalized,
-      error: `Use no maximo ${USERNAME_MAX_LENGTH} caracteres.`,
+      error: `Use no máximo ${USERNAME_MAX_LENGTH} caracteres.`,
     };
   }
 
   if (!USERNAME_PATTERN.test(normalized)) {
     return {
       normalized,
-      error: 'Use apenas letras minusculas, numeros e hifens.',
+      error: 'Use apenas letras minúsculas, números e hífens.',
     };
   }
 
   if (isReservedUsername(normalized)) {
     return {
       normalized,
-      error: 'Esse nome esta reservado pela plataforma.',
+      error: 'Esse nome está reservado pela plataforma.',
     };
   }
 

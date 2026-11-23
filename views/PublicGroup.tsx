@@ -128,7 +128,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.group) {
-          throw new Error(payload?.error ?? 'Nao foi possivel carregar este grupo.');
+          throw new Error(payload?.error ?? 'Não foi possível carregar este grupo.');
         }
 
         if (!ignore) {
@@ -136,7 +136,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         }
       } catch (loadError) {
         if (!ignore) {
-          setError(loadError instanceof Error ? loadError.message : 'Nao foi possivel carregar este grupo.');
+          setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar este grupo.');
         }
       } finally {
         if (!ignore) {
@@ -166,14 +166,14 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel atualizar sua participacao.');
+        throw new Error(payload?.error ?? 'Não foi possível atualizar sua participação.');
       }
 
-      showToast(payload?.message ?? 'Participacao atualizada.', 'success');
+      showToast(payload?.message ?? 'Participação atualizada.', 'success');
       setRefreshKey((current) => current + 1);
     } catch (membershipError) {
       showToast(
-        membershipError instanceof Error ? membershipError.message : 'Nao foi possivel atualizar sua participacao.',
+        membershipError instanceof Error ? membershipError.message : 'Não foi possível atualizar sua participação.',
         'error',
       );
     } finally {
@@ -271,7 +271,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       <div className={pageContainerClass}>
         <div className={wrapperClass}>
           <div className="w-full rounded-[32px] border border-red-100 bg-red-50 p-6 text-center">
-            <h1 className="text-xl font-bold text-red-700">Grupo indisponivel</h1>
+            <h1 className="text-xl font-bold text-red-700">Grupo indisponível</h1>
             <p className="mt-3 text-sm text-red-600">{error}</p>
           </div>
         </div>
@@ -348,7 +348,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
               {group.description ? (
                 <p className="text-sm leading-6 text-slate-600">{group.description}</p>
               ) : (
-                <p className="text-sm leading-6 text-slate-500">Grupo publico da comunidade Gringoou.</p>
+                <p className="text-sm leading-6 text-slate-500">Grupo público da comunidade Gringoou.</p>
               )}
 
               {viewer ? (

@@ -48,7 +48,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Nao foi possivel criar o grupo.');
+        throw new Error(payload?.error ?? 'Não foi possível criar o grupo.');
       }
 
       showToast(payload?.message || 'Grupo criado.', 'success');
@@ -56,7 +56,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
       onClose();
       onCreated(payload?.group ?? null);
     } catch (createError) {
-      showToast(createError instanceof Error ? createError.message : 'Nao foi possivel criar o grupo.', 'error');
+      showToast(createError instanceof Error ? createError.message : 'Não foi possível criar o grupo.', 'error');
     } finally {
       setCreating(false);
     }
@@ -79,13 +79,13 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
         <input
           value={draft.category}
           onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
-          placeholder="Categoria, ex: Bairro, Musica, Cidade"
+          placeholder="Categoria, ex: Bairro, Música, Cidade"
           className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
         />
         <textarea
           value={draft.description}
           onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-          placeholder="Descricao curta"
+          placeholder="Descrição curta"
           rows={3}
           className="theme-outline-ring w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
         />
@@ -94,8 +94,8 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
           onChange={(region) => setDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))}
           onClear={() => setDraft((current) => ({ ...current, regionKey: '' }))}
           allowEmpty
-          emptyLabel="Sem regiao especifica"
-          label="Regiao opcional"
+          emptyLabel="Sem região específica"
+          label="Região opcional"
           hint="Use apenas quando o grupo for local."
         />
         <label className="space-y-2">

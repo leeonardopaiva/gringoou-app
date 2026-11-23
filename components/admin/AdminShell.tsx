@@ -90,7 +90,7 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="flex h-[74px] items-center border-b border-slate-200 px-6"><GringoouLogo size={25} /></div>
       <div className="flex-1 overflow-y-auto px-3 py-5">
         <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Principal</p>
-        <nav className="space-y-1" aria-label="Navegacao administrativa">
+        <nav className="space-y-1" aria-label="Navegação administrativa">
           {navigation.filter((item) => (!item.rootOnly || isRoot) && (item.href === '/admin/utm' ? canManageUtm : user.role === UserRole.ADMIN || (user.role === UserRole.MODERATOR && (item.href === '/admin/moderation' || item.href === '/admin/news')))).map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);

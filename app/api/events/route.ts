@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     : await findRegionByKey(effectiveRegionKey, { activeOnly: true });
 
   if (!professionalBusiness && !region) {
-    return NextResponse.json({ error: 'Selecione uma regiao valida.' }, { status: 400 });
+    return NextResponse.json({ error: 'Selecione uma região valida.' }, { status: 400 });
   }
 
   const baseSlug = slugify(parsed.data.title);
