@@ -25,8 +25,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   const classes = cn(
     'flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 transition-all',
     disabled
-      ? 'cursor-pointer border-slate-200 bg-white opacity-50'
-      : 'border-slate-200 bg-white hover:border-brand-300 active:scale-95',
+      ? 'cursor-pointer border-slate-200 bg-surface opacity-50'
+      : 'border-slate-200 bg-surface hover:border-brand-300 active:scale-95',
   );
 
   const content = (

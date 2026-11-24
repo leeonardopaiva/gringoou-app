@@ -7,8 +7,8 @@ export type BadgeStatus = 'online' | 'ausente' | 'offline';
 
 const solidTone: Record<BadgeTone, string> = {
   primary: 'bg-brand-500 text-white',
-  success: 'bg-success-tag text-emerald-900',
-  destaque: 'bg-secondary text-text',
+  success: 'bg-success-tag text-on-success',
+  destaque: 'bg-secondary text-on-accent',
   erro: 'bg-red-100 text-red-700',
   neutro: 'bg-slate-100 text-slate-600',
 };
@@ -78,7 +78,7 @@ export const Badge: React.FC<BadgeProps> & {
 };
 
 Badge.Novo = ({ className }) => (
-  <span className={cn('inline-flex items-center rounded-full bg-text px-2.5 py-1 text-[11px] font-bold uppercase text-white', className)}>
+  <span className={cn('inline-flex items-center rounded-full bg-navy px-2.5 py-1 text-[11px] font-bold uppercase text-white', className)}>
     Novo
   </span>
 );

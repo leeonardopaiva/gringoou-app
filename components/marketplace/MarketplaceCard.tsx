@@ -67,7 +67,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
             </div>
           )}
           {item.status === 'SOLD' ? (
-            <span className="absolute left-2 top-2 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-bold text-white">
+            <span className="absolute left-2 top-2 rounded-full bg-scrim-2/75 px-2.5 py-1 text-[10px] font-bold text-white">
               Vendido
             </span>
           ) : null}
@@ -113,7 +113,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           }}
           disabled={favoriteToggling}
           aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60"
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 shadow-sm backdrop-blur transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60"
         >
           <Heart size={16} className={cn('transition-colors', item.isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-500')} />
         </button>

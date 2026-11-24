@@ -47,7 +47,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div>
         <div
           className={cn(
-            'flex items-center gap-2 rounded-full border-2 bg-white px-4 transition-colors',
+            'flex items-center gap-2 rounded-full border-2 bg-surface px-4 transition-colors',
             stateBorderClasses[resolvedState],
           )}
         >
@@ -85,7 +85,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           disabled={disabled}
           className={cn(
-            'min-h-28 w-full rounded-2xl border-2 bg-white px-4 py-3 text-body-sm text-text outline-none transition-colors placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400',
+            'min-h-28 w-full rounded-2xl border-2 bg-surface px-4 py-3 text-body-sm text-text outline-none transition-colors placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400',
             stateBorderClasses[resolvedState],
             className,
           )}
@@ -111,7 +111,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
     return (
       <div>
-        <div className={cn('relative flex items-center gap-2 rounded-full border-2 bg-white px-4', stateBorderClasses[resolvedState])}>
+        <div className={cn('relative flex items-center gap-2 rounded-full border-2 bg-surface px-4', stateBorderClasses[resolvedState])}>
           {prefixIcon && <span className="shrink-0 text-slate-400">{prefixIcon}</span>}
           <select
             ref={ref}
@@ -179,7 +179,7 @@ export const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, disabl
     >
       <span
         className={cn(
-          'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform',
+          'absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow-sm transition-transform',
           checked ? 'translate-x-5' : 'translate-x-0.5',
         )}
       />

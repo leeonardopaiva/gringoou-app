@@ -512,7 +512,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     variant="ghost"
                     isDisabled={submitting}
                     onPress={submitGoogleLogin}
-                    className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-base font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                    className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-surface px-6 text-base font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                   >
                     <GoogleIcon size={20} className="mr-2" />
                     {googleSubmitting ? 'Entrando...' : 'Continuar com Google'}
@@ -527,7 +527,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     variant="ghost"
                     isDisabled={submitting}
                     onPress={submitGoogleSelectAccount}
-                    className="inline-flex h-12 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+                    className="inline-flex h-12 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-surface px-6 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
                   >
                     <GoogleIcon size={16} className="mr-2" />
                     Trocar conta Google
@@ -548,7 +548,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     variant="ghost"
                     isDisabled={submitting}
                     onPress={onMockLogin}
-                    className="h-11 w-full max-w-[360px] rounded-full border border-dashed border-slate-300 bg-white px-6 text-xs font-semibold text-slate-500 shadow-none hover:bg-slate-50"
+                    className="h-11 w-full max-w-[360px] rounded-full border border-dashed border-slate-300 bg-surface px-6 text-xs font-semibold text-slate-500 shadow-none hover:bg-slate-50"
                   >
                     Entrar com usuário de teste
                   </Button>
@@ -881,7 +881,7 @@ const Registration: React.FC<RegistrationProps> = ({
               {error && !isPasswordRecoveryView ? <p className="mt-6 text-center text-sm text-red-600">{error}</p> : null}
               {notice ? (
                 <div className="mx-auto mt-6 flex w-full max-w-[360px] items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-100">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600"><MailCheck size={18} /></span>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-brand-600"><MailCheck size={18} /></span>
                   <p className="text-sm font-semibold leading-5 text-brand-700">{notice}</p>
                 </div>
               ) : null}
@@ -896,7 +896,7 @@ const Registration: React.FC<RegistrationProps> = ({
     <div className="min-h-dvh bg-bg px-4 py-6 sm:px-6 lg:py-10">
       <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-lg items-center justify-center">
         <div className="hidden">
-          <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/80 bg-white/70 px-4 py-2 shadow-sm backdrop-blur">
+          <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/80 bg-surface/70 px-4 py-2 shadow-sm backdrop-blur">
             <GringoouLogo size={22} />
             <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               Gringoou
@@ -930,7 +930,7 @@ const Registration: React.FC<RegistrationProps> = ({
               <Card
                 key={title}
                 variant="secondary"
-                className="border border-white/80 bg-white/75 shadow-sm backdrop-blur"
+                className="border border-white/80 bg-surface/75 shadow-sm backdrop-blur"
               >
                 <Card.Content className="space-y-2 p-4">
                   <p className="text-sm font-bold text-slate-900">{title}</p>
@@ -1039,7 +1039,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       size="lg"
                       variant="outline"
                       isDisabled={submitting}
-                      className="rounded-2xl border-slate-200 bg-slate-950 font-semibold text-white shadow-none hover:bg-slate-900"
+                      className="rounded-2xl border-slate-200 bg-scrim font-semibold text-white shadow-none hover:bg-scrim-2"
                     >
                       {submitting ? 'Enviando link...' : 'Continuar com email'}
                     </Button>
@@ -1056,7 +1056,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           size="lg"
                           variant="outline"
                           onPress={() => openPasswordView('signin')}
-                          className="rounded-2xl border-slate-200 bg-white font-semibold text-slate-900 shadow-sm"
+                          className="rounded-2xl border-slate-200 bg-surface font-semibold text-slate-900 shadow-sm"
                         >
                           Entrar com email e senha
                         </Button>
@@ -1440,7 +1440,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   });
                 }}
               >
-                <ProgressBar value={onboardingProgress} label="Conclusão do perfil" className="sticky top-0 z-20 -mx-1 rounded-2xl bg-white/95 p-3 backdrop-blur" />
+                <ProgressBar value={onboardingProgress} label="Conclusão do perfil" className="sticky top-0 z-20 -mx-1 rounded-2xl bg-surface/95 p-3 backdrop-blur" />
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <p className={fieldLabel}>Nome completo</p>
@@ -1536,7 +1536,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       placeholder="Seu melhor e-mail"
                       value={formValues.email}
                       disabled
-                      className="h-14 rounded-2xl border border-slate-200 bg-slate-100 px-5 text-sm text-slate-500 shadow-sm placeholder:text-slate-400"
+                      className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-100 px-5 text-sm text-slate-500 shadow-sm placeholder:text-slate-400"
                     />
                   </div>
 
@@ -1669,7 +1669,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
             {notice ? (
               <div className="flex items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 ring-1 ring-brand-100">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-600"><MailCheck size={18} /></span>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-brand-600"><MailCheck size={18} /></span>
                 <p className="text-sm font-semibold leading-5 text-brand-700">{notice}</p>
               </div>
             ) : null}

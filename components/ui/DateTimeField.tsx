@@ -15,7 +15,7 @@ type DateTimeFieldProps = {
 };
 
 const inputClass =
-  'theme-outline-ring block h-12 w-full min-w-0 appearance-none rounded-2xl border border-slate-200 bg-white px-3 text-left text-sm text-slate-900 outline-none';
+  'theme-outline-ring block h-12 w-full min-w-0 appearance-none rounded-2xl border border-slate-200 bg-surface px-3 text-left text-sm text-slate-900 outline-none';
 
 const split = (value: string): [string, string] => {
   const [date = '', time = ''] = value.split('T');

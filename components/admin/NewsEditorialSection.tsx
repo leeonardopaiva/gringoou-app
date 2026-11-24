@@ -32,7 +32,7 @@ const EMPTY_FORM: FormState = {
 };
 
 const fieldClass =
-  'h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100';
+  'h-10 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100';
 const labelClass = 'block text-xs font-semibold text-slate-600';
 
 const formatDate = (iso: string) =>
@@ -181,7 +181,7 @@ export default function NewsEditorialSection() {
 
   return (
     <section className="mx-auto max-w-6xl p-5 sm:p-8">
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-[28px] border border-slate-200 bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
@@ -331,7 +331,7 @@ export default function NewsEditorialSection() {
               rows={3}
               value={form.subtitle}
               onChange={(event) => setField('subtitle')(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
             />
           </label>
           <div>

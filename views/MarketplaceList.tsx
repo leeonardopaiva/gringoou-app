@@ -272,7 +272,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               href="/inbox"
               aria-label="Minhas mensagens"
               title="Minhas mensagens"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-600 transition hover:border-brand-300 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200"
             >
               <MessageCircle size={18} />
             </Link>
@@ -414,7 +414,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               }}
               rows={4}
               placeholder="Descreva o item, estado e detalhes relevantes."
-              className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand-500 focus:outline-none"
+              className="w-full rounded-2xl border-2 border-slate-200 bg-surface px-4 py-3 text-sm focus:border-brand-500 focus:outline-none"
             />
             {fieldErrors.description ? <FieldErrorMessage message={fieldErrors.description} /> : null}
           </div>
@@ -425,7 +425,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               <select
                 value={form.category}
                 onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm"
+                className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -439,7 +439,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               <select
                 value={form.condition}
                 onChange={(event) => setForm((current) => ({ ...current, condition: event.target.value }))}
-                className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm"
+                className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
               >
                 {CONDITIONS.map((condition) => (
                   <option key={condition.id} value={condition.id}>

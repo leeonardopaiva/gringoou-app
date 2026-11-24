@@ -67,7 +67,7 @@ export default function NewsCommentReportsSection() {
   const buttonClass = 'rounded-full px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50';
 
   return (
-    <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="mt-6 rounded-[28px] border border-slate-200 bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
           <MessageSquareWarning size={19} className="text-brand-500" /> Comentários denunciados

@@ -33,7 +33,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   return (
     <div className="relative">
-      <div className={cn('flex items-center gap-2 rounded-full border-2 bg-white px-4 transition', error ? 'border-red-400' : 'border-slate-200 focus-within:border-brand-500 focus-within:theme-ring')}>
+      <div className={cn('flex items-center gap-2 rounded-full border-2 bg-surface px-4 transition', error ? 'border-red-400' : 'border-slate-200 focus-within:border-brand-500 focus-within:theme-ring')}>
         <MapPin size={16} className="shrink-0 text-slate-400" />
         <input
           value={value}

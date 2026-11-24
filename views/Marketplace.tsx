@@ -553,7 +553,7 @@ const EventCard: React.FC<{
   onEdit,
 }) => (
     <div
-      className={`relative flex min-h-32 rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:border-slate-200 ${
+      className={`relative flex min-h-32 rounded-2xl border border-slate-100 bg-surface shadow-sm transition hover:border-slate-200 ${
         item.status === 'PENDING_REVIEW' || item.isPendingReview ? 'bg-slate-50 opacity-65 grayscale' : ''
       }`}
     >
@@ -624,7 +624,7 @@ const EventCard: React.FC<{
                     className={`relative z-30 inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold disabled:opacity-60 ${
                       item.isFavorite
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 bg-white text-slate-700'
+                        : 'border-slate-200 bg-surface text-slate-700'
                     }`}
                   >
                     {item.isFavorite ? <Check size={13} aria-hidden /> : null}

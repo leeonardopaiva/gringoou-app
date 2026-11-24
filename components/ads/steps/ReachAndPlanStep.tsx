@@ -21,8 +21,8 @@ export function ReachAndPlanStep({ state, errors, patch }: { state: AdWizardData
         {plans?.map((item) => {
           const plan = item.plan;
           const selected = state.plan === plan;
-          return <button key={plan} type="button" onClick={() => patch({ plan, durationMonths: item.durationMonths })} className={cn('relative rounded-2xl border-2 p-6 text-left transition hover:border-[#078cf5]', selected ? plan === 'SILVER' ? 'border-[#173247] bg-[#fff98a] shadow-lg' : 'border-[#078cf5] bg-white shadow-sm' : 'border-slate-200 bg-white')}>
-            <div className="flex items-center justify-between"><p className="text-[18px] font-extrabold text-[#173247]">{item.name}</p>{selected ? <Check size={18} className="text-[#078cf5]" /> : null}</div>
+          return <button key={plan} type="button" onClick={() => patch({ plan, durationMonths: item.durationMonths })} className={cn('relative rounded-2xl border-2 p-6 text-left transition hover:border-[#078cf5]', selected ? plan === 'SILVER' ? 'border-[#173247] bg-[#fff98a] shadow-lg' : 'border-[#078cf5] bg-surface shadow-sm' : 'border-slate-200 bg-surface')}>
+            <div className="flex items-center justify-between"><p className="text-[18px] font-extrabold text-ink-4">{item.name}</p>{selected ? <Check size={18} className="text-[#078cf5]" /> : null}</div>
             <p className="mt-2 text-[28px] font-extrabold text-[#078cf5]">{formatAdCurrency(item.monthlyPriceCents * item.durationMonths)}</p>
             <p className="mt-1 text-[10px] font-semibold text-slate-400">{formatAdCurrency(item.monthlyPriceCents)} por mês</p>
             <ul className="mt-4 space-y-2 text-[11px] text-[#324b5f]"><li className="flex gap-2"><Check size={13} className="text-[#078cf5]" />{item.durationMonths} {item.durationMonths === 1 ? 'mês' : 'meses'}</li><li className="flex gap-2"><Check size={13} className="text-[#078cf5]" />{item.estimatedImpressions.toLocaleString('pt-BR')} impressões estimadas</li>{item.highlights.map((highlight) => <li key={highlight} className="flex gap-2"><Check size={13} className="text-[#078cf5]" />{highlight}</li>)}</ul>

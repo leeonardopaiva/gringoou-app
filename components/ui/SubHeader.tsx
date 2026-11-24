@@ -81,7 +81,7 @@ const countActive = (filters: SubHeaderFilters) =>
   filters.fields.filter((field) => (filters.values[field.id] ?? neutralValue(field, filters.defaults)) !== neutralValue(field, filters.defaults)).length;
 
 const inputClass =
-  'h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100';
+  'h-11 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm text-slate-800 focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-100';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -222,7 +222,7 @@ export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filte
         open ? (
           <div className="fixed inset-0 z-[150] flex items-end" role="dialog" aria-modal="true" aria-label={title}>
             <button type="button" aria-label="Fechar filtros" className="absolute inset-0 bg-overlay" onClick={() => setOpen(false)} />
-            <div className="relative max-h-[88dvh] w-full overflow-y-auto rounded-t-sheet bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-xl">
+            <div className="relative max-h-[88dvh] w-full overflow-y-auto rounded-t-sheet bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-xl">
               <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200" aria-hidden />
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-base font-bold text-slate-900">{title}</h2>

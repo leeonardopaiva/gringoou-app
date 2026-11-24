@@ -75,7 +75,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         event.preventDefault();
         onSubmit?.();
       }}
-      className={`relative flex items-center rounded-full border border-slate-200 bg-white shadow-sm transition-all theme-outline-ring ${className}`}
+      className={`relative flex items-center rounded-full border border-slate-200 bg-surface shadow-sm transition-all theme-outline-ring ${className}`}
     >
       {!value && animatedTerms && animatedTerms.length > 0 ? (
         <div className={`pointer-events-none absolute inset-y-0 left-12 flex items-center text-sm text-slate-400 ${onFilterClick ? (voiceSupported && onVoiceResult ? 'right-24' : 'right-14') : 'right-4'}`}>
@@ -127,7 +127,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         </div>
       ) : null}
       {focused && (suggestionsLoading || suggestions.length > 0) ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
           {suggestionsLoading && suggestions.length === 0 ? <p className="px-3 py-3 text-xs text-slate-500">Buscando sugestões...</p> : null}
           {suggestions.map((suggestion) => (
             <Link key={suggestion.id} href={suggestion.href} className="block rounded-xl px-3 py-2.5 transition hover:bg-brand-50" onMouseDown={(event) => event.preventDefault()}>

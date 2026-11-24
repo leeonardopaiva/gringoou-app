@@ -13,7 +13,7 @@ const PersonaModeSwitch: React.FC<PersonaModeSwitchProps> = ({ value, onChange, 
       type="button"
       onClick={() => onChange('personal')}
       className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-        value === 'personal' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+        value === 'personal' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-500'
       }`}
     >
       Pessoal

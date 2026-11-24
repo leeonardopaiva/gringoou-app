@@ -288,7 +288,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               <span
                 className={cn(
                   'flex h-5 min-w-[18px] items-center justify-center rounded-full text-[10px] font-bold',
-                  tab === t ? 'bg-white/25 text-white' : 'bg-white text-slate-500',
+                  tab === t ? 'bg-white/25 text-white' : 'bg-surface text-slate-500',
                 )}
               >
                 {info.count > 99 ? '99+' : info.count}
@@ -303,7 +303,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   return (
     <div className="min-h-dvh bg-bg">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
         <div className="mx-auto max-w-[1120px] px-4 py-1">
           <PageHeader
             title="INBOX"
@@ -326,7 +326,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               <Skeleton className="h-20 w-full rounded-2xl" />
               <Skeleton className="h-20 w-full rounded-2xl" />
             </div>
-            <div className="h-[500px] rounded-2xl border border-slate-200 bg-white">
+            <div className="h-[500px] rounded-2xl border border-slate-200 bg-surface">
               <Skeleton className="h-16 w-full border-b border-slate-200" />
               <div className="p-4 space-y-4">
                 <Skeleton className="h-12 w-3/4 rounded-lg" />
@@ -353,7 +353,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 </>
               )}
             </div>
-            <div className="h-[500px] rounded-2xl border border-slate-200 bg-white flex items-center justify-center">
+            <div className="h-[500px] rounded-2xl border border-slate-200 bg-surface flex items-center justify-center">
               <EmptyState
                 icon={tab === 'marketplace' ? <Package size={28} /> : tab === 'negocios' ? <Store size={28} /> : tab === 'diretas' ? <UserIconLucide size={28} /> : <MessageCircle size={28} />}
                 title={
@@ -378,7 +378,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   tab === 'todas' && (
                     <Link
                       href="/marketplace"
-                      className="inline-flex items-center rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700"
+                      className="inline-flex items-center rounded-full bg-brand-strong px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-strong-hover"
                     >
                       Explorar anúncios
                     </Link>
@@ -407,7 +407,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     <div
                       key={conv.id}
                       className={cn(
-                        'relative flex w-full items-center rounded-2xl border bg-white transition-colors',
+                        'relative flex w-full items-center rounded-2xl border bg-surface transition-colors',
                         isActive ? 'border-brand-300 bg-brand-50 shadow-sm' : 'border-slate-200 hover:border-brand-200 hover:bg-brand-50/40'
                       )}
                     >
@@ -481,7 +481,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             </aside>
 
             {/* Chat Panel */}
-            <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-[70dvh]', isMobile && mobileView !== 'chat' && 'hidden')}>
+            <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-sm md:h-[70dvh]', isMobile && mobileView !== 'chat' && 'hidden')}>
               {openingDirect && !activeConv ? (
                 <div className="flex flex-1 flex-col" role="status" aria-label="Abrindo conversa">
                   <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
@@ -495,7 +495,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
               ) : activeConv ? (
                 <>
                   {/* Chat Header */}
-                  <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+                  <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-surface px-4 py-3">
                     <button
                       type="button"
                       onClick={handleBack}
@@ -560,7 +560,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   {activeConv.item && (
                     <Link
                       href={activeConv.item.publicPath}
-                      className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
+                      className="flex items-center gap-3 border-b border-slate-200 bg-surface px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
                     >
                       {activeConv.item.imageUrl ? (
                         <img
@@ -586,7 +586,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   )}
 
                   {/* Messages */}
-                  <div ref={messagesRef} onScroll={onMessagesScroll} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-white p-4">
+                  <div ref={messagesRef} onScroll={onMessagesScroll} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-surface p-4">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 mb-3">
@@ -612,19 +612,19 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                               className={cn(
                                 'max-w-[75%] rounded-2xl px-4 py-2',
                                 isMine
-                                  ? 'rounded-br-md bg-brand-600 text-white shadow-sm'
+                                  ? 'rounded-br-md bg-brand-strong text-white shadow-sm'
                                   : 'rounded-bl-md bg-slate-100 text-slate-900 shadow-sm'
                               )}
                             >
                               {msg.deleted ? (
-                                <p className={cn('text-sm italic', isMine ? 'text-brand-100' : 'text-slate-400')}>Mensagem apagada</p>
+                                <p className={cn('text-sm italic', isMine ? 'text-white/85' : 'text-slate-400')}>Mensagem apagada</p>
                               ) : (
                                 <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
                               )}
                               <p
                                 className={cn(
                                   'mt-1.5 flex items-center justify-end gap-2 text-[10px]',
-                                  isMine ? 'text-brand-100' : 'text-slate-400'
+                                  isMine ? 'text-white/85' : 'text-slate-400'
                                 )}
                               >
                                 {isMine && !msg.deleted && Date.now() - new Date(msg.createdAt).getTime() < 15 * 60 * 1000 ? (
@@ -650,7 +650,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       </button>
                     </div>
                   ) : (
-                  <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+                  <div className="shrink-0 border-t border-slate-200 bg-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
                     {activeConv.requestStatus === 'PENDING' && activeConv.buyer.id === user.id ? (
                       <p className="mb-2 text-center text-xs text-slate-500">Sua mensagem foi enviada. A pessoa precisa aceitar para vocês conversarem.</p>
                     ) : null}
@@ -667,14 +667,14 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         placeholder="Escreva uma mensagem..."
                         rows={1}
                         maxLength={2000}
-                        className="flex-1 min-h-[44px] max-h-32 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400"
+                        className="flex-1 min-h-[44px] max-h-32 resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400"
                         aria-label="Mensagem"
                       />
                       <button
                         type="button"
                         onClick={() => void handleSend()}
                         disabled={!draft.trim() || sending}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brand-300"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white shadow-sm transition-colors hover:bg-brand-strong-hover disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brand-300"
                         aria-label="Enviar mensagem"
                       >
                         {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
@@ -704,9 +704,9 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
 
         {menuConv ? (
           <>
-            <div className="fixed inset-0 z-[70] bg-slate-950/30 md:bg-transparent" onClick={() => setShowMenu(null)} aria-hidden="true" />
+            <div className="fixed inset-0 z-[70] bg-scrim/30 md:bg-transparent" onClick={() => setShowMenu(null)} aria-hidden="true" />
             <div
-              className="fixed inset-x-0 bottom-0 z-[75] rounded-t-2xl border border-slate-200 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-xl md:inset-x-auto md:bottom-auto md:w-60 md:rounded-xl"
+              className="fixed inset-x-0 bottom-0 z-[75] rounded-t-2xl border border-slate-200 bg-surface p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-xl md:inset-x-auto md:bottom-auto md:w-60 md:rounded-xl"
               style={!isMobile && menuAnchor ? { top: menuAnchor.top, left: menuAnchor.left } : undefined}
               role="menu"
             >
@@ -802,7 +802,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 type="button"
                 onClick={() => void submitReport()}
                 disabled={!reportReason || reportSending}
-                className="rounded-full bg-brand-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full bg-brand-strong px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-strong-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {reportSending ? 'Enviando...' : 'Enviar denúncia'}
               </button>

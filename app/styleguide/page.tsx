@@ -51,9 +51,9 @@ const Section: React.FC<{
       {index} — {eyebrow}
     </p>
     <h2 className="mb-5 mt-1 text-h2 font-extrabold text-text">{title}</h2>
-    <div className="rounded-card border border-slate-200 bg-white p-6 shadow-sm">{children}</div>
+    <div className="rounded-card border border-slate-200 bg-surface p-6 shadow-sm">{children}</div>
     {code && (
-      <pre className="mt-4 overflow-x-auto rounded-2xl bg-[#0f2b3d] p-4 text-xs leading-relaxed text-slate-100">
+      <pre className="mt-4 overflow-x-auto rounded-2xl bg-navy p-4 text-xs leading-relaxed text-white">
         <code>{code.trim()}</code>
       </pre>
     )}
@@ -84,13 +84,52 @@ export default function StyleguidePage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-[#0f2b3d] px-6 py-3 text-white">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-navy px-6 py-3 text-white">
         <div className="flex items-center gap-3">
           <GringoouLogo size={22} className="brightness-0 invert" />
           <span className="text-caption font-semibold uppercase tracking-widest text-white/60">/ Styleguide</span>
         </div>
         <span className="text-caption text-white/50">Gringoou Design System · v1.0</span>
       </header>
+
+      <Section
+        index="00"
+        eyebrow="Tema"
+        title="Cores e tema claro/escuro"
+        code={`// Use tokens, nunca cores fixas (bg-white, text-slate-900, text-[#132f40]).
+// Cada token tem valor claro e escuro (app/theme.css, gerado por scripts/gen-theme.mjs).
+<div className="bg-surface border border-border text-foreground">...</div>
+<p className="text-muted-foreground">Texto de apoio</p>
+<span className="bg-brand-100 text-brand-700">Selo da marca</span>
+
+// Escala neutra (slate) e cores de status (red, amber, emerald...) também mudam sozinhas no escuro.
+// Fundo escuro fixo com texto branco (não inverte): bg-navy, bg-scrim. Texto sobre amarelo/verde: text-on-accent.
+// Trecho que deve ficar sempre claro (ex.: landing): className="theme-light".`}
+      >
+        <p className="mb-5 text-body-sm text-muted-foreground">
+          Troque o tema em <strong>Perfil &gt; Editar perfil &gt; Aparência</strong>. Os blocos abaixo mudam junto com o tema.
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            ['bg-bg', 'bg', 'text-foreground'],
+            ['bg-surface', 'surface', 'text-foreground'],
+            ['bg-slate-50', 'slate-50', 'text-slate-900'],
+            ['bg-slate-100', 'slate-100', 'text-slate-900'],
+            ['bg-slate-200', 'slate-200', 'text-slate-900'],
+            ['bg-brand-100', 'brand-100', 'text-brand-800'],
+            ['bg-brand-200', 'brand-200', 'text-brand-800'],
+            ['bg-brand-strong', 'brand-strong', 'text-white'],
+            ['bg-navy', 'navy', 'text-white'],
+            ['bg-emerald-50', 'emerald-50', 'text-emerald-800'],
+            ['bg-amber-50', 'amber-50', 'text-amber-800'],
+            ['bg-red-50', 'red-50', 'text-red-800'],
+          ].map(([bg, label, text]) => (
+            <div key={label} className={`rounded-2xl border border-border px-3 py-4 text-caption font-bold ${bg} ${text}`}>
+              {label}
+            </div>
+          ))}
+        </div>
+      </Section>
 
       <Section
         index="01"
@@ -299,9 +338,9 @@ showToast('Salvo com sucesso', 'success', 4000, { actionLabel: 'Desfazer', onAct
 
           <p className="pb-1 pt-3 text-caption font-bold uppercase tracking-wide text-slate-400">Toast Notifications</p>
           <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-3 rounded-3xl bg-text px-4 py-3 text-white shadow-lg">
+            <div className="flex items-center gap-3 rounded-3xl bg-navy px-4 py-3 text-white shadow-lg">
               <span className="text-body-sm font-medium">Salvo com sucesso</span>
-              <button className="text-body-sm font-bold text-brand-300 hover:text-white">Desfazer</button>
+              <button className="text-body-sm font-bold text-brand-light hover:text-white">Desfazer</button>
             </div>
             <div className="flex items-center gap-3 rounded-3xl border border-amber-100 bg-amber-50 px-4 py-3 text-amber-700 shadow-lg">
               <span className="text-body-sm font-medium">Ação requer atenção</span>

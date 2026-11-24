@@ -76,7 +76,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           onClick={() => setFloatingChatOpen(true)}
           aria-expanded={false}
           aria-label={unreadCount > 0 ? `Abrir mensagens, ${unreadCount} novas` : 'Abrir mensagens'}
-          className="flex h-12 w-60 items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+          className="flex h-12 w-60 items-center gap-2.5 rounded-2xl border border-slate-200 bg-surface px-4 text-sm font-semibold text-slate-800 shadow-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
         >
           <MessageCircle size={18} className="text-brand-600" aria-hidden />
           <span className="flex-1 text-left">Mensagens</span>
@@ -90,12 +90,12 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
   return (
     <div className="fixed bottom-4 right-4 z-[60] hidden lg:block">
       <div
-        className="flex h-[min(560px,calc(100dvh-6rem))] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="flex h-[min(560px,calc(100dvh-6rem))] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-2xl"
         role="dialog"
         aria-label="Mensagens"
       >
         {/* Header: o controle de recolher é o mesmo que abriu o chat. */}
-        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5">
+        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-surface px-3 py-2.5">
           {activeConv ? (
             <>
               <button
@@ -147,7 +147,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
             {activeConv.item ? (
               <Link
                 href={activeConv.item.publicPath}
-                className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 text-sm transition-colors hover:bg-slate-50"
+                className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-surface px-4 py-2.5 text-sm transition-colors hover:bg-slate-50"
               >
                 {activeConv.item.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -173,11 +173,11 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                       <div
                         className={cn(
                           'max-w-[75%] rounded-2xl px-4 py-2 shadow-sm',
-                          isMine ? 'rounded-br-md bg-brand-600 text-white' : 'rounded-bl-md bg-slate-100 text-slate-900',
+                          isMine ? 'rounded-br-md bg-brand-strong text-white' : 'rounded-bl-md bg-slate-100 text-slate-900',
                         )}
                       >
                         <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
-                        <p className={cn('mt-1 text-right text-[10px]', isMine ? 'text-brand-100' : 'text-slate-400')}>
+                        <p className={cn('mt-1 text-right text-[10px]', isMine ? 'text-white/85' : 'text-slate-400')}>
                           {formatTime(msg.createdAt)}
                         </p>
                       </div>
@@ -187,7 +187,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
               )}
             </div>
 
-            <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+            <div className="shrink-0 border-t border-slate-200 bg-surface px-4 py-3">
               <div className="flex items-end gap-2">
                 <textarea
                   value={draft}
@@ -201,14 +201,14 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                   placeholder="Escreva uma mensagem..."
                   rows={1}
                   maxLength={2000}
-                  className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+                  className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                   aria-label="Mensagem"
                 />
                 <button
                   type="button"
                   onClick={() => void handleSend()}
                   disabled={!draft.trim()}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white shadow-sm transition-colors hover:bg-brand-strong-hover focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Enviar mensagem"
                 >
                   <Send size={18} />
@@ -218,7 +218,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           </>
         ) : (
           <>
-            <div className="flex shrink-0 border-b border-slate-200 bg-white" role="tablist" aria-label="Filtrar conversas">
+            <div className="flex shrink-0 border-b border-slate-200 bg-surface" role="tablist" aria-label="Filtrar conversas">
               {(['todas', 'marketplace', 'diretas'] as const).map((t) => (
                 <button
                   key={t}

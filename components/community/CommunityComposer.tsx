@@ -58,7 +58,7 @@ type ModeButtonProps = {
 };
 
 const Root: React.FC<RootProps> = ({ children, variant = 'card' }) => (
-  <div className={variant === 'bare' ? 'space-y-3' : 'space-y-3 rounded-[20px] border border-slate-200 bg-white p-3 shadow-sm'}>
+  <div className={variant === 'bare' ? 'space-y-3' : 'space-y-3 rounded-[20px] border border-slate-200 bg-surface p-3 shadow-sm'}>
     {children}
   </div>
 );
@@ -81,7 +81,7 @@ const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, on
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        className="min-h-11 w-full resize-none rounded-full border-none bg-slate-100 px-4 py-3 text-sm text-foreground outline-none transition focus:bg-white focus:ring-2 focus:ring-brand-200"
+        className="min-h-11 w-full resize-none rounded-full border-none bg-slate-100 px-4 py-3 text-sm text-foreground outline-none transition focus:bg-surface focus:ring-2 focus:ring-brand-200"
       />
       {value ? <div className="mt-1 flex justify-end px-1">
         <CharacterCounter current={value.length} max={COMMUNITY_POST_MAX_LENGTH} />
@@ -161,7 +161,7 @@ const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
       <button type="button" onClick={() => setOpen((current) => !current)} aria-label="Escolher perfil de publicação" aria-expanded={open} className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-600">
         <MoreHorizontal size={18} />
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} align="end" unstyled className="w-56 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} align="end" unstyled className="w-56 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-lg">
         <div>
           <button type="button" onClick={() => select('personal')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50">
             <UserRound size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{personalName}</span>{value === 'personal' ? <Check size={16} className="text-brand-500" /> : null}

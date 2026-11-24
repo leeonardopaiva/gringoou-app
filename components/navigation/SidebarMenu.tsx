@@ -33,12 +33,12 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ label, icon, a
       'flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors',
       collapsed && 'justify-center px-2',
       tone === 'dark'
-        ? active ? 'bg-[#0065bf] text-white' : 'text-slate-300 hover:bg-[#339eff]/20 hover:text-white'
+        ? active ? 'bg-[#0065bf] text-white' : 'text-white/70 hover:bg-[#339eff]/20 hover:text-white'
         : active ? 'bg-brand-100 text-brand-600' : 'text-foreground hover:bg-brand-100',
       disabled && 'cursor-not-allowed opacity-45',
     )}
   >
-    <span className={tone === 'dark' ? (active ? 'text-white' : 'text-slate-400') : active ? 'text-brand-500' : 'text-muted-foreground'}>{icon}</span>
+    <span className={tone === 'dark' ? (active ? 'text-white' : 'text-white/55') : active ? 'text-brand-500' : 'text-muted-foreground'}>{icon}</span>
     {!collapsed ? <span className="text-body-sm font-semibold">{label}</span> : null}
     {badge && !collapsed ? (
       badgeTone === 'success'

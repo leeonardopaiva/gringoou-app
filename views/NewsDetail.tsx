@@ -75,7 +75,7 @@ const NewsDetail: React.FC<{ slug: string }> = ({ slug }) => {
               <ul className="space-y-3">
                 {related.map((item) => (
                   <li key={item.id}>
-                    <Link href={item.path} className="flex gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition hover:border-brand-200">
+                    <Link href={item.path} className="flex gap-3 rounded-2xl border border-slate-100 bg-surface p-3 shadow-sm transition hover:border-brand-200">
                       {item.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={item.imageUrl} alt="" loading="lazy" className="h-16 w-24 shrink-0 rounded-xl object-cover" />

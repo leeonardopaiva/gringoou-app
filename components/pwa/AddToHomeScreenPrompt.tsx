@@ -74,7 +74,7 @@ export default function AddToHomeScreenPrompt() {
   if (!visible) return null;
 
   return (
-    <aside className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-sm rounded-2xl border border-brand-100 bg-white p-4 shadow-[0_18px_55px_rgba(15,23,42,0.18)] md:hidden" aria-label="Adicionar Gringoou à tela inicial">
+    <aside className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-sm rounded-2xl border border-brand-100 bg-surface p-4 shadow-[0_18px_55px_rgba(15,23,42,0.18)] md:hidden" aria-label="Adicionar Gringoou à tela inicial">
       <button type="button" onClick={dismiss} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Fechar instrução"><X size={17} /></button>
       <div className="flex gap-3 pr-7">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Smartphone size={22} /></span>

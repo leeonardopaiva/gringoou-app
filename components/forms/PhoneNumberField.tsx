@@ -106,7 +106,7 @@ export default function PhoneNumberField({
   return (
     <div ref={containerRef} className="relative">
       <div
-        className={`flex h-14 items-center rounded-full border bg-white shadow-sm focus-within:ring-2 focus-within:ring-brand-200 ${
+        className={`flex h-14 items-center rounded-full border bg-surface shadow-sm focus-within:ring-2 focus-within:ring-brand-200 ${
           invalid ? 'border-red-400' : 'border-slate-200'
         }`}
       >
@@ -141,7 +141,7 @@ export default function PhoneNumberField({
       </div>
 
       {open ? (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:right-auto sm:w-80">
+        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-xl sm:right-auto sm:w-80">
           <label className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
             <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
             <input

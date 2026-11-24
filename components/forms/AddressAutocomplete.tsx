@@ -107,7 +107,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Pe
       </div>
 
       {open && suggestions.length ? (
-        <div role="listbox" className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+        <div role="listbox" className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
           {suggestions.map((suggestion) => (
             <button
               key={suggestion.id}

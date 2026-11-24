@@ -105,7 +105,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
   };
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+    <article className="overflow-hidden rounded-2xl border border-slate-100 bg-surface shadow-sm">
       <div className={`relative aspect-[16/9] w-full bg-slate-100 ${detail ? 'sm:aspect-[2/1]' : ''}`}>
         {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -122,12 +122,12 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
           </div>
         )}
         {!detail ? <Link href={article.path} aria-label={`Abrir notícia: ${article.title}`} className="absolute inset-0" /> : null}
-        <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-brand-700 shadow-sm backdrop-blur">
+        <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-brand-700 shadow-sm backdrop-blur">
           {getNewsCategoryLabel(article.category)}
         </span>
         {detail ? (
           <>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" aria-hidden />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/80 via-scrim/25 to-transparent" aria-hidden />
             <h1 className="absolute inset-x-4 bottom-4 text-xl font-bold leading-snug text-white sm:inset-x-6 sm:bottom-6 sm:text-2xl">{article.title}</h1>
           </>
         ) : null}
@@ -264,7 +264,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
 };
 
 const NewsSkeleton: React.FC = () => (
-  <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm" aria-hidden>
+  <div className="overflow-hidden rounded-2xl border border-slate-100 bg-surface shadow-sm" aria-hidden>
     <Skeleton className="aspect-[16/9] w-full rounded-none" />
     <div className="space-y-2 p-4">
       <Skeleton className="h-4 w-4/5" />

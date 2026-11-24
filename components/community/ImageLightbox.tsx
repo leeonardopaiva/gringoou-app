@@ -34,7 +34,7 @@ export function ImageLightbox({ open, src, alt, onClose }: ImageLightboxProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Imagem ampliada"
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/95 p-3 sm:p-6"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-scrim/95 p-3 sm:p-6"
       onClick={onClose}
     >
       <button

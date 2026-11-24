@@ -411,7 +411,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                     setEditingCommentContent('');
                   }}
                   disabled={savingCommentId === comment.id}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold text-slate-600 disabled:opacity-60"
+                  className="rounded-2xl border border-slate-200 bg-surface px-4 py-2 text-[11px] font-bold text-slate-600 disabled:opacity-60"
                 >
                   Cancelar
                 </button>
@@ -437,7 +437,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
       />
 
       {!supportsHover && likesOpen && likesPreviewContent ? (
-        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-scrim/35 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-sheet bg-surface p-5 shadow-lg">
             <div className="mb-3 flex justify-end">
               <button

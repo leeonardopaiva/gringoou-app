@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-dvh overflow-hidden bg-[#f7f8fb]">
+    // Landing sempre clara (muitas imagens e cores próprias); o tema escuro vale só dentro do app.
+    <div className="theme-light min-h-dvh overflow-hidden bg-wash-2">
       <LandingHeader />
       <LandingHero />
       <WaitlistSection />

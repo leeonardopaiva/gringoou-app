@@ -1237,11 +1237,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   return (
     <div className="mx-auto max-w-[1500px] animate-in space-y-6 px-4 py-7 fade-in duration-500 sm:px-7 lg:px-8">
       {activeSection !== 'analytics' ? <div className="flex items-start justify-between gap-4">
-        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
           {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}
           <InfoTip text={sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description} />
         </h1>
-        <button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing || loading} onClick={() => void loadDashboard(true)} className="flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button>
+        <button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing || loading} onClick={() => void loadDashboard(true)} className="flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button>
       </div> : null}
       <div className="hidden">
         <div className="rounded-[32px] bg-gradient-to-br from-[#345CFF] via-[#5B4BFF] to-[#7A54F5] p-5 text-white shadow-xl">
@@ -1290,14 +1290,14 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         <div className="hidden">
           {loading && !dashboard
             ? Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="h-[104px] animate-pulse rounded-3xl bg-white shadow-sm" />
+                <div key={index} className="h-[104px] animate-pulse rounded-3xl bg-surface shadow-sm" />
               ))
             : statsCards.map((card) => (
                 <button
                   key={card.label}
                   type="button"
                   onClick={() => setActiveSection(card.section)}
-                  className="rounded-3xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="rounded-3xl border border-slate-100 bg-surface p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${card.accent}`}>
                     {card.icon}
@@ -1476,7 +1476,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             />
             <SupportText text="Baixe o modelo XLSX, preencha as abas Regiões, Negócios e Eventos, valide o arquivo e confirme apenas quando não houver erros." />
 
-            <div className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
               <div className="flex items-start gap-4">
                 <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl theme-soft-surface theme-text">
                   <FileSpreadsheet size={22} />
@@ -1522,11 +1522,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             </div>
 
             {processingKey === 'import:preview' ? (
-              <div className="h-[160px] animate-pulse rounded-3xl bg-white shadow-sm" />
+              <div className="h-[160px] animate-pulse rounded-3xl bg-surface shadow-sm" />
             ) : null}
 
             {importPreview ? (
-              <div className="space-y-3 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+              <div className="space-y-3 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
                 <div className="grid grid-cols-3 gap-3">
                   <ImportMetric label="Regiões" value={importPreview.summary.regions} />
                   <ImportMetric label="Negócios" value={importPreview.summary.businesses} />
@@ -1613,11 +1613,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           ) : null}
           {loading && !dashboard
             ? Array.from({ length: 2 }).map((_, index) => (
-                <div key={index} className="h-[184px] animate-pulse rounded-3xl bg-white shadow-sm" />
+                <div key={index} className="h-[184px] animate-pulse rounded-3xl bg-surface shadow-sm" />
               ))
             : null}
           {visibleRegions.map((region) => (
-            <div key={region.key} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+            <div key={region.key} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -1757,7 +1757,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           loading={loading && !dashboard}
         >
           {dashboard?.pendingPosts.map((post) => (
-            <div key={post.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+            <div key={post.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <Avatar src={post.author.image} name={post.author.name || 'Autor'} size="sm" className="!h-10 !w-10" />
                 <div className="min-w-0 flex-1">
@@ -1822,7 +1822,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           ) : dashboard && filteredBusinesses.length > 0 ? (
             <div className="space-y-3">
               {visibleBusinesses.map((business) => (
-                <div key={business.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div key={business.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
                       src={business.imageUrl || PLACEHOLDER_IMAGE}
@@ -1930,7 +1930,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             hint="Defina a região exata onde este negócio deve aparecer."
                           />
                         ) : (
-                          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                          <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-slate-500">
                             {businessForm.visibilityScope === 'GLOBAL'
                               ? 'Este negócio poderá aparecer para usuários de qualquer região.'
                               : 'Este negócio aparece para usuários cuja região coincide com a região cadastrada acima.'}
@@ -2045,7 +2045,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           ) : dashboard && filteredEvents.length > 0 ? (
             <div className="space-y-3">
               {visibleEvents.map((event) => (
-                <div key={event.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div key={event.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <img
                       src={event.imageUrl || PLACEHOLDER_IMAGE}
@@ -2171,7 +2171,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             hint="Defina a região exata onde este evento deve aparecer."
                           />
                         ) : (
-                          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                          <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-slate-500">
                             {eventForm.visibilityScope === 'GLOBAL'
                               ? 'Este evento poderá aparecer para usuários de qualquer região.'
                               : 'Este evento aparece para usuários cuja região coincide com a região cadastrada acima.'}
@@ -2257,7 +2257,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           ) : dashboard && filteredSuggestions.length > 0 ? (
             <div className="space-y-3">
               {visibleSuggestions.map((suggestion) => (
-                <div key={suggestion.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div key={suggestion.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
                   <div className="flex items-start gap-4">
                     <Avatar src={suggestion.user.image} name={suggestion.user.name || suggestion.user.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
@@ -2357,7 +2357,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           ) : dashboard && filteredUsers.length > 0 ? (
             <div className="space-y-3">
               {visibleUsers.map((managedUser) => (
-                <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
+                <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
                   <div className="flex items-start gap-4">
                     <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
@@ -2456,7 +2456,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           }
                           options={userRoleOptions}
                         />
-                        <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600">
+                        <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-medium text-slate-600">
                           <input
                             type="checkbox"
                             checked={userForm.onboardingCompleted}
@@ -2565,7 +2565,7 @@ const SupportText: React.FC<{ text: string }> = ({ text }) => (
 );
 
 const ImportMetric: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-  <div className="rounded-2xl border border-slate-200 bg-[#F8FAFC] px-4 py-4 text-center">
+  <div className="rounded-2xl border border-slate-200 bg-wash-1 px-4 py-4 text-center">
     <p className="text-2xl font-bold text-slate-900">{value}</p>
     <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
   </div>
@@ -2580,7 +2580,7 @@ const SectionListToggle: React.FC<{
   <button
     type="button"
     onClick={onToggle}
-    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-[#2B5DF5] hover:text-[#2B5DF5]"
+    className="rounded-full border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-[#2B5DF5] hover:text-[#2B5DF5]"
   >
     {expanded ? 'Mostrar menos' : `Ver todos (${total})`}
     {!expanded ? (
@@ -2601,7 +2601,7 @@ const SearchFilterInput: React.FC<{
       value={value}
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#2B5DF5] focus:ring-2 focus:ring-blue-100"
+      className="w-full rounded-full border border-slate-200 bg-surface py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#2B5DF5] focus:ring-2 focus:ring-blue-100"
     />
   </div>
 );
@@ -2631,7 +2631,7 @@ const QueueCard: React.FC<{
   lines: string[];
   children: React.ReactNode;
 }> = ({ title, subtitle, lines, children }) => (
-  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
+  <div className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0 flex-1">
         <p className="text-lg font-bold theme-text">{title}</p>
@@ -2690,7 +2690,7 @@ const ConfirmationDialog: React.FC<{
 const LoadingCards: React.FC = () => (
   <div className="space-y-3">
     {Array.from({ length: 2 }).map((_, index) => (
-      <div key={index} className="h-[152px] animate-pulse rounded-2xl border border-slate-200 bg-white" />
+      <div key={index} className="h-[152px] animate-pulse rounded-2xl border border-slate-200 bg-surface" />
     ))}
   </div>
 );

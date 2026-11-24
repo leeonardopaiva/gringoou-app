@@ -170,7 +170,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">Build Report</p>
-          <h1 className="mt-1 text-[34px] font-extrabold leading-none text-[#132f40]">Build Report</h1>
+          <h1 className="mt-1 text-[34px] font-extrabold leading-none text-ink">Build Report</h1>
         </div>
         <Button iconLeft={<Play size={18} />} onClick={() => void downloadReport()} loading={exporting}>
           Run report
@@ -181,7 +181,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
         <div className="space-y-5">
           <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h2 className="text-[17px] font-bold text-[#132f40]">Settings</h2>
+              <h2 className="text-[17px] font-bold text-ink">Settings</h2>
               <ChevronDown size={16} className="text-slate-400" />
             </div>
             <div className="space-y-4 px-5 py-5">
@@ -201,13 +201,13 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
               <Toggle
                 checked={state.leadGen}
                 onChange={(checked) => setState((current) => ({ ...current, leadGen: checked }))}
-                label={<span className="text-[14px] font-medium text-[#243b53]">Lead Gen Report</span>}
+                label={<span className="text-[14px] font-medium text-ink-2">Lead Gen Report</span>}
               />
               <div>
                 <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Output format</p>
                 <div className="flex gap-4">
                   {(['CSV', 'XLSX'] as const).map((option) => (
-                    <label key={option} className="flex items-center gap-2 text-[14px] font-medium text-[#243b53]">
+                    <label key={option} className="flex items-center gap-2 text-[14px] font-medium text-ink-2">
                       <input
                         type="radio"
                         checked={state.outputFormat === option}
@@ -219,7 +219,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 </div>
               </div>
               <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-[14px] font-semibold text-[#243b53]">Scheduled Report is OFF</span>
+                <span className="text-[14px] font-semibold text-ink-2">Scheduled Report is OFF</span>
                 <Toggle
                   checked={state.scheduled}
                   onChange={(checked) => setState((current) => ({ ...current, scheduled: checked }))}
@@ -230,12 +230,12 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
 
           <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h2 className="text-[17px] font-bold text-[#132f40]">Filter</h2>
+              <h2 className="text-[17px] font-bold text-ink">Filter</h2>
               <ChevronDown size={16} className="text-slate-400" />
             </div>
             <div className="space-y-4 px-5 py-5">
               <div className="flex items-center justify-between text-[14px]">
-                <span className="font-medium text-[#243b53]">Time Zone:</span>
+                <span className="font-medium text-ink-2">Time Zone:</span>
                 <span className="font-bold text-brand-500">{Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
               </div>
               <div>
@@ -289,7 +289,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
             <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                  <h2 className="text-[17px] font-bold text-[#132f40]">Column selectors</h2>
+                  <h2 className="text-[17px] font-bold text-ink">Column selectors</h2>
                   <p className="text-[12px] text-slate-400">Selecione as colunas para incluir no export.</p>
                 </div>
                 <Input value={state.search} onChange={(event) => setState((current) => ({ ...current, search: event.target.value }))} placeholder="Search columns" prefixIcon={<Search size={16} />} className="w-[240px]" />
@@ -299,7 +299,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   <div className="space-y-4">
                     {groupedDimensions.map((group) => (
                       <details key={group.title} open className="group rounded-2xl border border-slate-100 p-4">
-                        <summary className="cursor-pointer list-none text-[15px] font-bold text-[#243b53]">{group.title}</summary>
+                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{group.title}</summary>
                         <div className="mt-4 space-y-3">
                           {group.items
                             .filter((item) => item.label.toLowerCase().includes(state.search.trim().toLowerCase()))
@@ -326,7 +326,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                         key={item.id}
                         type="button"
                         onClick={() => toggleDimension(item.id)}
-                        className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-[#243b53]"
+                        className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-ink-2"
                       >
                         <span>{item.label}</span>
                         <X size={14} className="text-slate-400" />
@@ -341,7 +341,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
             <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                  <h2 className="text-[17px] font-bold text-[#132f40]">Metrics</h2>
+                  <h2 className="text-[17px] font-bold text-ink">Metrics</h2>
                   <p className="text-[12px] text-slate-400">Selecione as métricas para incluir no export.</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setState((current) => ({ ...current, selectedMetrics: defaultReportMetrics, selectedDimensions: defaultReportDimensions }))}>
@@ -353,7 +353,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   <div className="space-y-4">
                     {groupedMetrics.map((group) => (
                       <details key={group.title} open className="group rounded-2xl border border-slate-100 p-4">
-                        <summary className="cursor-pointer list-none text-[15px] font-bold text-[#243b53]">{group.title}</summary>
+                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{group.title}</summary>
                         <div className="mt-4 space-y-3">
                           {group.items
                             .filter((item) => item.label.toLowerCase().includes(state.search.trim().toLowerCase()))
@@ -380,7 +380,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                         key={item.id}
                         type="button"
                         onClick={() => toggleMetric(item.id)}
-                        className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-[#243b53]"
+                        className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-ink-2"
                       >
                         <span>{item.label}</span>
                         <X size={14} className="text-slate-400" />
@@ -396,7 +396,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
           <Card className="rounded-[24px] border border-slate-200 p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-[16px] font-bold text-[#132f40]">Pronto para gerar?</p>
+                <p className="text-[16px] font-bold text-ink">Pronto para gerar?</p>
                 <p className="text-[12px] text-slate-400">
                   {selectedMetricItems.length} métricas, {selectedDimensionItems.length} dimensões e {filteredRows.length} campanhas no filtro
                 </p>

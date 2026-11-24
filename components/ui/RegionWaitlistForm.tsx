@@ -64,7 +64,7 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
   return (
     <form onSubmit={handleSubmit} noValidate>
       <div
-        className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:border sm:bg-white sm:p-[7px] sm:pl-6 sm:focus-within:ring-2 sm:focus-within:ring-brand-200 ${
+        className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:border sm:bg-surface sm:p-[7px] sm:pl-6 sm:focus-within:ring-2 sm:focus-within:ring-brand-200 ${
           error ? 'sm:border-red-300' : 'sm:border-slate-200'
         }`}
       >
@@ -80,7 +80,7 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
             setEmail(event.target.value);
             if (error) setError(null);
           }}
-          className={`h-14 w-full min-w-0 rounded-full border bg-white px-6 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 sm:h-auto sm:flex-1 sm:border-0 sm:bg-transparent sm:px-0 sm:py-2 sm:text-[15px] sm:focus-visible:ring-0 ${
+          className={`h-14 w-full min-w-0 rounded-full border bg-surface px-6 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 sm:h-auto sm:flex-1 sm:border-0 sm:bg-transparent sm:px-0 sm:py-2 sm:text-[15px] sm:focus-visible:ring-0 ${
             error ? 'border-red-300' : 'border-slate-200'
           }`}
         />
@@ -100,7 +100,7 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex h-14 w-full shrink-0 items-center justify-center rounded-full bg-brand-600 px-6 text-[15px] font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60 sm:h-[46px] sm:w-auto sm:px-6"
+          className="inline-flex h-14 w-full shrink-0 items-center justify-center rounded-full bg-brand-strong px-6 text-[15px] font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60 sm:h-[46px] sm:w-auto sm:px-6"
         >
           {loading ? (
             'Enviando...'

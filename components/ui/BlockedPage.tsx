@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
+import GringoouLogo from '@/components/icons/GringoouLogo';
 
 export interface BlockedPageAction {
   label: string;
@@ -20,8 +21,8 @@ const actionClass = (variant: BlockedPageAction['variant']) =>
   cn(
     'inline-flex h-14 w-full items-center justify-center rounded-full px-6 text-[15px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300',
     variant === 'secondary'
-      ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-      : 'bg-brand-600 text-white hover:brightness-105',
+      ? 'border border-slate-200 bg-surface text-slate-700 hover:bg-slate-50'
+      : 'bg-brand-strong text-white hover:brightness-105',
   );
 
 /**
@@ -30,12 +31,8 @@ const actionClass = (variant: BlockedPageAction['variant']) =>
  */
 export function BlockedPage({ title, description, actions = [], children }: BlockedPageProps) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-white px-6 py-16 text-center">
-      <img
-        src="/assets/gringoou-logo.png"
-        alt="Gringoou"
-        className="h-10 w-auto select-none sm:h-[52px]"
-      />
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-surface px-6 py-16 text-center">
+      <GringoouLogo size={null} className="h-10 w-auto sm:h-[52px]" />
 
       <h1 className="mt-12 text-[2.25rem] font-bold leading-[1.1] tracking-tight text-slate-950 sm:mt-14 sm:text-5xl sm:leading-[1.1]">
         {title}

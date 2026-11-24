@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { formatInternationalPhone } from '@/lib/phone';
 
 const inputClassName =
-  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
+  'w-full rounded-2xl border border-line-soft bg-surface px-4 py-3 text-sm text-ink-3 placeholder:text-ink-7 focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 
 const buttonClassName =
-  'rounded-full bg-brand-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
+  'rounded-full bg-brand-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
 
 type Step = 'phone' | 'code' | 'done';
 
@@ -81,7 +81,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
   if (step === 'done') {
     return (
       <div className="flex flex-col gap-4 text-center">
-        <p role="status" className="rounded-2xl bg-[#f0f7ff] px-4 py-4 text-sm font-semibold text-[#0f2b63]">
+        <p role="status" className="rounded-2xl bg-[#f0f7ff] px-4 py-4 text-sm font-semibold text-ink-3">
           Telefone confirmado: {confirmedPhone}
         </p>
       </div>
@@ -91,11 +91,11 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
   if (step === 'code') {
     return (
       <form onSubmit={confirmCode} className="flex flex-col gap-4 text-center" noValidate>
-        <p className="text-sm text-[#4a5672]">
-          Enviamos um código por SMS para <strong className="text-[#0f2b63]">{phone}</strong>.
+        <p className="text-sm text-ink-5">
+          Enviamos um código por SMS para <strong className="text-ink-3">{phone}</strong>.
         </p>
 
-        <label htmlFor="verify-code" className="text-sm font-semibold text-[#0f2b63]">
+        <label htmlFor="verify-code" className="text-sm font-semibold text-ink-3">
           Código recebido
         </label>
         <input
@@ -138,7 +138,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
 
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-4 text-center" noValidate>
-      <label htmlFor="verify-phone" className="text-sm font-semibold text-[#0f2b63]">
+      <label htmlFor="verify-phone" className="text-sm font-semibold text-ink-3">
         Telefone com código do país
       </label>
       <input

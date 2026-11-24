@@ -31,7 +31,7 @@ export function MessagePolicyOptions({ value, onChange, disabled }: { value: Pol
             aria-checked={selected}
             disabled={disabled || value === null}
             onClick={() => onChange(option.value)}
-            className={cn('flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition disabled:opacity-60', selected ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-white hover:bg-slate-50')}
+            className={cn('flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition disabled:opacity-60', selected ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-surface hover:bg-slate-50')}
           >
             <span className={cn('mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2', selected ? 'border-brand-500' : 'border-slate-300')} aria-hidden>
               {selected ? <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> : null}
@@ -114,7 +114,7 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
             autoComplete="off"
-            className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-red-300"
+            className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm outline-none focus:border-red-300"
           />
           <div className="mt-3 flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => { setConfirming(false); setConfirmation(''); }} disabled={busy}>Cancelar</Button>

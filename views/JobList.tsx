@@ -255,8 +255,8 @@ export default function JobList({ user, initialData }: { user: User; initialData
       >
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1">
-            <button type="button" onClick={() => { setPublishAs('person'); setDraft((current) => ({ ...current, businessId: '' })); }} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'person' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como pessoa</button>
-            <button type="button" onClick={() => setPublishAs('business')} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'business' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como empresa</button>
+            <button type="button" onClick={() => { setPublishAs('person'); setDraft((current) => ({ ...current, businessId: '' })); }} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'person' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como pessoa</button>
+            <button type="button" onClick={() => setPublishAs('business')} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'business' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como empresa</button>
           </div>
           {publishAs === 'business' ? businesses.length ? (
             <Select value={draft.businessId} onChange={(event) => setDraft({ ...draft, businessId: event.target.value })}>

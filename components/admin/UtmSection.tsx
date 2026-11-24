@@ -23,7 +23,7 @@ type Kind = {
 
 type Manager = { id: string; name: string | null; email: string | null; role: string };
 
-const inputClass = 'h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100';
+const inputClass = 'h-10 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100';
 const SAMPLE_VARS = { id: 'cmw123abc', campanha: 'Promo Verão 2026', posicao: 'home', regiao: 'orlando-fl' };
 
 const FIELDS: Array<{ id: 'source' | 'medium' | 'campaign' | 'content' | 'term'; label: string; param: string; required?: boolean }> = [
@@ -81,7 +81,7 @@ const RuleCard: React.FC<{ kind: Kind; onSaved: () => void }> = ({ kind, onSaved
   };
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+    <article className="rounded-2xl border border-slate-200 bg-surface p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900">{kind.label}</h3>
@@ -179,7 +179,7 @@ const ManagersCard: React.FC = () => {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+    <section className="rounded-2xl border border-slate-200 bg-surface p-4 sm:p-5">
       <h2 className="text-sm font-bold text-slate-900">Quem pode gerenciar UTM</h2>
       <p className="mt-0.5 text-xs text-slate-500">Administradores sempre podem. Conceda a permissão a uma agência ou gestor de marketing pelo e-mail da conta dele.</p>
       <form onSubmit={grant} className="mt-3 flex flex-wrap gap-2">

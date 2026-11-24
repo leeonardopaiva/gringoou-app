@@ -21,11 +21,11 @@ export function AdsShell({ children }: AdsShellProps) {
   }, [pathname]);
 
   if (isPortalEntry) {
-    return <main className="min-h-dvh bg-[#f5f7f9] px-4 py-10">{children}</main>;
+    return <main className="min-h-dvh bg-wash-3 px-4 py-10">{children}</main>;
   }
 
   return (
-    <div className="min-h-dvh bg-[#f5f7f9]">
+    <div className="min-h-dvh bg-wash-3">
       <AdsSidebar mobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} collapsed={collapsed} onToggleCollapsed={() => setCollapsed((current) => !current)} />
       <div className={`transition-[padding] duration-300 ${collapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
         <AdsTopbar collapsed={collapsed} onMenuToggle={() => setMobileMenuOpen((current) => !current)} />

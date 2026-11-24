@@ -125,15 +125,15 @@ export default function JobDetail({ jobId }: { jobId: string }) {
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
       <PageHeader title="Vagas" backHref="/jobs" historyBack />
       {/* O voltar fica FORA do card (igual aos demais detalhes); o card começa na capa. */}
-      <div className="overflow-hidden bg-white pb-8 sm:rounded-card">
-      <header className="relative flex min-h-72 items-end overflow-hidden bg-foreground p-6 text-white">
+      <div className="overflow-hidden bg-surface pb-8 sm:rounded-card">
+      <header className="relative flex min-h-72 items-end overflow-hidden bg-navy p-6 text-white">
         {job.imageUrl ? (
           <img src={job.imageUrl} alt={'Capa da vaga ' + job.title} className="absolute inset-0 h-full w-full object-cover opacity-60" />
         ) : (
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(45,212,191,0.28),_transparent_40%)]" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        {job.canEdit ? <div className="absolute right-4 top-4 z-20"><Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /></div> : null}
+        {job.canEdit ? <div className="absolute right-4 top-4 z-20"><Dropdown align="right" trigger={<span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm transition hover:bg-surface"><MoreHorizontal size={20} /></span>} sections={[{ heading: 'Ações da vaga', items: [{ label: 'Editar vaga', icon: <PencilLine size={16} />, onClick: openEditor }] }]} /></div> : null}
         <div className="relative">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">{job.employmentType}</span>

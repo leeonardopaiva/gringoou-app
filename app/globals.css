@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './theme.css';
 
 @theme {
   /* Gringoou design system — cores (fonte oficial: gringoou-design-tokens.md) */
@@ -14,6 +15,31 @@
   --color-input: #dbe6ec;
   --color-ring: #0086ff;
   --color-overlay: rgb(15 43 61 / 42%);
+
+  /* Tokens de tema. Os valores abaixo são os do tema claro; o escuro vem de app/theme.css
+     (gerado por scripts/gen-theme.mjs). Use estes tokens em vez de cores fixas nos componentes. */
+  --color-navy: #0f2b3d; /* fundo sólido escuro com texto branco (não inverte no escuro) */
+  --color-brand-strong: #006ed4; /* botão sólido na cor da marca */
+  --color-brand-strong-hover: #0057a8;
+  --color-on-accent: #0f2b3d; /* texto sobre fundos amarelos/verdes fixos (não inverte) */
+  --color-on-success: #064e3b;
+  --color-brand-light: #80c2ff; /* azul claro para texto sobre fundos escuros fixos */
+  --color-scrim: #020617; /* sombra sobre fotos; escura nos dois temas */
+  --color-scrim-2: #0f172a;
+  --color-ink: #132f40; /* textos em azul-marinho (do mais forte ao mais suave) */
+  --color-ink-2: #243b53;
+  --color-ink-3: #0f2b63;
+  --color-ink-4: #173247;
+  --color-ink-5: #4a5672;
+  --color-ink-6: #6b7a9e;
+  --color-ink-7: #8a94a8;
+  --color-wash-1: #f8fafc; /* fundos suaves de seções */
+  --color-wash-2: #f7f8fb;
+  --color-wash-3: #f5f7f9;
+  --color-wash-4: #fbfcfd;
+  --color-wash-5: #eaf1ff;
+  --color-wash-6: #e4eaf6;
+  --color-line-soft: #dde3ef;
 
   --color-brand-100: #e6f3ff;
   --color-brand-200: #b3dbff;

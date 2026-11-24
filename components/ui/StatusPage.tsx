@@ -25,7 +25,7 @@ const actionClass = (variant: StatusPageAction['variant']) =>
   cn(
     'inline-flex h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300',
     variant === 'secondary'
-      ? 'border border-brand-100 bg-white text-brand-600 hover:bg-brand-100'
+      ? 'border border-brand-100 bg-surface text-brand-600 hover:bg-brand-100'
       : 'bg-brand-500 text-white shadow-sm hover:brightness-105',
   );
 
@@ -46,7 +46,7 @@ export const StatusPage: React.FC<StatusPageProps> = ({
       className,
     )}
   >
-    <div className="w-full max-w-md rounded-[32px] bg-white px-8 py-10 text-center shadow-sm sm:px-10">
+    <div className="w-full max-w-md rounded-[32px] bg-surface px-8 py-10 text-center shadow-sm sm:px-10">
       {fullScreen ? (
         <div className="mb-8 flex justify-center">
           <GringoouLogo size={40} />

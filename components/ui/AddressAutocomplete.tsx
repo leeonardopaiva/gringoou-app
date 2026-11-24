@@ -121,7 +121,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           disabled={disabled}
           autoComplete="off"
           className={cn(
-            'w-full rounded-xl border-2 border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none',
+            'w-full rounded-xl border-2 border-slate-200 bg-surface py-2.5 pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none',
             className,
           )}
         />
@@ -131,7 +131,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       </div>
 
       {open && suggestions.length > 0 ? (
-        <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-100 bg-white py-1 shadow-lg">
+        <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-100 bg-surface py-1 shadow-lg">
           {suggestions.map((suggestion) => (
             <li key={suggestion.id}>
               <button

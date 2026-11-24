@@ -131,7 +131,7 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
         {isCover ? <span className="hidden sm:inline">Editar capa</span> : null}
       </button>
       {menuOpen ? (
-        <div role="menu" className={cn('absolute bottom-full mb-2 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg', isCover ? 'right-0' : 'left-0')}>
+        <div role="menu" className={cn('absolute bottom-full mb-2 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-lg', isCover ? 'right-0' : 'left-0')}>
           {src ? (
             <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setViewing(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50">
               <Eye size={17} className="text-slate-500" /> Ver {noun}
@@ -152,7 +152,7 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
       >
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { pick(event.target.files?.[0]); event.target.value = ''; }} />
         {file && preview ? (
-          <div className="bg-white pb-4">
+          <div className="bg-surface pb-4">
             <ImageCropper ref={cropperRef} src={preview} aspect={isCover ? 2 : 1} round={!isCover} outputWidth={isCover ? 1920 : 800} />
             <p className="px-4 pt-1 text-center text-xs text-slate-500">Arraste a imagem para posicionar.</p>
             <div className="mt-3 flex items-center justify-between gap-3 px-4">

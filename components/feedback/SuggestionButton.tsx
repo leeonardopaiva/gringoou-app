@@ -139,7 +139,7 @@ const SuggestionButton: React.FC = () => {
               className={`rounded-2xl border px-4 py-4 text-left transition ${
                 category === option.value
                   ? 'theme-soft-surface shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  : 'border-slate-200 bg-surface text-slate-600 hover:border-slate-300'
               }`}
             >
               <p className="text-body-sm font-bold">{option.label}</p>

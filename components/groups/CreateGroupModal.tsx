@@ -74,20 +74,20 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
           value={draft.name}
           onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
           placeholder="Nome do grupo"
-          className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+          className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
         <input
           value={draft.category}
           onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
           placeholder="Categoria, ex: Bairro, Música, Cidade"
-          className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+          className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
         <textarea
           value={draft.description}
           onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
           placeholder="Descrição curta"
           rows={3}
-          className="theme-outline-ring w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+          className="theme-outline-ring w-full resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
         <RegionSelector
           value={draft.regionKey}
@@ -103,7 +103,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
           <select
             value={draft.countryCode}
             onChange={(event) => setDraft((current) => ({ ...current, countryCode: event.target.value }))}
-            className="h-11 w-full rounded-full border-2 border-border bg-white px-4 text-sm"
+            className="h-11 w-full rounded-full border-2 border-border bg-surface px-4 text-sm"
           >
             <option value="US">Estados Unidos</option>
             <option value="BR">Brasil</option>

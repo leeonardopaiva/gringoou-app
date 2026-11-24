@@ -10,6 +10,7 @@ import { getClientAppBaseUrl } from '../lib/client-app-url';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import RegionSelector from '../components/RegionSelector';
+import { ThemeSelector } from '../components/theme/ThemeSelector';
 import { CityAutocomplete } from '../components/ui/CityAutocomplete';
 import { formatLoosePhoneInput } from '../lib/forms/phone';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
@@ -25,7 +26,7 @@ import { notifyContentUpdated } from '../lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
-const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-foreground';
+const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-navy';
 
 const getInitials = (name: string) =>
   name
@@ -610,7 +611,7 @@ const Profile: React.FC<{
     ? PROFESSIONAL_PROFILE_GRADIENT_CLASS
     : PROFILE_GRADIENT_CLASS;
   const primaryButtonClass = isProfessionalView
-    ? 'bg-foreground'
+    ? 'bg-navy'
     : 'bg-brand-500';
   const secondaryButtonClass = isProfessionalView
     ? 'border-border bg-bg text-foreground'
@@ -620,16 +621,16 @@ const Profile: React.FC<{
   if (loading) {
     return (
       <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
-        <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
-        <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
-        <div className="h-48 animate-pulse rounded-[32px] bg-white shadow-sm" />
+        <div className="h-72 animate-pulse rounded-[36px] bg-surface shadow-sm" />
+        <div className="h-48 animate-pulse rounded-[32px] bg-surface shadow-sm" />
+        <div className="h-48 animate-pulse rounded-[32px] bg-surface shadow-sm" />
       </ContentColumn>
     );
   }
 
   return (
     <ContentColumn size="standard" className="animate-in space-y-5 pb-24 fade-in duration-500">
-      <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
+      <section className="overflow-hidden rounded-[36px] bg-surface shadow-sm">
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
           <ImageEditMenu folder="profiles" kind="cover" src={profile.coverImageUrl} className="bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
           {profile.coverImageUrl ? (
@@ -637,9 +638,9 @@ const Profile: React.FC<{
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-slate-950/5 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-scrim/30 via-scrim/5 to-transparent" />
           <div className="absolute right-4 top-4 flex gap-2">
-            <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-white/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
+            <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-surface/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
               <PencilLine size={16} />
               Editar perfil
             </button>
@@ -648,7 +649,7 @@ const Profile: React.FC<{
         <div className="-mt-12 px-5 pb-5">
           <div className="flex flex-col items-center text-center">
             <div className="relative h-28 w-28">
-            <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-white shadow-lg">
+            <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-surface shadow-lg">
               {activeHeaderImage ? (
                 <img src={activeHeaderImage} alt={activeHeaderName} className="h-full w-full object-cover" onError={handleAvatarError} />
               ) : (
@@ -717,9 +718,9 @@ const Profile: React.FC<{
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Input value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => setProfileEditDraft((c) => c ? { ...c, age: value ? Number(value) : null } : null)} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
-                        <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={profileEditDraft.gender} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
+                        <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={profileEditDraft.gender} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null)} className="h-11 w-full rounded-full border border-input bg-surface px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
                       </div>
-                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={profileEditDraft.timeAbroad} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null)} className="h-11 w-full rounded-full border border-input bg-white px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
+                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={profileEditDraft.timeAbroad} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null)} className="h-11 w-full rounded-full border border-input bg-surface px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
                       <label className="space-y-2"><span className="text-xs font-bold text-slate-500 block">Sobre você</span><textarea rows={4} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre você" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" /></label>
                     </div>
                   </div>
@@ -733,7 +734,7 @@ const Profile: React.FC<{
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {profileEditDraft.interests.length > 0 ? profileEditDraft.interests.map((interest) => (
-                          <span key={interest} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+                          <span key={interest} className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
                             {interest}
                             <button type="button" onClick={() => setProfileEditDraft((c) => c ? { ...c, interests: c.interests.filter((i) => i !== interest) } : null)} className="rounded-full bg-slate-100 p-1 text-slate-500"><X size={12} /></button>
                           </span>
@@ -750,6 +751,12 @@ const Profile: React.FC<{
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
                     <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negócios e eventos priorizam esta região." />
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">Aparência</h3>
+                    <p className="mb-3 text-xs text-slate-500">Escolha o tema claro ou escuro. Em &ldquo;Sistema&rdquo;, o app segue a configuração do seu aparelho. Vale só para este aparelho.</p>
+                    <ThemeSelector />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
@@ -836,7 +843,7 @@ const Profile: React.FC<{
 };
 
 const Section: React.FC<{ title: string; description: string; editing: boolean; onToggle: () => void; children: React.ReactNode; hideAction?: boolean; accentClass?: string; secondaryButtonClass?: string; }> = ({ title, description, editing, onToggle, children, hideAction = false, accentClass = 'text-brand-500', secondaryButtonClass = 'border-brand-100 bg-brand-100 text-brand-500' }) => (
-  <section className="rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+  <section className="rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
     <div className="flex items-start justify-between gap-3">
       <div>
         <h2 className={`text-xl font-bold ${accentClass}`}>{title}</h2>

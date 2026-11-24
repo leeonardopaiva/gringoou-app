@@ -20,7 +20,7 @@ type Coupon = {
   note: string | null;
 };
 
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-400';
+const inputClass = 'w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm outline-none focus:border-brand-400';
 const randomCode = () => `CORTESIA-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
 /** Cupons de cortesia (somente administrador raiz): liberam uma campanha sem cobrança; depois o cliente contrata normalmente. */
@@ -106,16 +106,16 @@ export default function AdCouponsSection() {
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex items-start justify-between gap-4">
-        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
           Cupons
           <InfoTip text="Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Uma conta pode usar mais de um cupom, e o mesmo cupom em mais de uma campanha, até o limite de usos do cupom. Cada campanha aceita um cupom." />
         </h1>
-        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
+        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
-      <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
+      <section className="space-y-3 rounded-2xl border border-slate-200 bg-surface p-5">
         <h2 className="text-sm font-bold text-slate-900">Novo cupom</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block text-xs font-bold text-slate-500">Código
@@ -151,7 +151,7 @@ export default function AdCouponsSection() {
       ) : coupons.length === 0 ? (
         <EmptyNotice title="Nenhum cupom criado" description="Crie um cupom acima para indicar um cliente." />
       ) : (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-surface">
           {coupons.map((coupon) => {
             const expired = coupon.expiresAt ? new Date(coupon.expiresAt).getTime() < Date.now() : false;
             const exhausted = coupon.redeemedCount >= coupon.maxRedemptions;

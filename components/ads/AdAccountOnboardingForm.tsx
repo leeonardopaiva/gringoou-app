@@ -69,7 +69,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         {mode === 'initial' ? <GringoouLogo size={34} /> : null}
         <p className={`${mode === 'initial' ? 'mt-6' : ''} text-xs font-bold uppercase tracking-wider text-brand-500`}>{mode === 'initial' ? 'Gringoou Ads' : `Conta ${currentCount + 1} de ${maxAccounts}`}</p>
-        <h1 className="mt-2 text-3xl font-extrabold text-[#132f40]">Promova seu negócio</h1>
+        <h1 className="mt-2 text-3xl font-extrabold text-ink">Promova seu negócio</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">A página pública é gratuita. Você paga apenas quando cria uma campanha para alcançar mais pessoas no feed da comunidade.</p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -80,7 +80,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
           ].map(({ icon: Icon, title, text }) => (
             <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <Icon size={19} className="text-brand-500" />
-              <p className="mt-3 text-sm font-bold text-[#132f40]">{title}</p>
+              <p className="mt-3 text-sm font-bold text-ink">{title}</p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{text}</p>
             </div>
           ))}
@@ -98,7 +98,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Link href="/businesses?create=1" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-bold text-white">Cadastrar negócio gratuitamente</Link>
-              {businesses.some((business) => business.linkedAdAccountId) ? <Link href="/ads/overview" className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700">Ir para o painel Ads</Link> : null}
+              {businesses.some((business) => business.linkedAdAccountId) ? <Link href="/ads/overview" className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-surface px-5 text-sm font-bold text-slate-700">Ir para o painel Ads</Link> : null}
             </div>
           </div>
         ) : (

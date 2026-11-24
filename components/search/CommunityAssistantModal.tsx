@@ -239,8 +239,8 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
     .find((message) => message.role === 'assistant' && !message.error)?.suggestions || [];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-white text-slate-900" role="dialog" aria-modal="true" aria-label="Assistente da comunidade">
-      <header className="border-b border-slate-100 bg-white/95 backdrop-blur">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-surface text-slate-900" role="dialog" aria-modal="true" aria-label="Assistente da comunidade">
+      <header className="border-b border-slate-100 bg-surface/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 w-full max-w-3xl items-center gap-3 px-4 py-2 sm:px-6">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-sm"><Sparkles size={20} /></span>
           <div className="min-w-0 flex-1">
@@ -311,12 +311,12 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
               {messages.map((message) => (
                 <div key={message.id} className={message.role === 'user' ? 'flex justify-end' : 'block'}>
                   {message.role === 'user' ? (
-                    <div className="max-w-[88%] rounded-3xl rounded-br-md bg-brand-700 px-5 py-3 text-sm font-semibold leading-6 text-white shadow-sm">{message.text}</div>
+                    <div className="max-w-[88%] rounded-3xl rounded-br-md bg-brand-strong-hover px-5 py-3 text-sm font-semibold leading-6 text-white shadow-sm">{message.text}</div>
                   ) : (
                     <div className={message.error ? 'rounded-2xl border border-red-100 bg-red-50 p-4 text-sm leading-6 text-red-700' : ''}>
                       {!message.error ? <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white"><Sparkles size={14} /></span> Resumo da comunidade</div> : null}
                       <p className="whitespace-pre-line text-sm leading-6 text-slate-800 sm:text-[15px]">{message.text}</p>
-                      {message.references?.length ? <div className="mt-5 grid gap-2 sm:grid-cols-2">{message.references.map((reference) => <Link key={reference.id} href={reference.href} onClick={onClose} className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"><span className="truncate text-xs font-bold text-slate-700 group-hover:text-brand-700">{reference.label}</span><ExternalLink size={14} className="shrink-0 text-brand-500" /></Link>)}</div> : null}
+                      {message.references?.length ? <div className="mt-5 grid gap-2 sm:grid-cols-2">{message.references.map((reference) => <Link key={reference.id} href={reference.href} onClick={onClose} className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"><span className="truncate text-xs font-bold text-slate-700 group-hover:text-brand-700">{reference.label}</span><ExternalLink size={14} className="shrink-0 text-brand-500" /></Link>)}</div> : null}
                       {!message.error ? <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3"><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'up' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'up' ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Resposta útil"><ThumbsUp size={16} /></button><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'down' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'down' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Resposta não foi útil"><ThumbsDown size={16} /></button><button type="button" onClick={() => void shareAnswer(message)} className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100" aria-label="Compartilhar resposta">{copiedMessageId === message.id ? <Check size={16} /> : <Share2 size={16} />}{copiedMessageId === message.id ? 'Copiado' : ''}</button></div> : null}
                     </div>
                   )}
@@ -339,7 +339,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                       <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Encontrado na comunidade</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {loadingPreview.map((reference) => (
-                          <Link key={reference.id} href={reference.href} onClick={onClose} className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:text-brand-700">
+                          <Link key={reference.id} href={reference.href} onClick={onClose} className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-surface px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:text-brand-700">
                             <span className="truncate">{reference.label}</span>
                             <ExternalLink size={13} className="shrink-0 text-brand-500" />
                           </Link>
@@ -361,10 +361,10 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
         </div>
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 border-t border-slate-100 bg-white/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_35px_rgba(15,23,42,0.04)] backdrop-blur">
+      <footer className="fixed inset-x-0 bottom-0 border-t border-slate-100 bg-surface/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_35px_rgba(15,23,42,0.04)] backdrop-blur">
         <div className="mx-auto w-full max-w-2xl">
           {messages.length ? <button type="button" onClick={startNewQuestion} className="mb-2 inline-flex h-8 items-center gap-1.5 text-xs font-bold text-brand-600 sm:hidden"><RotateCcw size={14} /> Nova pergunta</button> : null}
-          <form onSubmit={submit} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 pl-5 shadow-inner focus-within:border-brand-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-100">
+          <form onSubmit={submit} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 pl-5 shadow-inner focus-within:border-brand-300 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand-100">
             <input autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={voiceListening ? 'Ouvindo... fale agora' : messages.length ? 'Faça outra pergunta...' : 'Pergunte sobre sua comunidade'} maxLength={300} className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-slate-400" />
             {voiceSupported ? (
               <button
@@ -373,7 +373,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                 disabled={loading}
                 aria-label={voiceListening ? 'Parar pesquisa por voz' : 'Perguntar por voz'}
                 title={voiceListening ? 'Ouvindo...' : 'Perguntar por voz'}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${voiceListening ? 'animate-pulse bg-red-50 text-red-500' : 'text-slate-500 hover:bg-white hover:text-brand-500'}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${voiceListening ? 'animate-pulse bg-red-50 text-red-500' : 'text-slate-500 hover:bg-surface hover:text-brand-500'}`}
               >
                 <Mic size={17} aria-hidden="true" />
               </button>

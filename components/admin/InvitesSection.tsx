@@ -247,7 +247,7 @@ const InvitesSection: React.FC = () => {
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40]">Convites<InfoTip text="Gerencie a lista de espera e o acesso ao Private Beta." /></h1>
+          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">Convites<InfoTip text="Gerencie a lista de espera e o acesso ao Private Beta." /></h1>
         </div>
         <Button iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
           Gerar convite
@@ -264,7 +264,7 @@ const InvitesSection: React.FC = () => {
             type="button"
             onClick={() => setTab(item.id as 'invites' | 'waitlist')}
             className={`inline-flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-2 text-xs font-bold transition ${
-              tab === item.id ? 'border-transparent bg-brand-500 text-white' : 'border-slate-100 bg-white text-slate-700 hover:bg-brand-50'
+              tab === item.id ? 'border-transparent bg-brand-500 text-white' : 'border-slate-100 bg-surface text-slate-700 hover:bg-brand-50'
             }`}
           >
             {item.icon} {item.label}
@@ -284,7 +284,7 @@ const InvitesSection: React.FC = () => {
                   setInvitesPage(1);
                 }}
                 placeholder="Buscar por email..."
-                className="w-full rounded-2xl border border-slate-100 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
+                className="w-full rounded-2xl border border-slate-100 bg-surface py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             </div>
@@ -294,7 +294,7 @@ const InvitesSection: React.FC = () => {
                 setInvitesStatus(event.target.value);
                 setInvitesPage(1);
               }}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               <option value="">Todos os status</option>
               <option value="ACTIVE">Ativo</option>
@@ -313,7 +313,7 @@ const InvitesSection: React.FC = () => {
           ) : invites.length === 0 ? (
             <EmptyState icon={<Ticket size={28} />} title="Nenhum convite encontrado" description="Gere um convite para liberar o acesso de novos usuários." />
           ) : (
-            <div className="overflow-x-auto rounded-card bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
@@ -387,7 +387,7 @@ const InvitesSection: React.FC = () => {
                   setWaitlistPage(1);
                 }}
                 placeholder="Buscar por nome ou email..."
-                className="w-full rounded-2xl border border-slate-100 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
+                className="w-full rounded-2xl border border-slate-100 bg-surface py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             </div>
@@ -397,7 +397,7 @@ const InvitesSection: React.FC = () => {
                 setWaitlistStatus(event.target.value);
                 setWaitlistPage(1);
               }}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               <option value="">Todos</option>
               <option value="PENDING">Aguardando</option>
@@ -415,7 +415,7 @@ const InvitesSection: React.FC = () => {
           ) : waitlist.length === 0 ? (
             <EmptyState icon={<Users size={28} />} title="Nenhum interessado encontrado" description="A lista de espera está vazia para os filtros selecionados." />
           ) : (
-            <div className="overflow-x-auto rounded-card bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">

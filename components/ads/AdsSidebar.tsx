@@ -40,7 +40,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
 
   return (
     <>
-      {mobileOpen ? <button type="button" aria-label="Fechar menu" onClick={onMobileClose} className="fixed inset-0 z-[55] bg-slate-950/40 lg:hidden" /> : null}
+      {mobileOpen ? <button type="button" aria-label="Fechar menu" onClick={onMobileClose} className="fixed inset-0 z-[55] bg-scrim/40 lg:hidden" /> : null}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-[60] w-[85%] max-w-[380px] overflow-y-auto border-r border-white/5 bg-gradient-to-b from-[#2F343C] to-[#1F2328] text-white transition-[width,transform] duration-300 ease-out lg:max-w-none lg:translate-x-0 lg:overflow-visible',
@@ -119,7 +119,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
             <button
               type="button"
               onClick={() => void signOut({ callbackUrl: '/login' })}
-              className="flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-4 py-2.5 text-sm font-bold text-slate-200 transition hover:bg-white/10"
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-4 py-2.5 text-sm font-bold text-white/80 transition hover:bg-white/10"
             >
               <LogOut size={16} />
               Sair

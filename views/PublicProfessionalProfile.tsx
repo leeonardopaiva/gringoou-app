@@ -34,7 +34,7 @@ const defaultProfile: PublicProfessionalProfile = {
   events: [],
 };
 
-const PROFILE_GRADIENT_CLASS = 'bg-foreground';
+const PROFILE_GRADIENT_CLASS = 'bg-navy';
 
 const getInitials = (name: string) =>
   name
@@ -115,8 +115,8 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 <Logo size="lg" />
               </div>
             ) : null}
-            <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
-            <div className="h-96 animate-pulse rounded-[36px] bg-white shadow-sm" />
+            <div className="h-72 animate-pulse rounded-[36px] bg-surface shadow-sm" />
+            <div className="h-96 animate-pulse rounded-[36px] bg-surface shadow-sm" />
           </div>
         </div>
       </div>
@@ -154,14 +154,14 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
           ) : null}
           <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
 
-          <section className="overflow-hidden rounded-[36px] bg-white shadow-sm">
+          <section className="overflow-hidden rounded-[36px] bg-surface shadow-sm">
             <div className={`relative h-80 ${profile.coverImageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {profile.coverImageUrl ? (
                 <img src={profile.coverImageUrl} alt={`Capa profissional de ${profile.name}`} className="h-full w-full object-cover object-center" />
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-scrim/40 via-scrim/10 to-transparent" />
               <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                 <BriefcaseBusiness size={14} />
                 Vitrine profissional
@@ -169,7 +169,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
             </div>
 
             <div className="-mt-12 px-5 pb-8">
-              <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[5px] border-white bg-white shadow-lg">
+              <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[5px] border-white bg-surface shadow-lg">
                 {profile.image ? (
                   <img src={profile.image} alt={profile.name} className="h-full w-full object-cover" onError={handleAvatarError} />
                 ) : (
@@ -204,7 +204,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={profile.personalPublicPath}
-                    className="inline-flex min-h-12 items-center justify-center rounded-[22px] border border-slate-200 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm"
+                    className="inline-flex min-h-12 items-center justify-center rounded-[22px] border border-slate-200 bg-surface px-6 text-sm font-bold text-slate-700 shadow-sm"
                   >
                     Ver perfil pessoal
                   </Link>
@@ -228,7 +228,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
             </div>
           </section>
 
-          <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+          <section className="mt-6 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <BriefcaseBusiness size={16} />
               Negócios em destaque
@@ -250,7 +250,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                         <StarRating average={business.ratingAverage} count={business.ratingCount} compact />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Link href={`/businesses/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Ver página</Link>
+                        <Link href={`/businesses/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-surface px-3 text-xs font-bold text-slate-700">Ver página</Link>
                         {isOwnProfile ? <Link href={`/businesses/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">Gerenciar</Link> : null}
                         {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />Promover</Link> : null}
                       </div>
@@ -263,7 +263,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
             )}
           </section>
 
-          <section className="mt-6 rounded-[32px] border border-slate-100 bg-white p-5 shadow-sm">
+          <section className="mt-6 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <CalendarDays size={16} />
               Agenda profissional

@@ -104,7 +104,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({ value, onChange, onK
         className={className ?? 'w-full rounded-full bg-bg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-200'}
       />
       {open ? (
-        <ul role="listbox" className="absolute bottom-full left-0 z-30 mb-2 max-h-64 w-full min-w-[240px] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-lg">
+        <ul role="listbox" className="absolute bottom-full left-0 z-30 mb-2 max-h-64 w-full min-w-[240px] overflow-y-auto rounded-2xl border border-slate-200 bg-surface p-1 shadow-lg">
           {suggestions.map((suggestion, index) => {
             const Icon = ICONS[suggestion.kind];
             return (

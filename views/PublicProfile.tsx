@@ -309,8 +309,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <Logo size="lg" />
               </div>
             ) : null}
-            <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
-            <div className="h-80 animate-pulse rounded-[36px] bg-white shadow-sm" />
+            <div className="h-72 animate-pulse rounded-[36px] bg-surface shadow-sm" />
+            <div className="h-80 animate-pulse rounded-[36px] bg-surface shadow-sm" />
           </div>
         </div>
       </div>
@@ -376,7 +376,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </div>
 
             <div className="absolute left-1/2 top-full z-20 h-28 w-28 -translate-x-1/2 -translate-y-1/2 sm:h-32 sm:w-32">
-              <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-white shadow-md">
+              <div className="h-full w-full overflow-hidden rounded-full border-[5px] border-white bg-surface shadow-md">
                 {profile.image ? (
                   <img src={profile.image} alt={profile.name} className="h-full w-full object-cover" onError={handleAvatarError} />
                 ) : (
@@ -389,7 +389,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             </div>
           </div>
 
-          <div className="rounded-t-[28px] bg-white px-5 pb-8 pt-16 sm:pt-20">
+          <div className="rounded-t-[28px] bg-surface px-5 pb-8 pt-16 sm:pt-20">
             <div className="flex flex-col items-center text-center">
               <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -467,7 +467,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       setMessageLoading(true);
                       startDirectConversation(profile.id);
                     }}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-white px-5 text-sm font-bold text-brand-600 transition hover:bg-brand-50 disabled:opacity-60"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-surface px-5 text-sm font-bold text-brand-600 transition hover:bg-brand-50 disabled:opacity-60"
                   >
                     <MessageCircle size={16} aria-hidden />
                     {messageLoading ? 'Abrindo...' : 'Enviar mensagem'}

@@ -9,11 +9,11 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-brand-500 text-white shadow-sm hover:brightness-105',
-  secondary: 'border-2 border-brand-500 text-brand-500 bg-white hover:bg-brand-100',
-  dark: 'bg-text text-white shadow-sm hover:brightness-110',
+  secondary: 'border-2 border-brand-500 text-brand-500 bg-surface hover:bg-brand-100',
+  dark: 'bg-navy text-white shadow-sm hover:brightness-110',
   ghost: 'bg-transparent text-text hover:bg-black/5',
-  yellow: 'bg-secondary text-text shadow-sm hover:brightness-105',
-  success: 'bg-success-action text-text shadow-sm hover:brightness-105',
+  yellow: 'bg-secondary text-on-accent shadow-sm hover:brightness-105',
+  success: 'bg-success-action text-on-accent shadow-sm hover:brightness-105',
   destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
 };
 

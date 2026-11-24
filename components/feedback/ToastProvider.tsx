@@ -70,7 +70,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 key={toast.id}
                 className={
                   hasAction
-                    ? 'pointer-events-auto flex items-center gap-3 rounded-3xl bg-text px-4 py-4 text-white shadow-lg'
+                    ? 'pointer-events-auto flex items-center gap-3 rounded-3xl bg-navy px-4 py-4 text-white shadow-lg'
                     : `pointer-events-auto flex items-start gap-3 rounded-3xl border px-4 py-4 shadow-lg backdrop-blur ${toneStyles[toast.tone]}`
                 }
               >
@@ -83,7 +83,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                       toast.onAction?.();
                       dismissToast(toast.id);
                     }}
-                    className="shrink-0 rounded-full px-3 py-1.5 text-body-sm font-bold text-brand-300 hover:text-white"
+                    className="shrink-0 rounded-full px-3 py-1.5 text-body-sm font-bold text-brand-light hover:text-white"
                   >
                     {toast.actionLabel}
                   </button>

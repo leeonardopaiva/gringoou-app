@@ -126,10 +126,10 @@ const MarketingSection: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div>
-        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40]">E-mail marketing<InfoTip text="Crie e edite templates de e-mail. O envio em massa exige um serviço de e-mail transacional." /></h1>
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">E-mail marketing<InfoTip text="Crie e edite templates de e-mail. O envio em massa exige um serviço de e-mail transacional." /></h1>
       </div>
 
-      <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-surface p-4 shadow-sm">
         <div className="flex items-center gap-2">
           <KeyRound size={16} className="text-brand-500" />
           <h2 className="text-sm font-bold text-slate-700">Serviço de e-mail (envio em massa)</h2>
@@ -143,7 +143,7 @@ const MarketingSection: React.FC = () => {
             <select
               value={provider}
               onChange={(event) => setProvider(event.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               <option value="resend">Resend</option>
               <option value="sendgrid">SendGrid</option>
@@ -158,7 +158,7 @@ const MarketingSection: React.FC = () => {
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               placeholder="chave da API"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
           </div>
           <div>
@@ -168,7 +168,7 @@ const MarketingSection: React.FC = () => {
               value={fromEmail}
               onChange={(event) => setFromEmail(event.target.value)}
               placeholder="no-reply@gringoou.com"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
           </div>
         </div>
@@ -192,7 +192,7 @@ const MarketingSection: React.FC = () => {
           ) : (
             <ul className="space-y-2">
               {templates.map((template) => (
-                <li key={template.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2">
+                <li key={template.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-surface px-3 py-2">
                   <button type="button" onClick={() => loadTemplate(template)} className="min-w-0 flex-1 text-left">
                     <p className="truncate text-sm font-semibold text-slate-700">{template.name}</p>
                     <p className="text-xs text-slate-400">{new Date(template.updatedAt).toLocaleDateString('pt-BR')}</p>
@@ -213,7 +213,7 @@ const MarketingSection: React.FC = () => {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Nome do template"
-              className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
             <div className="flex gap-2">
               <Button variant="secondary" iconLeft={<Eye size={15} />} onClick={() => setPreview((current) => !current)}>
@@ -226,7 +226,7 @@ const MarketingSection: React.FC = () => {
           </div>
 
           {preview ? (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-surface">
               <iframe title="Prévia do e-mail" sandbox="" srcDoc={html} className="h-[560px] w-full" />
             </div>
           ) : (
@@ -234,7 +234,7 @@ const MarketingSection: React.FC = () => {
               value={html}
               onChange={(event) => setHtml(event.target.value)}
               spellCheck={false}
-              className="h-[560px] w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700 focus:border-brand-300 focus:outline-none"
+              className="h-[560px] w-full rounded-2xl border border-slate-200 bg-surface p-4 font-mono text-xs text-slate-700 focus:border-brand-300 focus:outline-none"
             />
           )}
 

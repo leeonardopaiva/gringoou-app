@@ -45,7 +45,7 @@ export default function AdsLoginPage() {
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         <GringoouLogo size={34} />
         <p className="mt-6 text-xs font-bold uppercase tracking-wider text-brand-500">Portal do anunciante</p>
-        <h1 className="mt-2 text-3xl font-extrabold text-[#132f40]">Acesse sua conta de negócio</h1>
+        <h1 className="mt-2 text-3xl font-extrabold text-ink">Acesse sua conta de negócio</h1>
         <p className="mt-2 text-sm text-slate-500">Entre para gerenciar sua empresa e criar anúncios no Gringoou.</p>
         <form onSubmit={submit} className="mt-7 space-y-4">
           <label className="block space-y-2"><span className="text-sm font-bold">Email</span><Input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>

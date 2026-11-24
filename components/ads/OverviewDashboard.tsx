@@ -234,7 +234,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       ) : null}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-extrabold leading-none text-[#132f40] sm:text-[34px]">Visão geral</h1>
+        <h1 className="text-2xl font-extrabold leading-none text-ink sm:text-[34px]">Visão geral</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Select value={data.range.key} prefixIcon={<CalendarDays size={17} />} onChange={(event) => router.push(`/ads/overview?range=${event.target.value}`)} className="min-w-[150px]">
             <option value="7d">Últimos 7 dias</option><option value="month">Este mês</option><option value="all">Total</option>
@@ -248,7 +248,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
           <Card key={stat.label} className="relative min-h-[104px] overflow-hidden rounded-2xl border border-slate-200 px-4 py-4 shadow-sm sm:min-h-[150px] sm:px-7 sm:py-6">
             <span className={`absolute inset-x-0 top-0 h-1 ${stat.accent ? 'bg-[#339eff]' : 'bg-slate-200'}`} aria-hidden />
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[12px]">{stat.label}</p>
-            <p className={`mt-3 text-2xl font-extrabold leading-none sm:mt-6 sm:text-[34px] ${stat.accent ? 'text-brand-500' : 'text-[#132f40]'}`}>{stat.value}</p>
+            <p className={`mt-3 text-2xl font-extrabold leading-none sm:mt-6 sm:text-[34px] ${stat.accent ? 'text-brand-500' : 'text-ink'}`}>{stat.value}</p>
             <p className="mt-2 truncate text-[11px] text-slate-400 sm:mt-3 sm:text-[13px]">{stat.caption}</p>
           </Card>
         ))}
@@ -277,7 +277,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
             <Button ref={filterRef} size="sm" iconOnly variant="ghost" aria-label="Filtros" title="Filtros" aria-expanded={filterOpen} iconLeft={<Filter size={16} />} className={activeFilters ? 'bg-brand-50 text-brand-500' : 'text-slate-500'} onClick={() => setFilterOpen((value) => !value)} />
             <Popover open={filterOpen} onClose={() => setFilterOpen(false)} anchorRef={filterRef} align="end" role="dialog" className="w-72 p-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-extrabold text-[#132f40]">Filtros</p>
+                <p className="text-sm font-extrabold text-ink">Filtros</p>
                 <button type="button" aria-label="Fechar filtros" onClick={() => setFilterOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
               </div>
               <label className="mt-3 block text-xs font-bold text-slate-500">Objetivo</label>
@@ -310,12 +310,12 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
                 const isDraft = row.moderationStatus === 'DRAFT';
                 const toggleable = canToggle(row);
                 return (
-                  <tr key={row.id} className="border-b border-slate-100 text-[13px] text-[#243b53] hover:bg-slate-50/70">
+                  <tr key={row.id} className="border-b border-slate-100 text-[13px] text-ink-2 hover:bg-slate-50/70">
                     <td className="max-w-[260px] px-5 py-4 font-bold">
                       <span className="block truncate">{row.label}</span>
                       <span className="mt-1 flex flex-wrap gap-x-3">{row.moderationStatus === 'REJECTED' ? <button type="button" onClick={() => openRevision(row)} className="text-xs font-bold text-brand-500 underline underline-offset-2">Corrigir e reenviar</button> : null}{isDraft && canEdit ? <button type="button" onClick={() => router.push(`/ads/wizard?draft=${encodeURIComponent(row.id)}`)} className="text-xs font-bold text-brand-500 underline underline-offset-2">Continuar rascunho</button> : null}</span>
                     </td>
-                    <td className="px-5 py-4"><button type="button" role="switch" aria-checked={enabled} disabled={!toggleable} title={toggleable ? undefined : 'Disponível quando a campanha estiver aprovada e no período'} onClick={() => void toggleCampaign(row)} className={`relative h-6 w-11 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${enabled ? 'bg-brand-500' : 'bg-slate-200'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${enabled ? 'left-6' : 'left-1'}`} /></button></td>
+                    <td className="px-5 py-4"><button type="button" role="switch" aria-checked={enabled} disabled={!toggleable} title={toggleable ? undefined : 'Disponível quando a campanha estiver aprovada e no período'} onClick={() => void toggleCampaign(row)} className={`relative h-6 w-11 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${enabled ? 'bg-brand-500' : 'bg-slate-200'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-surface shadow transition ${enabled ? 'left-6' : 'left-1'}`} /></button></td>
                     <td className="px-5 py-4"><Badge tone={status.tone} className="normal-case tracking-normal">{status.label}</Badge></td>
                     <td className="px-5 py-4 text-slate-400">{formatDate(row.startsAt)}</td><td className="px-5 py-4 text-slate-400">{formatDate(row.endsAt)}</td>
                     <td className="px-5 py-4 font-semibold">{formatNumber(row.impressions)}</td><td className="px-5 py-4 font-semibold">{formatNumber(row.clicks)}</td><td className="px-5 py-4 text-slate-400">{formatNumber(row.conversions)}</td>
@@ -337,7 +337,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
                 </td></tr>
               ) : null}
             </tbody>
-            <tfoot><tr className="bg-slate-50/70 text-[13px] font-extrabold text-[#132f40]">
+            <tfoot><tr className="bg-slate-50/70 text-[13px] font-extrabold text-ink">
               <td className="px-5 py-4" colSpan={5}>Total{visibleRows.length !== data.rows.length ? ` (${visibleRows.length} de ${data.rows.length})` : ''}</td><td className="px-5 py-4">{formatNumber(totals.impressions)}</td><td className="px-5 py-4">{formatNumber(totals.clicks)}</td><td className="px-5 py-4">{formatNumber(totals.conversions)}</td><td className="px-5 py-4">{formatUsd(totals.spendCents)}</td><td className="px-5 py-4 text-brand-500">{formatPercent(totals.impressions ? totals.clicks / totals.impressions : 0)}</td><td className="px-5 py-4">{totals.clicks ? formatUsdWithCents(Math.round(totals.spendCents / totals.clicks)) : '-'}</td><td />
             </tr></tfoot>
           </table>

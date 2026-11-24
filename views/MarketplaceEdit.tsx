@@ -167,7 +167,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
             maxLength={4000}
             rows={5}
             onChange={(e) => setForm((c) => ({ ...c, description: e.target.value }))}
-            className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm"
+            className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -177,7 +177,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
             <select
               value={form.category}
               onChange={(e) => setForm((c) => ({ ...c, category: e.target.value }))}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               {(CATEGORIES.includes(form.category) ? CATEGORIES : [form.category, ...CATEGORIES]).map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -189,7 +189,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
             <select
               value={form.condition}
               onChange={(e) => setForm((c) => ({ ...c, condition: e.target.value as typeof c.condition }))}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm"
+              className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               {CONDITIONS.map((c) => (
                 <option key={c.id} value={c.id}>{c.label}</option>

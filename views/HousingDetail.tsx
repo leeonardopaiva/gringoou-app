@@ -71,7 +71,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
 
   return <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
     <PageHeader title="Moradia" backHref="/housing" historyBack />
-    <div className="overflow-hidden bg-white sm:rounded-card">
+    <div className="overflow-hidden bg-surface sm:rounded-card">
       {item.canEdit ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia este anúncio</p>

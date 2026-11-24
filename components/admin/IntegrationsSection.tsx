@@ -50,13 +50,13 @@ export default function IntegrationsSection() {
     <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-[#132F40] sm:text-[28px]">
+          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
             Integrações
             <InfoTip text="APIs e serviços externos usados pela plataforma. Para adicionar uma nova, registre-a em lib/integrations.ts com as variáveis de ambiente que ela exige; os valores ficam no ambiente e nunca aparecem aqui." />
           </h1>
           {!loading ? <p className="mt-1 text-sm text-slate-400">{configured} de {items.length} configuradas</p> : null}
         </div>
-        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
+        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
@@ -73,7 +73,7 @@ export default function IntegrationsSection() {
         groups.map(([category, list]) => (
           <section key={category} aria-label={category}>
             <h2 className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{category}</h2>
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-surface">
               {list.map((item) => {
                 const state = STATUS[item.status];
                 return (

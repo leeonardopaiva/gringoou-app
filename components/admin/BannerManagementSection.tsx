@@ -265,7 +265,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
                       key={option.value}
                       type="button"
                       onClick={() => setBannerForm((current) => ({ ...current, type: option.value }))}
-                      className={`h-9 rounded-full px-3 text-xs font-semibold transition ${bannerForm.type === option.value ? 'bg-white theme-text shadow-sm' : 'text-slate-500'}`}
+                      className={`h-9 rounded-full px-3 text-xs font-semibold transition ${bannerForm.type === option.value ? 'bg-surface theme-text shadow-sm' : 'text-slate-500'}`}
                     >
                       {option.label}
                     </button>
@@ -338,7 +338,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
 
       {loading ? (
         <div className="space-y-3">
-          {Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-40 animate-pulse rounded-3xl bg-white shadow-sm" />)}
+          {Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-40 animate-pulse rounded-3xl bg-surface shadow-sm" />)}
         </div>
       ) : banners.length === 0 ? (
         <EmptyNotice title="Nenhum banner cadastrado" description="Os banners da Home aparecem aqui." />
@@ -349,7 +349,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
           ) : null}
 
           {visibleBanners.map((banner) => (
-            <article key={banner.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
+            <article key={banner.id} className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
               <div className="grid gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
                 <img src={banner.imageUrl} alt={banner.name} className="aspect-[4/3] w-full rounded-2xl object-cover" />
                 <div className="min-w-0">

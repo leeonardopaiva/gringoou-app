@@ -428,7 +428,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-6 text-center">
           <h1 className="text-xl font-bold text-red-700">Acesso não autorizado</h1>
           <p className="mt-2 text-sm text-red-600">Somente proprietários e administradores podem gerenciar esta página.</p>
-          <Link href={business.publicPath} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-bold text-red-700 shadow-sm">
+          <Link href={business.publicPath} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-bold text-red-700 shadow-sm">
             Voltar para a página pública
           </Link>
         </div>
@@ -439,7 +439,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
       <PageHeader title="Negócios" backHref="/businesses" historyBack />
-      <div className="overflow-hidden bg-white sm:rounded-card">
+      <div className="overflow-hidden bg-surface sm:rounded-card">
       {managementMode ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia esta página</p>
@@ -488,7 +488,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             type="button"
             onClick={() => void handleFavoriteToggle()}
             className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${
-              business.isFavorite ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-700 hover:bg-white'
+              business.isFavorite ? 'bg-red-600 text-white' : 'bg-surface/90 text-slate-700 hover:bg-surface'
             }`}
             aria-label="Favoritar negócio"
           >
@@ -497,7 +497,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           <button
             type="button"
             onClick={() => void handleShare()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface"
             aria-label="Compartilhar negócio"
           >
             <Share2 size={19} />
@@ -525,7 +525,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             {business.canEdit && !managementMode ? (
               <Link
                 href={`/businesses/${business.slug || business.id}/gerenciar`}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
               >
                 <PencilLine size={14} /> Gerenciar
               </Link>
@@ -563,12 +563,12 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             </Link>
           ) : null}
           {whatsappHref ? (
-            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" title="WhatsApp" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-emerald-600 transition hover:bg-emerald-50">
+            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" title="WhatsApp" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-emerald-600 transition hover:bg-emerald-50">
               <Send size={18} />
             </a>
           ) : null}
           {callHref ? (
-            <a href={callHref} aria-label="Ligar" title="Ligar" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50">
+            <a href={callHref} aria-label="Ligar" title="Ligar" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
               <Phone size={18} />
             </a>
           ) : null}
@@ -581,7 +581,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           </section>
         ) : null}
 
-        <section aria-label="Informações de contato" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-4">
+        <section aria-label="Informações de contato" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
           {business.address ? (
             <div className="flex items-start gap-3 py-3.5">
               <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
@@ -637,7 +637,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                   >
                     <img src={imageUrl} loading="lazy" className="aspect-square w-full object-cover" alt={`${business.name} - imagem ${index + 1}`} />
                     {isMoreTile ? (
-                      <span className="absolute inset-0 flex items-center justify-center bg-slate-900/55 text-sm font-bold text-white">+{hiddenCount + 1}</span>
+                      <span className="absolute inset-0 flex items-center justify-center bg-scrim-2/55 text-sm font-bold text-white">+{hiddenCount + 1}</span>
                     ) : null}
                   </button>
                 );
@@ -670,7 +670,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             }
           }}
         >
-          <div className="animate-in w-full max-w-lg overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
+          <div className="animate-in w-full max-w-lg overflow-hidden rounded-[28px] bg-surface shadow-2xl fade-in zoom-in duration-200">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div>
                 <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">

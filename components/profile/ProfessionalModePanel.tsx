@@ -27,7 +27,7 @@ const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 
 const menuTrigger = (label: string) => (
-  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-500" aria-label={label} title={label}>
+  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-600 shadow-sm transition-colors hover:border-brand-200 hover:text-brand-500" aria-label={label} title={label}>
     <MoreHorizontal size={18} />
   </span>
 );

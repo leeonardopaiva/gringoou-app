@@ -309,14 +309,14 @@ export const AdWizard: React.FC = () => {
   };
 
   if (accountLoading || !account || !hydrated) {
-    return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-white p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
+    return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-surface p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
   }
 
   if (!account.businessId) {
     return (
-      <div className="mx-auto max-w-[720px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="mx-auto max-w-[720px] rounded-3xl border border-slate-200 bg-surface p-6 shadow-sm sm:p-8">
         <p className="text-[11px] font-extrabold uppercase tracking-wide text-brand-500">Antes de promover</p>
-        <h1 className="mt-2 text-2xl font-extrabold text-[#132f40]">Ative a página do seu negócio</h1>
+        <h1 className="mt-2 text-2xl font-extrabold text-ink">Ative a página do seu negócio</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">Revise os dados públicos de <strong>{account.name}</strong>. A página será vinculada a esta conta Ads e enviada para aprovação.</p>
         <Button className="mt-6" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>Criar página do negócio</Button>
       </div>
@@ -329,7 +329,7 @@ export const AdWizard: React.FC = () => {
       <header className="mb-8">
         <p className="text-[10px] font-bold text-slate-400">Criar Anúncio</p>
         <div className="mt-1 flex items-end justify-between gap-4">
-          <h1 className="text-[28px] font-extrabold leading-tight text-[#132f40]">Novo Anúncio</h1>
+          <h1 className="text-[28px] font-extrabold leading-tight text-ink">Novo Anúncio</h1>
           <div className="flex items-center gap-3">
             {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
             {state.draftId ? (
@@ -367,7 +367,7 @@ export const AdWizard: React.FC = () => {
         router.replace(`/ads/anuncio-em-analise${state.draftId ? `?campaign=${encodeURIComponent(state.draftId)}` : ''}`);
       }} /> : null}
 
-      <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-[#f5f7f9]/95 px-4 py-4 backdrop-blur md:left-[272px] md:px-9">
+      <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-wash-3/95 px-4 py-4 backdrop-blur md:left-[272px] md:px-9">
         <div className="mx-auto grid max-w-[1080px] grid-cols-3 items-center gap-3">
           <div><Button variant="ghost" disabled={state.step === 1 || saving || paymentProcessing} onClick={() => dispatch({ type: 'STEP', payload: Math.max(1, state.step - 1) as AdWizardData['step'] })}>Voltar</Button></div>
           <div className="flex justify-center">{state.step >= 2 && state.step < 4 ? <Button variant="ghost" loading={saving} onClick={() => void saveDraft(true)}>Salvar rascunho</Button> : null}</div>

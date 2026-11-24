@@ -206,7 +206,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
       </div>
 
       {youtubeEmbedUrl ? (
-        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-950">
+        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-scrim">
           <iframe
             src={youtubeEmbedUrl}
             title={`Vídeo externo ${postId}`}

@@ -902,7 +902,7 @@ const Community: React.FC<{
           </div>
         ) : (
           <div className="animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-surface p-2 shadow-sm">
               {composerHref ? (
                 <Link href={composerHref} aria-label={`Abrir perfil de ${composerName}`} className="shrink-0">
                   <img src={composerAvatar} alt="" className="h-9 w-9 rounded-full object-cover" onError={handleAvatarError} />
@@ -962,7 +962,7 @@ const Community: React.FC<{
         </div>
 
         <div className="flex min-h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-brand-500 via-[#0878e8] to-[#075bb8] px-3 py-2 text-white shadow-[0_8px_22px_rgba(0,134,255,0.18)]">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-500">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
             <UserPlus size={16} aria-hidden="true" />
           </span>
           <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${referralSummary.registrationCount} indicações confirmadas`}>
@@ -975,7 +975,7 @@ const Community: React.FC<{
             <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
               <Copy size={14} aria-hidden="true" />
             </Button>
-            <Button iconOnly size="xs" variant="primary" className="!bg-white !text-brand-600" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
+            <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
               <Share2 size={14} aria-hidden="true" />
             </Button>
           </div>
@@ -1051,7 +1051,7 @@ const Community: React.FC<{
 };
 
 const CommunityFeedSkeleton: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
-  <div className="animate-pulse overflow-hidden rounded-card border border-slate-200/80 bg-white p-4" aria-hidden="true">
+  <div className="animate-pulse overflow-hidden rounded-card border border-slate-200/80 bg-surface p-4" aria-hidden="true">
     <div className="flex items-center gap-3">
       <div className="h-10 w-10 rounded-full bg-slate-200" />
       <div className="flex-1 space-y-2">
@@ -1076,7 +1076,7 @@ const ReferralInviteCard: React.FC<{
       <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={onCopy}>
         <Copy size={14} aria-hidden="true" />
       </Button>
-      <Button iconOnly size="xs" variant="primary" className="!bg-white !text-brand-600" aria-label="Compartilhar indicação" onClick={onShare}>
+      <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label="Compartilhar indicação" onClick={onShare}>
         <Share2 size={14} aria-hidden="true" />
       </Button>
     </>} />

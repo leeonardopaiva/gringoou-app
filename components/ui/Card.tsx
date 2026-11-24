@@ -7,7 +7,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const CardRoot: React.FC<CardProps> = ({ padded = true, className, children, ...rest }) => (
   <div
-    className={cn('overflow-hidden rounded-card bg-white shadow-sm', padded && 'p-5', className)}
+    className={cn('overflow-hidden rounded-card bg-surface shadow-sm', padded && 'p-5', className)}
     {...rest}
   >
     {children}

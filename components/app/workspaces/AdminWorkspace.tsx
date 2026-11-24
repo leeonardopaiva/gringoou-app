@@ -24,7 +24,7 @@ type AdminWorkspaceProps = {
 
 const AdminAccessDenied: React.FC = () => (
   <div className="px-5 pt-4">
-    <div className="rounded-[32px] border border-slate-100 bg-white p-6 shadow-sm">
+    <div className="rounded-[32px] border border-slate-100 bg-surface p-6 shadow-sm">
       <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-red-50 text-red-600">
         <ShieldAlert size={28} />
       </div>

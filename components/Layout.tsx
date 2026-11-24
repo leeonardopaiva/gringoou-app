@@ -499,7 +499,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:flex"
+                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
                   <span className="truncate">{shortRegionLabel}</span>
@@ -509,7 +509,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-white text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
                 </button>
@@ -538,7 +538,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
           <div className="fixed inset-x-0 bottom-[max(0.625rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4 lg:hidden">
             <div className="relative flex w-full max-w-[340px] justify-center">
               {isQuickMenuOpen ? (
-                <div className="absolute bottom-[66px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-white p-3 shadow-xl">
+                <div className="absolute bottom-[66px] flex w-full flex-col items-stretch gap-2 rounded-2xl bg-surface p-3 shadow-xl">
                   <Button
                     variant="primary"
                     size="sm"
@@ -565,7 +565,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 </div>
               ) : null}
 
-              <nav className="flex h-[60px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-white/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
+              <nav className="flex h-[60px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-surface/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
                 <NavItem label="Home" icon={<HomeIcon size={24} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
                 <NavItem
                   label="Buscar"

@@ -58,7 +58,7 @@ export default function StripeIntegrationPanel() {
   };
 
   return (
-    <section aria-label="Diagnóstico do Stripe" className="rounded-2xl border border-slate-200 bg-white">
+    <section aria-label="Diagnóstico do Stripe" className="rounded-2xl border border-slate-200 bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600"><CreditCard size={18} /></span>

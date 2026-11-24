@@ -67,11 +67,11 @@ export function AdsAlertsBell() {
 
   return (
     <div ref={rootRef} className="relative">
-      <button type="button" aria-label={unread ? `Alertas (${unread} novos)` : 'Alertas'} aria-expanded={open} onClick={() => { setOpen((value) => !value); if (!open) void load(); }} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+      <button type="button" aria-label={unread ? `Alertas (${unread} novos)` : 'Alertas'} aria-expanded={open} onClick={() => { setOpen((value) => !value); if (!open) void load(); }} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50">
         <Bell size={18} />
         {unread ? <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span> : null}
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" role="dialog" unstyled className="w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" role="dialog" unstyled className="w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-xl shadow-slate-950/10">
         <div>
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-bold text-slate-900">Alertas</p>

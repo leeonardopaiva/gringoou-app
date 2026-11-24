@@ -120,7 +120,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({
     <div ref={rootRef} className={cn('relative', className)}>
       <div
         className={cn(
-          'flex items-center gap-2 rounded-full border-2 bg-white px-4 transition',
+          'flex items-center gap-2 rounded-full border-2 bg-surface px-4 transition',
           error ? 'border-red-400' : 'border-slate-200 focus-within:border-brand-500',
           disabled && 'opacity-60',
         )}

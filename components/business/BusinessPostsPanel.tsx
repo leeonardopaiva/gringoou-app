@@ -79,7 +79,7 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
           <ul className="-mx-5 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:-mx-7 sm:px-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {posts.map((post) => (
               <li key={post.id} className="w-[72%] shrink-0 snap-start sm:w-64">
-                <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface">
                   {post.imageUrl ? (
                     <img src={post.imageUrl} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />
                   ) : (

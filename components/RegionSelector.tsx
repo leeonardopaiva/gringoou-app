@@ -268,7 +268,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               onChange={(event) => setSearch(event.target.value)}
               placeholder={citySearch ? 'Buscar cidade dos EUA ou região' : 'Buscar região'}
               autoFocus
-              className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-white pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
+              className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-surface pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           </div>

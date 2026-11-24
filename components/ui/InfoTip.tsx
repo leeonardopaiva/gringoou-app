@@ -48,7 +48,7 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, className, align = 'star
         unstyled
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="w-64 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-lg"
+        className="w-64 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-lg"
       >
         {text}
       </Popover>

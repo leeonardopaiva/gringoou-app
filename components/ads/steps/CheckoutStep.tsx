@@ -57,9 +57,9 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
     <Card className="rounded-3xl border border-slate-200 p-5 shadow-sm sm:p-7">
       <div className="mb-6 flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">4</span><Card.Title className="text-[17px]">Checkout</Card.Title></div>
       <div className="grid gap-5 lg:grid-cols-2">
-      <Card className="border border-slate-200 bg-[#fbfcfd] shadow-none">
+      <Card className="border border-slate-200 bg-wash-4 shadow-none">
         <Card.Title>Resumo do contrato</Card.Title>
-        <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-white px-5">
+        <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-surface px-5">
           {[['Plano', planInfo.name], ['Vigência', `${state.durationMonths} ${state.durationMonths === 1 ? 'mês' : 'meses'}`], ['Região', state.regionKey]].map(([label, value]) => <div key={label} className="flex items-center justify-between gap-4 py-3.5 text-body-sm"><span className="text-muted-foreground">{label}</span><strong className="text-right text-text">{value}</strong></div>)}
         </div>
         <div className="mt-5 rounded-2xl bg-[#eaf5ff] p-5">
@@ -74,8 +74,8 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
           <p className="mt-2 text-xs leading-5 text-slate-500">Valor calculado e validado no servidor. A campanha segue para análise depois da confirmação do Stripe.</p>
         </div>
       </Card>
-      <Card className="self-start border border-slate-200 bg-[#fbfcfd] shadow-none">
-        <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <Card className="self-start border border-slate-200 bg-wash-4 shadow-none">
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-surface p-4">
           {couponOpen ? (
             <form
               className="space-y-2"

@@ -477,7 +477,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
       <PageHeader title="Eventos" backHref="/events" historyBack />
-      <div className="overflow-hidden bg-white sm:rounded-card">
+      <div className="overflow-hidden bg-surface sm:rounded-card">
         {event.canEdit ? (
           <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
             <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia este evento</p>
@@ -517,7 +517,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             <button
               type="button"
               onClick={() => void handleFavoriteToggle()}
-              className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${event.isFavorite ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-700 hover:bg-white'}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${event.isFavorite ? 'bg-red-600 text-white' : 'bg-surface/90 text-slate-700 hover:bg-surface'}`}
               aria-label="Favoritar evento"
             >
               <Heart size={19} fill={event.isFavorite ? 'currentColor' : 'none'} />
@@ -525,7 +525,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             <button
               type="button"
               onClick={() => void handleShare()}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface"
               aria-label="Compartilhar evento"
             >
               <Share2 size={19} />
@@ -578,17 +578,17 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               </button>
             ) : null}
             {event.externalUrl ? (
-              <a href={event.externalUrl} target="_blank" rel="noreferrer" aria-label="Abrir link do evento" title="Link do evento" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50">
+              <a href={event.externalUrl} target="_blank" rel="noreferrer" aria-label="Abrir link do evento" title="Link do evento" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
                 <Globe2 size={18} />
               </a>
             ) : null}
-            <button type="button" onClick={() => void handleCopyUrl()} aria-label="Copiar link do evento" title="Copiar link" className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 ${!event.isOwner && event.organizerId ? 'w-12' : 'flex-1 gap-2 px-5 text-sm font-bold'}`}>
+            <button type="button" onClick={() => void handleCopyUrl()} aria-label="Copiar link do evento" title="Copiar link" className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50 ${!event.isOwner && event.organizerId ? 'w-12' : 'flex-1 gap-2 px-5 text-sm font-bold'}`}>
               <Copy size={18} />
               {!event.isOwner && event.organizerId ? null : 'Copiar link do evento'}
             </button>
           </div>
 
-          <section aria-label="Data e local" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-4">
+          <section aria-label="Data e local" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
             <div className="flex items-start gap-3 py-3.5">
               <CalendarDays size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
               <div className="min-w-0">
@@ -640,7 +640,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center sm:p-6" onClick={(clickEvent) => {
           if (clickEvent.target === clickEvent.currentTarget && !savingDetails) setEditingDetails(false);
         }}>
-          <div className="animate-in max-h-[92dvh] w-full max-w-xl overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
+          <div className="animate-in max-h-[92dvh] w-full max-w-xl overflow-hidden rounded-[28px] bg-surface shadow-2xl fade-in zoom-in duration-200">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div><p className="theme-text text-sm font-bold">Editar evento</p><p className="mt-1 text-xs text-slate-500">Atualize as informações exibidas na página pública.</p></div>
               <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500" aria-label="Fechar modal"><X size={18} /></button>
@@ -678,7 +678,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
             }
           }}
         >
-          <div className="animate-in w-full max-w-lg overflow-hidden rounded-[28px] bg-white shadow-2xl fade-in zoom-in duration-200">
+          <div className="animate-in w-full max-w-lg overflow-hidden rounded-[28px] bg-surface shadow-2xl fade-in zoom-in duration-200">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div>
                 <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">

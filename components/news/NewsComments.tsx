@@ -194,7 +194,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
         }}
       >
         <MessageCircle size={16} className="shrink-0 text-slate-400" aria-hidden />
-        <MentionInput value={draft} onChange={setDraft} maxLength={500} placeholder="Escreva um comentário (use @ para marcar)" ariaLabel="Escreva um comentário" className="w-full rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-400" />
+        <MentionInput value={draft} onChange={setDraft} maxLength={500} placeholder="Escreva um comentário (use @ para marcar)" ariaLabel="Escreva um comentário" className="w-full rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none focus:border-brand-400" />
         <button
           type="submit"
           disabled={draft.trim().length < 2 || sending}

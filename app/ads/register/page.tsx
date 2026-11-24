@@ -47,7 +47,7 @@ export default function AdsRegisterPage() {
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         <GringoouLogo size={34} />
         <p className="mt-6 text-xs font-bold uppercase tracking-wider text-brand-500">Portal do anunciante</p>
-        <h1 className="mt-2 text-3xl font-extrabold text-[#132f40]">Crie sua conta comercial</h1>
+        <h1 className="mt-2 text-3xl font-extrabold text-ink">Crie sua conta comercial</h1>
         <p className="mt-2 text-sm text-slate-500">Cadastre os dados do responsável para criar e administrar a conta do seu negócio.</p>
         <form onSubmit={submit} className="mt-7 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">

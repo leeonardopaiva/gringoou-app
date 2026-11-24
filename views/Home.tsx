@@ -203,7 +203,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                   placement="HOME"
                   className="w-full flex-none"
                 >
-                  <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
+                  <div className="relative overflow-hidden rounded-2xl bg-surface shadow-sm">
                     {banner.type === 'REGISTRATION' ? (
                       <>
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover" />
@@ -223,7 +223,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                       <button type="button" onClick={() => handleBannerLinkClick(banner)} className="group relative block w-full text-left">
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover transition duration-300 group-hover:scale-[1.01]" />
                         <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur">Publicidade</span>
-                        <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground shadow-sm"><ExternalLink size={15} /></span>
+                        <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-foreground shadow-sm"><ExternalLink size={15} /></span>
                       </button>
                     )}
                   </div>

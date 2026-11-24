@@ -6,6 +6,7 @@ import { isInviteOnlyRegistration } from '@/lib/invites';
 import { getCachedServerAuthSession } from '@/lib/server/auth-session';
 import { Analytics } from '@vercel/analytics/next';
 import UtmCapture from '@/components/analytics/UtmCapture';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 
 // Local/mock dev has no real traffic to measure, so skip the Vercel beacon entirely.
 const shouldLoadVercelAnalytics = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_USE_MOCKS !== 'true';
@@ -42,6 +43,10 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f9f9f9' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b1117' },
+  ],
 };
 
 export default async function RootLayout({
@@ -52,7 +57,11 @@ export default async function RootLayout({
   const session = await getCachedServerAuthSession();
 
   return (
-    <html lang="pt-BR">
+    // suppressHydrationWarning: o script do <head> define data-theme antes da hidratação.
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={`${sora.className} ${sora.variable} bg-bg text-foreground`}>
         <script
           src="https://cdn.ably.io/lib/ably.min-1.js"

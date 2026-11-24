@@ -80,7 +80,7 @@ export default function MessageReportsSection() {
   };
 
   return (
-    <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="mt-6 rounded-[28px] border border-slate-200 bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">

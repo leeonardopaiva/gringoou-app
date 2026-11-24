@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react';
 import type { Session } from 'next-auth';
 import { ToastProvider } from '@/components/feedback/ToastProvider';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import AddToHomeScreenPrompt from '@/components/pwa/AddToHomeScreenPrompt';
 import WebVitalsReporter from '@/components/performance/WebVitalsReporter';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -24,6 +25,7 @@ const shouldLoadVercelTelemetry = process.env.NODE_ENV === 'production' && proce
 export function Providers({ children, session, inviteRequired = false }: ProvidersProps) {
   return (
     <PublicConfigProvider value={{ inviteRequired }}>
+    <ThemeProvider>
     <SessionProvider session={session}>
       <ToastProvider>
         <MessagingProvider user={session?.user as unknown as User | null}>
@@ -35,6 +37,7 @@ export function Providers({ children, session, inviteRequired = false }: Provide
         </MessagingProvider>
       </ToastProvider>
     </SessionProvider>
+    </ThemeProvider>
     </PublicConfigProvider>
   );
 }

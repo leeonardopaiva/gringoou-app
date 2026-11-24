@@ -33,7 +33,7 @@ export function BusinessCategoryField({ category, subcategories, onCategoryChang
   return (
     <div className="space-y-3">
       <label className="block space-y-2">
-        <span className="text-sm font-bold text-[#243b53]">Categoria principal</span>
+        <span className="text-sm font-bold text-ink-2">Categoria principal</span>
         <Select value={category} required onChange={(event) => { onCategoryChange(event.target.value); onSubcategoriesChange([]); }}>
           <option value="">Selecione uma categoria</option>
           {AD_BUSINESS_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
@@ -45,14 +45,14 @@ export function BusinessCategoryField({ category, subcategories, onCategoryChang
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Subcategorias sugeridas</p>
           <div className="flex flex-wrap gap-2">
             {suggestions.filter((item) => !subcategories.includes(item)).map((item) => (
-              <button key={item} type="button" onClick={() => add(item)} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-300 hover:text-brand-600"><Plus size={12} />{item}</button>
+              <button key={item} type="button" onClick={() => add(item)} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-300 hover:text-brand-600"><Plus size={12} />{item}</button>
             ))}
           </div>
         </div>
       ) : null}
 
       <label className="block space-y-2">
-        <span className="text-sm font-bold text-[#243b53]">Adicionar subcategoria</span>
+        <span className="text-sm font-bold text-ink-2">Adicionar subcategoria</span>
         <Input value={customValue} onChange={(event) => setCustomValue(event.target.value)} onKeyDown={onKeyDown} onBlur={() => add(customValue)} placeholder="Ex.: Restaurante Brasileiro" />
       </label>
 

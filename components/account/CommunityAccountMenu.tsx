@@ -182,7 +182,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
         <Avatar src={user.avatar} name={user.name} size="sm" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[340px] overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-950/10">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" side="bottom" className="w-[340px] overflow-hidden border border-slate-200 bg-surface shadow-xl shadow-slate-950/10">
         <div>
           <div className="p-2">
             <div className="flex items-center gap-3 px-3 py-2">
@@ -208,8 +208,8 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
                     <Avatar src={business.imageUrl} name={business.name} size="sm" />
                     <strong className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800" title={business.name}>{business.name}</strong>
                     <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`Abrir painel de ${business.name}`} title="Painel do negócio"><Settings size={16} /></button>
-                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
-                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
+                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
+                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
                   </div>
                 ))}
               </div>

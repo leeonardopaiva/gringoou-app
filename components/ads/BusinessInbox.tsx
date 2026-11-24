@@ -83,12 +83,12 @@ export function BusinessInbox() {
           Mensagens
           <InfoTip text="Conversas de pessoas que escreveram para este negócio. Conversas antigas, de antes da separação por negócio, continuam nas mensagens da comunidade. Para bloquear, denunciar ou arquivar, abra a conversa por lá." />
         </h1>
-        <Link href="/inbox" className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+        <Link href="/inbox" className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
           <ExternalLink size={15} /> Mensagens da comunidade
         </Link>
       </div>
 
-      <div className="grid h-[calc(100dvh-190px)] min-h-[440px] overflow-hidden rounded-2xl border border-slate-200 bg-white md:grid-cols-[320px_1fr]">
+      <div className="grid h-[calc(100dvh-190px)] min-h-[440px] overflow-hidden rounded-2xl border border-slate-200 bg-surface md:grid-cols-[320px_1fr]">
         <aside className={cn('min-h-0 flex-col border-slate-100 md:flex md:border-r', view === 'chat' ? 'hidden' : 'flex')}>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {loading && received.length === 0 ? (
@@ -144,7 +144,7 @@ export function BusinessInbox() {
                   const mine = message.senderId === me;
                   return (
                     <div key={message.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
-                      <div className={cn('max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm', mine ? 'bg-[#0065bf] text-white' : 'border border-slate-200 bg-white text-slate-800', message.deleted && 'italic opacity-60')}>
+                      <div className={cn('max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm', mine ? 'bg-[#0065bf] text-white' : 'border border-slate-200 bg-surface text-slate-800', message.deleted && 'italic opacity-60')}>
                         {message.deleted ? 'Mensagem apagada' : message.content}
                       </div>
                     </div>

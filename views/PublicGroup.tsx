@@ -258,8 +258,8 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className={wrapperClass}>
           <div className="w-full space-y-5">
             {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
-            <div className="h-80 animate-pulse rounded-[36px] bg-white shadow-sm" />
-            <div className="h-72 animate-pulse rounded-[36px] bg-white shadow-sm" />
+            <div className="h-80 animate-pulse rounded-[36px] bg-surface shadow-sm" />
+            <div className="h-72 animate-pulse rounded-[36px] bg-surface shadow-sm" />
           </div>
         </div>
       </div>
@@ -286,7 +286,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
           {embedded ? <PageHeader title="Grupos" backHref="/groups" historyBack /> : null}
-          <section className="overflow-hidden rounded-[28px] bg-white shadow-sm">
+          <section className="overflow-hidden rounded-[28px] bg-surface shadow-sm">
             {group.canManage ? (
               <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
                 <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><ShieldCheck size={14} aria-hidden /> Você administra este grupo</p>
@@ -322,7 +322,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
               ) : null}
               {viewer && !group.canManage ? <div className="absolute right-4 top-4 z-30"><Dropdown
                 align="right"
-                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
+                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
                 sections={[{ items: [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }] }]}
               /></div> : null}
             </div>
