@@ -25,7 +25,7 @@ const hintFor = (code: number | null) => {
     case 20404:
       return 'Serviço não encontrado nessa conta: o Verify Service SID é de outra conta Twilio.';
     case 21608:
-      return 'Conta Trial: só envia para números verificados no console do Twilio.';
+      return 'A conta só envia para números cadastrados como Verified Caller ID até ter o Primary Compliance Profile aprovado (Trust Hub).';
     case 60410:
       return 'Bloqueado pelo antifraude do Twilio para este número.';
     case 60605:

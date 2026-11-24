@@ -106,9 +106,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // 21608: the Twilio account has no approved Primary Compliance Profile (or is a trial) and
+    // may only message verified caller IDs. A configuration issue, so it is logged too.
     if (twilioCode === 21608) {
+      console.error('[phone-verification] Twilio 21608: conta sem Primary Compliance Profile aprovado');
       return NextResponse.json(
-        { error: 'Este número ainda não está verificado na conta de teste do Twilio.' },
+        { error: 'Não conseguimos enviar SMS para este número no momento. Tente novamente mais tarde.' },
         { status: 400 },
       );
     }
