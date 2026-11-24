@@ -205,7 +205,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  // Country check first, so blocked visitors never reach sign-in or the gate.
+  // Canonical host first. Otherwise a blocked visitor on www gets the block page there while
+  // its CSS is redirected to the main domain, which the CSP (style-src 'self') refuses, leaving
+  // the page unstyled.
+  const requestHost = request.headers.get('host')?.split(':')[0].toLowerCase();
+  if (requestHost && REDIRECT_HOSTS.has(requestHost)) {
+    const canonicalUrl = request.nextUrl.clone();
+    canonicalUrl.hostname = CANONICAL_HOST;
+    canonicalUrl.protocol = 'https:';
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
+
+  // Country check next, so blocked visitors never reach sign-in or the gate.
   // The developer is exempt by fixed IP or by the bypass cookie. The Founder
   // (authenticated ADMIN) is exempt so maintenance from blocked regions works.
   const geoEnabled = isGeoBlockEnabled() || isGeoRestrictionEnabled();
