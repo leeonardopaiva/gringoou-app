@@ -96,7 +96,17 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       const info = twilioError(error);
-      return NextResponse.json({ ok: false, message: hintFor(info.code) ?? info.message, twilioCode: info.code }, { status: 200 });
+      // The hint is only a guess; the original Twilio code and text always follow it, so the
+      // real cause is visible even when the hint does not fit.
+      const hint = hintFor(info.code);
+      return NextResponse.json(
+        {
+          ok: false,
+          message: `${hint ? `${hint} ` : ''}Twilio: ${info.message} (código ${info.code ?? '?'}, HTTP ${info.status ?? '?'}).`,
+          twilioCode: info.code,
+        },
+        { status: 200 },
+      );
     }
   }
 
