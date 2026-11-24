@@ -113,7 +113,26 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('[phone-verification] falha ao enviar código', twilioCode ?? error);
+    // 60410: blocked by Twilio's fraud guard. 60605 / 21408: country not enabled in the
+    // Twilio geo permissions. These depend on the number, so they are reported as such.
+    if (twilioCode === 60410 || twilioCode === 60605 || twilioCode === 21408) {
+      return NextResponse.json(
+        { error: 'Não conseguimos enviar SMS para este número. Tente outro telefone.' },
+        { status: 400 },
+      );
+    }
+
+    // Everything else is an account/configuration problem (bad credentials 20003, Verify
+    // service not found 20404, sender not owned 21606/21212, ...). Log all the details so the
+    // Vercel logs show the real cause without exposing it to the user.
+    const details = error as { status?: number; code?: number; message?: string; moreInfo?: string };
+    console.error('[phone-verification] falha ao enviar código', {
+      twilioCode,
+      httpStatus: details?.status,
+      message: details?.message ?? String(error),
+      moreInfo: details?.moreInfo,
+      usingVerifyService: Boolean(process.env.TWILIO_VERIFY_SERVICE_SID?.trim()),
+    });
     return NextResponse.json(
       { error: 'Não foi possível enviar o código agora. Tente novamente.' },
       { status: 502 },

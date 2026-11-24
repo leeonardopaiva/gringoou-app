@@ -547,7 +547,9 @@ const App: React.FC<{
     return null;
   }
 
-  if (phoneVerificationEnabled && !session.user.phoneVerified) {
+  // Existing accounts without a confirmed phone are held here until they verify. Admins are
+  // exempt so the developer can keep maintaining the app from outside the allowed regions.
+  if (phoneVerificationEnabled && !session.user.phoneVerified && sessionRole !== UserRole.ADMIN) {
     return <PhoneVerificationGate onVerified={() => void update()} />;
   }
 

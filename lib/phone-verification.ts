@@ -20,6 +20,8 @@ export const getPhoneCountry = (phoneE164: string) =>
   parsePhoneNumberFromString(phoneE164)?.country ?? null;
 
 // Only numbers from these countries are accepted. Defaults to US, Canada and Europe.
+export const getAllowedPhoneCountries = () => getAllowedCountries();
+
 const getAllowedCountries = () =>
   process.env.PHONE_ALLOWED_COUNTRIES
     ? process.env.PHONE_ALLOWED_COUNTRIES.split(',').map((value) => value.trim().toUpperCase()).filter(Boolean)

@@ -6,6 +6,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import StripeIntegrationPanel from '@/components/admin/StripeIntegrationPanel';
+import TwilioIntegrationPanel from '@/components/admin/TwilioIntegrationPanel';
 import type { IntegrationState, IntegrationStatus } from '@/lib/integrations';
 
 const STATUS: Record<IntegrationStatus, { label: string; dot: string; chip: string }> = {
@@ -62,6 +63,7 @@ export default function IntegrationsSection() {
       </div>
 
       <StripeIntegrationPanel />
+      <TwilioIntegrationPanel />
 
       {loading && items.length === 0 ? (
         <div className="space-y-3" role="status" aria-label="Carregando integrações">

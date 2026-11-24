@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { formatInternationalPhone } from '@/lib/phone';
+import PhoneNumberField from '@/components/forms/PhoneNumberField';
+import { buildInternationalPhone } from '@/lib/forms/phone';
 
 const inputClassName =
   'w-full rounded-2xl border border-line-soft bg-surface px-4 py-3 text-sm text-ink-3 placeholder:text-ink-7 focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
@@ -13,7 +14,9 @@ type Step = 'phone' | 'code' | 'done';
 
 export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
   const [step, setStep] = useState<Step>('phone');
-  const [phone, setPhone] = useState('');
+  const [countryIso2, setCountryIso2] = useState('US');
+  const [localNumber, setLocalNumber] = useState('');
+  const phone = buildInternationalPhone(countryIso2, localNumber);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -138,22 +141,20 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
 
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-4 text-center" noValidate>
-      <label htmlFor="verify-phone" className="text-sm font-semibold text-ink-3">
-        Telefone com código do país
-      </label>
-      <input
-        id="verify-phone"
-        name="phone"
-        type="tel"
-        inputMode="tel"
-        autoComplete="tel"
-        placeholder="+1 305 000 0000"
-        value={phone}
-        onChange={(event) => setPhone(formatInternationalPhone(event.target.value))}
-        className={inputClassName}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? 'verify-error' : undefined}
+      <span className="text-sm font-semibold text-ink-3">Seu telefone</span>
+      <PhoneNumberField
+        countryIso2={countryIso2}
+        onCountryChange={(iso2) => {
+          setCountryIso2(iso2);
+          setError(null);
+        }}
+        value={localNumber}
+        onValueChange={setLocalNumber}
+        onInteract={() => setError(null)}
+        placeholder="Número com DDD"
+        invalid={Boolean(error)}
       />
+      <p className="text-xs text-ink-5">Enviaremos um código de 6 dígitos por SMS.</p>
 
       {error && (
         <p id="verify-error" role="alert" className="text-sm font-semibold text-[#c2410c]">
@@ -161,7 +162,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: () => void }) {
         </p>
       )}
 
-      <button type="submit" disabled={loading || phone.replace(/\D/g, '').length < 8} className={`${buttonClassName} w-full`}>
+      <button type="submit" disabled={loading || localNumber.replace(/\D/g, '').length < 6} className={`${buttonClassName} w-full`}>
         {loading ? 'Enviando...' : 'Enviar código por SMS'}
       </button>
     </form>
