@@ -6,6 +6,7 @@ import { AlertCircle, Bell, CalendarX2, CheckCircle2, Clock3, MessageCircle, Rot
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { cn } from '@/lib/cn';
 import { Popover } from '@/components/ui/Popover';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AdAlert = { id: string; type: string; title: string; body: string | null; href: string | null; readAt: string | null; createdAt: string };
 
@@ -31,6 +32,7 @@ function timeAgo(value: string) {
 
 /** Alertas do painel do negócio: mudanças de status de campanhas e pagamentos. */
 export function AdsAlertsBell() {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { account } = useAdAccount();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -67,22 +69,22 @@ export function AdsAlertsBell() {
 
   return (
     <div ref={rootRef} className="relative">
-      <button type="button" aria-label={unread ? `Alertas (${unread} novos)` : 'Alertas'} aria-expanded={open} onClick={() => { setOpen((value) => !value); if (!open) void load(); }} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50">
+      <button type="button" aria-label={unread ? `${tx('Alertas (')}${unread} ${tx('novos)')}` : tx('Alertas')} aria-expanded={open} onClick={() => { setOpen((value) => !value); if (!open) void load(); }} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50">
         <Bell size={18} />
         {unread ? <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span> : null}
       </button>
       <Popover open={open} onClose={() => setOpen(false)} anchorRef={rootRef} align="end" role="dialog" unstyled className="w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-xl shadow-slate-950/10">
         <div>
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <p className="text-sm font-bold text-slate-900">Alertas</p>
-            {unread ? <button type="button" onClick={() => void markRead()} className="text-xs font-semibold text-brand-600 hover:underline">Marcar todos como lidos</button> : null}
+            <p className="text-sm font-bold text-slate-900">{tx('Alertas')}</p>
+            {unread ? <button type="button" onClick={() => void markRead()} className="text-xs font-semibold text-brand-600 hover:underline">{tx('Marcar todos como lidos')}</button> : null}
           </div>
           <div className="max-h-[420px] overflow-y-auto">
             {items.length === 0 ? (
               <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Bell size={20} /></span>
-                <p className="text-sm font-semibold text-slate-700">Nenhum alerta por enquanto</p>
-                <p className="text-xs text-slate-400">Avisamos aqui quando uma campanha for aprovada, recusada ou precisar da sua atenção.</p>
+                <p className="text-sm font-semibold text-slate-700">{tx('Nenhum alerta por enquanto')}</p>
+                <p className="text-xs text-slate-400">{tx('Avisamos aqui quando uma campanha for aprovada, recusada ou precisar da sua atenção.')}</p>
               </div>
             ) : (
               <ul className="divide-y divide-slate-100">
@@ -97,7 +99,7 @@ export function AdsAlertsBell() {
                           <span className="flex items-center justify-between gap-2"><strong className="truncate text-sm text-slate-900">{item.title}</strong><span className="shrink-0 text-[11px] text-slate-400">{timeAgo(item.createdAt)}</span></span>
                           {item.body ? <span className="mt-0.5 block text-xs leading-5 text-slate-500">{item.body}</span> : null}
                         </span>
-                        {!item.readAt ? <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-500" aria-label="Não lido" /> : null}
+                        {!item.readAt ? <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-500" aria-label={tx('Não lido')} /> : null}
                       </button>
                     </li>
                   );

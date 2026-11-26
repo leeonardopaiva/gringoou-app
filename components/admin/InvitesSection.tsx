@@ -12,6 +12,7 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { useToast } from '../feedback/ToastProvider';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type InviteStatus = 'ACTIVE' | 'USED' | 'EXPIRED' | 'REVOKED';
 type WaitlistStatus = 'PENDING' | 'INVITED' | 'ACTIVE';
@@ -93,6 +94,7 @@ const NO_COUNTRY = '__none__';
 type CountryOption = { country: string | null; count: number };
 
 const InvitesSection: React.FC = () => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [tab, setTab] = useState<'invites' | 'waitlist'>('invites');
 
@@ -207,7 +209,7 @@ const InvitesSection: React.FC = () => {
       void loadInvites(1);
     } catch (error) {
       console.error('Failed to create invite:', error);
-      showToast('Não foi possível gerar o convite.', 'error');
+      showToast(tx('Não foi possível gerar o convite.'), 'error');
     } finally {
       setCreating(false);
     }
@@ -221,10 +223,10 @@ const InvitesSection: React.FC = () => {
         showToast(sanitizeUserMessage(payload?.error, 'Não foi possível revogar.'), 'error');
         return;
       }
-      showToast('Convite revogado.', 'success');
+      showToast(tx('Convite revogado.'), 'success');
       void loadInvites(invitesPage);
     } catch {
-      showToast('Não foi possível revogar.', 'error');
+      showToast(tx('Não foi possível revogar.'), 'error');
     }
   };
 
@@ -238,7 +240,7 @@ const InvitesSection: React.FC = () => {
       setDetail(payload.invite);
     } catch (error) {
       console.error('Failed to load invite detail:', error);
-      showToast('Não foi possível carregar os detalhes.', 'error');
+      showToast(tx('Não foi possível carregar os detalhes.'), 'error');
     } finally {
       setDetailLoading(false);
     }
@@ -249,7 +251,7 @@ const InvitesSection: React.FC = () => {
       await navigator.clipboard.writeText(text);
       showToast(`${label} copiado.`, 'success');
     } catch {
-      showToast('Não foi possível copiar.', 'error');
+      showToast(tx('Não foi possível copiar.'), 'error');
     }
   };
 
@@ -274,17 +276,17 @@ const InvitesSection: React.FC = () => {
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">Convites<InfoTip text="Gerencie a lista de espera e o acesso ao Private Beta." /></h1>
+          <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">{tx('Convites')}<InfoTip text={tx('Gerencie a lista de espera e o acesso ao Private Beta.')} /></h1>
         </div>
         <Button iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
-          Gerar convite
+          {tx('Gerar convite')}
         </Button>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {[
-          { id: 'invites', label: 'Convites', icon: <Ticket size={15} /> },
-          { id: 'waitlist', label: 'Lista de espera', icon: <Users size={15} /> },
+          { id: 'invites', label: tx('Convites'), icon: <Ticket size={15} /> },
+          { id: 'waitlist', label: tx('Lista de espera'), icon: <Users size={15} /> },
         ].map((item) => (
           <button
             key={item.id}
@@ -294,7 +296,7 @@ const InvitesSection: React.FC = () => {
               tab === item.id ? 'border-transparent bg-brand-500 text-white' : 'border-slate-100 bg-surface text-slate-700 hover:bg-brand-50'
             }`}
           >
-            {item.icon} {item.label}
+            {item.icon} {tx(item.label)}
           </button>
         ))}
       </div>
@@ -310,7 +312,7 @@ const InvitesSection: React.FC = () => {
                   setInvitesSearch(event.target.value);
                   setInvitesPage(1);
                 }}
-                placeholder="Buscar por email..."
+                placeholder={tx('Buscar por email...')}
                 className="w-full rounded-2xl border border-slate-100 bg-surface py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -323,24 +325,24 @@ const InvitesSection: React.FC = () => {
               }}
               className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="">Todos os status</option>
-              <option value="ACTIVE">Ativo</option>
-              <option value="USED">Utilizado</option>
-              <option value="EXPIRED">Expirado</option>
-              <option value="REVOKED">Revogado</option>
+              <option value="">{tx('Todos os status')}</option>
+              <option value="ACTIVE">{tx('Ativo')}</option>
+              <option value="USED">{tx('Utilizado')}</option>
+              <option value="EXPIRED">{tx('Expirado')}</option>
+              <option value="REVOKED">{tx('Revogado')}</option>
             </select>
             <a
               href={exportHref('/api/admin/invites/export', { status: invitesStatus, q: invitesSearch })}
               download
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
             >
-              <Download size={15} aria-hidden /> Exportar CSV
+              <Download size={15} aria-hidden /> {tx('Exportar CSV')}
             </a>
           </div>
 
           <p className="text-xs font-semibold text-slate-500" aria-live="polite">
             {invitesTotal} {invitesTotal === 1 ? 'registro' : 'registros'}
-            {invitesStatus || invitesSearch ? ' com os filtros atuais' : ''}
+            {invitesStatus || invitesSearch ? tx('com os filtros atuais') : ''}
           </p>
 
           {invitesLoading ? (
@@ -350,19 +352,19 @@ const InvitesSection: React.FC = () => {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : invites.length === 0 ? (
-            <EmptyState icon={<Ticket size={28} />} title="Nenhum convite encontrado" description="Gere um convite para liberar o acesso de novos usuários." />
+            <EmptyState icon={<Ticket size={28} />} title={tx('Nenhum convite encontrado')} description={tx('Gere um convite para liberar o acesso de novos usuários.')} />
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
                     <th className="px-4 py-3">Nº</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Usos</th>
-                    <th className="px-4 py-3">Criado em</th>
-                    <th className="px-4 py-3">Expira</th>
-                    <th className="px-4 py-3">Ações</th>
+                    <th className="px-4 py-3">{tx('Email')}</th>
+                    <th className="px-4 py-3">{tx('Status')}</th>
+                    <th className="px-4 py-3">{tx('Usos')}</th>
+                    <th className="px-4 py-3">{tx('Criado em')}</th>
+                    <th className="px-4 py-3">{tx('Expira')}</th>
+                    <th className="px-4 py-3">{tx('Ações')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -370,9 +372,9 @@ const InvitesSection: React.FC = () => {
                     <tr key={invite.id} className="border-b border-slate-50 last:border-0">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-slate-500">{formatNumber(invite.number)}</td>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-slate-800">{invite.email ?? 'Sem email vinculado'}</p>
+                        <p className="font-semibold text-slate-800">{invite.email ?? tx('Sem email vinculado')}</p>
                         {invite.waitlistEntry ? (
-                          <p className="text-xs text-slate-400">Lista de espera: {invite.waitlistEntry.email}</p>
+                          <p className="text-xs text-slate-400">{tx('Lista de espera:')} {invite.waitlistEntry.email}</p>
                         ) : null}
                       </td>
                       <td className="px-4 py-3">
@@ -390,7 +392,7 @@ const InvitesSection: React.FC = () => {
                             onClick={() => void openDetail(invite.id)}
                             className="rounded-full px-2 py-1 text-xs font-bold text-brand-600 hover:bg-brand-50"
                           >
-                            Detalhes
+                            {tx('Detalhes')}
                           </button>
                           {invite.status === 'ACTIVE' ? (
                             <button
@@ -398,7 +400,7 @@ const InvitesSection: React.FC = () => {
                               onClick={() => void handleRevoke(invite.id)}
                               className="rounded-full px-2 py-1 text-xs font-bold text-red-600 hover:bg-red-50"
                             >
-                              Revogar
+                              {tx('Revogar')}
                             </button>
                           ) : null}
                         </div>
@@ -427,7 +429,7 @@ const InvitesSection: React.FC = () => {
                   setWaitlistSearch(event.target.value);
                   setWaitlistPage(1);
                 }}
-                placeholder="Buscar por nome ou email..."
+                placeholder={tx('Buscar por nome ou email...')}
                 className="w-full rounded-2xl border border-slate-100 bg-surface py-2.5 pl-10 pr-4 text-sm shadow-sm focus:border-brand-300 focus:outline-none"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -440,13 +442,13 @@ const InvitesSection: React.FC = () => {
               }}
               className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="">Todos</option>
-              <option value="PENDING">Aguardando</option>
-              <option value="INVITED">Convidado</option>
-              <option value="ACTIVE">Cadastrado</option>
+              <option value="">{tx('Todos')}</option>
+              <option value="PENDING">{tx('Aguardando')}</option>
+              <option value="INVITED">{tx('Convidado')}</option>
+              <option value="ACTIVE">{tx('Cadastrado')}</option>
             </select>
             <select
-              aria-label="Filtrar por país ou região"
+              aria-label={tx('Filtrar por país ou região')}
               value={waitlistCountry}
               onChange={(event) => {
                 setWaitlistCountry(event.target.value);
@@ -454,7 +456,7 @@ const InvitesSection: React.FC = () => {
               }}
               className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="">Todos os países</option>
+              <option value="">{tx('Todos os países')}</option>
               {waitlistCountries.map((item) => (
                 <option key={item.country ?? NO_COUNTRY} value={item.country ?? NO_COUNTRY}>
                   {countryLabel(item.country)} ({item.count})
@@ -472,7 +474,7 @@ const InvitesSection: React.FC = () => {
 
           <p className="text-xs font-semibold text-slate-500" aria-live="polite">
             {waitlistTotal} {waitlistTotal === 1 ? 'registro' : 'registros'}
-            {waitlistStatus || waitlistSearch || waitlistCountry ? ` com os filtros atuais (de ${waitlistOverallTotal} no total)` : ''}
+            {waitlistStatus || waitlistSearch || waitlistCountry ? ` ${tx('com os filtros atuais (de')} ${waitlistOverallTotal} ${tx('no total)')}` : ''}
           </p>
 
           {waitlistLoading ? (
@@ -482,19 +484,19 @@ const InvitesSection: React.FC = () => {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : waitlist.length === 0 ? (
-            <EmptyState icon={<Users size={28} />} title="Nenhum interessado encontrado" description="A lista de espera está vazia para os filtros selecionados." />
+            <EmptyState icon={<Users size={28} />} title={tx('Nenhum interessado encontrado')} description={tx('A lista de espera está vazia para os filtros selecionados.')} />
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
                     <th className="px-4 py-3">Nº</th>
-                    <th className="px-4 py-3">Nome</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">País</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Data</th>
-                    <th className="px-4 py-3">Ações</th>
+                    <th className="px-4 py-3">{tx('Nome')}</th>
+                    <th className="px-4 py-3">{tx('Email')}</th>
+                    <th className="px-4 py-3">{tx('País')}</th>
+                    <th className="px-4 py-3">{tx('Status')}</th>
+                    <th className="px-4 py-3">{tx('Data')}</th>
+                    <th className="px-4 py-3">{tx('Ações')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -520,10 +522,10 @@ const InvitesSection: React.FC = () => {
                             }}
                             className="rounded-full px-2 py-1 text-xs font-bold text-brand-600 hover:bg-brand-50"
                           >
-                            Convidar
+                            {tx('Convidar')}
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-400">{entry.invites[0] ? 'Convite emitido' : '—'}</span>
+                          <span className="text-xs text-slate-400">{entry.invites[0] ? tx('Convite emitido') : '—'}</span>
                         )}
                       </td>
                     </tr>
@@ -548,28 +550,28 @@ const InvitesSection: React.FC = () => {
           setShowCreate(false);
           setCreatedCode(null);
         }}
-        title={createdCode ? 'Convite gerado' : 'Gerar convite'}
-        description={createdCode ? 'Copie o código agora. Ele não poderá ser recuperado depois.' : 'Defina os parâmetros do convite.'}
+        title={createdCode ? tx('Convite gerado') : tx('Gerar convite')}
+        description={createdCode ? tx('Copie o código agora. Ele não poderá ser recuperado depois.') : tx('Defina os parâmetros do convite.')}
         footer={
           createdCode ? (
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setShowCreate(false)}>
-                Fechar
+                {tx('Fechar')}
               </Button>
               <Button iconLeft={<Copy size={15} />} onClick={() => void copyText(createdCode, 'Código')}>
-                Copiar código
+                {tx('Copiar código')}
               </Button>
               <Button iconLeft={<Link2 size={15} />} onClick={() => void copyText(inviteLink(createdCode), 'Link')}>
-                Copiar link
+                {tx('Copiar link')}
               </Button>
             </div>
           ) : (
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setShowCreate(false)}>
-                Cancelar
+                {tx('Cancelar')}
               </Button>
               <Button type="submit" form="invite-create-form" loading={creating}>
-                Gerar
+                {tx('Gerar')}
               </Button>
             </div>
           )
@@ -581,23 +583,23 @@ const InvitesSection: React.FC = () => {
               <p className="text-2xl font-extrabold tracking-widest text-brand-700">{createdCode}</p>
             </div>
             <p className="text-center text-xs text-slate-400">
-              Link: <span className="break-all text-slate-500">{inviteLink(createdCode)}</span>
+              {tx('Link:')} <span className="break-all text-slate-500">{inviteLink(createdCode)}</span>
             </p>
           </div>
         ) : (
           <form id="invite-create-form" onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-bold text-slate-600">Email (opcional)</label>
+              <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Email (opcional)')}</label>
               <Input
                 type="email"
                 value={createForm.email}
                 onChange={(event) => setCreateForm((current) => ({ ...current, email: event.target.value }))}
-                placeholder="email@exemplo.com"
+                placeholder={tx('email@exemplo.com')}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600">Limite de usos</label>
+                <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Limite de usos')}</label>
                 <Input
                   type="number"
                   min="1"
@@ -607,7 +609,7 @@ const InvitesSection: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600">Expiração (opcional)</label>
+                <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Expiração (opcional)')}</label>
                 <Input
                   type="datetime-local"
                   value={createForm.expiresAt}
@@ -623,16 +625,16 @@ const InvitesSection: React.FC = () => {
       <Modal
         open={Boolean(detail)}
         onClose={() => setDetail(null)}
-        title="Detalhes do convite"
-        description="Histórico de utilização e informações do convite."
+        title={tx('Detalhes do convite')}
+        description={tx('Histórico de utilização e informações do convite.')}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setDetail(null)}>
-              Fechar
+              {tx('Fechar')}
             </Button>
             {detail?.status === 'ACTIVE' ? (
               <Button variant="destructive" onClick={() => void handleRevoke(detail.id)}>
-                Revogar
+                {tx('Revogar')}
               </Button>
             ) : null}
           </div>
@@ -647,40 +649,40 @@ const InvitesSection: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-xs text-slate-400">Status</p>
+                <p className="text-xs text-slate-400">{tx('Status')}</p>
                 <Badge tone={STATUS_TONE[detail.status]}>{STATUS_LABEL[detail.status]}</Badge>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Usos</p>
+                <p className="text-xs text-slate-400">{tx('Usos')}</p>
                 <p className="font-semibold text-slate-800">{detail.usedCount}/{detail.usageLimit}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Email</p>
+                <p className="text-xs text-slate-400">{tx('Email')}</p>
                 <p className="font-semibold text-slate-800">{detail.email ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Criado por</p>
+                <p className="text-xs text-slate-400">{tx('Criado por')}</p>
                 <p className="font-semibold text-slate-800">{detail.createdBy?.name ?? detail.createdBy?.email ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Criado em</p>
+                <p className="text-xs text-slate-400">{tx('Criado em')}</p>
                 <p className="font-semibold text-slate-800">{formatDate(detail.createdAt)}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Expira</p>
+                <p className="text-xs text-slate-400">{tx('Expira')}</p>
                 <p className="font-semibold text-slate-800">{formatDate(detail.expiresAt)}</p>
               </div>
             </div>
 
             <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Histórico de utilização</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{tx('Histórico de utilização')}</p>
               {detail.usages.length === 0 ? (
-                <p className="text-sm text-slate-400">Nenhum uso registrado.</p>
+                <p className="text-sm text-slate-400">{tx('Nenhum uso registrado.')}</p>
               ) : (
                 <ul className="space-y-2">
                   {detail.usages.map((usage) => (
                     <li key={usage.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm">
-                      <span className="font-semibold text-slate-700">{usage.user.name ?? usage.user.email ?? 'Usuário'}</span>
+                      <span className="font-semibold text-slate-700">{usage.user.name ?? usage.user.email ?? tx('Usuário')}</span>
                       <span className="text-xs text-slate-400">{formatDate(usage.createdAt)}</span>
                     </li>
                   ))}

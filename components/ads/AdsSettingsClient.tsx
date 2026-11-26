@@ -14,6 +14,7 @@ import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import { PublicLinksBlock } from '@/components/profile/PublicLinksBlock';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AccountData = {
   id: string; name: string; websiteUrl: string | null; phone: string | null; businessAddress: string | null;
@@ -25,6 +26,7 @@ type AccountData = {
 type UserData = { name: string | null; email: string | null; marketingEmailsOptOut: boolean; preferredLanguage: string };
 
 export function AdsSettingsClient({ initialAccount, initialUser }: { initialAccount: AccountData; initialUser: UserData }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const { accounts, canCreateAccount, maxAccounts, refreshAccounts } = useAdAccount();
   const [account, setAccount] = useState(initialAccount);
@@ -50,7 +52,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       setAccount((current) => ({ ...current, ...payload.account }));
       await refreshAccounts();
       setEditOpen(false);
-      showToast('Conta comercial atualizada.', 'success');
+      showToast(tx('Conta comercial atualizada.'), 'success');
     } catch (reason) { showToast(getUserErrorMessage(reason, 'Falha ao atualizar a empresa.'), 'error'); }
     finally { setSavingAccount(false); }
   };
@@ -61,22 +63,22 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       const response = await fetch('/api/ads/settings/user', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userForm) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar seus dados.'));
-      showToast('Dados pessoais atualizados.', 'success');
+      showToast(tx('Dados pessoais atualizados.'), 'success');
     } catch (reason) { showToast(getUserErrorMessage(reason, 'Falha ao salvar seus dados.'), 'error'); }
     finally { setSavingUser(false); }
   };
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-brand-500">Conta</p><h1 className="mt-1 text-3xl font-extrabold text-ink">Configurações</h1><p className="mt-1 text-sm text-slate-500">{accounts.length} de {maxAccounts} contas de negócio vinculadas.</p></div>{canCreateAccount ? <Link href="/ads/accounts/new" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white hover:brightness-105"><Plus size={17} />Nova conta de negócio</Link> : null}</div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-brand-500">{tx('Conta')}</p><h1 className="mt-1 text-3xl font-extrabold text-ink">{tx('Configurações')}</h1><p className="mt-1 text-sm text-slate-500">{accounts.length} {tx('de')} {maxAccounts} {tx('contas de negócio vinculadas.')}</p></div>{canCreateAccount ? <Link href="/ads/accounts/new" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white hover:brightness-105"><Plus size={17} />{tx('Nova conta de negócio')}</Link> : null}</div>
       <Card className="rounded-3xl border border-slate-200 p-6 shadow-sm">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
           <Avatar src={account.logoUrl} name={account.name} size="xl" />
-          <div className="min-w-0 flex-1"><h2 className="text-xl font-extrabold text-ink">{account.name}</h2><p className="mt-1 text-xs text-slate-400">Account ID: {account.id}</p><div className="mt-4 flex flex-wrap gap-2">{account.subcategories.map((item) => <Badge key={item} tone="primary" variant="outline" className="normal-case">{item}</Badge>)}</div></div>
-          <Button variant="secondary" iconLeft={<Edit3 size={16} />} onClick={() => setEditOpen(true)}>Editar</Button>
+          <div className="min-w-0 flex-1"><h2 className="text-xl font-extrabold text-ink">{account.name}</h2><p className="mt-1 text-xs text-slate-400">{tx('Account ID:')} {account.id}</p><div className="mt-4 flex flex-wrap gap-2">{account.subcategories.map((item) => <Badge key={item} tone="primary" variant="outline" className="normal-case">{item}</Badge>)}</div></div>
+          <Button variant="secondary" iconLeft={<Edit3 size={16} />} onClick={() => setEditOpen(true)}>{tx('Editar')}</Button>
         </div>
         <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2 lg:grid-cols-4">
-          {[['Categoria', account.businessCategory ?? '-'], ['País / Moeda', `${account.country} / ${account.currency}`], ['Fuso horário', account.timezone], ['Website', account.websiteUrl ?? '-']].map(([label, value]) => <div key={label}><p className="text-xs font-bold uppercase text-slate-400">{label}</p><p className="mt-1 truncate text-sm font-semibold text-ink-2">{value}</p></div>)}
+          {[['Categoria', account.businessCategory ?? '-'], ['País / Moeda', `${account.country} / ${account.currency}`], ['Fuso horário', account.timezone], ['Website', account.websiteUrl ?? '-']].map(([label, value]) => <div key={label}><p className="text-xs font-bold uppercase text-slate-400">{tx(label)}</p><p className="mt-1 truncate text-sm font-semibold text-ink-2">{value}</p></div>)}
         </div>
       </Card>
 
@@ -87,26 +89,26 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       ) : null}
 
       <Card className="rounded-3xl border border-slate-200 p-6 shadow-sm">
-        <div className="flex items-center gap-3"><ShieldCheck className="text-brand-500" /><Card.Title>Dados pessoais</Card.Title></div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="space-y-2"><span className="text-sm font-bold">Nome</span><Input value={userForm.firstName} onChange={(event) => setUserForm((current) => ({ ...current, firstName: event.target.value }))} /></label><label className="space-y-2"><span className="text-sm font-bold">Sobrenome</span><Input value={userForm.lastName} onChange={(event) => setUserForm((current) => ({ ...current, lastName: event.target.value }))} /></label><label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Endereço de e-mail</span><Input type="email" value={userForm.email} onChange={(event) => setUserForm((current) => ({ ...current, email: event.target.value }))} prefixIcon={<Mail size={16} />} /></label><label className="space-y-2"><span className="text-sm font-bold">Idioma</span><Select value={userForm.preferredLanguage} onChange={(event) => setUserForm((current) => ({ ...current, preferredLanguage: event.target.value }))}><option value="pt-BR">Português</option><option value="en-US">Inglês</option><option value="es">Espanhol</option></Select></label><div className="flex items-end"><Toggle checked={userForm.marketingEmailsOptOut} onChange={(value) => setUserForm((current) => ({ ...current, marketingEmailsOptOut: value }))} label="Não receber e-mails de marketing" /></div></div>
-        <div className="mt-5 flex justify-end"><Button onClick={() => void saveUser()} loading={savingUser}>Salvar dados pessoais</Button></div>
+        <div className="flex items-center gap-3"><ShieldCheck className="text-brand-500" /><Card.Title>{tx('Dados pessoais')}</Card.Title></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="space-y-2"><span className="text-sm font-bold">{tx('Nome')}</span><Input value={userForm.firstName} onChange={(event) => setUserForm((current) => ({ ...current, firstName: event.target.value }))} /></label><label className="space-y-2"><span className="text-sm font-bold">{tx('Sobrenome')}</span><Input value={userForm.lastName} onChange={(event) => setUserForm((current) => ({ ...current, lastName: event.target.value }))} /></label><label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Endereço de e-mail')}</span><Input type="email" value={userForm.email} onChange={(event) => setUserForm((current) => ({ ...current, email: event.target.value }))} prefixIcon={<Mail size={16} />} /></label><label className="space-y-2"><span className="text-sm font-bold">{tx('Idioma')}</span><Select value={userForm.preferredLanguage} onChange={(event) => setUserForm((current) => ({ ...current, preferredLanguage: event.target.value }))}><option value="pt-BR">{tx('Português')}</option><option value="en-US">{tx('Inglês')}</option><option value="es">{tx('Espanhol')}</option></Select></label><div className="flex items-end"><Toggle checked={userForm.marketingEmailsOptOut} onChange={(value) => setUserForm((current) => ({ ...current, marketingEmailsOptOut: value }))} label={tx('Não receber e-mails de marketing')} /></div></div>
+        <div className="mt-5 flex justify-end"><Button onClick={() => void saveUser()} loading={savingUser}>{tx('Salvar dados pessoais')}</Button></div>
       </Card>
 
       <Card className="rounded-3xl border border-slate-200 p-6 shadow-sm">
-        <div className="flex items-center gap-3"><Building2 className="text-brand-500" /><Card.Title>Membros e permissões</Card.Title></div>
-        <div className="mt-5 divide-y divide-slate-100">{account.users.map((membership) => <div key={membership.id} className="flex items-center gap-3 py-4"><Avatar src={membership.user.image} name={membership.user.name ?? membership.user.email ?? 'Usuário'} size="md" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-ink-2">{membership.user.name ?? 'Usuário'}</p><p className="truncate text-xs text-slate-400">{membership.user.email}</p></div><Badge tone={membership.role.includes('ADMIN') ? 'primary' : 'neutro'} className="normal-case">{membership.role}</Badge></div>)}</div>
+        <div className="flex items-center gap-3"><Building2 className="text-brand-500" /><Card.Title>{tx('Membros e permissões')}</Card.Title></div>
+        <div className="mt-5 divide-y divide-slate-100">{account.users.map((membership) => <div key={membership.id} className="flex items-center gap-3 py-4"><Avatar src={membership.user.image} name={membership.user.name ?? membership.user.email ?? tx('Usuário')} size="md" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-ink-2">{membership.user.name ?? tx('Usuário')}</p><p className="truncate text-xs text-slate-400">{membership.user.email}</p></div><Badge tone={membership.role.includes('ADMIN') ? 'primary' : 'neutro'} className="normal-case">{membership.role}</Badge></div>)}</div>
       </Card>
 
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar conta comercial" description="Atualize as informações da conta do seu negócio." className="max-w-2xl" footer={<><Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button><Button loading={savingAccount} onClick={() => void saveAccount()}>Salvar alterações</Button></>}>
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={tx('Editar conta comercial')} description={tx('Atualize as informações da conta do seu negócio.')} className="max-w-2xl" footer={<><Button variant="secondary" onClick={() => setEditOpen(false)}>{tx('Cancelar')}</Button><Button loading={savingAccount} onClick={() => void saveAccount()}>{tx('Salvar alterações')}</Button></>}>
         <div className="max-h-[70dvh] space-y-5 overflow-y-auto pr-1">
-          <div><span className="mb-2 block text-sm font-bold">Logo da empresa</span><CloudinaryImageField value={accountForm.logoUrl ?? ''} onChange={(logoUrl) => setAccountForm((current) => ({ ...current, logoUrl }))} folder="businesses" cropAspect={1} width={120} height={120} /></div>
-          <label className="block space-y-2"><span className="text-sm font-bold">Nome da empresa</span><Input value={accountForm.name} onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))} /></label>
-          <label className="block space-y-2"><span className="text-sm font-bold">Website URL</span><Input type="text" inputMode="url" placeholder="empresa.com" value={accountForm.websiteUrl ?? ''} onChange={(event) => setAccountForm((current) => ({ ...current, websiteUrl: event.target.value }))} onBlur={() => setAccountForm((current) => ({ ...current, websiteUrl: normalizeUrlFieldValue(current.websiteUrl ?? '') }))} prefixIcon={<Globe2 size={16} />} /></label>
-          <label className="block space-y-2"><span className="text-sm font-bold">Telefone comercial</span><Input type="tel" value={accountForm.phone ?? ''} onChange={(event) => setAccountForm((current) => ({ ...current, phone: formatInternationalPhone(event.target.value) }))} /></label>
-          <label className="block space-y-2"><span className="text-sm font-bold">Endereço comercial completo</span><AddressAutocomplete value={accountForm.businessAddress ?? ''} onChange={(businessAddress) => setAccountForm((current) => ({ ...current, businessAddress }))} /></label>
+          <div><span className="mb-2 block text-sm font-bold">{tx('Logo da empresa')}</span><CloudinaryImageField value={accountForm.logoUrl ?? ''} onChange={(logoUrl) => setAccountForm((current) => ({ ...current, logoUrl }))} folder="businesses" cropAspect={1} width={120} height={120} /></div>
+          <label className="block space-y-2"><span className="text-sm font-bold">{tx('Nome da empresa')}</span><Input value={accountForm.name} onChange={(event) => setAccountForm((current) => ({ ...current, name: event.target.value }))} /></label>
+          <label className="block space-y-2"><span className="text-sm font-bold">{tx('Website URL')}</span><Input type="text" inputMode="url" placeholder="empresa.com" value={accountForm.websiteUrl ?? ''} onChange={(event) => setAccountForm((current) => ({ ...current, websiteUrl: event.target.value }))} onBlur={() => setAccountForm((current) => ({ ...current, websiteUrl: normalizeUrlFieldValue(current.websiteUrl ?? '') }))} prefixIcon={<Globe2 size={16} />} /></label>
+          <label className="block space-y-2"><span className="text-sm font-bold">{tx('Telefone comercial')}</span><Input type="tel" value={accountForm.phone ?? ''} onChange={(event) => setAccountForm((current) => ({ ...current, phone: formatInternationalPhone(event.target.value) }))} /></label>
+          <label className="block space-y-2"><span className="text-sm font-bold">{tx('Endereço comercial completo')}</span><AddressAutocomplete value={accountForm.businessAddress ?? ''} onChange={(businessAddress) => setAccountForm((current) => ({ ...current, businessAddress }))} /></label>
           <BusinessCategoryField category={accountForm.businessCategory ?? ''} subcategories={accountForm.subcategories} onCategoryChange={(businessCategory) => setAccountForm((current) => ({ ...current, businessCategory }))} onSubcategoriesChange={(subcategories) => setAccountForm((current) => ({ ...current, subcategories }))} />
-          <div className="grid gap-4 sm:grid-cols-2"><label className="space-y-2"><span className="text-sm font-bold">País</span><Select value={accountForm.country} onChange={(event) => setAccountForm((current) => ({ ...current, country: event.target.value, timezone: getDefaultAdTimezone(event.target.value) }))}><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option></Select></label><label className="space-y-2"><span className="text-sm font-bold">Timezone</span><Select value={accountForm.timezone} onChange={(event) => setAccountForm((current) => ({ ...current, timezone: event.target.value }))}>{AD_TIMEZONE_OPTIONS.map((timezone) => <option key={timezone.value} value={timezone.value}>{timezone.label}</option>)}</Select></label></div>
-          <label className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-ink-2"><input type="checkbox" className="mt-1" checked={accountForm.useWebsitePhotos} onChange={(event) => setAccountForm((current) => ({ ...current, useWebsitePhotos: event.target.checked }))} />Use photos from my website in my ads (recommended)</label>
+          <div className="grid gap-4 sm:grid-cols-2"><label className="space-y-2"><span className="text-sm font-bold">{tx('País')}</span><Select value={accountForm.country} onChange={(event) => setAccountForm((current) => ({ ...current, country: event.target.value, timezone: getDefaultAdTimezone(event.target.value) }))}><option value="US">{tx('Estados Unidos')}</option><option value="BR">{tx('Brasil')}</option><option value="PT">{tx('Portugal')}</option><option value="CA">{tx('Canadá')}</option></Select></label><label className="space-y-2"><span className="text-sm font-bold">{tx('Timezone')}</span><Select value={accountForm.timezone} onChange={(event) => setAccountForm((current) => ({ ...current, timezone: event.target.value }))}>{AD_TIMEZONE_OPTIONS.map((timezone) => <option key={timezone.value} value={timezone.value}>{tx(timezone.label)}</option>)}</Select></label></div>
+          <label className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-ink-2"><input type="checkbox" className="mt-1" checked={accountForm.useWebsitePhotos} onChange={(event) => setAccountForm((current) => ({ ...current, useWebsitePhotos: event.target.checked }))} />{tx('Use photos from my website in my ads (recommended)')}</label>
         </div>
       </Modal>
     </div>

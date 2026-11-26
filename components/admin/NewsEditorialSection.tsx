@@ -8,6 +8,7 @@ import { Badge, Button, Modal, Skeleton } from '@/components/ui';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@/lib/news';
 import type { NewsAdminArticleContract } from '@/lib/content-contracts';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Filters = { status: string; authorId: string; category: string; from: string; to: string; q: string };
 type FormState = {
@@ -41,6 +42,7 @@ const formatDate = (iso: string) =>
 
 /** Gestão editorial de Notícias (MODERATOR/ADMIN; autorização validada nas APIs /api/admin/news). */
 export default function NewsEditorialSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
@@ -168,7 +170,7 @@ export default function NewsEditorialSection() {
       const response = await fetch(`/api/admin/news/${deleting.id}`, { method: 'DELETE' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível excluir a notícia.'));
-      showToast('Notícia excluída.', 'success');
+      showToast(tx('Notícia excluída.'), 'success');
       setDeleting(null);
       await load();
     } catch (error) {
@@ -186,21 +188,21 @@ export default function NewsEditorialSection() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Newspaper size={19} className="text-brand-500" /> Notícias
+              <Newspaper size={19} className="text-brand-500" /> {tx('Notícias')}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Crie, edite, publique e organize as notícias exibidas na comunidade.</p>
+            <p className="mt-1 text-sm text-slate-500">{tx('Crie, edite, publique e organize as notícias exibidas na comunidade.')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => void load()}
               className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
-              aria-label="Atualizar notícias"
+              aria-label={tx('Atualizar notícias')}
             >
               <RefreshCcw size={17} className={loading ? 'animate-spin' : ''} />
             </button>
             <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => openEditor('new')}>
-              Nova notícia
+              {tx('Nova notícia')}
             </Button>
           </div>
         </div>
@@ -210,41 +212,41 @@ export default function NewsEditorialSection() {
             type="search"
             value={filters.q}
             onChange={(event) => updateFilter('q', event.target.value)}
-            placeholder="Buscar título ou fonte"
-            aria-label="Buscar notícias"
+            placeholder={tx('Buscar título ou fonte')}
+            aria-label={tx('Buscar notícias')}
             className={`${fieldClass} lg:col-span-2`}
           />
-          <select aria-label="Status" value={filters.status} onChange={(event) => updateFilter('status', event.target.value)} className={fieldClass}>
-            <option value="">Todos os status</option>
-            <option value="DRAFT">Rascunho</option>
-            <option value="PUBLISHED">Publicada</option>
+          <select aria-label={tx('Status')} value={filters.status} onChange={(event) => updateFilter('status', event.target.value)} className={fieldClass}>
+            <option value="">{tx('Todos os status')}</option>
+            <option value="DRAFT">{tx('Rascunho')}</option>
+            <option value="PUBLISHED">{tx('Publicada')}</option>
           </select>
-          <select aria-label="Autor" value={filters.authorId} onChange={(event) => updateFilter('authorId', event.target.value)} className={fieldClass}>
-            <option value="">Todos os autores</option>
+          <select aria-label={tx('Autor')} value={filters.authorId} onChange={(event) => updateFilter('authorId', event.target.value)} className={fieldClass}>
+            <option value="">{tx('Todos os autores')}</option>
             {authors.map((author) => (
               <option key={author.id} value={author.id}>
                 {author.name}
               </option>
             ))}
           </select>
-          <select aria-label="Categoria" value={filters.category} onChange={(event) => updateFilter('category', event.target.value)} className={fieldClass}>
-            <option value="">Todas as categorias</option>
+          <select aria-label={tx('Categoria')} value={filters.category} onChange={(event) => updateFilter('category', event.target.value)} className={fieldClass}>
+            <option value="">{tx('Todas as categorias')}</option>
             {NEWS_CATEGORIES.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.label}
+                {tx(category.label)}
               </option>
             ))}
           </select>
           <div className="flex items-center gap-2">
-            <input type="date" aria-label="Criada a partir de" value={filters.from} onChange={(event) => updateFilter('from', event.target.value)} className={fieldClass} />
-            <input type="date" aria-label="Criada até" value={filters.to} onChange={(event) => updateFilter('to', event.target.value)} className={fieldClass} />
+            <input type="date" aria-label={tx('Criada a partir de')} value={filters.from} onChange={(event) => updateFilter('from', event.target.value)} className={fieldClass} />
+            <input type="date" aria-label={tx('Criada até')} value={filters.to} onChange={(event) => updateFilter('to', event.target.value)} className={fieldClass} />
           </div>
         </div>
 
         {loading ? (
-          <div className="mt-5 space-y-3" role="status" aria-label="Carregando notícias"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>
+          <div className="mt-5 space-y-3" role="status" aria-label={tx('Carregando notícias')}><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>
         ) : items.length === 0 ? (
-          <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Nenhuma notícia encontrada.</div>
+          <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{tx('Nenhuma notícia encontrada.')}</div>
         ) : (
           <div className="mt-5 divide-y divide-slate-100">
             {items.map((article) => {
@@ -264,14 +266,14 @@ export default function NewsEditorialSection() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone={article.status === 'PUBLISHED' ? 'success' : 'destaque'}>
-                        {article.status === 'PUBLISHED' ? 'Publicada' : 'Rascunho'}
+                        {article.status === 'PUBLISHED' ? tx('Publicada') : tx('Rascunho')}
                       </Badge>
                       <span className="text-xs text-slate-500">{getNewsCategoryLabel(article.category)}</span>
                       {article.regionLabel ? <span className="text-xs text-slate-400">· {article.regionLabel}</span> : null}
                     </div>
                     <h3 className="mt-1 text-sm font-bold text-slate-900">{article.title}</h3>
                     <p className="mt-0.5 text-xs text-slate-500">
-                      {article.source} · {article.authorName ?? 'Autor removido'} · atualizada em {formatDate(article.updatedAt)}
+                      {article.source} · {article.authorName ?? tx('Autor removido')} {tx('· atualizada em')} {formatDate(article.updatedAt)}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -279,19 +281,19 @@ export default function NewsEditorialSection() {
                       href={article.externalUrl}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      aria-label="Abrir matéria original"
+                      aria-label={tx('Abrir matéria original')}
                       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
                     >
                       <ExternalLink size={16} />
                     </a>
                     <Button size="xs" variant="secondary" disabled={busy} onClick={() => void togglePublish(article)}>
-                      {article.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar'}
+                      {article.status === 'PUBLISHED' ? tx('Despublicar') : tx('Publicar')}
                     </Button>
                     <Button size="xs" variant="ghost" iconLeft={<Pencil size={14} />} disabled={busy} onClick={() => openEditor(article)}>
-                      Editar
+                      {tx('Editar')}
                     </Button>
                     <Button size="xs" variant="ghost" iconLeft={<Trash2 size={14} />} disabled={busy} onClick={() => setDeleting(article)}>
-                      Excluir
+                      {tx('Excluir')}
                     </Button>
                   </div>
                 </article>
@@ -303,13 +305,13 @@ export default function NewsEditorialSection() {
         {totalPages > 1 ? (
           <div className="mt-4 flex items-center justify-center gap-3 text-sm text-slate-600">
             <Button size="xs" variant="ghost" disabled={page <= 1 || loading} onClick={() => setPage((value) => value - 1)}>
-              Anterior
+              {tx('Anterior')}
             </Button>
             <span>
-              Página {page} de {totalPages}
+              {tx('Página')} {page} {tx('de')} {totalPages}
             </span>
             <Button size="xs" variant="ghost" disabled={page >= totalPages || loading} onClick={() => setPage((value) => value + 1)}>
-              Próxima
+              {tx('Próxima')}
             </Button>
           </div>
         ) : null}
@@ -318,15 +320,15 @@ export default function NewsEditorialSection() {
       <Modal
         open={editing !== null}
         onClose={() => (saving ? undefined : setEditing(null))}
-        title={editing === 'new' ? 'Nova notícia' : 'Editar notícia'}
+        title={editing === 'new' ? tx('Nova notícia') : tx('Editar notícia')}
       >
         <form className="space-y-3" onSubmit={(event) => void save(event, 'PUBLISHED')}>
           <label className={labelClass}>
-            Título
+            {tx('Título')}
             <input required maxLength={200} value={form.title} onChange={(event) => setField('title')(event.target.value)} className={`${fieldClass} mt-1`} />
           </label>
           <label className={labelClass}>
-            Subtítulo / resumo
+            {tx('Subtítulo / resumo')}
             <textarea
               maxLength={400}
               rows={3}
@@ -336,15 +338,15 @@ export default function NewsEditorialSection() {
             />
           </label>
           <div>
-            <span className={labelClass}>Imagem de capa</span>
+            <span className={labelClass}>{tx('Imagem de capa')}</span>
             <div className="mt-1">
-              <CloudinaryImageField value={form.imageUrl} onChange={setField('imageUrl')} folder="news" cropAspect={16 / 9} height={140} hint="Opcional. Sem imagem, o card usa um fallback." />
+              <CloudinaryImageField value={form.imageUrl} onChange={setField('imageUrl')} folder="news" cropAspect={16 / 9} height={140} hint={tx('Opcional. Sem imagem, o card usa um fallback.')} />
             </div>
             <input
               type="url"
               inputMode="url"
-              placeholder="ou cole o link da imagem"
-              aria-label="Link da imagem"
+              placeholder={tx('ou cole o link da imagem')}
+              aria-label={tx('Link da imagem')}
               value={form.imageUrl}
               onChange={(event) => setField('imageUrl')(event.target.value)}
               className={`${fieldClass} mt-2`}
@@ -352,33 +354,33 @@ export default function NewsEditorialSection() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={labelClass}>
-              Categoria
+              {tx('Categoria')}
               <select value={form.category} onChange={(event) => setField('category')(event.target.value)} className={`${fieldClass} mt-1`}>
                 {NEWS_CATEGORIES.map((category) => (
                   <option key={category.id} value={category.id}>
-                    {category.label}
+                    {tx(category.label)}
                   </option>
                 ))}
               </select>
             </label>
             <label className={labelClass}>
-              Região
+              {tx('Região')}
               <select value={form.regionKey} onChange={(event) => setField('regionKey')(event.target.value)} className={`${fieldClass} mt-1`}>
-                <option value="">Todas as regiões</option>
+                <option value="">{tx('Todas as regiões')}</option>
                 {regions.map((region) => (
                   <option key={region.key} value={region.key}>
-                    {region.label}
+                    {tx(region.label)}
                   </option>
                 ))}
               </select>
             </label>
           </div>
           <label className={labelClass}>
-            Fonte
+            {tx('Fonte')}
             <input required maxLength={120} value={form.source} onChange={(event) => setField('source')(event.target.value)} className={`${fieldClass} mt-1`} />
           </label>
           <label className={labelClass}>
-            Link da matéria original
+            {tx('Link da matéria original')}
             <input
               required
               type="url"
@@ -391,13 +393,13 @@ export default function NewsEditorialSection() {
           </label>
           <div className="flex flex-wrap justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" disabled={saving} onClick={() => setEditing(null)}>
-              Cancelar
+              {tx('Cancelar')}
             </Button>
             <Button type="button" variant="secondary" disabled={saving} onClick={(event) => void save(event, 'DRAFT')}>
-              Salvar rascunho
+              {tx('Salvar rascunho')}
             </Button>
             <Button type="submit" disabled={saving}>
-              Publicar
+              {tx('Publicar')}
             </Button>
           </div>
         </form>
@@ -406,15 +408,15 @@ export default function NewsEditorialSection() {
       <Modal
         open={deleting !== null}
         onClose={() => setDeleting(null)}
-        title="Excluir notícia?"
-        description={deleting ? `"${deleting.title}" será removida permanentemente.` : undefined}
+        title={tx('Excluir notícia?')}
+        description={deleting ? `"${deleting.title}${tx('" será removida permanentemente.')}` : undefined}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setDeleting(null)}>
-              Cancelar
+              {tx('Cancelar')}
             </Button>
             <Button variant="destructive" disabled={busyId !== null} onClick={() => void confirmDelete()}>
-              Excluir
+              {tx('Excluir')}
             </Button>
           </div>
         }

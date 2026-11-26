@@ -6,6 +6,7 @@ import { Eye, KeyRound, Mail, Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { useToast } from '../feedback/ToastProvider';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type SavedTemplate = {
   id: string;
@@ -45,6 +46,7 @@ const DEFAULT_TEMPLATE = `<!doctype html>
 </html>`;
 
 const MarketingSection: React.FC = () => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
   const [name, setName] = useState('');
@@ -74,9 +76,9 @@ const MarketingSection: React.FC = () => {
   const saveSettings = () => {
     try {
       window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ provider, apiKey, fromEmail }));
-      showToast('Configuração do serviço de e-mail salva.', 'success');
+      showToast(tx('Configuração do serviço de e-mail salva.'), 'success');
     } catch {
-      showToast('Não foi possível salvar a configuração.', 'error');
+      showToast(tx('Não foi possível salvar a configuração.'), 'error');
     }
   };
 
@@ -91,16 +93,16 @@ const MarketingSection: React.FC = () => {
 
   const saveTemplate = () => {
     if (!name.trim()) {
-      showToast('Informe um nome para o template.', 'error');
+      showToast(tx('Informe um nome para o template.'), 'error');
       return;
     }
     const now = new Date().toISOString();
     if (selectedId) {
       persist(templates.map((t) => (t.id === selectedId ? { ...t, name: name.trim(), html, updatedAt: now } : t)));
-      showToast('Template atualizado.', 'success');
+      showToast(tx('Template atualizado.'), 'success');
     } else {
       persist([{ id: crypto.randomUUID(), name: name.trim(), html, updatedAt: now }, ...templates]);
-      showToast('Template salvo.', 'success');
+      showToast(tx('Template salvo.'), 'success');
     }
     setSelectedId(null);
     setName('');
@@ -120,61 +122,61 @@ const MarketingSection: React.FC = () => {
       setName('');
       setHtml(DEFAULT_TEMPLATE);
     }
-    showToast('Template removido.', 'success');
+    showToast(tx('Template removido.'), 'success');
   };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8">
       <div>
-        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">E-mail marketing<InfoTip text="Crie e edite templates de e-mail. O envio em massa exige um serviço de e-mail transacional." /></h1>
+        <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">{tx('E-mail marketing')}<InfoTip text={tx('Crie e edite templates de e-mail. O envio em massa exige um serviço de e-mail transacional.')} /></h1>
       </div>
 
       <div className="rounded-2xl border border-slate-100 bg-surface p-4 shadow-sm">
         <div className="flex items-center gap-2">
           <KeyRound size={16} className="text-brand-500" />
-          <h2 className="text-sm font-bold text-slate-700">Serviço de e-mail (envio em massa)</h2>
+          <h2 className="text-sm font-bold text-slate-700">{tx('Serviço de e-mail (envio em massa)')}</h2>
         </div>
         <p className="mt-1 text-xs text-slate-400">
-          Configure o provedor e a chave de API. Em produção, recomenda-se armazenar a chave no servidor (variável de ambiente).
+          {tx('Configure o provedor e a chave de API. Em produção, recomenda-se armazenar a chave no servidor (variável de ambiente).')}
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Provedor</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Provedor')}</label>
             <select
               value={provider}
               onChange={(event) => setProvider(event.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="resend">Resend</option>
-              <option value="sendgrid">SendGrid</option>
-              <option value="ses">Amazon SES</option>
-              <option value="nodemailer">SMTP (Nodemailer)</option>
+              <option value="resend">{tx('Resend')}</option>
+              <option value="sendgrid">{tx('SendGrid')}</option>
+              <option value="ses">{tx('Amazon SES')}</option>
+              <option value="nodemailer">{tx('SMTP (Nodemailer)')}</option>
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">API Key</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('API Key')}</label>
             <input
               type="password"
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
-              placeholder="chave da API"
+              placeholder={tx('chave da API')}
               className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">E-mail remetente</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('E-mail remetente')}</label>
             <input
               type="email"
               value={fromEmail}
               onChange={(event) => setFromEmail(event.target.value)}
-              placeholder="no-reply@gringoou.com"
+              placeholder={tx('no-reply@gringoou.com')}
               className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
           </div>
         </div>
         <div className="mt-3 flex justify-end">
           <Button size="sm" iconLeft={<Save size={15} />} onClick={saveSettings}>
-            Salvar configuração
+            {tx('Salvar configuração')}
           </Button>
         </div>
       </div>
@@ -182,13 +184,13 @@ const MarketingSection: React.FC = () => {
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-700">Templates salvos</h2>
+            <h2 className="text-sm font-bold text-slate-700">{tx('Templates salvos')}</h2>
             <Button size="xs" variant="ghost" iconLeft={<Plus size={14} />} onClick={() => { setSelectedId(null); setName(''); setHtml(DEFAULT_TEMPLATE); setPreview(false); }}>
-              Novo
+              {tx('Novo')}
             </Button>
           </div>
           {templates.length === 0 ? (
-            <EmptyState icon={<Mail size={24} />} title="Nenhum template" description="Crie um template de e-mail para começar." />
+            <EmptyState icon={<Mail size={24} />} title={tx('Nenhum template')} description={tx('Crie um template de e-mail para começar.')} />
           ) : (
             <ul className="space-y-2">
               {templates.map((template) => (
@@ -197,7 +199,7 @@ const MarketingSection: React.FC = () => {
                     <p className="truncate text-sm font-semibold text-slate-700">{template.name}</p>
                     <p className="text-xs text-slate-400">{new Date(template.updatedAt).toLocaleDateString('pt-BR')}</p>
                   </button>
-                  <button type="button" onClick={() => deleteTemplate(template.id)} aria-label="Excluir template" className="ml-2 text-slate-400 hover:text-red-600">
+                  <button type="button" onClick={() => deleteTemplate(template.id)} aria-label={tx('Excluir template')} className="ml-2 text-slate-400 hover:text-red-600">
                     <Trash2 size={15} />
                   </button>
                 </li>
@@ -212,22 +214,22 @@ const MarketingSection: React.FC = () => {
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Nome do template"
+              placeholder={tx('Nome do template')}
               className="flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
             />
             <div className="flex gap-2">
               <Button variant="secondary" iconLeft={<Eye size={15} />} onClick={() => setPreview((current) => !current)}>
-                {preview ? 'Editar' : 'Prévia'}
+                {preview ? tx('Editar') : tx('Prévia')}
               </Button>
               <Button iconLeft={<Save size={15} />} onClick={saveTemplate}>
-                Salvar
+                {tx('Salvar')}
               </Button>
             </div>
           </div>
 
           {preview ? (
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-surface">
-              <iframe title="Prévia do e-mail" sandbox="" srcDoc={html} className="h-[560px] w-full" />
+              <iframe title={tx('Prévia do e-mail')} sandbox="" srcDoc={html} className="h-[560px] w-full" />
             </div>
           ) : (
             <textarea
@@ -239,11 +241,9 @@ const MarketingSection: React.FC = () => {
           )}
 
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-            <p className="font-bold">Envio em massa</p>
+            <p className="font-bold">{tx('Envio em massa')}</p>
             <p className="mt-1">
-              O envio de campanhas requer um serviço de e-mail transacional/bulk (ex.: Resend, SendGrid, Amazon SES).
-              Nenhum serviço de envio em massa está integrado ainda. Este editor salva os templates localmente para
-              revisão e homologação.
+              {tx('O envio de campanhas requer um serviço de e-mail transacional/bulk (ex.: Resend, SendGrid, Amazon SES). Nenhum serviço de envio em massa está integrado ainda. Este editor salva os templates localmente para revisão e homologação.')}
             </p>
           </div>
         </div>

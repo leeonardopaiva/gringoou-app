@@ -1,13 +1,13 @@
-import Link from 'next/link';
-import { GringoouLogo } from '@/components/icons/GringoouLogo';
+import { LegalHeaderControls, type LegalLocale } from '@/components/legal/LegalHeaderControls';
 import { Card } from '@/components/ui/Card';
 import type { LegalDocument } from '@/lib/legal/content';
 
-export type LegalLocale = 'pt' | 'en';
+export type { LegalLocale };
 
-const COPY: Record<LegalLocale, { back: string; updated: string; regions: string; regionsIntro: string; regionsNav: string; language: string }> = {
+const COPY: Record<LegalLocale, { back: string; backShort: string; updated: string; regions: string; regionsIntro: string; regionsNav: string; language: string }> = {
   pt: {
     back: 'Voltar para entrar',
+    backShort: 'Voltar',
     updated: 'Última atualização',
     regions: 'Informações por região',
     regionsIntro: 'Estas informações complementam o texto acima para quem está em cada região.',
@@ -16,6 +16,7 @@ const COPY: Record<LegalLocale, { back: string; updated: string; regions: string
   },
   en: {
     back: 'Back to sign in',
+    backShort: 'Back',
     updated: 'Last updated',
     regions: 'Information by region',
     regionsIntro: 'This information complements the text above for people in each region.',
@@ -35,25 +36,7 @@ export default function LegalPage({ document, locale, path }: { document: LegalD
   return (
     <main className="min-h-dvh bg-bg px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between gap-4">
-          <Link href="/login" className="inline-flex items-center gap-3 text-foreground">
-            <GringoouLogo size={34} />
-            <span className="text-sm font-bold">{copy.back}</span>
-          </Link>
-          <nav aria-label={copy.language} className="flex shrink-0 gap-1 rounded-full border border-border bg-surface p-1 text-caption font-bold">
-            {(['pt', 'en'] as const).map((code) => (
-              <Link
-                key={code}
-                href={code === 'pt' ? path : `${path}?lang=en`}
-                hrefLang={code}
-                aria-current={locale === code ? 'true' : undefined}
-                className={`rounded-full px-3 py-1.5 transition ${locale === code ? 'bg-brand-100 text-brand-700' : 'text-muted-foreground hover:bg-wash-1'}`}
-              >
-                {code === 'pt' ? 'Português' : 'English'}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <LegalHeaderControls locale={locale} path={path} backLabel={copy.backShort} />
 
         <Card className="border border-border bg-surface shadow-sm">
           <div className="space-y-8 p-1 sm:p-5">

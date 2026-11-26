@@ -3,11 +3,14 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type WizardStepperProps = { currentStep: number; steps: string[]; className?: string };
 
-export const WizardStepper: React.FC<WizardStepperProps> = ({ currentStep, steps, className }) => (
-  <ol className={cn('flex w-full max-w-[500px] items-center', className)} aria-label="Etapas da campanha">
+export const WizardStepper: React.FC<WizardStepperProps> = ({ currentStep, steps, className }) => {
+  const { tx } = useLanguage();
+  return (
+  <ol className={cn('flex w-full max-w-[500px] items-center', className)} aria-label={tx('Etapas da campanha')}>
     {steps.map((label, index) => {
       const step = index + 1;
       const active = step === currentStep;
@@ -24,3 +27,4 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({ currentStep, steps
     })}
   </ol>
 );
+};

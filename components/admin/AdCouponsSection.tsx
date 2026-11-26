@@ -7,6 +7,7 @@ import { ConfirmModal, Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Coupon = {
   id: string;
@@ -26,6 +27,7 @@ const randomCode = () => `CORTESIA-${Math.random().toString(36).slice(2, 8).toUp
 
 /** Cupons de cortesia (somente administrador raiz): liberam uma campanha sem cobrança; depois o cliente contrata normalmente. */
 export default function AdCouponsSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +75,7 @@ export default function AdCouponsSection() {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível criar o cupom.'));
-      showToast(`Cupom ${payload.coupon.code} criado.`, 'success');
+      showToast(`${tx('Cupom')} ${payload.coupon.code} criado.`, 'success');
       setForm({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
       await load();
     } catch (error) {
@@ -85,7 +87,7 @@ export default function AdCouponsSection() {
 
   const toggle = async (coupon: Coupon) => {
     const response = await fetch(`/api/admin/ads/coupons/${coupon.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: !coupon.isActive }) });
-    if (!response.ok) return showToast('Não foi possível atualizar o cupom.', 'error');
+    if (!response.ok) return showToast(tx('Não foi possível atualizar o cupom.'), 'error');
     await load();
   };
 
@@ -96,53 +98,53 @@ export default function AdCouponsSection() {
     if (response.status === 409 && payload?.code === 'USED') return setRemoving(coupon);
     if (!response.ok) return showToast(sanitizeUserMessage(payload?.error, 'Não foi possível excluir o cupom.'), 'error');
     setRemoving(null);
-    showToast('Cupom excluído.', 'success');
+    showToast(tx('Cupom excluído.'), 'success');
     await load();
   };
 
   const copy = (code: string) => {
-    void navigator.clipboard.writeText(code).then(() => showToast('Código copiado.', 'success')).catch(() => showToast(code, 'info', 5000));
+    void navigator.clipboard.writeText(code).then(() => showToast(tx('Código copiado.'), 'success')).catch(() => showToast(code, 'info', 5000));
   };
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-7 sm:px-7 lg:px-8">
       <div className="flex items-start justify-between gap-4">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
-          Cupons
-          <InfoTip text="Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Uma conta pode usar mais de um cupom, e o mesmo cupom em mais de uma campanha, até o limite de usos do cupom. Cada campanha aceita um cupom." />
+          {tx('Cupons')}
+          <InfoTip text={tx('Sem valor de crédito, o cupom é uma cortesia: libera uma campanha sem cobrança. Com valor, é um crédito promocional que abate do pacote, e o restante é pago no cartão. Uma conta pode usar mais de um cupom, e o mesmo cupom em mais de uma campanha, até o limite de usos do cupom. Cada campanha aceita um cupom.')} />
         </h1>
-        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
+        <button type="button" aria-label={tx('Atualizar')} title={tx('Atualizar')} onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
       <section className="space-y-3 rounded-2xl border border-slate-200 bg-surface p-5">
-        <h2 className="text-sm font-bold text-slate-900">Novo cupom</h2>
+        <h2 className="text-sm font-bold text-slate-900">{tx('Novo cupom')}</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <label className="block text-xs font-bold text-slate-500">Código
-            <div className="mt-1 flex gap-2"><input className={inputClass} value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value.toUpperCase() })} /><button type="button" onClick={() => setForm({ ...form, code: randomCode() })} className="shrink-0 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50">Gerar</button></div>
+          <label className="block text-xs font-bold text-slate-500">{tx('Código')}
+            <div className="mt-1 flex gap-2"><input className={inputClass} value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value.toUpperCase() })} /><button type="button" onClick={() => setForm({ ...form, code: randomCode() })} className="shrink-0 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50">{tx('Gerar')}</button></div>
           </label>
-          <label className="block text-xs font-bold text-slate-500">Pacote
+          <label className="block text-xs font-bold text-slate-500">{tx('Pacote')}
             <select className={`${inputClass} mt-1`} value={form.plan} onChange={(event) => setForm({ ...form, plan: event.target.value })}>
-              <option value="">Qualquer pacote</option>{planOptions.map((option) => <option key={option.plan} value={option.plan}>{option.name}</option>)}
+              <option value="">{tx('Qualquer pacote')}</option>{planOptions.map((option) => <option key={option.plan} value={option.plan}>{option.name}</option>)}
             </select>
           </label>
-          <label className="block text-xs font-bold text-slate-500">E-mail do cliente (opcional)<input type="email" className={`${inputClass} mt-1`} placeholder="só esta pessoa pode usar" value={form.assignedEmail} onChange={(event) => setForm({ ...form, assignedEmail: event.target.value })} /></label>
-          <label className="block text-xs font-bold text-slate-500">Crédito em US$ (vazio = cobre o pacote inteiro)<input inputMode="decimal" placeholder="ex.: 50" className={`${inputClass} mt-1`} value={form.creditUsd} onChange={(event) => setForm({ ...form, creditUsd: event.target.value })} /></label>
-          <label className="block text-xs font-bold text-slate-500">Limite de usos (total, todas as contas)<input inputMode="numeric" className={`${inputClass} mt-1`} value={form.maxRedemptions} onChange={(event) => setForm({ ...form, maxRedemptions: event.target.value })} /></label>
-          <label className="block text-xs font-bold text-slate-500">Validade (opcional)<input type="date" className={`${inputClass} mt-1`} value={form.expiresAt} onChange={(event) => setForm({ ...form, expiresAt: event.target.value })} /></label>
-          <label className="block text-xs font-bold text-slate-500">Anotação interna<input className={`${inputClass} mt-1`} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">{tx('E-mail do cliente (opcional)')}<input type="email" className={`${inputClass} mt-1`} placeholder={tx('só esta pessoa pode usar')} value={form.assignedEmail} onChange={(event) => setForm({ ...form, assignedEmail: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">{tx('Crédito em US$ (vazio = cobre o pacote inteiro)')}<input inputMode="decimal" placeholder="ex.: 50" className={`${inputClass} mt-1`} value={form.creditUsd} onChange={(event) => setForm({ ...form, creditUsd: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">{tx('Limite de usos (total, todas as contas)')}<input inputMode="numeric" className={`${inputClass} mt-1`} value={form.maxRedemptions} onChange={(event) => setForm({ ...form, maxRedemptions: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">{tx('Validade (opcional)')}<input type="date" className={`${inputClass} mt-1`} value={form.expiresAt} onChange={(event) => setForm({ ...form, expiresAt: event.target.value })} /></label>
+          <label className="block text-xs font-bold text-slate-500">{tx('Anotação interna')}<input className={`${inputClass} mt-1`} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} /></label>
         </div>
-        <button type="button" onClick={() => void create()} disabled={creating || form.code.length < 4} className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-60">{creating ? 'Criando...' : 'Criar cupom'}</button>
+        <button type="button" onClick={() => void create()} disabled={creating || form.code.length < 4} className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-105 disabled:opacity-60">{creating ? tx('Criando...') : tx('Criar cupom')}</button>
       </section>
 
       <ConfirmModal
         open={Boolean(removing)}
         onClose={() => setRemoving(null)}
-        title="Excluir cupom já usado"
-        description={`O cupom ${removing?.code ?? ''} já foi usado em campanhas. Excluir não apaga pagamentos nem campanhas, mas libera as contas que o usaram para usar outro cupom.`}
-        confirmLabel="Excluir mesmo assim"
-        cancelLabel="Cancelar"
+        title={tx('Excluir cupom já usado')}
+        description={`${tx('O cupom')} ${removing?.code ?? ''} ${tx('já foi usado em campanhas. Excluir não apaga pagamentos nem campanhas, mas libera as contas que o usaram para usar outro cupom.')}`}
+        confirmLabel={tx('Excluir mesmo assim')}
+        cancelLabel={tx('Cancelar')}
         destructive
         onConfirm={() => removing && void remove(removing, true)}
       />
@@ -150,7 +152,7 @@ export default function AdCouponsSection() {
       {loading && coupons.length === 0 ? (
         <Skeleton className="h-40 w-full" />
       ) : coupons.length === 0 ? (
-        <EmptyNotice title="Nenhum cupom criado" description="Crie um cupom acima para indicar um cliente." />
+        <EmptyNotice title={tx('Nenhum cupom criado')} description={tx('Crie um cupom acima para indicar um cliente.')} />
       ) : (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-surface">
           {coupons.map((coupon) => {
@@ -162,15 +164,15 @@ export default function AdCouponsSection() {
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="font-mono">{coupon.code}</span>
-                    <button type="button" onClick={() => copy(coupon.code)} aria-label="Copiar código" className="text-slate-400 hover:text-slate-600"><Copy size={14} /></button>
+                    <button type="button" onClick={() => copy(coupon.code)} aria-label={tx('Copiar código')} className="text-slate-400 hover:text-slate-600"><Copy size={14} /></button>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-slate-400">
-                    {coupon.creditCents ? `Crédito US$ ${(coupon.creditCents / 100).toFixed(2)}` : 'Cortesia total'} · {coupon.plan ? planOptions.find((option) => option.plan === coupon.plan)?.name ?? 'Pacote' : 'Qualquer pacote'} · {coupon.redeemedCount}/{coupon.maxRedemptions} usos{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` · até ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
+                    {coupon.creditCents ? `${tx('Crédito US$')} ${(coupon.creditCents / 100).toFixed(2)}` : tx('Cortesia total')} · {coupon.plan ? planOptions.find((option) => option.plan === coupon.plan)?.name ?? tx('Pacote') : tx('Qualquer pacote')} · {coupon.redeemedCount}/{coupon.maxRedemptions} {tx('usos')}{coupon.assignedEmail ? ` · ${coupon.assignedEmail}` : ''}{coupon.expiresAt ? ` ${tx('· até')} ${new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}` : ''}{coupon.note ? ` · ${coupon.note}` : ''}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${status[1]}`}>{status[0]}</span>
-                <button type="button" onClick={() => void toggle(coupon)} className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">{coupon.isActive ? 'Desativar' : 'Ativar'}</button>
-                <button type="button" onClick={() => void remove(coupon)} aria-label="Excluir cupom" title="Excluir cupom" className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button>
+                <button type="button" onClick={() => void toggle(coupon)} className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">{coupon.isActive ? tx('Desativar') : tx('Ativar')}</button>
+                <button type="button" onClick={() => void remove(coupon)} aria-label={tx('Excluir cupom')} title={tx('Excluir cupom')} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button>
               </li>
             );
           })}

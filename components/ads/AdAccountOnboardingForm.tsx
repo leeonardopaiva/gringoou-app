@@ -14,6 +14,7 @@ import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import type { AdvertisableBusiness } from '@/lib/ads/businesses';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AdAccountOnboardingFormProps = {
   mode?: 'initial' | 'additional';
@@ -24,6 +25,7 @@ type AdAccountOnboardingFormProps = {
 };
 
 export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, maxAccounts = 3, businesses = [], initialBusinessId }: AdAccountOnboardingFormProps) {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { refreshAccounts } = useAdAccount();
   const availableBusinesses = useMemo(
@@ -69,15 +71,15 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
     <div className={`mx-auto flex max-w-2xl items-center ${mode === 'initial' ? 'min-h-[calc(100dvh-5rem)]' : 'py-6'}`}>
       <Card className="w-full rounded-[28px] border border-slate-200 p-8 shadow-sm">
         {mode === 'initial' ? <GringoouLogo size={34} /> : null}
-        <p className={`${mode === 'initial' ? 'mt-6' : ''} text-xs font-bold uppercase tracking-wider text-brand-500`}>{mode === 'initial' ? 'Gringoou Ads' : `Conta ${currentCount + 1} de ${maxAccounts}`}</p>
-        <h1 className="mt-2 text-3xl font-extrabold text-ink">Promova seu negócio</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">A página pública é gratuita. Você paga apenas quando cria uma campanha para alcançar mais pessoas no feed da comunidade.</p>
+        <p className={`${mode === 'initial' ? 'mt-6' : ''} text-xs font-bold uppercase tracking-wider text-brand-500`}>{mode === 'initial' ? tx('Gringoou Ads') : `${tx('Conta')} ${currentCount + 1} ${tx('de')} ${maxAccounts}`}</p>
+        <h1 className="mt-2 text-3xl font-extrabold text-ink">{tx('Promova seu negócio')}</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500">{tx('A página pública é gratuita. Você paga apenas quando cria uma campanha para alcançar mais pessoas no feed da comunidade.')}</p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
-            { icon: Store, title: '1. Página', text: 'Cadastre seu negócio gratuitamente.' },
-            { icon: BadgeCheck, title: '2. Aprovação', text: 'A equipe valida a página pública.' },
-            { icon: Megaphone, title: '3. Promoção', text: 'Escolha público, período e investimento.' },
+            { icon: Store, title: tx('1. Página'), text: 'Cadastre seu negócio gratuitamente.' },
+            { icon: BadgeCheck, title: tx('2. Aprovação'), text: 'A equipe valida a página pública.' },
+            { icon: Megaphone, title: tx('3. Promoção'), text: 'Escolha público, período e investimento.' },
           ].map(({ icon: Icon, title, text }) => (
             <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <Icon size={19} className="text-brand-500" />
@@ -89,35 +91,35 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
 
         {availableBusinesses.length === 0 ? (
           <div className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <p className="font-bold text-amber-950">Você ainda não possui um negócio aprovado disponível para anunciar.</p>
+            <p className="font-bold text-amber-950">{tx('Você ainda não possui um negócio aprovado disponível para anunciar.')}</p>
             <p className="mt-2 text-sm leading-6 text-amber-800">
               {businesses.some((business) => business.status === 'PENDING_REVIEW')
-                ? 'Sua página está em análise. Assim que for aprovada, você poderá criar a conta Ads e contratar campanhas.'
+                ? tx('Sua página está em análise. Assim que for aprovada, você poderá criar a conta Ads e contratar campanhas.')
                 : businesses.some((business) => business.linkedAdAccountId)
-                  ? 'Seus negócios aprovados já estão vinculados ao Ads. Acesse o painel para gerenciar as campanhas.'
-                  : 'Crie primeiro a página pública gratuita do negócio. Depois da aprovação, volte aqui para promovê-la.'}
+                  ? tx('Seus negócios aprovados já estão vinculados ao Ads. Acesse o painel para gerenciar as campanhas.')
+                  : tx('Crie primeiro a página pública gratuita do negócio. Depois da aprovação, volte aqui para promovê-la.')}
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Link href="/businesses?create=1" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-bold text-white">Cadastrar negócio gratuitamente</Link>
-              {businesses.some((business) => business.linkedAdAccountId) ? <Link href="/ads/overview" className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-surface px-5 text-sm font-bold text-slate-700">Ir para o painel Ads</Link> : null}
+              <Link href="/businesses?create=1" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-bold text-white">{tx('Cadastrar negócio gratuitamente')}</Link>
+              {businesses.some((business) => business.linkedAdAccountId) ? <Link href="/ads/overview" className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-surface px-5 text-sm font-bold text-slate-700">{tx('Ir para o painel Ads')}</Link> : null}
             </div>
           </div>
         ) : (
         <form onSubmit={submit} className="mt-7 grid gap-4 sm:grid-cols-2">
-          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Negócio que será promovido</span><Select required value={form.businessId} onChange={(event) => selectBusiness(event.target.value)}><option value="">Selecione um negócio aprovado</option>{availableBusinesses.map((business) => <option key={business.id} value={business.id}>{business.name} — {business.category}</option>)}</Select><span className="block text-xs leading-5 text-slate-500">Os anúncios e pagamentos ficarão vinculados a esta página pública.</span></label>
-          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Nome da empresa</span><Input required value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} /></label>
-          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Website</span><Input type="text" inputMode="url" placeholder="empresa.com" value={form.websiteUrl} onChange={(event) => setForm((current) => ({ ...current, websiteUrl: event.target.value }))} onBlur={() => setForm((current) => ({ ...current, websiteUrl: normalizeUrlFieldValue(current.websiteUrl) }))} /></label>
-          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Endereço comercial</span><AddressAutocomplete value={form.businessAddress} onChange={(businessAddress) => setForm((current) => ({ ...current, businessAddress }))} placeholder="Rua, número, cidade, estado e CEP" /></label>
-          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">Telefone / WhatsApp comercial</span><Input type="tel" required inputMode="tel" placeholder="+1 (555) 000-0000" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: formatInternationalPhone(event.target.value) }))} /></label>
+          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Negócio que será promovido')}</span><Select required value={form.businessId} onChange={(event) => selectBusiness(event.target.value)}><option value="">{tx('Selecione um negócio aprovado')}</option>{availableBusinesses.map((business) => <option key={business.id} value={business.id}>{business.name} — {business.category}</option>)}</Select><span className="block text-xs leading-5 text-slate-500">{tx('Os anúncios e pagamentos ficarão vinculados a esta página pública.')}</span></label>
+          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Nome da empresa')}</span><Input required value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} /></label>
+          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Website')}</span><Input type="text" inputMode="url" placeholder="empresa.com" value={form.websiteUrl} onChange={(event) => setForm((current) => ({ ...current, websiteUrl: event.target.value }))} onBlur={() => setForm((current) => ({ ...current, websiteUrl: normalizeUrlFieldValue(current.websiteUrl) }))} /></label>
+          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Endereço comercial')}</span><AddressAutocomplete value={form.businessAddress} onChange={(businessAddress) => setForm((current) => ({ ...current, businessAddress }))} placeholder={tx('Rua, número, cidade, estado e CEP')} /></label>
+          <label className="space-y-2 sm:col-span-2"><span className="text-sm font-bold">{tx('Telefone / WhatsApp comercial')}</span><Input type="tel" required inputMode="tel" placeholder="+1 (555) 000-0000" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: formatInternationalPhone(event.target.value) }))} /></label>
           <div className="sm:col-span-2"><BusinessCategoryField category={form.businessCategory} subcategories={form.subcategories} onCategoryChange={(businessCategory) => setForm((current) => ({ ...current, businessCategory }))} onSubcategoriesChange={(subcategories) => setForm((current) => ({ ...current, subcategories }))} /></div>
-          <label className="space-y-2"><span className="text-sm font-bold">País</span><Select value={form.country} onChange={(event) => setForm((current) => ({ ...current, country: event.target.value, timezone: getDefaultAdTimezone(event.target.value) }))}><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option></Select></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Moeda</span><Select value="USD" disabled><option value="USD">USD - Dólar americano</option></Select></label>
-          <label className="space-y-2"><span className="text-sm font-bold">Timezone</span><Select required value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}>{AD_TIMEZONE_OPTIONS.map((timezone) => <option key={timezone.value} value={timezone.value}>{timezone.label}</option>)}</Select></label>
-          <label className="flex items-center gap-3 text-sm font-semibold sm:col-span-2"><input type="checkbox" checked={form.isAgency} onChange={(event) => setForm((current) => ({ ...current, isAgency: event.target.checked }))} /> Esta empresa é uma agência</label>
+          <label className="space-y-2"><span className="text-sm font-bold">{tx('País')}</span><Select value={form.country} onChange={(event) => setForm((current) => ({ ...current, country: event.target.value, timezone: getDefaultAdTimezone(event.target.value) }))}><option value="US">{tx('Estados Unidos')}</option><option value="BR">{tx('Brasil')}</option><option value="PT">{tx('Portugal')}</option><option value="CA">{tx('Canadá')}</option></Select></label>
+          <label className="space-y-2"><span className="text-sm font-bold">{tx('Moeda')}</span><Select value="USD" disabled><option value="USD">{tx('USD - Dólar americano')}</option></Select></label>
+          <label className="space-y-2"><span className="text-sm font-bold">{tx('Timezone')}</span><Select required value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}>{AD_TIMEZONE_OPTIONS.map((timezone) => <option key={timezone.value} value={timezone.value}>{tx(timezone.label)}</option>)}</Select></label>
+          <label className="flex items-center gap-3 text-sm font-semibold sm:col-span-2"><input type="checkbox" checked={form.isAgency} onChange={(event) => setForm((current) => ({ ...current, isAgency: event.target.checked }))} /> {tx('Esta empresa é uma agência')}</label>
           {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 sm:col-span-2">{error}</p> : null}
           <div className="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
-            {mode === 'additional' ? <Button type="button" variant="secondary" onClick={() => router.back()}>Voltar</Button> : null}
-            <Button type="submit" fullWidth={mode === 'initial'} loading={loading}>Continuar para o Ads</Button>
+            {mode === 'additional' ? <Button type="button" variant="secondary" onClick={() => router.back()}>{tx('Voltar')}</Button> : null}
+            <Button type="submit" fullWidth={mode === 'initial'} loading={loading}>{tx('Continuar para o Ads')}</Button>
           </div>
         </form>
         )}

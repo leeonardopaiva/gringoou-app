@@ -9,6 +9,7 @@ import StripeIntegrationPanel from '@/components/admin/StripeIntegrationPanel';
 import TwilioIntegrationPanel from '@/components/admin/TwilioIntegrationPanel';
 import type { IntegrationState, IntegrationStatus } from '@/lib/integrations';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const STATUS: Record<IntegrationStatus, { label: string; dot: string; chip: string }> = {
   configured: { label: 'Configurada', dot: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700' },
@@ -18,6 +19,7 @@ const STATUS: Record<IntegrationStatus, { label: string; dot: string; chip: stri
 
 /** Painel de integrações: mostra quais APIs externas estão ligadas e o que falta configurar. */
 export default function IntegrationsSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [items, setItems] = useState<IntegrationState[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,12 +55,12 @@ export default function IntegrationsSection() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
-            Integrações
-            <InfoTip text="APIs e serviços externos usados pela plataforma. Para adicionar uma nova, registre-a em lib/integrations.ts com as variáveis de ambiente que ela exige; os valores ficam no ambiente e nunca aparecem aqui." />
+            {tx('Integrações')}
+            <InfoTip text={tx('APIs e serviços externos usados pela plataforma. Para adicionar uma nova, registre-a em lib/integrations.ts com as variáveis de ambiente que ela exige; os valores ficam no ambiente e nunca aparecem aqui.')} />
           </h1>
-          {!loading ? <p className="mt-1 text-sm text-slate-400">{configured} de {items.length} configuradas</p> : null}
+          {!loading ? <p className="mt-1 text-sm text-slate-400">{configured} {tx('de')} {items.length} {tx('configuradas')}</p> : null}
         </div>
-        <button type="button" aria-label="Atualizar" title="Atualizar" onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
+        <button type="button" aria-label={tx('Atualizar')} title={tx('Atualizar')} onClick={() => void load()} disabled={loading} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50">
           <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
@@ -67,7 +69,7 @@ export default function IntegrationsSection() {
       <TwilioIntegrationPanel />
 
       {loading && items.length === 0 ? (
-        <div className="space-y-3" role="status" aria-label="Carregando integrações">
+        <div className="space-y-3" role="status" aria-label={tx('Carregando integrações')}>
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
@@ -88,12 +90,12 @@ export default function IntegrationsSection() {
                         <InfoTip text={item.description} />
                       </p>
                       {item.status !== 'configured' ? (
-                        <p className="mt-0.5 truncate text-xs text-slate-400">Falta: {item.missingEnv.join(', ')}</p>
+                        <p className="mt-0.5 truncate text-xs text-slate-400">{tx('Falta:')} {item.missingEnv.join(', ')}</p>
                       ) : null}
                     </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${state.chip}`}>{state.label}</span>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${state.chip}`}>{tx(state.label)}</span>
                     {item.docsUrl ? (
-                      <a href={item.docsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Abrir painel de ${item.name}`} title="Abrir painel do serviço" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-50 hover:text-slate-600">
+                      <a href={item.docsUrl} target="_blank" rel="noopener noreferrer" aria-label={`${tx('Abrir painel de')} ${item.name}`} title={tx('Abrir painel do serviço')} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-50 hover:text-slate-600">
                         <ExternalLink size={15} />
                       </a>
                     ) : null}

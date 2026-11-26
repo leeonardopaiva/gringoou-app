@@ -17,6 +17,7 @@ import {
   type AdsOverviewRow,
 } from '@/lib/ads/dashboard';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type OverviewDashboardProps = { data: AdsOverviewData };
 type StatusView = { label: string; tone: 'success' | 'destaque' | 'erro' | 'neutro' };
@@ -55,6 +56,7 @@ const csvCell = (value: unknown) => {
 };
 
 export function OverviewDashboard({ data }: OverviewDashboardProps) {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { showToast } = useToast();
   const { account } = useAdAccount();
@@ -83,7 +85,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       const response = await fetch(`/api/ads/${removing.id}/archive`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível remover a campanha.'));
-      showToast('Campanha removida do painel.', 'success');
+      showToast(tx('Campanha removida do painel.'), 'success');
       setRemoving(null);
       router.refresh();
     } catch (reason) {
@@ -129,7 +131,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       const response = await fetch(`/api/ads/${row.id}/duplicate`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível duplicar a campanha.'));
-      showToast('Cópia criada como rascunho.', 'success');
+      showToast(tx('Cópia criada como rascunho.'), 'success');
       router.push(`/ads/wizard?draft=${encodeURIComponent(payload.id)}`);
     } catch (reason) {
       showToast(getUserErrorMessage(reason, 'Não foi possível duplicar a campanha.'), 'error');
@@ -145,7 +147,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível descartar o rascunho.'));
       try { Object.keys(sessionStorage).filter((key) => key.startsWith('gringoou:ad-wizard-draft')).forEach((key) => sessionStorage.removeItem(key)); } catch { /* sessionStorage indisponível */ }
-      showToast('Rascunho descartado.', 'success');
+      showToast(tx('Rascunho descartado.'), 'success');
       setDiscarding(null);
       router.refresh();
     } catch (reason) {
@@ -155,7 +157,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     }
   };
   const exportCsv = () => {
-    if (!visibleRows.length) { showToast('Não há campanhas para exportar.', 'error'); return; }
+    if (!visibleRows.length) { showToast(tx('Não há campanhas para exportar.'), 'error'); return; }
     const header = ['Nome', 'Status', 'Objetivo', 'Pacote', 'Região', 'Início', 'Fim', 'Impressões', 'Cliques', 'Conversões', 'Gasto (USD)', 'CTR', 'CPC (USD)'];
     const lines = visibleRows.map((row) => [row.label, rowStatus(row), row.goal ? GOAL_LABELS[row.goal] ?? row.goal : '', row.plan ?? '', row.regionLabel ?? '', formatDate(row.startsAt), formatDate(row.endsAt), row.impressions, row.clicks, row.conversions, (row.spendCents / 100).toFixed(2), (row.ctr * 100).toFixed(2) + '%', row.cpcCents == null ? '' : (row.cpcCents / 100).toFixed(2)].map(csvCell).join(';'));
     const blob = new Blob([String.fromCharCode(0xfeff) + [header.map(csvCell).join(';'), ...lines].join(String.fromCharCode(13, 10))], { type: 'text/csv;charset=utf-8' });
@@ -207,7 +209,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível reenviar a campanha.'));
       setRevising(null);
       setRevisionForm(null);
-      showToast('Criativo reenviado para análise sem nova cobrança.', 'success');
+      showToast(tx('Criativo reenviado para análise sem nova cobrança.'), 'success');
       router.refresh();
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível reenviar a campanha.'), 'error');
@@ -216,31 +218,31 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     }
   };
   const stats = [
-    { label: 'Gasto faturável', value: formatUsd(data.stats.spendCents), caption: rangeCaption },
-    { label: 'Impressões', value: formatNumber(data.stats.impressions), caption: rangeCaption },
-    { label: 'Campanhas ativas', value: String(data.stats.activeCampaigns), caption: `de ${data.rows.length} campanhas totais`, accent: true },
-    { label: 'Criativos rejeitados', value: String(data.stats.rejectedCreatives), caption: data.stats.rejectedCreatives ? 'requer sua atenção' : 'nenhuma pendência' },
+    { label: tx('Gasto faturável'), value: formatUsd(data.stats.spendCents), caption: rangeCaption },
+    { label: tx('Impressões'), value: formatNumber(data.stats.impressions), caption: rangeCaption },
+    { label: tx('Campanhas ativas'), value: String(data.stats.activeCampaigns), caption: `de ${data.rows.length} campanhas totais`, accent: true },
+    { label: tx('Criativos rejeitados'), value: String(data.stats.rejectedCreatives), caption: data.stats.rejectedCreatives ? tx('requer sua atenção') : tx('nenhuma pendência') },
   ];
 
   return (
     <div className="mx-auto w-full max-w-[1380px] space-y-7">
       {!account?.businessId ? (
-        <Alert tone="atencao" title="Crie a página do negócio para começar a promover." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
-          <button type="button" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account?.id || '')}`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Criar página</button>
+        <Alert tone="atencao" title={tx('Crie a página do negócio para começar a promover.')} className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
+          <button type="button" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account?.id || '')}`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">{tx('Criar página')}</button>
         </Alert>
       ) : account.businessStatus !== 'PUBLISHED' ? (
-        <Alert tone="atencao" title="Página em análise. Após a aprovação, você poderá continuar e concluir a campanha." className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
-          {account.publicPath ? <button type="button" onClick={() => router.push(`${account.publicPath}/gerenciar`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">Ver página</button> : null}
+        <Alert tone="atencao" title={tx('Página em análise. Após a aprovação, você poderá continuar e concluir a campanha.')} className="items-center rounded-full border-amber-300 bg-amber-50 px-6 py-4 shadow-none">
+          {account.publicPath ? <button type="button" onClick={() => router.push(`${account.publicPath}/gerenciar`)} className="text-sm font-bold text-brand-500 underline underline-offset-2">{tx('Ver página')}</button> : null}
         </Alert>
       ) : null}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-extrabold leading-none text-ink sm:text-[34px]">Visão geral</h1>
+        <h1 className="text-2xl font-extrabold leading-none text-ink sm:text-[34px]">{tx('Visão geral')}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Select value={data.range.key} prefixIcon={<CalendarDays size={17} />} onChange={(event) => router.push(`/ads/overview?range=${event.target.value}`)} className="min-w-[150px]">
-            <option value="7d">Últimos 7 dias</option><option value="month">Este mês</option><option value="all">Total</option>
+            <option value="7d">{tx('Últimos 7 dias')}</option><option value="month">{tx('Este mês')}</option><option value="all">{tx('Total')}</option>
           </Select>
-          <Button iconLeft={<Plus size={19} />} onClick={() => router.push('/ads/wizard')}>Criar Campanha</Button>
+          <Button iconLeft={<Plus size={19} />} onClick={() => router.push('/ads/wizard')}>{tx('Criar Campanha')}</Button>
         </div>
       </div>
 
@@ -248,7 +250,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         {stats.map((stat) => (
           <Card key={stat.label} className="relative min-h-[104px] overflow-hidden rounded-2xl border border-slate-200 px-4 py-4 shadow-sm sm:min-h-[150px] sm:px-7 sm:py-6">
             <span className={`absolute inset-x-0 top-0 h-1 ${stat.accent ? 'bg-[#339eff]' : 'bg-slate-200'}`} aria-hidden />
-            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[12px]">{stat.label}</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[12px]">{tx(stat.label)}</p>
             <p className={`mt-3 text-2xl font-extrabold leading-none sm:mt-6 sm:text-[34px] ${stat.accent ? 'text-brand-500' : 'text-ink'}`}>{stat.value}</p>
             <p className="mt-2 truncate text-[11px] text-slate-400 sm:mt-3 sm:text-[13px]">{stat.caption}</p>
           </Card>
@@ -257,7 +259,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
 
       <Card padded={false} className="rounded-[22px] border border-slate-200 shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-200 px-6 pt-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex gap-6 overflow-x-auto" role="tablist" aria-label="Filtrar campanhas por situação">
+          <div className="flex gap-6 overflow-x-auto" role="tablist" aria-label={tx('Filtrar campanhas por situação')}>
             {TABS.filter((item) => item.key === 'all' || item.key === tab || tabCounts[item.key] > 0).map((item) => (
               <button
                 key={item.key}
@@ -267,33 +269,33 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
                 onClick={() => setTab(item.key)}
                 className={`whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-bold transition ${tab === item.key ? 'border-brand-500 text-brand-500' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
               >
-                {item.label} <span className="ml-1 text-xs font-semibold opacity-70">{tabCounts[item.key]}</span>
+                {tx(item.label)} <span className="ml-1 text-xs font-semibold opacity-70">{tabCounts[item.key]}</span>
               </button>
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2 pb-3">
-            <Button size="sm" iconOnly aria-label="Nova campanha" title="Nova campanha" iconLeft={<Plus size={17} />} onClick={() => router.push('/ads/wizard')} />
-            <Button size="sm" iconOnly variant="ghost" aria-label="Exportar CSV" title="Exportar a lista atual em CSV" iconLeft={<Download size={16} />} className="bg-slate-50 text-slate-500" onClick={exportCsv} />
-            <div className="w-full sm:w-[190px]"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar..." aria-label="Buscar campanhas" prefixIcon={<Search size={16} />} /></div>
-            <Button ref={filterRef} size="sm" iconOnly variant="ghost" aria-label="Filtros" title="Filtros" aria-expanded={filterOpen} iconLeft={<Filter size={16} />} className={activeFilters ? 'bg-brand-50 text-brand-500' : 'text-slate-500'} onClick={() => setFilterOpen((value) => !value)} />
+            <Button size="sm" iconOnly aria-label={tx('Nova campanha')} title={tx('Nova campanha')} iconLeft={<Plus size={17} />} onClick={() => router.push('/ads/wizard')} />
+            <Button size="sm" iconOnly variant="ghost" aria-label={tx('Exportar CSV')} title={tx('Exportar a lista atual em CSV')} iconLeft={<Download size={16} />} className="bg-slate-50 text-slate-500" onClick={exportCsv} />
+            <div className="w-full sm:w-[190px]"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tx('Buscar...')} aria-label={tx('Buscar campanhas')} prefixIcon={<Search size={16} />} /></div>
+            <Button ref={filterRef} size="sm" iconOnly variant="ghost" aria-label={tx('Filtros')} title={tx('Filtros')} aria-expanded={filterOpen} iconLeft={<Filter size={16} />} className={activeFilters ? 'bg-brand-50 text-brand-500' : 'text-slate-500'} onClick={() => setFilterOpen((value) => !value)} />
             <Popover open={filterOpen} onClose={() => setFilterOpen(false)} anchorRef={filterRef} align="end" role="dialog" className="w-72 p-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-extrabold text-ink">Filtros</p>
-                <button type="button" aria-label="Fechar filtros" onClick={() => setFilterOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+                <p className="text-sm font-extrabold text-ink">{tx('Filtros')}</p>
+                <button type="button" aria-label={tx('Fechar filtros')} onClick={() => setFilterOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
               </div>
-              <label className="mt-3 block text-xs font-bold text-slate-500">Objetivo</label>
+              <label className="mt-3 block text-xs font-bold text-slate-500">{tx('Objetivo')}</label>
               <Select value={goalFilter} onChange={(event) => setGoalFilter(event.target.value)} className="mt-1">
-                <option value="">Todos</option>
+                <option value="">{tx('Todos')}</option>
                 {goals.map((goal) => <option key={goal} value={goal}>{GOAL_LABELS[goal] ?? goal}</option>)}
               </Select>
-              <label className="mt-3 block text-xs font-bold text-slate-500">Pacote</label>
+              <label className="mt-3 block text-xs font-bold text-slate-500">{tx('Pacote')}</label>
               <Select value={planFilter} onChange={(event) => setPlanFilter(event.target.value)} className="mt-1">
-                <option value="">Todos</option>
+                <option value="">{tx('Todos')}</option>
                 {plans.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
               </Select>
               <div className="mt-4 flex justify-between">
-                <Button size="sm" variant="ghost" disabled={!activeFilters} onClick={() => { setGoalFilter(''); setPlanFilter(''); }}>Limpar</Button>
-                <Button size="sm" onClick={() => setFilterOpen(false)}>Aplicar</Button>
+                <Button size="sm" variant="ghost" disabled={!activeFilters} onClick={() => { setGoalFilter(''); setPlanFilter(''); }}>{tx('Limpar')}</Button>
+                <Button size="sm" onClick={() => setFilterOpen(false)}>{tx('Aplicar')}</Button>
               </div>
             </Popover>
           </div>
@@ -302,7 +304,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] border-collapse text-left">
             <thead><tr className="border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
-              {['Nome', 'On/Off', 'Status', 'Início', 'Fim', 'Impressões', 'Cliques', 'Conv.', 'Gasto', 'CTR', 'CPC', 'Ações'].map((label) => <th key={label} className="px-5 py-4">{label}</th>)}
+              {['Nome', 'On/Off', 'Status', 'Início', 'Fim', 'Impressões', 'Cliques', 'Conv.', 'Gasto', 'CTR', 'CPC', 'Ações'].map((label) => <th key={label} className="px-5 py-4">{tx(label)}</th>)}
             </tr></thead>
             <tbody>
               {visibleRows.map((row) => {
@@ -313,19 +315,19 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
                 return (
                   <tr key={row.id} className="border-b border-slate-100 text-[13px] text-ink-2 hover:bg-slate-50/70">
                     <td className="max-w-[260px] px-5 py-4 font-bold">
-                      <span className="block truncate">{row.label}</span>
-                      <span className="mt-1 flex flex-wrap gap-x-3">{row.moderationStatus === 'REJECTED' ? <button type="button" onClick={() => openRevision(row)} className="text-xs font-bold text-brand-500 underline underline-offset-2">Corrigir e reenviar</button> : null}{isDraft && canEdit ? <button type="button" onClick={() => router.push(`/ads/wizard?draft=${encodeURIComponent(row.id)}`)} className="text-xs font-bold text-brand-500 underline underline-offset-2">Continuar rascunho</button> : null}</span>
+                      <span className="block truncate">{tx(row.label)}</span>
+                      <span className="mt-1 flex flex-wrap gap-x-3">{row.moderationStatus === 'REJECTED' ? <button type="button" onClick={() => openRevision(row)} className="text-xs font-bold text-brand-500 underline underline-offset-2">{tx('Corrigir e reenviar')}</button> : null}{isDraft && canEdit ? <button type="button" onClick={() => router.push(`/ads/wizard?draft=${encodeURIComponent(row.id)}`)} className="text-xs font-bold text-brand-500 underline underline-offset-2">{tx('Continuar rascunho')}</button> : null}</span>
                     </td>
-                    <td className="px-5 py-4"><button type="button" role="switch" aria-checked={enabled} disabled={!toggleable} title={toggleable ? undefined : 'Disponível quando a campanha estiver aprovada e no período'} onClick={() => void toggleCampaign(row)} className={`relative h-6 w-11 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${enabled ? 'bg-brand-500' : 'bg-slate-200'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-surface shadow transition ${enabled ? 'left-6' : 'left-1'}`} /></button></td>
-                    <td className="px-5 py-4"><Badge tone={status.tone} className="normal-case tracking-normal">{status.label}</Badge></td>
+                    <td className="px-5 py-4"><button type="button" role="switch" aria-checked={enabled} disabled={!toggleable} title={toggleable ? undefined : tx('Disponível quando a campanha estiver aprovada e no período')} onClick={() => void toggleCampaign(row)} className={`relative h-6 w-11 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${enabled ? 'bg-brand-500' : 'bg-slate-200'}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-surface shadow transition ${enabled ? 'left-6' : 'left-1'}`} /></button></td>
+                    <td className="px-5 py-4"><Badge tone={status.tone} className="normal-case tracking-normal">{tx(status.label)}</Badge></td>
                     <td className="px-5 py-4 text-slate-400">{formatDate(row.startsAt)}</td><td className="px-5 py-4 text-slate-400">{formatDate(row.endsAt)}</td>
                     <td className="px-5 py-4 font-semibold">{formatNumber(row.impressions)}</td><td className="px-5 py-4 font-semibold">{formatNumber(row.clicks)}</td><td className="px-5 py-4 text-slate-400">{formatNumber(row.conversions)}</td>
                     <td className="px-5 py-4 font-semibold">{formatUsd(row.spendCents)}</td><td className="px-5 py-4 font-semibold text-brand-500">{formatPercent(row.ctr)}</td><td className="px-5 py-4 text-slate-400">{row.cpcCents == null ? '-' : formatUsdWithCents(row.cpcCents)}</td>
                     <td className="px-5 py-4">
                       <span className="flex items-center gap-1">
-                        {isDraft && canEdit ? <Button size="sm" iconOnly variant="ghost" aria-label="Continuar rascunho" title="Continuar rascunho" iconLeft={<Pencil size={15} />} className="text-slate-500" onClick={() => router.push(`/ads/wizard?draft=${encodeURIComponent(row.id)}`)} /> : null}
-                        {canEdit && account?.businessId ? <Button size="sm" iconOnly variant="ghost" aria-label="Duplicar campanha" title="Duplicar como novo rascunho" iconLeft={<Copy size={15} />} className="text-slate-500" disabled={busyId === row.id} onClick={() => void duplicateCampaign(row)} /> : null}
-                        {isDraft && canEdit ? <Button size="sm" iconOnly variant="ghost" aria-label="Descartar rascunho" title="Descartar rascunho" iconLeft={<Trash2 size={15} />} className="text-slate-500 hover:text-red-600" onClick={() => setDiscarding(row)} /> : canRemove(row) ? <Button size="sm" iconOnly variant="ghost" aria-label="Remover campanha" title="Remover do painel" iconLeft={<Trash2 size={15} />} className="text-slate-500 hover:text-red-600" onClick={() => setRemoving(row)} /> : null}
+                        {isDraft && canEdit ? <Button size="sm" iconOnly variant="ghost" aria-label={tx('Continuar rascunho')} title={tx('Continuar rascunho')} iconLeft={<Pencil size={15} />} className="text-slate-500" onClick={() => router.push(`/ads/wizard?draft=${encodeURIComponent(row.id)}`)} /> : null}
+                        {canEdit && account?.businessId ? <Button size="sm" iconOnly variant="ghost" aria-label={tx('Duplicar campanha')} title={tx('Duplicar como novo rascunho')} iconLeft={<Copy size={15} />} className="text-slate-500" disabled={busyId === row.id} onClick={() => void duplicateCampaign(row)} /> : null}
+                        {isDraft && canEdit ? <Button size="sm" iconOnly variant="ghost" aria-label={tx('Descartar rascunho')} title={tx('Descartar rascunho')} iconLeft={<Trash2 size={15} />} className="text-slate-500 hover:text-red-600" onClick={() => setDiscarding(row)} /> : canRemove(row) ? <Button size="sm" iconOnly variant="ghost" aria-label={tx('Remover campanha')} title={tx('Remover do painel')} iconLeft={<Trash2 size={15} />} className="text-slate-500 hover:text-red-600" onClick={() => setRemoving(row)} /> : null}
                       </span>
                     </td>
                   </tr>
@@ -333,13 +335,13 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
               })}
               {visibleRows.length === 0 ? (
                 <tr><td colSpan={12} className="px-5 py-12 text-center text-sm text-slate-400">
-                  {data.rows.length === 0 ? 'Você ainda não tem campanhas. Use o botão + para criar a primeira.' : 'Nenhuma campanha encontrada com esses filtros.'}
-                  {data.rows.length > 0 ? <button type="button" onClick={clearFilters} className="ml-2 font-bold text-brand-500 underline underline-offset-2">Limpar filtros</button> : null}
+                  {data.rows.length === 0 ? tx('Você ainda não tem campanhas. Use o botão + para criar a primeira.') : tx('Nenhuma campanha encontrada com esses filtros.')}
+                  {data.rows.length > 0 ? <button type="button" onClick={clearFilters} className="ml-2 font-bold text-brand-500 underline underline-offset-2">{tx('Limpar filtros')}</button> : null}
                 </td></tr>
               ) : null}
             </tbody>
             <tfoot><tr className="bg-slate-50/70 text-[13px] font-extrabold text-ink">
-              <td className="px-5 py-4" colSpan={5}>Total{visibleRows.length !== data.rows.length ? ` (${visibleRows.length} de ${data.rows.length})` : ''}</td><td className="px-5 py-4">{formatNumber(totals.impressions)}</td><td className="px-5 py-4">{formatNumber(totals.clicks)}</td><td className="px-5 py-4">{formatNumber(totals.conversions)}</td><td className="px-5 py-4">{formatUsd(totals.spendCents)}</td><td className="px-5 py-4 text-brand-500">{formatPercent(totals.impressions ? totals.clicks / totals.impressions : 0)}</td><td className="px-5 py-4">{totals.clicks ? formatUsdWithCents(Math.round(totals.spendCents / totals.clicks)) : '-'}</td><td />
+              <td className="px-5 py-4" colSpan={5}>{tx('Total')}{visibleRows.length !== data.rows.length ? ` (${visibleRows.length} ${tx('de')} ${data.rows.length})` : ''}</td><td className="px-5 py-4">{formatNumber(totals.impressions)}</td><td className="px-5 py-4">{formatNumber(totals.clicks)}</td><td className="px-5 py-4">{formatNumber(totals.conversions)}</td><td className="px-5 py-4">{formatUsd(totals.spendCents)}</td><td className="px-5 py-4 text-brand-500">{formatPercent(totals.impressions ? totals.clicks / totals.impressions : 0)}</td><td className="px-5 py-4">{totals.clicks ? formatUsdWithCents(Math.round(totals.spendCents / totals.clicks)) : '-'}</td><td />
             </tr></tfoot>
           </table>
         </div>
@@ -348,10 +350,10 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <ConfirmModal
         open={Boolean(discarding)}
         onClose={() => (removeBusy ? undefined : setDiscarding(null))}
-        title="Descartar rascunho"
-        description={`“${discarding?.label ?? ''}” será apagado do painel e não será restaurado ao criar uma nova campanha. Nenhuma cobrança é feita.`}
-        confirmLabel="Descartar"
-        cancelLabel="Manter rascunho"
+        title={tx('Descartar rascunho')}
+        description={`“${discarding?.label ?? ''}${tx('” será apagado do painel e não será restaurado ao criar uma nova campanha. Nenhuma cobrança é feita.')}`}
+        confirmLabel={tx('Descartar')}
+        cancelLabel={tx('Manter rascunho')}
         destructive
         loading={removeBusy}
         onConfirm={() => void discardDraft()}
@@ -359,10 +361,10 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <ConfirmModal
         open={Boolean(removing)}
         onClose={() => (removeBusy ? undefined : setRemoving(null))}
-        title="Remover campanha"
-        description={`“${removing?.label ?? ''}” deixa de aparecer no painel. O histórico de pagamentos e os relatórios são mantidos.`}
-        confirmLabel="Remover"
-        cancelLabel="Cancelar"
+        title={tx('Remover campanha')}
+        description={`“${removing?.label ?? ''}${tx('” deixa de aparecer no painel. O histórico de pagamentos e os relatórios são mantidos.')}`}
+        confirmLabel={tx('Remover')}
+        cancelLabel={tx('Cancelar')}
         destructive
         loading={removeBusy}
         onConfirm={() => void removeCampaign()}
@@ -370,17 +372,17 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       <Modal
         open={Boolean(revising && revisionForm)}
         onClose={() => { if (!resubmitting) { setRevising(null); setRevisionForm(null); } }}
-        title="Corrigir anúncio rejeitado"
-        description={revising?.rejectionReason ? `Motivo da rejeição: ${revising.rejectionReason}` : 'Ajuste o criativo e envie novamente. Não havera uma nova cobrança.'}
+        title={tx('Corrigir anúncio rejeitado')}
+        description={revising?.rejectionReason ? `${tx('Motivo da rejeição:')} ${revising.rejectionReason}` : tx('Ajuste o criativo e envie novamente. Não havera uma nova cobrança.')}
         className="max-w-2xl"
-        footer={<><Button variant="secondary" disabled={resubmitting} onClick={() => { setRevising(null); setRevisionForm(null); }}>Cancelar</Button><Button loading={resubmitting} disabled={!revisionForm?.headline.trim() || !revisionForm?.description.trim() || !revisionForm?.imageUrl || !revisionForm?.destination.trim()} onClick={() => void resubmit()}>Reenviar para análise</Button></>}
+        footer={<><Button variant="secondary" disabled={resubmitting} onClick={() => { setRevising(null); setRevisionForm(null); }}>{tx('Cancelar')}</Button><Button loading={resubmitting} disabled={!revisionForm?.headline.trim() || !revisionForm?.description.trim() || !revisionForm?.imageUrl || !revisionForm?.destination.trim()} onClick={() => void resubmit()}>{tx('Reenviar para análise')}</Button></>}
       >
         {revisionForm ? <div className="max-h-[65dvh] space-y-4 overflow-y-auto pr-1">
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Título</label><Input value={revisionForm.headline} maxLength={70} onChange={(event) => setRevisionForm((current) => current ? { ...current, headline: event.target.value } : current)} /></div>
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Descrição</label><Textarea value={revisionForm.description} maxLength={600} onChange={(event) => setRevisionForm((current) => current ? { ...current, description: event.target.value } : current)} /></div>
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Imagem</label><CloudinaryImageField value={revisionForm.imageUrl} onChange={(imageUrl) => setRevisionForm((current) => current ? { ...current, imageUrl } : current)} folder="banners" cropAspect={4 / 3} height={200} /></div>
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">CTA</label><Input value={revisionForm.ctaLabel} maxLength={40} onChange={(event) => setRevisionForm((current) => current ? { ...current, ctaLabel: event.target.value } : current)} /></div>
-          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">Destino</label><Input value={revisionForm.destination} maxLength={500} onChange={(event) => setRevisionForm((current) => current ? { ...current, destination: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">{tx('Título')}</label><Input value={revisionForm.headline} maxLength={70} onChange={(event) => setRevisionForm((current) => current ? { ...current, headline: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">{tx('Descrição')}</label><Textarea value={revisionForm.description} maxLength={600} onChange={(event) => setRevisionForm((current) => current ? { ...current, description: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">{tx('Imagem')}</label><CloudinaryImageField value={revisionForm.imageUrl} onChange={(imageUrl) => setRevisionForm((current) => current ? { ...current, imageUrl } : current)} folder="banners" cropAspect={4 / 3} height={200} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">{tx('CTA')}</label><Input value={revisionForm.ctaLabel} maxLength={40} onChange={(event) => setRevisionForm((current) => current ? { ...current, ctaLabel: event.target.value } : current)} /></div>
+          <div><label className="mb-1.5 block text-xs font-bold text-slate-600">{tx('Destino')}</label><Input value={revisionForm.destination} maxLength={500} onChange={(event) => setRevisionForm((current) => current ? { ...current, destination: event.target.value } : current)} /></div>
         </div> : null}
       </Modal>
     </div>

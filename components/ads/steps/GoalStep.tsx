@@ -6,6 +6,7 @@ import { AD_GOALS } from '@/lib/ads/contracts';
 import { cn } from '@/lib/cn';
 import type { AdFieldErrors, PatchAdWizard } from '../types';
 import type { AdWizardData } from '@/lib/ads/validation';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const goals = [
   { value: AD_GOALS[0], title: 'Receber mensagens no WhatsApp', description: 'Direcione clientes para uma conversa direta no WhatsApp.', icon: MessageCircle },
@@ -14,9 +15,10 @@ const goals = [
 ] as const;
 
 export function GoalStep({ state, errors, patch }: { state: AdWizardData; errors: AdFieldErrors; patch: PatchAdWizard }) {
+  const { tx } = useLanguage();
   return (
     <Card className="border border-slate-200 p-6 shadow-xs">
-      <div className="flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">1</span><Card.Title className="text-[17px]">O que você deseja alcançar com este anúncio?</Card.Title></div>
+      <div className="flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">1</span><Card.Title className="text-[17px]">{tx('O que você deseja alcançar com este anúncio?')}</Card.Title></div>
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         {goals.map((option) => {
           const Icon = option.icon;
@@ -26,7 +28,7 @@ export function GoalStep({ state, errors, patch }: { state: AdWizardData; errors
               <span className={cn('flex h-10 w-10 items-center justify-center rounded-full', selected ? 'bg-[#078cf5] text-white' : 'bg-slate-100 text-ink-4')}><Icon size={20} /></span>
               <p className="mt-4 text-[13px] font-extrabold text-ink-4">{option.title}</p>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{option.description}</p>
-              {selected ? <Badge tone="success" className="mt-3 normal-case tracking-normal">Selecionado</Badge> : null}
+              {selected ? <Badge tone="success" className="mt-3 normal-case tracking-normal">{tx('Selecionado')}</Badge> : null}
               {selected ? <Check size={16} className="absolute right-4 top-4 text-[#078cf5]" /> : null}
             </button>
           );

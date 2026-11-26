@@ -23,7 +23,7 @@ export function LandingFooter() {
   return (
     <footer className="mx-auto mt-auto flex w-full max-w-[1440px] items-center justify-between gap-x-6 px-5 pb-6 pt-4 text-sm text-[#6b7a9e] sm:px-8 lg:px-16">
       <div className="flex flex-col gap-1.5">
-        <p>© {year} Gringoou</p>
+        <p>© {year} {tx('Gringoou')}</p>
         <nav aria-label={tx('Links legais')} className="flex items-center gap-4 text-[13px] sm:hidden">
           {legalLinks}
         </nav>

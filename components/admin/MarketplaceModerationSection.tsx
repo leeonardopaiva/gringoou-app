@@ -10,6 +10,7 @@ import type {
   MarketplaceModerationItem,
 } from '@/domain/marketplace/entities/marketplace.entity';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type QueueStatus = 'PENDING_REVIEW' | 'ACTIVE' | 'REJECTED' | 'REMOVED';
 
@@ -34,6 +35,7 @@ const formatPrice = (item: MarketplaceModerationItem) =>
 
 /** Fila de moderação de anúncios do Marketplace (MODERATOR/ADMIN; autorização validada na API). */
 export default function MarketplaceModerationSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [status, setStatus] = useState<QueueStatus>('PENDING_REVIEW');
   const [items, setItems] = useState<MarketplaceModerationItem[]>([]);
@@ -72,7 +74,7 @@ export default function MarketplaceModerationSection() {
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível registrar a decisão.'));
       setReasonFor(null);
       setReason('');
-      showToast(`Anúncio ${DECISION_LABELS[decision].toLowerCase()}.`, 'success');
+      showToast(`${tx('Anúncio')} ${DECISION_LABELS[decision].toLowerCase()}.`, 'success');
       await load();
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível registrar a decisão.'), 'error');
@@ -86,21 +88,21 @@ export default function MarketplaceModerationSection() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <ShoppingBag size={19} className="text-brand-500" /> Anúncios do Marketplace
+            <ShoppingBag size={19} className="text-brand-500" /> {tx('Anúncios do Marketplace')}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">Aprove, rejeite (com motivo) ou remova anúncios.</p>
+          <p className="mt-1 text-sm text-slate-500">{tx('Aprove, rejeite (com motivo) ou remova anúncios.')}</p>
         </div>
         <button
           type="button"
           onClick={() => void load()}
           className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
-          aria-label="Atualizar anúncios"
+          aria-label={tx('Atualizar anúncios')}
         >
           <RefreshCcw size={17} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Status dos anúncios">
+      <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label={tx('Status dos anúncios')}>
         {TABS.map((tab) => (
           <button
             key={tab.status}
@@ -112,16 +114,16 @@ export default function MarketplaceModerationSection() {
               status === tab.status ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {tab.label}
+            {tx(tab.label)}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="mt-5 space-y-3" role="status" aria-label="Carregando anúncios"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>
+        <div className="mt-5 space-y-3" role="status" aria-label={tx('Carregando anúncios')}><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>
       ) : items.length === 0 ? (
         <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-          Nenhum anúncio nesta lista.
+          {tx('Nenhum anúncio nesta lista.')}
         </div>
       ) : (
         <div className="mt-5 divide-y divide-slate-100">
@@ -150,23 +152,23 @@ export default function MarketplaceModerationSection() {
                   </div>
                   <p className="mt-0.5 text-sm font-semibold text-slate-700">{formatPrice(item)}</p>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    {item.sellerName ?? 'Usuário'}
+                    {item.sellerName ?? tx('Usuário')}
                     {item.sellerUsername ? ` · @${item.sellerUsername}` : ''} · {item.locationLabel} ·{' '}
                     {formatDate(item.createdAt)}
                   </p>
                   <p className="mt-1.5 line-clamp-2 text-sm text-slate-600">{item.description}</p>
 
                   {item.moderationReason ? (
-                    <p className="mt-1.5 text-xs font-medium text-red-700">Motivo: {item.moderationReason}</p>
+                    <p className="mt-1.5 text-xs font-medium text-red-700">{tx('Motivo:')} {item.moderationReason}</p>
                   ) : null}
 
                   {item.logs.length > 0 ? (
                     <details className="mt-2 text-xs text-slate-500">
-                      <summary className="cursor-pointer font-semibold">Histórico ({item.logs.length})</summary>
+                      <summary className="cursor-pointer font-semibold">{tx('Histórico (')}{item.logs.length})</summary>
                       <ul className="mt-1 space-y-1">
                         {item.logs.map((log) => (
                           <li key={log.id}>
-                            {formatDate(log.createdAt)} — {DECISION_LABELS[log.decision]} por{' '}
+                            {formatDate(log.createdAt)} — {DECISION_LABELS[log.decision]} {tx('por')}{' '}
                             {log.moderatorName ?? 'moderador'}
                             {log.reason ? ` (${log.reason})` : ''}
                           </li>
@@ -178,7 +180,7 @@ export default function MarketplaceModerationSection() {
                   {askingReason ? (
                     <div className="mt-3 space-y-2">
                       <label className="block text-xs font-semibold text-slate-600" htmlFor={`reason-${item.id}`}>
-                        Motivo {reasonFor?.decision === 'REJECT' ? 'da rejeição' : 'da remoção'} (mín. 5 caracteres)
+                        {tx('Motivo')} {reasonFor?.decision === 'REJECT' ? tx('da rejeição') : tx('da remoção')} {tx('(mín. 5 caracteres)')}
                       </label>
                       <textarea
                         id={`reason-${item.id}`}
@@ -195,7 +197,7 @@ export default function MarketplaceModerationSection() {
                           disabled={reason.trim().length < 5}
                           onClick={() => void decide(item.id, reasonFor!.decision, reason.trim())}
                         >
-                          Confirmar
+                          {tx('Confirmar')}
                         </Button>
                         <Button
                           size="sm"
@@ -205,7 +207,7 @@ export default function MarketplaceModerationSection() {
                             setReason('');
                           }}
                         >
-                          Cancelar
+                          {tx('Cancelar')}
                         </Button>
                       </div>
                     </div>
@@ -218,7 +220,7 @@ export default function MarketplaceModerationSection() {
                           iconLeft={<CheckCircle2 size={15} />}
                           onClick={() => void decide(item.id, 'APPROVE', null)}
                         >
-                          Aprovar
+                          {tx('Aprovar')}
                         </Button>
                       ) : null}
                       {item.status === 'PENDING_REVIEW' || item.status === 'ACTIVE' ? (
@@ -229,7 +231,7 @@ export default function MarketplaceModerationSection() {
                           iconLeft={<XCircle size={15} />}
                           onClick={() => setReasonFor({ id: item.id, decision: 'REJECT' })}
                         >
-                          Rejeitar
+                          {tx('Rejeitar')}
                         </Button>
                       ) : null}
                       {item.status !== 'REMOVED' ? (
@@ -239,7 +241,7 @@ export default function MarketplaceModerationSection() {
                           disabled={busy}
                           onClick={() => setReasonFor({ id: item.id, decision: 'REMOVE' })}
                         >
-                          Remover
+                          {tx('Remover')}
                         </Button>
                       ) : null}
                     </div>

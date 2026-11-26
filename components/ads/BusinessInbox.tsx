@@ -12,6 +12,7 @@ import { useMessaging } from '@/lib/MessagingProvider';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { useStickToBottom } from '@/hooks/useStickToBottom';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 function shortTime(value: string) {
   const date = new Date(value);
@@ -25,6 +26,7 @@ function shortTime(value: string) {
 
 /** Caixa de entrada do negócio: mensagens que outras pessoas enviaram ao responsável pelo negócio. */
 export function BusinessInbox() {
+  const { tx } = useLanguage();
   const { data: session } = useSession();
   const { account } = useAdAccount();
   const searchParams = useSearchParams();
@@ -80,11 +82,11 @@ export function BusinessInbox() {
     <div className="mx-auto max-w-[1100px] space-y-5">
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
-          Mensagens
-          <InfoTip text="Conversas de pessoas que escreveram para este negócio. Conversas antigas, de antes da separação por negócio, continuam nas mensagens da comunidade. Para bloquear, denunciar ou arquivar, abra a conversa por lá." />
+          {tx('Mensagens')}
+          <InfoTip text={tx('Conversas de pessoas que escreveram para este negócio. Conversas antigas, de antes da separação por negócio, continuam nas mensagens da comunidade. Para bloquear, denunciar ou arquivar, abra a conversa por lá.')} />
         </h1>
         <Link href="/inbox" className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-          <ExternalLink size={15} /> Mensagens da comunidade
+          <ExternalLink size={15} /> {tx('Mensagens da comunidade')}
         </Link>
       </div>
 
@@ -96,8 +98,8 @@ export function BusinessInbox() {
             ) : received.length === 0 ? (
               <div className="flex flex-col items-center gap-2 p-10 text-center">
                 <MessageCircle size={28} className="text-slate-300" />
-                <p className="text-sm font-semibold text-slate-700">Nenhuma mensagem ainda</p>
-                <p className="text-xs text-slate-400">Quando alguém falar com o seu negócio, a conversa aparece aqui.</p>
+                <p className="text-sm font-semibold text-slate-700">{tx('Nenhuma mensagem ainda')}</p>
+                <p className="text-xs text-slate-400">{tx('Quando alguém falar com o seu negócio, a conversa aparece aqui.')}</p>
               </div>
             ) : (
               <ul className="divide-y divide-slate-100">
@@ -106,13 +108,13 @@ export function BusinessInbox() {
                   return (
                     <li key={conv.id}>
                       <button type="button" onClick={() => open(conv.id)} className={cn('flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50', conv.id === activeConversationId && 'bg-[#0065bf]/5')}>
-                        <Avatar src={conv.buyer.image} name={conv.buyer.name ?? 'Pessoa'} size="sm" />
+                        <Avatar src={conv.buyer.image} name={conv.buyer.name ?? tx('Pessoa')} size="sm" />
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center justify-between gap-2">
-                            <strong className="truncate text-sm text-slate-900">{conv.buyer.name ?? 'Pessoa'}</strong>
+                            <strong className="truncate text-sm text-slate-900">{conv.buyer.name ?? tx('Pessoa')}</strong>
                             <span className="shrink-0 text-[11px] text-slate-400">{shortTime(conv.lastMessageAt ?? conv.updatedAt)}</span>
                           </span>
-                          <span className="block truncate text-xs text-slate-500">{conv.item ? `${conv.item.title} · ` : ''}{last?.content ?? 'Sem mensagens'}</span>
+                          <span className="block truncate text-xs text-slate-500">{conv.item ? `${conv.item.title} · ` : ''}{last?.content ?? tx('Sem mensagens')}</span>
                         </span>
                       </button>
                     </li>
@@ -127,16 +129,16 @@ export function BusinessInbox() {
           {!active ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 p-10 text-center text-slate-400">
               <MessageCircle size={32} className="text-slate-300" />
-              <p className="text-sm">Selecione uma conversa para responder.</p>
+              <p className="text-sm">{tx('Selecione uma conversa para responder.')}</p>
             </div>
           ) : (
             <>
               <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
-                <button type="button" aria-label="Voltar" onClick={() => setView('list')} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 md:hidden"><ChevronLeft size={18} /></button>
-                <Avatar src={active.buyer.image} name={active.buyer.name ?? 'Pessoa'} size="sm" />
+                <button type="button" aria-label={tx('Voltar')} onClick={() => setView('list')} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 md:hidden"><ChevronLeft size={18} /></button>
+                <Avatar src={active.buyer.image} name={active.buyer.name ?? tx('Pessoa')} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-slate-900">{active.buyer.name ?? 'Pessoa'}</p>
-                  {active.item ? <p className="truncate text-xs text-slate-400">Sobre: {active.item.title}</p> : null}
+                  <p className="truncate text-sm font-bold text-slate-900">{active.buyer.name ?? tx('Pessoa')}</p>
+                  {active.item ? <p className="truncate text-xs text-slate-400">{tx('Sobre:')} {active.item.title}</p> : null}
                 </div>
               </div>
               <div ref={messagesRef} onScroll={onScroll} className="min-h-0 flex-1 space-y-2 overflow-y-auto bg-slate-50/60 p-4">
@@ -145,7 +147,7 @@ export function BusinessInbox() {
                   return (
                     <div key={message.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
                       <div className={cn('max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm', mine ? 'bg-[#0065bf] text-white' : 'border border-slate-200 bg-surface text-slate-800', message.deleted && 'italic opacity-60')}>
-                        {message.deleted ? 'Mensagem apagada' : message.content}
+                        {message.deleted ? tx('Mensagem apagada') : message.content}
                       </div>
                     </div>
                   );
@@ -161,10 +163,10 @@ export function BusinessInbox() {
                   onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void send(); } }}
                   rows={1}
                   maxLength={2000}
-                  placeholder="Escreva uma resposta"
+                  placeholder={tx('Escreva uma resposta')}
                   className="max-h-32 min-h-[42px] flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-[#0065bf]"
                 />
-                <button type="submit" disabled={!draft.trim() || sending} aria-label="Enviar" className="flex h-[42px] w-[42px] items-center justify-center rounded-xl bg-[#0065bf] text-white transition hover:bg-[#004380] disabled:opacity-40">
+                <button type="submit" disabled={!draft.trim() || sending} aria-label={tx('Enviar')} className="flex h-[42px] w-[42px] items-center justify-center rounded-xl bg-[#0065bf] text-white transition hover:bg-[#004380] disabled:opacity-40">
                   {sending ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
                 </button>
               </form>

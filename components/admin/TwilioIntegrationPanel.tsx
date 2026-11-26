@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -25,6 +26,7 @@ const inputClassName =
  * envia um SMS real para o número informado e confere o código, sem alterar nenhuma conta de usuário.
  */
 export default function TwilioIntegrationPanel() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [report, setReport] = useState<Report | null>(null);
   const [running, setRunning] = useState(false);
@@ -88,22 +90,22 @@ export default function TwilioIntegrationPanel() {
   };
 
   return (
-    <section aria-label="Diagnóstico do Twilio" className="rounded-2xl border border-slate-200 bg-surface">
+    <section aria-label={tx('Diagnóstico do Twilio')} className="rounded-2xl border border-slate-200 bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600"><MessageSquareText size={18} /></span>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Twilio: diagnóstico e validador</h2>
-            <p className="text-xs text-slate-400">O diagnóstico só lê. As credenciais ficam no Vercel; aqui você confere se tudo está certo.</p>
+            <h2 className="text-sm font-bold text-slate-900">{tx('Twilio: diagnóstico e validador')}</h2>
+            <p className="text-xs text-slate-400">{tx('O diagnóstico só lê. As credenciais ficam no Vercel; aqui você confere se tudo está certo.')}</p>
           </div>
         </div>
-        <Button size="sm" loading={running} onClick={() => void diagnose()}>{report ? 'Executar de novo' : 'Executar diagnóstico'}</Button>
+        <Button size="sm" loading={running} onClick={() => void diagnose()}>{report ? tx('Executar de novo') : tx('Executar diagnóstico')}</Button>
       </div>
 
       {report ? (
         <>
           <div className={cn('px-4 py-2.5 text-xs font-bold', report.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700')}>
-            {report.ok ? 'Nenhum erro encontrado.' : 'Há itens que precisam de correção.'}
+            {report.ok ? tx('Nenhum erro encontrado.') : tx('Há itens que precisam de correção.')}
             <span className="ml-2 font-medium opacity-70">{new Date(report.checkedAt).toLocaleString('pt-BR')}</span>
           </div>
           <ul className="divide-y divide-slate-100">
@@ -113,7 +115,7 @@ export default function TwilioIntegrationPanel() {
                 <li key={check.id} className="flex items-start gap-3 px-4 py-3">
                   <Icon size={18} className={cn('mt-0.5 shrink-0', className)} aria-hidden />
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900">{check.label}</p>
+                    <p className="text-sm font-bold text-slate-900">{tx(check.label)}</p>
                     <p className="mt-0.5 break-words text-xs leading-5 text-slate-500">{check.detail}</p>
                   </div>
                 </li>
@@ -122,27 +124,27 @@ export default function TwilioIntegrationPanel() {
           </ul>
         </>
       ) : (
-        <p className="px-4 py-5 text-sm text-slate-400">Clique em “Executar diagnóstico” para verificar variáveis, conta, Verify Service e países.</p>
+        <p className="px-4 py-5 text-sm text-slate-400">{tx('Clique em “Executar diagnóstico” para verificar variáveis, conta, Verify Service e países.')}</p>
       )}
 
       <div className="space-y-3 border-t border-slate-100 px-4 py-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-900">Testar o validador</h3>
-          <p className="text-xs text-slate-400">Envia um SMS real (com custo) para o número abaixo e confere o código. Não altera nenhuma conta. Use o formato internacional, por exemplo +1 305 000 0000.</p>
+          <h3 className="text-sm font-bold text-slate-900">{tx('Testar o validador')}</h3>
+          <p className="text-xs text-slate-400">{tx('Envia um SMS real (com custo) para o número abaixo e confere o código. Não altera nenhuma conta. Use o formato internacional, por exemplo +1 305 000 0000.')}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             type="tel"
             inputMode="tel"
             autoComplete="off"
-            aria-label="Telefone para o teste"
+            aria-label={tx('Telefone para o teste')}
             placeholder="+1 305 000 0000"
             value={phone}
             onChange={(event) => { setPhone(event.target.value); setSent(false); setResult(null); }}
             className={inputClassName}
           />
           <Button size="sm" loading={testing && !sent} disabled={testing || phone.replace(/\D/g, '').length < 8} onClick={() => void sendTest()}>
-            {sent ? 'Reenviar código' : 'Enviar código de teste'}
+            {sent ? tx('Reenviar código') : tx('Enviar código de teste')}
           </Button>
         </div>
         {sent ? (
@@ -151,13 +153,13 @@ export default function TwilioIntegrationPanel() {
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
-              aria-label="Código recebido"
-              placeholder="Código recebido"
+              aria-label={tx('Código recebido')}
+              placeholder={tx('Código recebido')}
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
               className={inputClassName}
             />
-            <Button size="sm" variant="secondary" loading={testing} disabled={testing || code.length < 4} onClick={() => void checkTest()}>Conferir código</Button>
+            <Button size="sm" variant="secondary" loading={testing} disabled={testing || code.length < 4} onClick={() => void checkTest()}>{tx('Conferir código')}</Button>
           </div>
         ) : null}
         {result ? (

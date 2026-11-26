@@ -16,6 +16,7 @@ import { useAdAccount } from './AdAccountProvider';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { useAdPlans } from '@/hooks/useAdPlans';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const LEGACY_STORAGE_KEY = 'gringoou:ad-wizard-draft';
 const STORAGE_KEY_PREFIX = 'gringoou:ad-wizard-draft';
@@ -52,6 +53,7 @@ const getErrors = (issues: Array<{ path: PropertyKey[]; message: string }>) =>
   }, {});
 
 export const AdWizard: React.FC = () => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { account, loading: accountLoading, setAccountSwitchLocked } = useAdAccount();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -168,7 +170,7 @@ export const AdWizard: React.FC = () => {
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o rascunho.'));
       const draftId = payload.banner.id as string;
       dispatch({ type: 'PATCH', payload: { draftId } });
-      if (showSuccess) showToast('Rascunho salvo.', 'success');
+      if (showSuccess) showToast(tx('Rascunho salvo.'), 'success');
       return draftId;
     } catch (error) {
       const message = getUserErrorMessage(error, 'Não foi possível salvar o rascunho.');
@@ -195,7 +197,7 @@ export const AdWizard: React.FC = () => {
         setAppliedCoupon({ code: code.toUpperCase(), discountCents: checked.discountCents, payCents: checked.payCents });
         setClientSecret(null);
         checkoutKeyRef.current = null;
-        showToast('Cupom aplicado. O valor do pagamento foi reduzido.', 'success');
+        showToast(tx('Cupom aplicado. O valor do pagamento foi reduzido.'), 'success');
         return null;
       }
       checkoutKeyRef.current ??= `ad-payment-${state.draftId}-${crypto.randomUUID()}`;
@@ -209,7 +211,7 @@ export const AdWizard: React.FC = () => {
       setCourtesyApplied(true);
       setPaymentSubmitted(true);
       if (storageKey) sessionStorage.removeItem(storageKey);
-      showToast('Cortesia aplicada!', 'success');
+      showToast(tx('Cortesia aplicada!'), 'success');
       router.replace(`/ads/anuncio-em-analise?campaign=${encodeURIComponent(state.draftId)}`);
       return null;
     } catch {
@@ -266,7 +268,7 @@ export const AdWizard: React.FC = () => {
       const draftId = await saveDraft();
       if (!draftId) return;
       if (!businessApproved) {
-        showToast('Rascunho salvo. Após a aprovação da página, você continuará pelo checkout.', 'success');
+        showToast(tx('Rascunho salvo. Após a aprovação da página, você continuará pelo checkout.'), 'success');
         return;
       }
       if (!canPay) {
@@ -301,7 +303,7 @@ export const AdWizard: React.FC = () => {
       setDiscardOpen(false);
       startNewCampaign();
       router.replace('/ads/wizard');
-      showToast('Rascunho descartado.', 'success');
+      showToast(tx('Rascunho descartado.'), 'success');
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível descartar o rascunho.'), 'error');
     } finally {
@@ -310,33 +312,33 @@ export const AdWizard: React.FC = () => {
   };
 
   if (accountLoading || !account || !hydrated) {
-    return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-surface p-8" role="status" aria-label="Carregando conta comercial"><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
+    return <div className="mx-auto max-w-[1080px] space-y-4 rounded-3xl border border-slate-200 bg-surface p-8" role="status" aria-label={tx('Carregando conta comercial')}><Skeleton className="h-6 w-48" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-40 w-full" /></div>;
   }
 
   if (!account.businessId) {
     return (
       <div className="mx-auto max-w-[720px] rounded-3xl border border-slate-200 bg-surface p-6 shadow-sm sm:p-8">
-        <p className="text-[11px] font-extrabold uppercase tracking-wide text-brand-500">Antes de promover</p>
-        <h1 className="mt-2 text-2xl font-extrabold text-ink">Ative a página do seu negócio</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">Revise os dados públicos de <strong>{account.name}</strong>. A página será vinculada a esta conta Ads e enviada para aprovação.</p>
-        <Button className="mt-6" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>Criar página do negócio</Button>
+        <p className="text-[11px] font-extrabold uppercase tracking-wide text-brand-500">{tx('Antes de promover')}</p>
+        <h1 className="mt-2 text-2xl font-extrabold text-ink">{tx('Ative a página do seu negócio')}</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-600">{tx('Revise os dados públicos de')} <strong>{account.name}</strong>{tx('. A página será vinculada a esta conta Ads e enviada para aprovação.')}</p>
+        <Button className="mt-6" onClick={() => router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(account.id)}`)}>{tx('Criar página do negócio')}</Button>
       </div>
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-[1160px] pb-28">
-      {!businessApproved ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">Página em análise. Você pode montar e salvar o rascunho agora; checkout e publicação serão liberados após a aprovação.</div> : null}
+      {!businessApproved ? <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">{tx('Página em análise. Você pode montar e salvar o rascunho agora; checkout e publicação serão liberados após a aprovação.')}</div> : null}
       <header className="mb-8">
-        <p className="text-[10px] font-bold text-slate-400">Criar Anúncio</p>
+        <p className="text-[10px] font-bold text-slate-400">{tx('Criar Anúncio')}</p>
         <div className="mt-1 flex items-end justify-between gap-4">
-          <h1 className="text-[28px] font-extrabold leading-tight text-ink">Novo Anúncio</h1>
+          <h1 className="text-[28px] font-extrabold leading-tight text-ink">{tx('Novo Anúncio')}</h1>
           <div className="flex items-center gap-3">
-            {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">Rascunho salvo</span> : null}
+            {state.draftId ? <span className="text-[10px] font-semibold text-slate-400">{tx('Rascunho salvo')}</span> : null}
             {state.draftId ? (
-              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing || discarding} iconLeft={<Trash2 size={15} />} onClick={() => setDiscardOpen(true)}>Descartar rascunho</Button>
+              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing || discarding} iconLeft={<Trash2 size={15} />} onClick={() => setDiscardOpen(true)}>{tx('Descartar rascunho')}</Button>
             ) : state.step > 1 ? (
-              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing} iconLeft={<Plus size={15} />} onClick={startNewCampaign}>Recomeçar</Button>
+              <Button variant="secondary" size="sm" disabled={saving || paymentProcessing} iconLeft={<Plus size={15} />} onClick={startNewCampaign}>{tx('Recomeçar')}</Button>
             ) : null}
           </div>
         </div>
@@ -346,17 +348,17 @@ export const AdWizard: React.FC = () => {
       <ConfirmModal
         open={discardOpen}
         onClose={() => (discarding ? undefined : setDiscardOpen(false))}
-        title="Descartar rascunho?"
-        description="Os dados desta campanha serão apagados do painel e você começa uma nova do zero. Nenhuma cobrança é feita."
-        confirmLabel="Descartar"
-        cancelLabel="Manter rascunho"
+        title={tx('Descartar rascunho?')}
+        description={tx('Os dados desta campanha serão apagados do painel e você começa uma nova do zero. Nenhuma cobrança é feita.')}
+        confirmLabel={tx('Descartar')}
+        cancelLabel={tx('Manter rascunho')}
         destructive
         loading={discarding}
         onConfirm={() => void discardDraft()}
       />
 
       {requestError ? <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-body-sm text-red-700">{requestError}</div> : null}
-      {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">{courtesyApplied ? 'Cortesia aplicada! Sua campanha foi enviada para moderação e começa a ser exibida depois da aprovação. Ao final do período, contrate um pacote pelo fluxo normal para continuar anunciando.' : 'Pagamento recebido ou em processamento. A campanha será enviada para moderação assim que o pagamento for confirmado.'}</div> : null}
+      {paymentSubmitted ? <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-body-sm text-emerald-700">{courtesyApplied ? tx('Cortesia aplicada! Sua campanha foi enviada para moderação e começa a ser exibida depois da aprovação. Ao final do período, contrate um pacote pelo fluxo normal para continuar anunciando.') : tx('Pagamento recebido ou em processamento. A campanha será enviada para moderação assim que o pagamento for confirmado.')}</div> : null}
 
       {state.step === 1 ? <GoalStep state={state} errors={errors} patch={patch} /> : null}
       {state.step === 2 ? <CreativeStep state={state} errors={errors} patch={patch} /> : null}
@@ -364,15 +366,15 @@ export const AdWizard: React.FC = () => {
       {state.step === 4 ? <CheckoutStep appliedCoupon={appliedCoupon} onRedeemCoupon={redeemCoupon} state={state} clientSecret={clientSecret} error={requestError} onProcessing={setPaymentProcessing} onError={setRequestError} onSuccess={() => {
         setPaymentSubmitted(true);
         if (storageKey) sessionStorage.removeItem(storageKey);
-        showToast('Pagamento enviado. Campanha aguardando moderação.', 'success');
+        showToast(tx('Pagamento enviado. Campanha aguardando moderação.'), 'success');
         router.replace(`/ads/anuncio-em-analise${state.draftId ? `?campaign=${encodeURIComponent(state.draftId)}` : ''}`);
       }} /> : null}
 
       <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-wash-3/95 px-4 py-4 backdrop-blur md:left-[272px] md:px-9">
         <div className="mx-auto grid max-w-[1080px] grid-cols-3 items-center gap-3">
-          <div><Button variant="ghost" disabled={state.step === 1 || saving || paymentProcessing} onClick={() => dispatch({ type: 'STEP', payload: Math.max(1, state.step - 1) as AdWizardData['step'] })}>Voltar</Button></div>
-          <div className="flex justify-center">{state.step >= 2 && state.step < 4 ? <Button variant="ghost" loading={saving} onClick={() => void saveDraft(true)}>Salvar rascunho</Button> : null}</div>
-          <div className="flex justify-end">{state.step < 4 ? <Button loading={saving} disabled={state.step === 1 && !state.goal} onClick={() => void nextStep()}>{state.step === 3 && !businessApproved ? 'Salvar rascunho' : 'Continuar'}</Button> : <Button type="submit" form={AD_PAYMENT_FORM_ID} loading={paymentProcessing || saving} disabled={!clientSecret || paymentSubmitted}>Pagar {formatAdCurrency(checkoutAmount)} e Enviar para Analise</Button>}</div>
+          <div><Button variant="ghost" disabled={state.step === 1 || saving || paymentProcessing} onClick={() => dispatch({ type: 'STEP', payload: Math.max(1, state.step - 1) as AdWizardData['step'] })}>{tx('Voltar')}</Button></div>
+          <div className="flex justify-center">{state.step >= 2 && state.step < 4 ? <Button variant="ghost" loading={saving} onClick={() => void saveDraft(true)}>{tx('Salvar rascunho')}</Button> : null}</div>
+          <div className="flex justify-end">{state.step < 4 ? <Button loading={saving} disabled={state.step === 1 && !state.goal} onClick={() => void nextStep()}>{state.step === 3 && !businessApproved ? tx('Salvar rascunho') : tx('Continuar')}</Button> : <Button type="submit" form={AD_PAYMENT_FORM_ID} loading={paymentProcessing || saving} disabled={!clientSecret || paymentSubmitted}>{tx('Pagar')} {formatAdCurrency(checkoutAmount)} {tx('e Enviar para Analise')}</Button>}</div>
         </div>
       </footer>
     </div>

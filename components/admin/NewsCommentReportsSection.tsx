@@ -6,6 +6,7 @@ import { MessageSquareWarning, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Avatar, Skeleton } from '@/components/ui';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Person = { id: string; name: string | null; username: string | null; image?: string | null };
 type ReportedComment = {
@@ -23,6 +24,7 @@ const personName = (person: Person) => person.name || person.username || 'Membro
 
 /** Fila de comentários de notícias denunciados pela comunidade. */
 export default function NewsCommentReportsSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [comments, setComments] = useState<ReportedComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,20 +73,20 @@ export default function NewsCommentReportsSection() {
     <section className="mt-6 rounded-[28px] border border-slate-200 bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-          <MessageSquareWarning size={19} className="text-brand-500" /> Comentários denunciados
+          <MessageSquareWarning size={19} className="text-brand-500" /> {tx('Comentários denunciados')}
         </h2>
-        <button type="button" onClick={() => void load()} aria-label="Atualizar" className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100">
+        <button type="button" onClick={() => void load()} aria-label={tx('Atualizar')} className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100">
           <RefreshCcw size={17} />
         </button>
       </div>
 
       {loading ? (
-        <div className="mt-5 space-y-3" role="status" aria-label="Carregando comentários denunciados">
+        <div className="mt-5 space-y-3" role="status" aria-label={tx('Carregando comentários denunciados')}>
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
       ) : comments.length === 0 ? (
-        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Nenhum comentário denunciado.</div>
+        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{tx('Nenhum comentário denunciado.')}</div>
       ) : (
         <div className="mt-5 divide-y divide-slate-100">
           {comments.map((comment) => (
@@ -96,28 +98,28 @@ export default function NewsCommentReportsSection() {
                 ) : (
                   <span className="font-semibold text-slate-700">{personName(comment.author)}</span>
                 )}
-                <span>em</span>
+                <span>{tx('em')}</span>
                 <Link href={comment.article.path} className="max-w-[16rem] truncate font-semibold text-brand-600 hover:underline">{comment.article.title}</Link>
                 <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${comment.isHidden ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-700'}`}>
-                  {comment.isHidden ? 'Oculto' : 'Visível'}
+                  {comment.isHidden ? tx('Oculto') : tx('Visível')}
                 </span>
                 <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-600">
                   {comment.reportCount} {comment.reportCount === 1 ? 'denúncia' : 'denúncias'}
                 </span>
               </div>
               <p className="text-sm text-slate-800">“{comment.content}”</p>
-              <p className="text-xs text-slate-400">Denunciado por {comment.reporters.map(personName).join(', ')}</p>
+              <p className="text-xs text-slate-400">{tx('Denunciado por')} {comment.reporters.map(personName).join(', ')}</p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" disabled={busy === comment.id} onClick={() => void decide(comment.id, 'dismiss')} className={`${buttonClass} bg-emerald-50 text-emerald-700 hover:bg-emerald-100`}>
-                  Descartar denúncia
+                  {tx('Descartar denúncia')}
                 </button>
                 {!comment.isHidden ? (
                   <button type="button" disabled={busy === comment.id} onClick={() => void decide(comment.id, 'hide')} className={`${buttonClass} bg-slate-100 text-slate-600 hover:bg-slate-200`}>
-                    Ocultar
+                    {tx('Ocultar')}
                   </button>
                 ) : null}
                 <button type="button" disabled={busy === comment.id} onClick={() => void decide(comment.id, 'delete')} className={`${buttonClass} bg-red-50 text-red-600 hover:bg-red-100`}>
-                  Excluir comentário
+                  {tx('Excluir comentário')}
                 </button>
               </div>
             </article>

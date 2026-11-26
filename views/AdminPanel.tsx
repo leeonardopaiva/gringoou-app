@@ -46,6 +46,7 @@ import { normalizeUsernameInput } from '../lib/username';
 import { formatVisibilityScopeLabel } from '../lib/visibility';
 import type { User } from '../types';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type BusinessAction = 'approve' | 'reject' | 'suspend';
 type EventAction = 'approve' | 'reject' | 'cancel';
@@ -518,6 +519,7 @@ type ExpandableSectionKey = 'regions' | 'businesses' | 'events' | 'users' | 'sug
 type AdminSection = 'overview' | 'moderation' | 'ads' | 'imports' | 'banners' | 'regions' | 'businesses' | 'events' | 'users' | 'suggestions' | 'analytics';
 
 const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ user, initialSection }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const headerSearch = searchParams?.get('q')?.trim() ?? '';
@@ -764,12 +766,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const submitRegion = async () => {
     if (!regionForm.label.trim() || !regionForm.city.trim() || !regionForm.state.trim()) {
-      setError('Preencha nome, cidade e estado da região.');
+      setError(tx('Preencha nome, cidade e estado da região.'));
       return;
     }
 
     if (!regionForm.lat.trim() || !regionForm.lng.trim()) {
-      setError('Informe latitude e longitude validas.');
+      setError(tx('Informe latitude e longitude validas.'));
       return;
     }
 
@@ -916,17 +918,17 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     const parsedEndsAt = eventForm.endsAt ? parseDateTimeInputPtBr(eventForm.endsAt) : null;
 
     if (!parsedStartsAt) {
-      setError('Selecione uma data e horário validos para o início do evento.');
+      setError(tx('Selecione uma data e horário validos para o início do evento.'));
       return;
     }
 
     if (eventForm.endsAt && !parsedEndsAt) {
-      setError('Selecione uma data e horário validos para o encerramento do evento.');
+      setError(tx('Selecione uma data e horário validos para o encerramento do evento.'));
       return;
     }
 
     if (parsedEndsAt && new Date(parsedEndsAt) < new Date(parsedStartsAt)) {
-      setError('O encerramento não pode ser antes do início do evento.');
+      setError(tx('O encerramento não pode ser antes do início do evento.'));
       return;
     }
 
@@ -1082,9 +1084,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       setImportPreview(payload);
 
       if (payload.errors?.length) {
-        setError('Arquivo validado com erros. Corrija as linhas indicadas antes de importar.');
+        setError(tx('Arquivo validado com erros. Corrija as linhas indicadas antes de importar.'));
       } else {
-        setMessage('Arquivo validado sem erros. Revise a prévia e confirme a importação.');
+        setMessage(tx('Arquivo validado sem erros. Revise a prévia e confirme a importação.'));
       }
     } catch (importError) {
       console.error('Failed to preview admin import:', importError);
@@ -1096,7 +1098,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const confirmImport = async () => {
     if (!importPreview || importPreview.errors.length > 0) {
-      setError('Valide um arquivo sem erros antes de confirmar a importação.');
+      setError(tx('Valide um arquivo sem erros antes de confirmar a importação.'));
       return;
     }
 
@@ -1124,12 +1126,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const statsCards = dashboard
     ? [
-        { label: 'Usuários', value: dashboard.stats.totalUsers, icon: <Users size={20} />, accent: 'theme-soft-surface theme-text', section: 'users' as const },
-        { label: 'Donos de negócios', value: dashboard.stats.businessOwners, icon: <Store size={20} />, accent: 'bg-emerald-50 text-emerald-800', section: 'users' as const },
-        { label: 'Negócios publicados', value: dashboard.stats.publishedBusinesses, icon: <Building2 size={20} />, accent: 'bg-orange-50 text-orange-800', section: 'businesses' as const },
-        { label: 'Eventos publicados', value: dashboard.stats.publishedEvents, icon: <CalendarDays size={20} />, accent: 'theme-soft-surface theme-text', section: 'events' as const },
-        { label: 'Posts publicados', value: dashboard.stats.publishedPosts, icon: <MessageSquareText size={20} />, accent: 'bg-violet-50 text-violet-800', section: 'moderation' as const },
-        { label: 'Regiões ativas', value: dashboard.stats.activeRegions, icon: <Globe2 size={20} />, accent: 'bg-sky-50 text-sky-800', section: 'regions' as const },
+        { label: tx('Usuários'), value: dashboard.stats.totalUsers, icon: <Users size={20} />, accent: 'theme-soft-surface theme-text', section: 'users' as const },
+        { label: tx('Donos de negócios'), value: dashboard.stats.businessOwners, icon: <Store size={20} />, accent: 'bg-emerald-50 text-emerald-800', section: 'users' as const },
+        { label: tx('Negócios publicados'), value: dashboard.stats.publishedBusinesses, icon: <Building2 size={20} />, accent: 'bg-orange-50 text-orange-800', section: 'businesses' as const },
+        { label: tx('Eventos publicados'), value: dashboard.stats.publishedEvents, icon: <CalendarDays size={20} />, accent: 'theme-soft-surface theme-text', section: 'events' as const },
+        { label: tx('Posts publicados'), value: dashboard.stats.publishedPosts, icon: <MessageSquareText size={20} />, accent: 'bg-violet-50 text-violet-800', section: 'moderation' as const },
+        { label: tx('Regiões ativas'), value: dashboard.stats.activeRegions, icon: <Globe2 size={20} />, accent: 'bg-sky-50 text-sky-800', section: 'regions' as const },
       ]
     : [];
 
@@ -1202,23 +1204,23 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   );
 
   const sectionTabs = [
-    { id: 'moderation' as const, label: 'Moderação', count: totalPending },
-    { id: 'ads' as const, label: 'Anúncios pagos', count: 0 },
-    { id: 'imports' as const, label: 'Importação', count: importPreview ? importPreview.summary.regions + importPreview.summary.businesses + importPreview.summary.events : 0 },
-    { id: 'banners' as const, label: 'Banners', count: dashboard?.banners.length ?? 0 },
-    { id: 'regions' as const, label: 'Regiões', count: dashboard?.stats.totalRegions ?? 0 },
-    { id: 'businesses' as const, label: 'Negócios', count: filteredBusinesses.length },
-    { id: 'events' as const, label: 'Eventos', count: filteredEvents.length },
-    { id: 'users' as const, label: 'Usuários', count: filteredUsers.length },
-    { id: 'suggestions' as const, label: 'Sugestões', count: dashboard?.stats.newSuggestions ?? 0 },
-    { id: 'analytics' as const, label: 'Analytics', count: analytics?.summary.totalEvents ?? 0 },
+    { id: 'moderation' as const, label: tx('Moderação'), count: totalPending },
+    { id: 'ads' as const, label: tx('Anúncios pagos'), count: 0 },
+    { id: 'imports' as const, label: tx('Importação'), count: importPreview ? importPreview.summary.regions + importPreview.summary.businesses + importPreview.summary.events : 0 },
+    { id: 'banners' as const, label: tx('Banners'), count: dashboard?.banners.length ?? 0 },
+    { id: 'regions' as const, label: tx('Regiões'), count: dashboard?.stats.totalRegions ?? 0 },
+    { id: 'businesses' as const, label: tx('Negócios'), count: filteredBusinesses.length },
+    { id: 'events' as const, label: tx('Eventos'), count: filteredEvents.length },
+    { id: 'users' as const, label: tx('Usuários'), count: filteredUsers.length },
+    { id: 'suggestions' as const, label: tx('Sugestões'), count: dashboard?.stats.newSuggestions ?? 0 },
+    { id: 'analytics' as const, label: tx('Analytics'), count: analytics?.summary.totalEvents ?? 0 },
   ];
   const selectedTab = sectionTabs.find((tab) => tab.id === activeSection) ?? sectionTabs[0];
   const analyticsHighlightData = [
-    { label: 'Usuários', value: dashboard?.stats.totalUsers ?? 0 },
-    { label: 'Negócios', value: dashboard?.stats.publishedBusinesses ?? 0 },
-    { label: 'Eventos', value: dashboard?.stats.publishedEvents ?? 0 },
-    { label: 'Posts', value: dashboard?.stats.publishedPosts ?? 0 },
+    { label: tx('Usuários'), value: dashboard?.stats.totalUsers ?? 0 },
+    { label: tx('Negócios'), value: dashboard?.stats.publishedBusinesses ?? 0 },
+    { label: tx('Eventos'), value: dashboard?.stats.publishedEvents ?? 0 },
+    { label: tx('Posts'), value: dashboard?.stats.publishedPosts ?? 0 },
   ];
   const analyticsMaxValue = Math.max(...analyticsHighlightData.map((item) => item.value), 1);
   const sectionMeta: Record<Exclude<AdminSection, 'overview' | 'ads'>, { title: string; description: string }> = {
@@ -1245,10 +1247,10 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
     <div className="mx-auto max-w-[1500px] animate-in space-y-6 px-4 py-7 fade-in duration-500 sm:px-7 lg:px-8">
       {activeSection !== 'analytics' ? <div className="flex items-start justify-between gap-4">
         <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[28px]">
-          {sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title}
-          <InfoTip text={sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description} />
+          {tx(sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].title)}
+          <InfoTip text={tx(sectionMeta[activeSection as Exclude<AdminSection, 'overview' | 'ads'>].description)} />
         </h1>
-        <button type="button" aria-label="Atualizar" title="Atualizar" disabled={refreshing || loading} onClick={() => void loadDashboard(true)} className="flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button>
+        <button type="button" aria-label={tx('Atualizar')} title={tx('Atualizar')} disabled={refreshing || loading} onClick={() => void loadDashboard(true)} className="flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-surface text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} /></button>
       </div> : null}
       <div className="hidden">
         <div className="rounded-[32px] bg-gradient-to-br from-[#345CFF] via-[#5B4BFF] to-[#7A54F5] p-5 text-white shadow-xl">
@@ -1256,11 +1258,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
                 <ShieldCheck size={14} />
-                Admin
+                {tx('Admin')}
               </div>
-              <h1 className="text-2xl font-bold leading-tight">Painel operacional</h1>
+              <h1 className="text-2xl font-bold leading-tight">{tx('Painel operacional')}</h1>
               <p className="max-w-[280px] text-sm text-white/80">
-                Modere conteúdos, padronize regiões e edite usuários, negócios e eventos.
+                {tx('Modere conteúdos, padronize regiões e edite usuários, negócios e eventos.')}
               </p>
             </div>
             <button
@@ -1270,7 +1272,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               }
               disabled={refreshing || loading || analyticsLoading}
               className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white transition hover:bg-white/20 disabled:opacity-60"
-              aria-label="Atualizar painel admin"
+              aria-label={tx('Atualizar painel admin')}
             >
               <RefreshCcw size={18} className={refreshing || analyticsLoading ? 'animate-spin' : ''} />
             </button>
@@ -1278,16 +1280,16 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div className="rounded-3xl bg-white/12 p-4 backdrop-blur-sm">
               <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
-                Aguardando revisão
+                {tx('Aguardando revisão')}
               </p>
               <p className="mt-2 text-3xl font-bold">{totalPending}</p>
             </div>
             <div className="rounded-3xl bg-white/12 p-4 backdrop-blur-sm">
               <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
-                Responsável logado
+                {tx('Responsável logado')}
               </p>
               <p className="mt-2 text-sm font-bold leading-tight">{user.name}</p>
-              <p className="text-xs text-white/70">{user.email || 'Administrador'}</p>
+              <p className="text-xs text-white/70">{user.email || tx('Administrador')}</p>
             </div>
           </div>
         </div>
@@ -1310,14 +1312,14 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                     {card.icon}
                   </div>
                   <p className="mt-4 text-2xl font-bold text-slate-900">{card.value}</p>
-                  <p className="text-xs font-medium text-slate-500">{card.label}</p>
+                  <p className="text-xs font-medium text-slate-500">{tx(card.label)}</p>
                 </button>
               ))}
         </div>
 
         <div className="hidden">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Seção do painel
+            {tx('Seção do painel')}
           </label>
           <select
             value={activeSection}
@@ -1340,7 +1342,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           >
             {sectionTabs.map((tab) => (
               <option key={tab.id} value={tab.id}>
-                {tab.label} ({tab.count})
+                {tx(tab.label)} ({tab.count})
               </option>
             ))}
           </select>
@@ -1348,15 +1350,15 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         <div className="hidden">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900">Resumo do analytics</h2>
+            <h2 className="text-base font-bold text-slate-900">{tx('Resumo do analytics')}</h2>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {selectedTab.label}
+              {tx(selectedTab.label)}
             </span>
           </div>
           <div className="mt-4 grid grid-cols-4 gap-3">
             {analyticsHighlightData.map((item) => (
               <div key={item.label} className="rounded-2xl bg-slate-50 p-3">
-                <p className="text-xs font-semibold text-slate-500">{item.label}</p>
+                <p className="text-xs font-semibold text-slate-500">{tx(item.label)}</p>
                 <p className="mt-1 text-lg font-bold text-slate-900">{item.value}</p>
                 <div className="mt-2 h-1.5 rounded-full bg-slate-200">
                   <div
@@ -1371,16 +1373,16 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'regions' ? (
           <section className="space-y-3">
-          <div className="flex items-center justify-between"><SectionHeader title="Gestão de regiões" count={dashboard?.stats.totalRegions ?? 0} /><Button size="sm" iconLeft={<Plus size={15} />} onClick={() => { resetRegionForm(); setRegionModalOpen(true); }}>Nova região</Button></div>
-          <Modal open={regionModalOpen} onClose={resetRegionForm} title={editingRegionKey ? 'Editar região' : 'Nova região'} description="O cadastro alimenta onboarding, perfil e filtros locais." className="max-w-xl">
+          <div className="flex items-center justify-between"><SectionHeader title={tx('Gestão de regiões')} count={dashboard?.stats.totalRegions ?? 0} /><Button size="sm" iconLeft={<Plus size={15} />} onClick={() => { resetRegionForm(); setRegionModalOpen(true); }}>{tx('Nova região')}</Button></div>
+          <Modal open={regionModalOpen} onClose={resetRegionForm} title={editingRegionKey ? tx('Editar região') : tx('Nova região')} description={tx('O cadastro alimenta onboarding, perfil e filtros locais.')} className="max-w-xl">
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-bold text-slate-700">
-                  {editingRegionKey ? 'Editar região' : 'Nova região'}
+                  {editingRegionKey ? tx('Editar região') : tx('Nova região')}
                 </p>
                 <p className="text-xs text-slate-400">
-                  O cadastro abaixo alimenta onboarding, perfil e filtros locais.
+                  {tx('O cadastro abaixo alimenta onboarding, perfil e filtros locais.')}
                 </p>
               </div>
             </div>
@@ -1390,12 +1392,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 className="col-span-2"
                 value={regionForm.label}
                 onChange={(value) => setRegionForm((current) => ({ ...current, label: value }))}
-                placeholder="Nome da região"
+                placeholder={tx('Nome da região')}
               />
               <FormInput
                 value={regionForm.city}
                 onChange={(value) => setRegionForm((current) => ({ ...current, city: value }))}
-                placeholder="Cidade"
+                placeholder={tx('Cidade')}
               />
               <FormInput
                 value={regionForm.state}
@@ -1403,53 +1405,53 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   // Siglas (GA, ON) em maiúsculas; nomes por extenso (Lisboa, Alberta) ficam como digitados.
                   setRegionForm((current) => ({ ...current, state: value.length <= 3 ? value.toUpperCase() : value }))
                 }
-                placeholder="Estado / província / distrito"
+                placeholder={tx('Estado / província / distrito')}
               />
               <label className="col-span-2 block text-xs font-bold text-slate-500">
-                País da região
+                {tx('País da região')}
                 <select
                   value={regionForm.countryCode}
                   onChange={(event) => setRegionForm((current) => ({ ...current, countryCode: event.target.value }))}
                   className="mt-1.5 h-12 w-full rounded-full border-2 border-input bg-surface px-4 text-sm font-normal text-text outline-none focus:border-brand-500"
                 >
-                  <option value="US">Estados Unidos (US)</option>
-                  <option value="CA">Canadá (CA)</option>
-                  <option value="PT">Portugal (PT)</option>
-                  <option value="ES">Espanha (ES)</option>
-                  <option value="GB">Reino Unido (GB)</option>
-                  <option value="IE">Irlanda (IE)</option>
-                  <option value="FR">França (FR)</option>
-                  <option value="DE">Alemanha (DE)</option>
-                  <option value="IT">Itália (IT)</option>
+                  <option value="US">{tx('Estados Unidos (US)')}</option>
+                  <option value="CA">{tx('Canadá (CA)')}</option>
+                  <option value="PT">{tx('Portugal (PT)')}</option>
+                  <option value="ES">{tx('Espanha (ES)')}</option>
+                  <option value="GB">{tx('Reino Unido (GB)')}</option>
+                  <option value="IE">{tx('Irlanda (IE)')}</option>
+                  <option value="FR">{tx('França (FR)')}</option>
+                  <option value="DE">{tx('Alemanha (DE)')}</option>
+                  <option value="IT">{tx('Itália (IT)')}</option>
                 </select>
               </label>
               <FormInput
                 value={regionForm.lat}
                 onChange={(value) => setRegionForm((current) => ({ ...current, lat: value }))}
-                placeholder="Latitude"
+                placeholder={tx('Latitude')}
               />
               <FormInput
                 value={regionForm.lng}
                 onChange={(value) => setRegionForm((current) => ({ ...current, lng: value }))}
-                placeholder="Longitude"
+                placeholder={tx('Longitude')}
               />
               {!editingRegionKey ? (
                 <FormInput
                   className="col-span-2"
                   value={regionForm.key}
                   onChange={(value) => setRegionForm((current) => ({ ...current, key: value }))}
-                  placeholder="Chave opcional (ex: miami-fl)"
+                  placeholder={tx('Chave opcional (ex: miami-fl)')}
                 />
               ) : (
                 <div className="col-span-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                  Chave da região: <span className="font-bold text-slate-700">{editingRegionKey}</span>
+                  {tx('Chave da região:')} <span className="font-bold text-slate-700">{editingRegionKey}</span>
                 </div>
               )}
               <FormInput
                 className="col-span-2"
                 value={regionForm.aliases}
                 onChange={(value) => setRegionForm((current) => ({ ...current, aliases: value }))}
-                placeholder="Aliases separados por virgula"
+                placeholder={tx('Aliases separados por virgula')}
               />
             </div>
 
@@ -1462,7 +1464,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                 }
                 className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
               />
-              Região ativa para novos usuários e novos cadastros
+              {tx('Região ativa para novos usuários e novos cadastros')}
             </label>
 
             <button
@@ -1477,11 +1479,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {editingRegionKey ? <PencilLine size={16} /> : <Plus size={16} />}
               {editingRegionKey
                 ? processingKey === `region:${editingRegionKey}:save`
-                  ? 'Salvando região...'
-                  : 'Salvar alterações'
+                  ? tx('Salvando região...')
+                  : tx('Salvar alterações')
                 : processingKey === 'region:create'
-                  ? 'Criando região...'
-                  : 'Cadastrar região'}
+                  ? tx('Criando região...')
+                  : tx('Cadastrar região')}
             </button>
           </div>
           </Modal>
@@ -1491,7 +1493,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         {activeSection === 'imports' ? (
           <section className="space-y-4">
             <SectionHeader
-              title="Importação em massa"
+              title={tx('Importação em massa')}
               count={
                 importPreview
                   ? importPreview.summary.regions +
@@ -1500,7 +1502,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   : 0
               }
             />
-            <SupportText text="Baixe o modelo XLSX, preencha as abas Regiões, Negócios e Eventos, valide o arquivo e confirme apenas quando não houver erros." />
+            <SupportText text={tx('Baixe o modelo XLSX, preencha as abas Regiões, Negócios e Eventos, valide o arquivo e confirme apenas quando não houver erros.')} />
 
             <div className="rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
               <div className="flex items-start gap-4">
@@ -1508,9 +1510,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   <FileSpreadsheet size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-slate-800">Modelo oficial</p>
+                  <p className="text-sm font-bold text-slate-800">{tx('Modelo oficial')}</p>
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    O arquivo inclui instruções, exemplos e listas para regiões existentes. Não renomeie abas ou cabecalhos.
+                    {tx('O arquivo inclui instruções, exemplos e listas para regiões existentes. Não renomeie abas ou cabecalhos.')}
                   </p>
                 </div>
               </div>
@@ -1521,11 +1523,11 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
                 >
                   <Download size={16} />
-                  Baixar modelo XLSX
+                  {tx('Baixar modelo XLSX')}
                 </a>
                 <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl theme-bg px-4 text-sm font-bold text-white transition theme-bg-hover">
                   <Upload size={16} />
-                  Validar arquivo preenchido
+                  {tx('Validar arquivo preenchido')}
                   <input
                     type="file"
                     accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -1542,7 +1544,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
               {importFileName ? (
                 <p className="mt-4 text-xs font-medium text-slate-400">
-                  Último arquivo validado: <span className="text-slate-600">{importFileName}</span>
+                  {tx('Último arquivo validado:')} <span className="text-slate-600">{importFileName}</span>
                 </p>
               ) : null}
             </div>
@@ -1554,9 +1556,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             {importPreview ? (
               <div className="space-y-3 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
                 <div className="grid grid-cols-3 gap-3">
-                  <ImportMetric label="Regiões" value={importPreview.summary.regions} />
-                  <ImportMetric label="Negócios" value={importPreview.summary.businesses} />
-                  <ImportMetric label="Eventos" value={importPreview.summary.events} />
+                  <ImportMetric label={tx('Regiões')} value={importPreview.summary.regions} />
+                  <ImportMetric label={tx('Negócios')} value={importPreview.summary.businesses} />
+                  <ImportMetric label={tx('Eventos')} value={importPreview.summary.events} />
                 </div>
 
                 {importPreview.errors.length > 0 ? (
@@ -1565,17 +1567,17 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <CircleAlert size={18} className="mt-0.5 shrink-0 text-red-700" />
                       <div>
                         <p className="text-sm font-bold text-red-800">
-                          Corrija {importPreview.errors.length} erro(s) antes de importar
+                          {tx('Corrija')} {importPreview.errors.length} {tx('erro(s) antes de importar')}
                         </p>
                         <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
                           {importPreview.errors.slice(0, 40).map((item, index) => (
                             <p key={`${item.sheet}-${item.row}-${item.field}-${index}`} className="text-sm text-red-700">
-                              {item.sheet}, linha {item.row}, campo {item.field}: {item.message}
+                              {item.sheet}{tx(', linha')} {item.row}{tx(', campo')} {item.field}: {item.message}
                             </p>
                           ))}
                           {importPreview.errors.length > 40 ? (
                             <p className="text-sm font-bold text-red-700">
-                              Mais {importPreview.errors.length - 40} erro(s) ocultos.
+                              {tx('Mais')} {importPreview.errors.length - 40} {'erro(s) ocultos.'}
                             </p>
                           ) : null}
                         </div>
@@ -1584,20 +1586,20 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
                 ) : (
                   <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-700">
-                    Arquivo pronto para importação. A confirmação criara/atualizara regiões e criara novos negócios e eventos.
+                    {tx('Arquivo pronto para importação. A confirmação criara/atualizara regiões e criara novos negócios e eventos.')}
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <ActionButton
-                    label="Confirmar importação"
+                    label={tx('Confirmar importação')}
                     tone="primary"
                     disabled={processingKey !== null || importPreview.errors.length > 0}
                     loading={processingKey === 'import:commit'}
                     onClick={() => void confirmImport()}
                   />
                   <ActionButton
-                    label="Limpar prévia"
+                    label={tx('Limpar prévia')}
                     tone="neutral"
                     disabled={processingKey !== null}
                     onClick={() => {
@@ -1647,8 +1649,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-lg font-bold theme-text">{region.label}</p>
-                    <StatusBadge label={region.isActive ? 'Ativa' : 'Inativa'} tone={region.isActive ? 'success' : 'neutral'} />
+                    <p className="text-lg font-bold theme-text">{tx(region.label)}</p>
+                    <StatusBadge label={region.isActive ? tx('Ativa') : tx('Inativa')} tone={region.isActive ? 'success' : 'neutral'} />
                   </div>
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                     {region.key}
@@ -1661,9 +1663,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   {region.city}, {region.state}
                 </p>
                 <p>
-                  Lat {region.lat} | Lng {region.lng}
+                  {tx('Lat')} {region.lat} {tx('| Lng')} {region.lng}
                 </p>
-                <p>Atualizada em {formatDateTime(region.updatedAt)}</p>
+                <p>{tx('Atualizada em')} {formatDateTime(region.updatedAt)}</p>
               </div>
               {region.aliases.length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -1679,13 +1681,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ) : null}
               <div className="mt-4 flex gap-2">
                 <ActionButton
-                  label="Editar"
+                  label={tx('Editar')}
                   tone="neutral"
                   disabled={processingKey !== null}
                   onClick={() => startRegionEdit(region)}
                 />
                 <ActionButton
-                  label={region.isActive ? 'Desativar' : 'Ativar'}
+                  label={region.isActive ? tx('Desativar') : tx('Ativar')}
                   tone={region.isActive ? 'danger' : 'primary'}
                   disabled={processingKey !== null}
                   loading={processingKey === `region:${region.key}:toggle`}
@@ -1695,7 +1697,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             </div>
           ))}
           {dashboard && dashboard.regions.length === 0 ? (
-            <EmptyState text="Nenhuma região cadastrada ainda." />
+            <EmptyState text={tx('Nenhuma região cadastrada ainda.')} />
           ) : null}
           </div>
         ) : null}
@@ -1707,9 +1709,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         <MessageReportsSection />
         <NewsCommentReportsSection />
         <ModerationSection
-          title="Negócios em aprovação"
+          title={tx('Negócios em aprovação')}
           count={dashboard?.pendingBusinesses.length ?? 0}
-          emptyLabel="Nenhum negócio aguardando revisão."
+          emptyLabel={tx('Nenhum negócio aguardando revisão.')}
           loading={loading && !dashboard}
         >
           {dashboard?.pendingBusinesses.map((business) => (
@@ -1719,19 +1721,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               subtitle={business.category}
               lines={[
                 business.locationLabel || business.address,
-                `Criado por ${business.createdBy.name || business.createdBy.email || 'Usuário'}`,
+                `Criado por ${business.createdBy.name || business.createdBy.email || tx('Usuário')}`,
                 `Enviado em ${formatDateTime(business.createdAt)}`,
               ]}
             >
               <ActionButton
-                label="Aprovar"
+                label={tx('Aprovar')}
                 tone="primary"
                 disabled={processingKey !== null}
                 loading={processingKey === `business:${business.id}:approve`}
                 onClick={() => void submitBusinessReview(business.id, 'approve')}
               />
               <ActionButton
-                label="Rejeitar"
+                label={tx('Rejeitar')}
                 tone="danger"
                 disabled={processingKey !== null}
                 loading={processingKey === `business:${business.id}:reject`}
@@ -1742,9 +1744,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         </ModerationSection>
 
         <ModerationSection
-          title="Eventos em aprovação"
+          title={tx('Eventos em aprovação')}
           count={dashboard?.pendingEvents.length ?? 0}
-          emptyLabel="Nenhum evento aguardando revisão."
+          emptyLabel={tx('Nenhum evento aguardando revisão.')}
           loading={loading && !dashboard}
         >
           {dashboard?.pendingEvents.map((event) => (
@@ -1755,18 +1757,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               lines={[
                 event.locationLabel,
                 `Começa em ${formatDateTime(event.startsAt)}`,
-                `Enviado por ${event.createdBy.name || event.createdBy.email || 'Usuário'}`,
+                `Enviado por ${event.createdBy.name || event.createdBy.email || tx('Usuário')}`,
               ]}
             >
               <ActionButton
-                label="Publicar"
+                label={tx('Publicar')}
                 tone="primary"
                 disabled={processingKey !== null}
                 loading={processingKey === `event:${event.id}:approve`}
                 onClick={() => void submitEventReview(event.id, 'approve')}
               />
               <ActionButton
-                label="Rejeitar"
+                label={tx('Rejeitar')}
                 tone="danger"
                 disabled={processingKey !== null}
                 loading={processingKey === `event:${event.id}:reject`}
@@ -1777,18 +1779,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
         </ModerationSection>
 
         <ModerationSection
-          title="Posts em revisão"
+          title={tx('Posts em revisão')}
           count={dashboard?.pendingPosts.length ?? 0}
-          emptyLabel="Nenhuma publicação aguardando moderação."
+          emptyLabel={tx('Nenhuma publicação aguardando moderação.')}
           loading={loading && !dashboard}
         >
           {dashboard?.pendingPosts.map((post) => (
             <div key={post.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <Avatar src={post.author.image} name={post.author.name || 'Autor'} size="sm" className="!h-10 !w-10" />
+                <Avatar src={post.author.image} name={post.author.name || tx('Autor')} size="sm" className="!h-10 !w-10" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold theme-text">
-                    {post.author.name || 'Usuário da comunidade'}
+                    {post.author.name || tx('Usuário da comunidade')}
                   </p>
                   <p className="text-xs text-slate-400">
                     {post.locationLabel} | {formatDateTime(post.createdAt)}
@@ -1800,14 +1802,14 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               </div>
               <div className="mt-4 flex gap-2">
                 <ActionButton
-                  label="Aprovar"
+                  label={tx('Aprovar')}
                   tone="primary"
                   disabled={processingKey !== null}
                   loading={processingKey === `post:${post.id}:approve`}
                   onClick={() => void submitPostReview(post.id, 'approve')}
                 />
                 <ActionButton
-                  label="Remover"
+                  label={tx('Remover')}
                   tone="danger"
                   disabled={processingKey !== null}
                   loading={processingKey === `post:${post.id}:remove`}
@@ -1822,12 +1824,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'businesses' ? (
           <section className="space-y-3">
-          <SectionHeader title="Negócios cadastrados" count={filteredBusinesses.length} />
-          <SupportText text="Lista operacional dos últimos negócios para ajuste de dados, imagem, região e status." />
+          <SectionHeader title={tx('Negócios cadastrados')} count={filteredBusinesses.length} />
+          <SupportText text={tx('Lista operacional dos últimos negócios para ajuste de dados, imagem, região e status.')} />
           <SearchFilterInput
             value={businessSearch}
             onChange={setBusinessSearch}
-            placeholder="Filtrar negócios por nome, slug, categoria ou região"
+            placeholder={tx('Filtrar negócios por nome, slug, categoria ou região')}
           />
           {!deferredBusinessSearch.trim() && filteredBusinesses.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -1868,22 +1870,22 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{business.locationLabel}</p>
                         <p>{business.address}</p>
-                        <p>/businesses/{business.slug}</p>
+                        <p>{'/businesses/'}{business.slug}</p>
                         <p>
-                          Visibilidade: {formatVisibilityScopeLabel(business.visibilityScope)}
+                          {tx('Visibilidade:')} {formatVisibilityScopeLabel(business.visibilityScope)}
                           {business.visibilityRegion?.label ? ` (${business.visibilityRegion.label})` : ''}
                         </p>
                         <p>
-                          Responsável: {business.createdBy.name || business.createdBy.email || 'Usuário'}
+                          {tx('Responsável:')} {business.createdBy.name || business.createdBy.email || tx('Usuário')}
                         </p>
-                        <p>Atualizado em {formatDateTime(business.updatedAt)}</p>
+                        <p>{tx('Atualizado em')} {formatDateTime(business.updatedAt)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-4 flex gap-2">
                     <ActionButton
-                      label={editingBusinessId === business.id ? 'Fechar' : 'Editar'}
+                      label={editingBusinessId === business.id ? tx('Fechar') : tx('Editar')}
                       tone="neutral"
                       disabled={processingKey !== null}
                       onClick={() =>
@@ -1893,18 +1895,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
 
                   {editingBusinessId === business.id ? (
-                    <Modal open onClose={resetBusinessForm} title="Editar negócio" description={business.name} className="max-w-3xl">
+                    <Modal open onClose={resetBusinessForm} title={tx('Editar negócio')} description={business.name} className="max-w-3xl">
                     <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={businessForm.name}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, name: value }))}
-                        placeholder="Nome do negócio"
+                        placeholder={tx('Nome do negócio')}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
                           value={businessForm.category}
                           onChange={(value) => setBusinessForm((current) => ({ ...current, category: value }))}
-                          placeholder="Categoria"
+                          placeholder={tx('Categoria')}
                         />
                         <FormSelect
                           value={businessForm.status}
@@ -1917,19 +1919,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       <FormTextarea
                         value={businessForm.description}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, description: value }))}
-                        placeholder="Descrição"
+                        placeholder={tx('Descrição')}
                       />
                       <FormInput
                         value={businessForm.address}
                         onChange={(value) => setBusinessForm((current) => ({ ...current, address: value }))}
-                        placeholder="Endereço"
+                        placeholder={tx('Endereço')}
                       />
                       <RegionSelector
                         value={businessForm.regionKey}
                         onChange={(region) =>
                           setBusinessForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="Use somente regiões cadastradas para manter o catalogo padronizado."
+                        hint={tx('Use somente regiões cadastradas para manter o catalogo padronizado.')}
                       />
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <FormSelect
@@ -1953,13 +1955,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                                 visibilityRegionKey: region.key,
                               }))
                             }
-                            hint="Defina a região exata onde este negócio deve aparecer."
+                            hint={tx('Defina a região exata onde este negócio deve aparecer.')}
                           />
                         ) : (
                           <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-slate-500">
                             {businessForm.visibilityScope === 'GLOBAL'
-                              ? 'Este negócio poderá aparecer para usuários de qualquer região.'
-                              : 'Este negócio aparece para usuários cuja região coincide com a região cadastrada acima.'}
+                              ? tx('Este negócio poderá aparecer para usuários de qualquer região.')
+                              : tx('Este negócio aparece para usuários cuja região coincide com a região cadastrada acima.')}
                           </div>
                         )}
                       </div>
@@ -1972,7 +1974,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                               phone: formatLoosePhoneInput(value),
                             }))
                           }
-                          placeholder="Telefone"
+                          placeholder={tx('Telefone')}
                         />
                         <FormInput
                           value={businessForm.whatsapp}
@@ -1982,21 +1984,21 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                               whatsapp: formatLoosePhoneInput(value),
                             }))
                           }
-                          placeholder="WhatsApp"
+                          placeholder={tx('WhatsApp')}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
                           value={businessForm.website}
                           onChange={(value) => setBusinessForm((current) => ({ ...current, website: value }))}
-                          placeholder="Website"
+                          placeholder={tx('Website')}
                         />
                         <FormInput
                           value={businessForm.instagram}
                           onChange={(value) =>
                             setBusinessForm((current) => ({ ...current, instagram: value }))
                           }
-                          placeholder="Instagram"
+                          placeholder={tx('Instagram')}
                         />
                       </div>
                       <CloudinaryImageField
@@ -2005,8 +2007,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setBusinessForm((current) => ({ ...current, imageUrl: value }))
                         }
                         folder="businesses" cropAspect={2}
-                        placeholder="Link da imagem"
-                        hint="Envie uma imagem do seu computador ou celular."
+                        placeholder={tx('Link da imagem')}
+                        hint={tx('Envie uma imagem do seu computador ou celular.')}
                       />
                       <ImageGalleryField cropAspect={1}
                         value={businessForm.galleryUrls}
@@ -2014,18 +2016,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setBusinessForm((current) => ({ ...current, galleryUrls: value }))
                         }
                         folder="businesses"
-                        hint="Use a galeria para mostrar ambiente, serviços e produtos do negócio."
+                        hint={tx('Use a galeria para mostrar ambiente, serviços e produtos do negócio.')}
                       />
                       <div className="flex gap-2">
                         <ActionButton
-                          label="Salvar negócio"
+                          label={tx('Salvar negócio')}
                           tone="primary"
                           disabled={processingKey !== null}
                           loading={processingKey === `business:${business.id}:save`}
                           onClick={() => void submitBusinessUpdate()}
                         />
                         <ActionButton
-                          label="Cancelar"
+                          label={tx('Cancelar')}
                           tone="neutral"
                           disabled={processingKey !== null}
                           onClick={resetBusinessForm}
@@ -2038,19 +2040,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum negócio encontrado para gestão." />
+            <EmptyState text={tx('Nenhum negócio encontrado para gestão.')} />
           )}
           </section>
         ) : null}
 
         {activeSection === 'events' ? (
           <section className="space-y-3">
-          <SectionHeader title="Eventos cadastrados" count={filteredEvents.length} />
-          <SupportText text="Edite dados da agenda, imagem, links e região dos últimos eventos." />
+          <SectionHeader title={tx('Eventos cadastrados')} count={filteredEvents.length} />
+          <SupportText text={tx('Edite dados da agenda, imagem, links e região dos últimos eventos.')} />
           <SearchFilterInput
             value={eventSearch}
             onChange={setEventSearch}
-            placeholder="Filtrar eventos por título, slug, local ou região"
+            placeholder={tx('Filtrar eventos por título, slug, local ou região')}
           />
           {!deferredEventSearch.trim() && filteredEvents.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2090,23 +2092,23 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
                         <p>{event.locationLabel}</p>
-                        <p>/events/{event.slug}</p>
-                        <p>Início: {formatDateTime(event.startsAt)}</p>
+                        <p>{'/events/'}{event.slug}</p>
+                        <p>{tx('Início:')} {formatDateTime(event.startsAt)}</p>
                         <p>
-                          Visibilidade: {formatVisibilityScopeLabel(event.visibilityScope)}
+                          {tx('Visibilidade:')} {formatVisibilityScopeLabel(event.visibilityScope)}
                           {event.visibilityRegion?.label ? ` (${event.visibilityRegion.label})` : ''}
                         </p>
                         <p>
-                          Responsável: {event.createdBy.name || event.createdBy.email || 'Usuário'}
+                          {tx('Responsável:')} {event.createdBy.name || event.createdBy.email || tx('Usuário')}
                         </p>
-                        <p>Atualizado em {formatDateTime(event.updatedAt)}</p>
+                        <p>{tx('Atualizado em')} {formatDateTime(event.updatedAt)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-4 flex gap-2">
                     <ActionButton
-                      label={editingEventId === event.id ? 'Fechar' : 'Editar'}
+                      label={editingEventId === event.id ? tx('Fechar') : tx('Editar')}
                       tone="neutral"
                       disabled={processingKey !== null}
                       onClick={() => (editingEventId === event.id ? resetEventForm() : startEventEdit(event))}
@@ -2114,12 +2116,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
 
                   {editingEventId === event.id ? (
-                    <Modal open onClose={resetEventForm} title="Editar evento" description={event.title} className="max-w-3xl">
+                    <Modal open onClose={resetEventForm} title={tx('Editar evento')} description={event.title} className="max-w-3xl">
                     <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={eventForm.title}
                         onChange={(value) => setEventForm((current) => ({ ...current, title: value }))}
-                        placeholder="Título do evento"
+                        placeholder={tx('Título do evento')}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -2127,7 +2129,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           onChange={(value) =>
                             setEventForm((current) => ({ ...current, venueName: value }))
                           }
-                          placeholder="Local"
+                          placeholder={tx('Local')}
                         />
                         <FormSelect
                           value={eventForm.status}
@@ -2142,7 +2144,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setEventForm((current) => ({ ...current, description: value }))
                         }
-                        placeholder="Descrição"
+                        placeholder={tx('Descrição')}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
@@ -2151,7 +2153,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           onChange={(value) =>
                             setEventForm((current) => ({ ...current, startsAt: value }))
                           }
-                          placeholder="Início"
+                          placeholder={tx('Início')}
                         />
                         <FormInput
                           type="datetime-local"
@@ -2159,18 +2161,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           onChange={(value) =>
                             setEventForm((current) => ({ ...current, endsAt: value }))
                           }
-                          placeholder="Fim"
+                          placeholder={tx('Fim')}
                         />
                       </div>
                       <p className="text-xs font-medium text-slate-400">
-                        Use o seletor para escolher data e horário.
+                        {tx('Use o seletor para escolher data e horário.')}
                       </p>
                       <RegionSelector
                         value={eventForm.regionKey}
                         onChange={(region) =>
                           setEventForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="Use somente regiões do catalogo para padronizar a agenda."
+                        hint={tx('Use somente regiões do catalogo para padronizar a agenda.')}
                       />
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <FormSelect
@@ -2194,13 +2196,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                                 visibilityRegionKey: region.key,
                               }))
                             }
-                            hint="Defina a região exata onde este evento deve aparecer."
+                            hint={tx('Defina a região exata onde este evento deve aparecer.')}
                           />
                         ) : (
                           <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-slate-500">
                             {eventForm.visibilityScope === 'GLOBAL'
-                              ? 'Este evento poderá aparecer para usuários de qualquer região.'
-                              : 'Este evento aparece para usuários cuja região coincide com a região cadastrada acima.'}
+                              ? tx('Este evento poderá aparecer para usuários de qualquer região.')
+                              : tx('Este evento aparece para usuários cuja região coincide com a região cadastrada acima.')}
                           </div>
                         )}
                       </div>
@@ -2209,7 +2211,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(value) =>
                           setEventForm((current) => ({ ...current, externalUrl: value }))
                         }
-                        placeholder="Link externo"
+                        placeholder={tx('Link externo')}
                       />
                       <CloudinaryImageField
                         value={eventForm.imageUrl}
@@ -2217,8 +2219,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setEventForm((current) => ({ ...current, imageUrl: value }))
                         }
                         folder="events" cropAspect={2}
-                        placeholder="Link da imagem"
-                        hint="Envie uma imagem do seu computador ou celular."
+                        placeholder={tx('Link da imagem')}
+                        hint={tx('Envie uma imagem do seu computador ou celular.')}
                       />
                       <ImageGalleryField
                         value={eventForm.galleryUrls}
@@ -2226,18 +2228,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setEventForm((current) => ({ ...current, galleryUrls: value }))
                         }
                         folder="events"
-                        hint="Adicione imagens extras para enriquecer a página do evento."
+                        hint={tx('Adicione imagens extras para enriquecer a página do evento.')}
                       />
                       <div className="flex gap-2">
                         <ActionButton
-                          label="Salvar evento"
+                          label={tx('Salvar evento')}
                           tone="primary"
                           disabled={processingKey !== null}
                           loading={processingKey === `event:${event.id}:save`}
                           onClick={() => void submitEventUpdate()}
                         />
                         <ActionButton
-                          label="Cancelar"
+                          label={tx('Cancelar')}
                           tone="neutral"
                           disabled={processingKey !== null}
                           onClick={resetEventForm}
@@ -2250,19 +2252,19 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum evento encontrado para gestão." />
+            <EmptyState text={tx('Nenhum evento encontrado para gestão.')} />
           )}
           </section>
         ) : null}
 
         {activeSection === 'suggestions' ? (
           <section className="space-y-3">
-          <SectionHeader title="Sugestões recebidas" count={filteredSuggestions.length} />
-          <SupportText text="Feedback direto dos usuários para priorizar novas funcionalidades e melhorias." />
+          <SectionHeader title={tx('Sugestões recebidas')} count={filteredSuggestions.length} />
+          <SupportText text={tx('Feedback direto dos usuários para priorizar novas funcionalidades e melhorias.')} />
           <SearchFilterInput
             value={suggestionSearch}
             onChange={setSuggestionSearch}
-            placeholder="Filtrar sugestões por texto, usuário, email ou categoria"
+            placeholder={tx('Filtrar sugestões por texto, usuário, email ou categoria')}
           />
           {!deferredSuggestionSearch.trim() && filteredSuggestions.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2285,12 +2287,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {visibleSuggestions.map((suggestion) => (
                 <div key={suggestion.id} className="rounded-3xl border border-slate-100 bg-surface p-4 shadow-sm">
                   <div className="flex items-start gap-4">
-                    <Avatar src={suggestion.user.image} name={suggestion.user.name || suggestion.user.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
+                    <Avatar src={suggestion.user.image} name={suggestion.user.name || suggestion.user.email || tx('Usuário')} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">
-                            {suggestion.user.name || 'Usuário da plataforma'}
+                            {suggestion.user.name || tx('Usuário da plataforma')}
                           </p>
                           <p className="text-sm font-medium text-slate-500">
                             @{suggestion.user.username || 'sem-username'}
@@ -2299,15 +2301,15 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         <div className="flex flex-wrap gap-2">
                           <StatusBadge label={formatSuggestionCategory(suggestion.category)} tone="neutral" />
                           <StatusBadge
-                            label={suggestion.status === 'REVIEWED' ? 'Revisada' : 'Nova'}
+                            label={suggestion.status === 'REVIEWED' ? tx('Revisada') : tx('Nova')}
                             tone={getSuggestionStatusTone(suggestion.status)}
                           />
                         </div>
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
-                        <p>{suggestion.user.email || 'Sem email'}</p>
-                        <p>{suggestion.user.locationLabel || 'Sem região definida'}</p>
-                        <p>Recebida em {formatDateTime(suggestion.createdAt)}</p>
+                        <p>{suggestion.user.email || tx('Sem email')}</p>
+                        <p>{suggestion.user.locationLabel || tx('Sem região definida')}</p>
+                        <p>{tx('Recebida em')} {formatDateTime(suggestion.createdAt)}</p>
                       </div>
                       <div className="mt-4 rounded-3xl bg-slate-50 px-4 py-4 text-sm leading-relaxed text-slate-700">
                         {suggestion.message}
@@ -2317,7 +2319,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
                   <div className="mt-4 flex gap-2">
                     <ActionButton
-                      label={suggestion.status === 'REVIEWED' ? 'Reabrir' : 'Marcar revisada'}
+                      label={suggestion.status === 'REVIEWED' ? tx('Reabrir') : tx('Marcar revisada')}
                       tone={suggestion.status === 'REVIEWED' ? 'neutral' : 'primary'}
                       disabled={processingKey !== null}
                       loading={
@@ -2336,7 +2338,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhuma sugestão encontrada para essa busca." />
+            <EmptyState text={tx('Nenhuma sugestão encontrada para essa busca.')} />
           )}
           </section>
         ) : null}
@@ -2357,12 +2359,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
         {activeSection === 'users' ? (
           <section className="space-y-3">
-          <SectionHeader title="Usuários" count={filteredUsers.length} />
-          <SupportText text="Visualize perfis, ajuste papel, região, nome público e exclua usuários quando necessário." />
+          <SectionHeader title={tx('Usuários')} count={filteredUsers.length} />
+          <SupportText text={tx('Visualize perfis, ajuste papel, região, nome público e exclua usuários quando necessário.')} />
           <SearchFilterInput
             value={userSearch}
             onChange={setUserSearch}
-            placeholder="Filtrar usuários por nome, username, email ou região"
+            placeholder={tx('Filtrar usuários por nome, username, email ou região')}
           />
           {!deferredUserSearch.trim() && filteredUsers.length > ADMIN_LIST_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
@@ -2385,12 +2387,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               {visibleUsers.map((managedUser) => (
                 <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
                   <div className="flex items-start gap-4">
-                    <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || 'Usuário'} size="sm" className="!h-10 !w-10" />
+                    <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || tx('Usuário')} size="sm" className="!h-10 !w-10" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-lg font-bold theme-text">
-                            {managedUser.name || 'Usuário sem nome'}
+                            {managedUser.name || tx('Usuário sem nome')}
                           </p>
                           <p className="text-sm font-medium text-slate-500">
                             @{managedUser.username || 'sem-username'}
@@ -2399,31 +2401,31 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         <StatusBadge label={managedUser.role} tone="neutral" />
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-slate-600">
-                        <p>{managedUser.email || 'Sem email'}</p>
-                        <p>{managedUser.locationLabel || 'Sem região definida'}</p>
+                        <p>{managedUser.email || tx('Sem email')}</p>
+                        <p>{managedUser.locationLabel || tx('Sem região definida')}</p>
                         <p>
-                          Cadastro {managedUser.onboardingCompleted ? 'concluído' : 'pendente'}
+                          {tx('Cadastro')} {managedUser.onboardingCompleted ? 'concluído' : 'pendente'}
                         </p>
-                        <p>Atualizado em {formatDateTime(managedUser.updatedAt)}</p>
+                        <p>{tx('Atualizado em')} {formatDateTime(managedUser.updatedAt)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     <ActionButton
-                      label={editingUserId === managedUser.id ? 'Fechar' : 'Editar'}
+                      label={editingUserId === managedUser.id ? tx('Fechar') : tx('Editar')}
                       tone="neutral"
                       disabled={processingKey !== null}
                       onClick={() => (editingUserId === managedUser.id ? resetUserForm() : startUserEdit(managedUser))}
                     />
                     <ActionButton
-                      label="Analytics"
+                      label={tx('Analytics')}
                       tone="primary"
                       disabled={processingKey !== null}
                       onClick={() => openUserAnalytics(managedUser.id)}
                     />
                     <ActionButton
-                      label="Excluir"
+                      label={tx('Excluir')}
                       tone="danger"
                       disabled={processingKey !== null || managedUser.id === user.id}
                       onClick={() => setDeletingUser(managedUser)}
@@ -2431,12 +2433,12 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                   </div>
 
                   {editingUserId === managedUser.id ? (
-                    <Modal open onClose={resetUserForm} title="Editar usuário" description={managedUser.name || managedUser.email || 'Usuário'} className="max-w-2xl">
+                    <Modal open onClose={resetUserForm} title={tx('Editar usuário')} description={managedUser.name || managedUser.email || tx('Usuário')} className="max-w-2xl">
                     <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
                       <FormInput
                         value={userForm.name}
                         onChange={(value) => setUserForm((current) => ({ ...current, name: value }))}
-                        placeholder="Nome completo"
+                        placeholder={tx('Nome completo')}
                       />
                       <FormInput
                         value={userForm.username}
@@ -2446,13 +2448,13 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             username: normalizeUsernameInput(value),
                           }))
                         }
-                        placeholder="Nome público"
+                        placeholder={tx('Nome público')}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormInput
                           value={userForm.email}
                           onChange={(value) => setUserForm((current) => ({ ...current, email: value }))}
-                          placeholder="Email"
+                          placeholder={tx('Email')}
                         />
                         <FormInput
                           value={userForm.phone}
@@ -2462,7 +2464,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                               phone: formatLoosePhoneInput(value),
                             }))
                           }
-                          placeholder="Telefone"
+                          placeholder={tx('Telefone')}
                         />
                       </div>
                       <CloudinaryImageField
@@ -2471,8 +2473,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                           setUserForm((current) => ({ ...current, image: value }))
                         }
                         folder="profiles" cropAspect={1}
-                        placeholder="Link da foto do usuário"
-                        hint="Envie uma foto do seu computador ou celular."
+                        placeholder={tx('Link da foto do usuário')}
+                        hint={tx('Envie uma foto do seu computador ou celular.')}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <FormSelect
@@ -2494,7 +2496,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                             }
                             className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
                           />
-                          Cadastro concluído
+                          {tx('Cadastro concluído')}
                         </label>
                       </div>
                       <RegionSelector
@@ -2502,18 +2504,18 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
                         onChange={(region) =>
                           setUserForm((current) => ({ ...current, regionKey: region.key }))
                         }
-                        hint="A região do usuário controla feed, negócios e eventos priorizados."
+                        hint={tx('A região do usuário controla feed, negócios e eventos priorizados.')}
                       />
                       <div className="flex gap-2">
                         <ActionButton
-                          label="Salvar usuário"
+                          label={tx('Salvar usuário')}
                           tone="primary"
                           disabled={processingKey !== null}
                           loading={processingKey === `user:${managedUser.id}:save`}
                           onClick={() => void requestUserUpdateConfirmation(managedUser)}
                         />
                         <ActionButton
-                          label="Cancelar"
+                          label={tx('Cancelar')}
                           tone="neutral"
                           disabled={processingKey !== null}
                           onClick={resetUserForm}
@@ -2526,7 +2528,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               ))}
             </div>
           ) : (
-            <EmptyState text="Nenhum usuário encontrado para gestão." />
+            <EmptyState text={tx('Nenhum usuário encontrado para gestão.')} />
           )}
           </section>
         ) : null}
@@ -2560,7 +2562,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   );
 };
 
-const Feedback: React.FC<{ tone: 'error' | 'success'; text: string }> = ({ tone, text }) => (
+const Feedback: React.FC<{ tone: 'error' | 'success'; text: string }> = ({ tone, text }) => {
+  return (
   <div
     className={`flex items-start gap-3 rounded-3xl px-4 py-4 text-sm ${
       tone === 'error'
@@ -2576,6 +2579,7 @@ const Feedback: React.FC<{ tone: 'error' | 'success'; text: string }> = ({ tone,
     <p>{text}</p>
   </div>
 );
+};
 
 const SectionHeader: React.FC<{ title: string; count: number }> = ({ title, count }) => (
   <div className="flex items-center justify-between">
@@ -2602,18 +2606,21 @@ const SectionListToggle: React.FC<{
   total: number;
   limit?: number;
   onToggle: () => void;
-}> = ({ expanded, total, limit = ADMIN_LIST_PREVIEW_LIMIT, onToggle }) => (
+}> = ({ expanded, total, limit = ADMIN_LIST_PREVIEW_LIMIT, onToggle }) => {
+  const { tx } = useLanguage();
+  return (
   <button
     type="button"
     onClick={onToggle}
     className="rounded-full border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-[#2B5DF5] hover:text-[#2B5DF5]"
   >
-    {expanded ? 'Mostrar menos' : `Ver todos (${total})`}
+    {expanded ? tx('Mostrar menos') : `${tx('Ver todos (')}${total})`}
     {!expanded ? (
-      <span className="ml-2 text-slate-400">mostrando {Math.min(total, limit)}</span>
+      <span className="ml-2 text-slate-400">{tx('mostrando')} {Math.min(total, limit)}</span>
     ) : null}
   </button>
 );
+};
 
 const SearchFilterInput: React.FC<{
   value: string;
@@ -2656,7 +2663,9 @@ const QueueCard: React.FC<{
   subtitle: string;
   lines: string[];
   children: React.ReactNode;
-}> = ({ title, subtitle, lines, children }) => (
+}> = ({ title, subtitle, lines, children }) => {
+  const { tx } = useLanguage();
+  return (
   <div className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0 flex-1">
@@ -2669,12 +2678,13 @@ const QueueCard: React.FC<{
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge label="PENDENTE" tone="warning" />
+        <StatusBadge label={tx('PENDENTE')} tone="warning" />
         {children}
       </div>
     </div>
   </div>
 );
+};
 
 const EmptyState: React.FC<{ text: string }> = ({ text }) => (
   <EmptyNotice title={text} />
@@ -2688,7 +2698,9 @@ const ConfirmationDialog: React.FC<{
   disabled?: boolean;
   onCancel: () => void;
   onConfirm: () => void | Promise<void>;
-}> = ({ title, description, confirmLabel, tone, disabled = false, onCancel, onConfirm }) => (
+}> = ({ title, description, confirmLabel, tone, disabled = false, onCancel, onConfirm }) => {
+  const { tx } = useLanguage();
+  return (
   <Modal
     open
     onClose={onCancel}
@@ -2697,7 +2709,7 @@ const ConfirmationDialog: React.FC<{
     footer={
       <>
         <ActionButton
-          label="Cancelar"
+          label={tx('Cancelar')}
           tone="neutral"
           disabled={disabled}
           onClick={onCancel}
@@ -2712,6 +2724,7 @@ const ConfirmationDialog: React.FC<{
     }
   />
 );
+};
 
 const LoadingCards: React.FC = () => (
   <div className="space-y-3">
@@ -2772,7 +2785,8 @@ const FormSelect: React.FC<{
 const StatusBadge: React.FC<{
   label: string;
   tone: 'success' | 'danger' | 'warning' | 'neutral';
-}> = ({ label, tone }) => (
+}> = ({ label, tone }) => {
+  return (
   <span
     className={`rounded-full px-3 py-1 text-[11px] font-bold ${
       tone === 'success'
@@ -2787,6 +2801,7 @@ const StatusBadge: React.FC<{
     {label}
   </span>
 );
+};
 
 const ActionButton: React.FC<{
   label: string;
@@ -2794,7 +2809,9 @@ const ActionButton: React.FC<{
   disabled?: boolean;
   loading?: boolean;
   onClick: () => void;
-}> = ({ label, tone, disabled = false, loading = false, onClick }) => (
+}> = ({ label, tone, disabled = false, loading = false, onClick }) => {
+  const { tx } = useLanguage();
+  return (
   <button
     type="button"
     onClick={onClick}
@@ -2807,9 +2824,10 @@ const ActionButton: React.FC<{
           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
     }`}
   >
-    {loading ? 'Processando...' : label}
+    {loading ? tx('Processando...') : label}
   </button>
 );
+};
 
 export default AdminPanel;
 

@@ -6,6 +6,7 @@ import { CheckCircle2, MessageSquareWarning, RefreshCcw, XCircle } from 'lucide-
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Avatar, Skeleton } from '@/components/ui';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Person = { id: string; name: string | null; username: string | null; image: string | null };
 type Report = {
@@ -37,6 +38,7 @@ const personName = (person: Person) => person.name || person.username || 'Membro
 
 /** Fila de denúncias de conversas (mensagens diretas e de anúncios) para a moderação. */
 export default function MessageReportsSection() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,22 +87,22 @@ export default function MessageReportsSection() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <MessageSquareWarning size={19} className="text-brand-500" /> Denúncias de mensagens
+            <MessageSquareWarning size={19} className="text-brand-500" /> {tx('Denúncias de mensagens')}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">Quem denunciou, quem foi denunciado, o motivo e as últimas mensagens da conversa.</p>
+          <p className="mt-1 text-sm text-slate-500">{tx('Quem denunciou, quem foi denunciado, o motivo e as últimas mensagens da conversa.')}</p>
         </div>
-        <button type="button" onClick={() => void load()} aria-label="Atualizar" className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100">
+        <button type="button" onClick={() => void load()} aria-label={tx('Atualizar')} className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100">
           <RefreshCcw size={17} />
         </button>
       </div>
 
       {loading ? (
-        <div className="mt-5 space-y-3" role="status" aria-label="Carregando denúncias de mensagens">
+        <div className="mt-5 space-y-3" role="status" aria-label={tx('Carregando denúncias de mensagens')}>
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
       ) : reports.length === 0 ? (
-        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Nenhuma denúncia de mensagem registrada.</div>
+        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{tx('Nenhuma denúncia de mensagem registrada.')}</div>
       ) : (
         <div className="mt-5 divide-y divide-slate-100">
           {reports.map((report) => {
@@ -122,7 +124,7 @@ export default function MessageReportsSection() {
                       ) : (
                         <span className="font-semibold text-slate-700">{personName(report.reporter)}</span>
                       )}
-                      <span>denunciou</span>
+                      <span>{tx('denunciou')}</span>
                       <Avatar src={report.reportedUser.image} name={personName(report.reportedUser)} size="xs" />
                       {report.reportedUser.username ? (
                         <Link href={`/${report.reportedUser.username}`} className="font-semibold text-slate-700 hover:underline">{personName(report.reportedUser)}</Link>
@@ -132,25 +134,25 @@ export default function MessageReportsSection() {
                       <span>· {new Date(report.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                     </p>
                     {report.details ? <p className="text-sm text-slate-600">“{report.details}”</p> : null}
-                    {report.conversation?.item ? <p className="text-xs text-slate-400">Anúncio: {report.conversation.item.title}</p> : null}
+                    {report.conversation?.item ? <p className="text-xs text-slate-400">{tx('Anúncio:')} {report.conversation.item.title}</p> : null}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {report.conversation ? (
                       <button type="button" onClick={() => setExpanded(open ? null : report.id)} className="rounded-full px-3 py-1.5 text-xs font-semibold text-brand-600 transition hover:bg-brand-50">
-                        {open ? 'Ocultar mensagens' : 'Ver mensagens'}
+                        {open ? tx('Ocultar mensagens') : tx('Ver mensagens')}
                       </button>
                     ) : null}
                     {report.status === 'PENDING' ? (
                       <>
                         <button type="button" disabled={updating === report.id} onClick={() => void review(report.id, 'RESOLVED')} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50">
-                          <CheckCircle2 size={14} /> Resolver
+                          <CheckCircle2 size={14} /> {tx('Resolver')}
                         </button>
                         <button type="button" disabled={updating === report.id} onClick={() => void review(report.id, 'DISMISSED')} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-50">
-                          <XCircle size={14} /> Arquivar
+                          <XCircle size={14} /> {tx('Arquivar')}
                         </button>
                       </>
                     ) : report.reviewedBy?.name ? (
-                      <span className="text-xs text-slate-400">por {report.reviewedBy.name}</span>
+                      <span className="text-xs text-slate-400">{tx('por')} {report.reviewedBy.name}</span>
                     ) : null}
                   </div>
                 </div>

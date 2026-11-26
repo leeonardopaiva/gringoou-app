@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -18,6 +19,7 @@ const ICON = {
 
 /** Diagnóstico e teste da integração Stripe (administrador raiz). Somente leitura: não cria cobranças. */
 export default function StripeIntegrationPanel() {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [report, setReport] = useState<Report | null>(null);
   const [running, setRunning] = useState(false);
@@ -47,7 +49,7 @@ export default function StripeIntegrationPanel() {
       showToast(
         payload.checked === 0
           ? 'Nenhuma campanha aguardando confirmação de pagamento.'
-          : `${payload.moved} de ${payload.checked} campanha(s) enviadas para revisão.${notMoved.length ? ` Pendentes: ${notMoved.map((item) => `${item.headline || 'Campanha'} (${item.detail})`).join('; ')}` : ''}`,
+          : `${payload.moved} ${tx('de')} ${payload.checked} ${tx('campanha(s) enviadas para revisão.')}${notMoved.length ? ` ${tx('Pendentes:')} ${notMoved.map((item) => `${item.headline || 'Campanha'} (${item.detail})`).join('; ')}` : ''}`,
         payload.moved > 0 || payload.checked === 0 ? 'success' : 'error',
       );
       await run();
@@ -59,25 +61,25 @@ export default function StripeIntegrationPanel() {
   };
 
   return (
-    <section aria-label="Diagnóstico do Stripe" className="rounded-2xl border border-slate-200 bg-surface">
+    <section aria-label={tx('Diagnóstico do Stripe')} className="rounded-2xl border border-slate-200 bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600"><CreditCard size={18} /></span>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Stripe: diagnóstico e teste</h2>
-            <p className="text-xs text-slate-400">Somente leitura. As chaves ficam no Vercel; aqui você só confere se tudo está certo.</p>
+            <h2 className="text-sm font-bold text-slate-900">{tx('Stripe: diagnóstico e teste')}</h2>
+            <p className="text-xs text-slate-400">{tx('Somente leitura. As chaves ficam no Vercel; aqui você só confere se tudo está certo.')}</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="secondary" loading={reconciling} disabled={running} onClick={() => void reconcile()}>Verificar pagamentos pendentes</Button>
-          <Button size="sm" loading={running} disabled={reconciling} onClick={() => void run()}>{report ? 'Executar de novo' : 'Executar diagnóstico'}</Button>
+          <Button size="sm" variant="secondary" loading={reconciling} disabled={running} onClick={() => void reconcile()}>{tx('Verificar pagamentos pendentes')}</Button>
+          <Button size="sm" loading={running} disabled={reconciling} onClick={() => void run()}>{report ? tx('Executar de novo') : tx('Executar diagnóstico')}</Button>
         </div>
       </div>
 
       {report ? (
         <>
           <div className={cn('px-4 py-2.5 text-xs font-bold', report.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700')}>
-            {report.ok ? 'Nenhum erro encontrado.' : 'Há itens que precisam de correção.'}
+            {report.ok ? tx('Nenhum erro encontrado.') : tx('Há itens que precisam de correção.')}
             <span className="ml-2 font-medium opacity-70">{new Date(report.checkedAt).toLocaleString('pt-BR')}</span>
           </div>
           <ul className="divide-y divide-slate-100">
@@ -87,7 +89,7 @@ export default function StripeIntegrationPanel() {
                 <li key={check.id} className="flex items-start gap-3 px-4 py-3">
                   <Icon size={18} className={cn('mt-0.5 shrink-0', className)} aria-hidden />
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900">{check.label}</p>
+                    <p className="text-sm font-bold text-slate-900">{tx(check.label)}</p>
                     <p className="mt-0.5 break-words text-xs leading-5 text-slate-500">{check.detail}</p>
                   </div>
                 </li>
@@ -96,7 +98,7 @@ export default function StripeIntegrationPanel() {
           </ul>
         </>
       ) : (
-        <p className="px-4 py-5 text-sm text-slate-400">Clique em “Executar diagnóstico” para verificar chaves, webhook, entrega de eventos e campanhas paradas.</p>
+        <p className="px-4 py-5 text-sm text-slate-400">{tx('Clique em “Executar diagnóstico” para verificar chaves, webhook, entrega de eventos e campanhas paradas.')}</p>
       )}
     </section>
   );

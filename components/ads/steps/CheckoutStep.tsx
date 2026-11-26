@@ -10,6 +10,7 @@ import { formatAdCurrency } from '@/lib/ads/contracts';
 import { useAdPlans } from '@/hooks/useAdPlans';
 import type { AdWizardData } from '@/lib/ads/validation';
 import { getUserErrorMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export const AD_PAYMENT_FORM_ID = 'ad-payment-form';
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim() ?? '';
@@ -45,6 +46,7 @@ function PaymentForm({ campaignId, onProcessing, onSuccess, onError }: { campaig
 }
 
 export function CheckoutStep({ state, clientSecret, error, onProcessing, onSuccess, onError, onRedeemCoupon, appliedCoupon }: { appliedCoupon: { code: string; discountCents: number; payCents: number } | null; onRedeemCoupon: (code: string) => Promise<string | null>; state: AdWizardData; clientSecret: string | null; error: string | null; onProcessing: (value: boolean) => void; onSuccess: () => void; onError: (message: string) => void }) {
+  const { tx } = useLanguage();
   const plans = useAdPlans();
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -56,23 +58,23 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
 
   return (
     <Card className="rounded-3xl border border-slate-200 p-5 shadow-sm sm:p-7">
-      <div className="mb-6 flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">4</span><Card.Title className="text-[17px]">Checkout</Card.Title></div>
+      <div className="mb-6 flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">4</span><Card.Title className="text-[17px]">{tx('Checkout')}</Card.Title></div>
       <div className="grid gap-5 lg:grid-cols-2">
       <Card className="border border-slate-200 bg-wash-4 shadow-none">
-        <Card.Title>Resumo do contrato</Card.Title>
+        <Card.Title>{tx('Resumo do contrato')}</Card.Title>
         <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-surface px-5">
           {[['Plano', planInfo.name], ['Vigência', `${state.durationMonths} ${state.durationMonths === 1 ? 'mês' : 'meses'}`], ['Região', state.regionKey]].map(([label, value]) => <div key={label} className="flex items-center justify-between gap-4 py-3.5 text-body-sm"><span className="text-muted-foreground">{label}</span><strong className="text-right text-text">{value}</strong></div>)}
         </div>
         <div className="mt-5 rounded-2xl bg-[#eaf5ff] p-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#176daa]">Total em dólar americano</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#176daa]">{tx('Total em dólar americano')}</p>
           {appliedCoupon ? (
             <div className="mt-1 space-y-1">
               <p className="text-sm text-slate-500 line-through">{formatAdCurrency(amount)}</p>
-              <p className="text-xs font-semibold text-emerald-700">Crédito do cupom {appliedCoupon.code}: −{formatAdCurrency(appliedCoupon.discountCents)}</p>
+              <p className="text-xs font-semibold text-emerald-700">{tx('Crédito do cupom')} {appliedCoupon.code}: −{formatAdCurrency(appliedCoupon.discountCents)}</p>
               <p className="text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(appliedCoupon.payCents)}</p>
             </div>
           ) : <p className="mt-1 text-4xl font-extrabold tracking-tight text-[#0787f9]">{formatAdCurrency(amount)}</p>}
-          <p className="mt-2 text-xs leading-5 text-slate-500">Valor calculado e validado no servidor. A campanha segue para análise depois da confirmação do Stripe.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">{tx('Valor calculado e validado no servidor. A campanha segue para análise depois da confirmação do Stripe.')}</p>
         </div>
       </Card>
       <Card className="self-start border border-slate-200 bg-wash-4 shadow-none">
@@ -89,23 +91,23 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
                 if (message) setCouponError(message);
               }}
             >
-              <label className="block text-xs font-bold text-slate-500">Código do cupom
+              <label className="block text-xs font-bold text-slate-500">{tx('Código do cupom')}
                 <div className="mt-1 flex gap-2">
                   <input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2.5 font-mono text-sm outline-none focus:border-[#078cf5]" autoFocus />
-                  <button type="submit" disabled={couponBusy || couponCode.trim().length < 4} className="shrink-0 rounded-xl bg-[#078cf5] px-4 text-sm font-bold text-white disabled:opacity-50">{couponBusy ? 'Aplicando...' : 'Aplicar'}</button>
+                  <button type="submit" disabled={couponBusy || couponCode.trim().length < 4} className="shrink-0 rounded-xl bg-[#078cf5] px-4 text-sm font-bold text-white disabled:opacity-50">{couponBusy ? tx('Aplicando...') : tx('Aplicar')}</button>
                 </div>
               </label>
               {couponError ? <p className="text-xs font-medium text-red-600">{couponError}</p> : null}
-              <p className="text-[11px] text-slate-400">Cortesia libera a campanha sem cobrança; crédito promocional abate do valor do pacote.</p>
+              <p className="text-[11px] text-slate-400">{tx('Cortesia libera a campanha sem cobrança; crédito promocional abate do valor do pacote.')}</p>
             </form>
           ) : (
-            <button type="button" onClick={() => setCouponOpen(true)} className="inline-flex items-center gap-2 text-sm font-semibold text-[#078cf5] hover:underline"><Gift size={16} /> Tenho um cupom</button>
+            <button type="button" onClick={() => setCouponOpen(true)} className="inline-flex items-center gap-2 text-sm font-semibold text-[#078cf5] hover:underline"><Gift size={16} /> {tx('Tenho um cupom')}</button>
           )}
         </div>
-        <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-emerald-600" /><Card.Title>Pagamento seguro</Card.Title></div>
-        <Card.Description className="mb-5 mt-1">Seus dados de cartão sao processados diretamente pelo Stripe.</Card.Description>
-        {!publishableKey ? <Alert tone="erro" title="Stripe não configurado" description="Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY." /> : null}
-        {error ? <Alert className="mb-4" tone="erro" title="Falha no pagamento" description={error} /> : null}
+        <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-emerald-600" /><Card.Title>{tx('Pagamento seguro')}</Card.Title></div>
+        <Card.Description className="mb-5 mt-1">{tx('Seus dados de cartão sao processados diretamente pelo Stripe.')}</Card.Description>
+        {!publishableKey ? <Alert tone="erro" title={tx('Stripe não configurado')} description={tx('Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.')} /> : null}
+        {error ? <Alert className="mb-4" tone="erro" title={tx('Falha no pagamento')} description={error} /> : null}
         {stripePromise && clientSecret ? (
           <Elements stripe={stripePromise} options={{ clientSecret, locale: 'pt-BR', appearance: { theme: 'stripe', variables: { colorPrimary: '#6d28d9', borderRadius: '16px' } } }}>
             <PaymentForm
@@ -115,8 +117,8 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
               onError={onError}
             />
           </Elements>
-        ) : publishableKey ? <p className="text-body-sm text-muted-foreground">Preparando formulário de pagamento...</p> : null}
-        <div className="mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500"><LockKeyhole size={14} /> Dados criptografados e protegidos pelo Stripe.</div>
+        ) : publishableKey ? <p className="text-body-sm text-muted-foreground">{tx('Preparando formulário de pagamento...')}</p> : null}
+        <div className="mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500"><LockKeyhole size={14} /> {tx('Dados criptografados e protegidos pelo Stripe.')}</div>
       </Card>
       </div>
     </Card>

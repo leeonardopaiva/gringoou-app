@@ -17,6 +17,7 @@ import {
   type ReportMetricId,
 } from '@/lib/ads/dashboard';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type ReportBuilderProps = {
   data: AdsReportData;
@@ -76,6 +77,7 @@ const groupedMetrics = [
 ];
 
 export function ReportBuilder({ data, rows }: ReportBuilderProps) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [state, setState] = useState<BuilderState>(defaultState);
   const [exporting, setExporting] = useState(false);
@@ -163,18 +165,18 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
 
   const saveReport = () => {
     localStorage.setItem(`${storageKey}:saved`, JSON.stringify(state));
-    showToast('Relatório salvo localmente.', 'success');
+    showToast(tx('Relatório salvo localmente.'), 'success');
   };
 
   return (
     <div className="mx-auto w-full max-w-[1360px]">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">Build Report</p>
-          <h1 className="mt-1 text-[34px] font-extrabold leading-none text-ink">Build Report</h1>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">{tx('Build Report')}</p>
+          <h1 className="mt-1 text-[34px] font-extrabold leading-none text-ink">{tx('Build Report')}</h1>
         </div>
         <Button iconLeft={<Play size={18} />} onClick={() => void downloadReport()} loading={exporting}>
-          Run report
+          {tx('Run report')}
         </Button>
       </div>
 
@@ -182,30 +184,30 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
         <div className="space-y-5">
           <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h2 className="text-[17px] font-bold text-ink">Settings</h2>
+              <h2 className="text-[17px] font-bold text-ink">{tx('Settings')}</h2>
               <ChevronDown size={16} className="text-slate-400" />
             </div>
             <div className="space-y-4 px-5 py-5">
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Report name</p>
-                <Input value={state.reportName} onChange={(event) => setState((current) => ({ ...current, reportName: event.target.value }))} placeholder="Report Name" />
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Report name')}</p>
+                <Input value={state.reportName} onChange={(event) => setState((current) => ({ ...current, reportName: event.target.value }))} placeholder={tx('Report Name')} />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Email report to (optional)</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Email report to (optional)')}</p>
                 <Input
                   value={state.emails}
                   onChange={(event) => setState((current) => ({ ...current, emails: event.target.value }))}
-                  placeholder="johndoe@example.com, janedoe@..."
+                  placeholder={tx('johndoe@example.com, janedoe@...')}
                 />
-                <p className="mt-2 text-[12px] text-slate-400">Para multiplos e-mails, separe com virgula</p>
+                <p className="mt-2 text-[12px] text-slate-400">{tx('Para multiplos e-mails, separe com virgula')}</p>
               </div>
               <Toggle
                 checked={state.leadGen}
                 onChange={(checked) => setState((current) => ({ ...current, leadGen: checked }))}
-                label={<span className="text-[14px] font-medium text-ink-2">Lead Gen Report</span>}
+                label={<span className="text-[14px] font-medium text-ink-2">{tx('Lead Gen Report')}</span>}
               />
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Output format</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Output format')}</p>
                 <div className="flex gap-4">
                   {(['CSV', 'XLSX'] as const).map((option) => (
                     <label key={option} className="flex items-center gap-2 text-[14px] font-medium text-ink-2">
@@ -214,13 +216,13 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                         checked={state.outputFormat === option}
                         onChange={() => setState((current) => ({ ...current, outputFormat: option }))}
                       />
-                      {option === 'CSV' ? 'CSV (.csv)' : 'Excel (.xlsx)'}
+                      {option === 'CSV' ? tx('CSV (.csv)') : tx('Excel (.xlsx)')}
                     </label>
                   ))}
                 </div>
               </div>
               <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-[14px] font-semibold text-ink-2">Scheduled Report is OFF</span>
+                <span className="text-[14px] font-semibold text-ink-2">{tx('Scheduled Report is OFF')}</span>
                 <Toggle
                   checked={state.scheduled}
                   onChange={(checked) => setState((current) => ({ ...current, scheduled: checked }))}
@@ -231,16 +233,16 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
 
           <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <h2 className="text-[17px] font-bold text-ink">Filter</h2>
+              <h2 className="text-[17px] font-bold text-ink">{tx('Filter')}</h2>
               <ChevronDown size={16} className="text-slate-400" />
             </div>
             <div className="space-y-4 px-5 py-5">
               <div className="flex items-center justify-between text-[14px]">
-                <span className="font-medium text-ink-2">Time Zone:</span>
+                <span className="font-medium text-ink-2">{tx('Time Zone:')}</span>
                 <span className="font-bold text-brand-500">{Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Start date</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Start date')}</p>
                 <Input
                   type="date"
                   value={state.startDate}
@@ -248,7 +250,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">End date</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('End date')}</p>
                 <Input
                   type="date"
                   value={state.endDate}
@@ -256,29 +258,29 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                 />
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Campaigns / groups / ads</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Campaigns / groups / ads')}</p>
                 <div className="flex gap-2">
                   <Select
                     value={state.scope}
                     onChange={(event) => setState((current) => ({ ...current, scope: event.target.value as BuilderState['scope'] }))}
                     className="w-[126px]"
                   >
-                    <option value="campaign">Campanha</option>
-                    <option value="group">Grupo</option>
-                    <option value="ad">Anúncio</option>
+                    <option value="campaign">{tx('Campanha')}</option>
+                    <option value="group">{tx('Grupo')}</option>
+                    <option value="ad">{tx('Anúncio')}</option>
                   </Select>
                   <Input
                     value={state.search}
                     onChange={(event) => setState((current) => ({ ...current, search: event.target.value }))}
-                    placeholder="Buscar..."
+                    placeholder={tx('Buscar...')}
                     prefixIcon={<Search size={16} />}
                   />
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Attribution window</p>
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Attribution window')}</p>
                 <Select value="7d">
-                  <option value="7d">7 dias após clique</option>
+                  <option value="7d">{tx('7 dias após clique')}</option>
                 </Select>
               </div>
             </div>
@@ -290,10 +292,10 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
             <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                  <h2 className="text-[17px] font-bold text-ink">Column selectors</h2>
-                  <p className="text-[12px] text-slate-400">Selecione as colunas para incluir no export.</p>
+                  <h2 className="text-[17px] font-bold text-ink">{tx('Column selectors')}</h2>
+                  <p className="text-[12px] text-slate-400">{tx('Selecione as colunas para incluir no export.')}</p>
                 </div>
-                <Input value={state.search} onChange={(event) => setState((current) => ({ ...current, search: event.target.value }))} placeholder="Search columns" prefixIcon={<Search size={16} />} className="w-[240px]" />
+                <Input value={state.search} onChange={(event) => setState((current) => ({ ...current, search: event.target.value }))} placeholder={tx('Search columns')} prefixIcon={<Search size={16} />} className="w-[240px]" />
               </div>
               <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
                 <div className="border-b border-slate-200 p-5 lg:border-b-0 lg:border-r">
@@ -319,8 +321,8 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected dimensions</p>
-                  <p className="text-[12px] text-slate-400">Seu relatório vai baixar nesta ordem de coluna.</p>
+                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">{tx('Selected dimensions')}</p>
+                  <p className="text-[12px] text-slate-400">{tx('Seu relatório vai baixar nesta ordem de coluna.')}</p>
                   <div className="mt-4 space-y-2">
                     {selectedDimensionItems.map((item) => (
                       <button
@@ -329,12 +331,12 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                         onClick={() => toggleDimension(item.id)}
                         className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-ink-2"
                       >
-                        <span>{item.label}</span>
+                        <span>{tx(item.label)}</span>
                         <X size={14} className="text-slate-400" />
                       </button>
                     ))}
                   </div>
-                  <p className="mt-4 text-[12px] italic text-slate-300">Arraste para reordenar</p>
+                  <p className="mt-4 text-[12px] italic text-slate-300">{tx('Arraste para reordenar')}</p>
                 </div>
               </div>
             </Card>
@@ -342,11 +344,11 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
             <Card className="rounded-[24px] border border-slate-200 p-0 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
-                  <h2 className="text-[17px] font-bold text-ink">Metrics</h2>
-                  <p className="text-[12px] text-slate-400">Selecione as métricas para incluir no export.</p>
+                  <h2 className="text-[17px] font-bold text-ink">{tx('Metrics')}</h2>
+                  <p className="text-[12px] text-slate-400">{tx('Selecione as métricas para incluir no export.')}</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setState((current) => ({ ...current, selectedMetrics: defaultReportMetrics, selectedDimensions: defaultReportDimensions }))}>
-                  Select All
+                  {tx('Select All')}
                 </Button>
               </div>
               <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
@@ -373,8 +375,8 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">Selected metrics</p>
-                  <p className="text-[12px] text-slate-400">Seu relatório vai baixar nesta ordem de coluna.</p>
+                  <p className="mb-2 text-[12px] font-bold uppercase tracking-wide text-slate-400">{tx('Selected metrics')}</p>
+                  <p className="text-[12px] text-slate-400">{tx('Seu relatório vai baixar nesta ordem de coluna.')}</p>
                   <div className="mt-4 space-y-2">
                     {selectedMetricItems.map((item) => (
                       <button
@@ -383,12 +385,12 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                         onClick={() => toggleMetric(item.id)}
                         className="flex w-full items-center justify-between rounded-full border border-slate-200 px-4 py-2 text-left text-[13px] font-semibold text-ink-2"
                       >
-                        <span>{item.label}</span>
+                        <span>{tx(item.label)}</span>
                         <X size={14} className="text-slate-400" />
                       </button>
                     ))}
                   </div>
-                  <p className="mt-4 text-[12px] italic text-slate-300">Arraste para reordenar</p>
+                  <p className="mt-4 text-[12px] italic text-slate-300">{tx('Arraste para reordenar')}</p>
                 </div>
               </div>
             </Card>
@@ -397,17 +399,17 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
           <Card className="rounded-[24px] border border-slate-200 p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-[16px] font-bold text-ink">Pronto para gerar?</p>
+                <p className="text-[16px] font-bold text-ink">{tx('Pronto para gerar?')}</p>
                 <p className="text-[12px] text-slate-400">
-                  {selectedMetricItems.length} métricas, {selectedDimensionItems.length} dimensões e {filteredRows.length} campanhas no filtro
+                  {selectedMetricItems.length} {tx('métricas,')} {selectedDimensionItems.length} {tx('dimensões e')} {filteredRows.length} {tx('campanhas no filtro')}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" iconLeft={<Save size={16} />} onClick={saveReport}>
-                  Salvar Relatório
+                  {tx('Salvar Relatório')}
                 </Button>
                 <Button iconLeft={<Download size={16} />} onClick={() => void downloadReport()} loading={exporting}>
-                  Run report
+                  {tx('Run report')}
                 </Button>
               </div>
             </div>

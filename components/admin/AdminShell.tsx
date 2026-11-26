@@ -38,6 +38,7 @@ import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { UserRole } from '@/types';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const navigation: Array<{ href: string; label: string; icon: React.ElementType; exact?: boolean; rootOnly?: boolean }> = [
   { href: '/admin', label: 'Visão geral', icon: LayoutGrid, exact: true },
@@ -60,6 +61,7 @@ const navigation: Array<{ href: string; label: string; icon: React.ElementType; 
 ];
 
 export default function AdminShell({ user, children }: { user: User; children: React.ReactNode }) {
+  const { tx } = useLanguage();
   const pathname = usePathname() || '/admin';
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,17 +91,17 @@ export default function AdminShell({ user, children }: { user: User; children: R
     <div className="flex h-full flex-col bg-surface">
       <div className="flex h-[74px] items-center border-b border-slate-200 px-6"><GringoouLogo size={25} /></div>
       <div className="flex-1 overflow-y-auto px-3 py-5">
-        <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Principal</p>
-        <nav className="space-y-1" aria-label="Navegação administrativa">
+        <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{tx('Principal')}</p>
+        <nav className="space-y-1" aria-label={tx('Navegação administrativa')}>
           {navigation.filter((item) => (!item.rootOnly || isRoot) && (item.href === '/admin/utm' ? canManageUtm : user.role === UserRole.ADMIN || (user.role === UserRole.MODERATOR && (item.href === '/admin/moderation' || item.href === '/admin/news')))).map((item) => {
             const Icon = item.icon;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
               <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={cn('flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold transition', item.rootOnly
                 ? (active ? 'bg-[#F6EBC8] text-[#7A5C0F]' : 'text-[#8A6A12] hover:bg-[#FBF3DB] hover:text-[#6B4F0B]')
-                : (active ? 'bg-wash-5 text-[#2B5DF5]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'))}>
+                : (active ? tx('bg-wash-5 text-[#2B5DF5]') : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'))}>
                 <Icon size={18} strokeWidth={2} />
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1">{tx(item.label)}</span>
               </Link>
             );
           })}
@@ -108,10 +110,10 @@ export default function AdminShell({ user, children }: { user: User; children: R
       <div className="border-t border-slate-200 p-4">
         <div className="flex items-center gap-3 px-2 py-2">
           <Avatar src={user.avatar} name={user.name} size="sm" />
-          <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">{user.role === UserRole.MODERATOR ? 'Moderador(a)' : 'Administrador(a)'}</p></div>
+          <div className="min-w-0"><p className="truncate text-xs font-bold text-slate-900">{user.name}</p><p className="text-[10px] text-slate-400">{user.role === UserRole.MODERATOR ? tx('Moderador(a)') : tx('Administrador(a)')}</p></div>
         </div>
-        <Link href="/home" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />Voltar à comunidade</Link>
-        <button type="button" onClick={() => signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><LogOut size={14} />Sair</button>
+        <Link href="/home" className="mt-2 flex items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50"><Flag size={14} />{tx('Voltar à comunidade')}</Link>
+        <button type="button" onClick={() => signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><LogOut size={14} />{tx('Sair')}</button>
       </div>
     </div>
   );
@@ -119,23 +121,23 @@ export default function AdminShell({ user, children }: { user: User; children: R
   return (
     <div className="min-h-dvh bg-wash-1 text-ink">
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-slate-200 lg:block">{sidebar}</aside>
-      {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-scrim/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label="Fechar" className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
+      {mobileOpen ? <div className="fixed inset-0 z-[80] lg:hidden"><button type="button" aria-label={tx('Fechar menu')} className="absolute inset-0 bg-scrim/35" onClick={() => setMobileOpen(false)} /><aside className="relative h-full w-72 shadow-xl">{sidebar}<button type="button" aria-label={tx('Fechar')} className="absolute right-3 top-5 rounded-full p-2 text-slate-500" onClick={() => setMobileOpen(false)}><X size={20} /></button></aside></div> : null}
       <div className="lg:pl-72">
         <header className="sticky top-0 z-40 flex h-[74px] items-center justify-between border-b border-slate-200 bg-surface px-4 sm:px-7">
-          <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{user.role === UserRole.MODERATOR ? 'Moderação' : 'Administração'}</span></div>
+          <div className="flex items-center gap-3"><button type="button" className="rounded-xl p-2 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu size={22} /></button><span className="text-sm font-extrabold">{user.role === UserRole.MODERATOR ? tx('Moderação') : tx('Administração')}</span></div>
           <div className="flex items-center gap-2">
-            <form onSubmit={submitSearch} role="search" className="hidden w-56 sm:block"><div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-wash-1 px-4 focus-within:border-[#2B5DF5]/40 focus-within:ring-2 focus-within:ring-[#2B5DF5]/10"><Search size={16} className="text-slate-400" /><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label="Buscar no painel" placeholder="Buscar..." className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></form>
+            <form onSubmit={submitSearch} role="search" className="hidden w-56 sm:block"><div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-wash-1 px-4 focus-within:border-[#2B5DF5]/40 focus-within:ring-2 focus-within:ring-[#2B5DF5]/10"><Search size={16} className="text-slate-400" /><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label={tx('Buscar no painel')} placeholder={tx('Buscar...')} className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" /></div></form>
             <div className="[&_button:first-child]:h-10 [&_button:first-child]:w-10 [&_button:first-child]:rounded-full [&_button:first-child]:border [&_button:first-child]:border-slate-200 [&_button:first-child]:p-0 [&_button:first-child]:text-slate-400">
               <FriendRequestBell adminMode />
             </div>
             <div ref={accountMenuRef} className="relative">
-              <button type="button" aria-label="Abrir menu do perfil" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)} className="flex h-10 items-center gap-2 rounded-full border border-slate-200 px-2.5 transition hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="xs" /><span className="hidden max-w-28 truncate text-xs font-bold sm:block">{user.name}</span><ChevronDown size={14} className="text-slate-400" /></button>
+              <button type="button" aria-label={tx('Abrir menu do perfil')} aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)} className="flex h-10 items-center gap-2 rounded-full border border-slate-200 px-2.5 transition hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="xs" /><span className="hidden max-w-28 truncate text-xs font-bold sm:block">{user.name}</span><ChevronDown size={14} className="text-slate-400" /></button>
               <Popover open={accountMenuOpen} onClose={() => setAccountMenuOpen(false)} anchorRef={accountMenuRef} align="end" role="dialog" unstyled className="w-64 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-2 shadow-xl shadow-slate-950/10">
                 <div>
-                  <Link href={profileHref} onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="sm" /><span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Administrador'}</span></span></Link>
+                  <Link href={profileHref} onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><Avatar src={user.avatar} name={user.name} size="sm" /><span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || tx('Administrador')}</span></span></Link>
                   <div className="my-1 border-t border-slate-100" />
-                  <Link href="/home" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />Voltar a comunidade</Link>
-                  <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={16} />Sair</button>
+                  <Link href="/home" onClick={() => setAccountMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Flag size={16} />{tx('Voltar a comunidade')}</Link>
+                  <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={16} />{tx('Sair')}</button>
                 </div>
               </Popover>
             </div>
