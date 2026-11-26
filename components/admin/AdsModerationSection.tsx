@@ -7,6 +7,7 @@ import { Building2, CalendarDays, Check, CheckCircle2, Clock3, Eye, MapPin, Mega
 import { Badge, Button, Card, Input, Modal, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Campaign = {
   id: string; headline: string | null; name: string; description: string | null; imageUrl: string;
@@ -76,7 +77,7 @@ export default function AdsModerationSection() {
       if (!response.ok) throw new Error(result?.error ?? 'Não foi possível carregar a fila de anúncios.');
       setPayload(result);
       setSelected((current) => current ? result.campaigns.find((campaign: Campaign) => campaign.id === current.id) ?? current : null);
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Falha ao carregar a fila.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Falha ao carregar a fila.'), 'error'); }
     finally { setLoading(false); setRefreshing(false); }
   }, [query, showToast]);
 
@@ -92,7 +93,7 @@ export default function AdsModerationSection() {
       const notMoved = (result.results as Array<{ headline: string | null; state: string; detail: string }>).filter((item) => item.state !== 'paid');
       showToast(result.checked === 0 ? 'Nenhuma campanha aguardando confirmação de pagamento.' : result.moved + ' de ' + result.checked + ' campanha(s) enviadas para revisão.' + (notMoved.length ? ' Pendentes: ' + notMoved.map((item) => (item.headline || 'Campanha') + ' (' + item.detail + ')').join('; ') : ''), result.moved > 0 || result.checked === 0 ? 'success' : 'error');
       await loadCampaigns(true);
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Falha ao verificar pagamentos.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Falha ao verificar pagamentos.'), 'error'); }
     finally { setReconciling(false); }
   };
 
@@ -102,7 +103,7 @@ export default function AdsModerationSection() {
       const response = await fetch(`/api/admin/ads/${approving.id}/approve`, { method: 'POST' }); const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.error ?? 'Não foi possível aprovar a campanha.');
       setApproving(null); setSelected(null); showToast('Campanha aprovada e anunciante notificado.', 'success'); await loadCampaigns(true);
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Falha ao aprovar.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Falha ao aprovar.'), 'error'); }
     finally { setProcessingId(null); }
   };
   const reject = async () => {
@@ -111,7 +112,7 @@ export default function AdsModerationSection() {
       const response = await fetch(`/api/admin/ads/${rejecting.id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reason.trim(), refund: refundOnReject && canRefundRejecting }) }); const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.error ?? 'Não foi possível rejeitar a campanha.');
       setRejecting(null); setSelected(null); setReason(''); showToast(refundOnReject && canRefundRejecting ? 'Campanha rejeitada, pagamento estornado e anunciante notificado.' : 'Campanha rejeitada e anunciante notificado.', 'success'); await loadCampaigns(true);
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Falha ao rejeitar.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Falha ao rejeitar.'), 'error'); }
     finally { setProcessingId(null); }
   };
   const rejectingPayment = rejecting?.payments?.find((payment) => payment.provider === 'STRIPE' && payment.status === 'PAID') ?? null;

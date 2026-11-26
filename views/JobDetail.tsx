@@ -15,6 +15,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Job = {
   id: string;
@@ -55,7 +56,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         }
       })
       .catch((error) => {
-        if (!ignore) showToast(error instanceof Error ? error.message : 'Vaga não encontrada.', 'error');
+        if (!ignore) showToast(getUserErrorMessage(error, 'Vaga não encontrada.'), 'error');
       })
       .finally(() => {
         if (!ignore) setLoading(false);
@@ -102,7 +103,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
       notifyContentUpdated();
       showToast('Vaga atualizada.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a vaga.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar a vaga.'), 'error');
     } finally {
       setSaving(false);
     }

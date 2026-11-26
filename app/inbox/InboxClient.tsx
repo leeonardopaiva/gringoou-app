@@ -14,6 +14,7 @@ import { useMessaging, type Conversation as MessagingConversation } from '@/lib/
 import { useToast } from '@/components/feedback/ToastProvider';
 import { MessageCircle, Package, Store, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
 type Conversation = MessagingConversation;
@@ -188,7 +189,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       setReportReason('');
       setReportDetails('');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível enviar a denúncia.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível enviar a denúncia.'), 'error');
     } finally {
       setReportSending(false);
     }

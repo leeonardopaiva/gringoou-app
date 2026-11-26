@@ -45,6 +45,7 @@ import { formatLoosePhoneInput } from '../lib/forms/phone';
 import { normalizeUsernameInput } from '../lib/username';
 import { formatVisibilityScopeLabel } from '../lib/visibility';
 import type { User } from '../types';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type BusinessAction = 'approve' | 'reject' | 'suspend';
 type EventAction = 'approve' | 'reject' | 'cancel';
@@ -599,7 +600,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       });
     } catch (loadError) {
       console.error('Failed to load admin dashboard:', loadError);
-      setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar o painel admin.');
+      setError(getUserErrorMessage(loadError, 'Não foi possível carregar o painel admin.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -628,7 +629,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       });
     } catch (loadError) {
       console.error('Failed to load admin analytics:', loadError);
-      setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os analytics.');
+      setError(getUserErrorMessage(loadError, 'Não foi possível carregar os analytics.'));
     } finally {
       setAnalyticsLoading(false);
     }
@@ -692,7 +693,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       await loadDashboard(true);
     } catch (actionError) {
       console.error(fallbackError, actionError);
-      setError(actionError instanceof Error ? actionError.message : fallbackError);
+      setError(getUserErrorMessage(actionError, fallbackError));
     } finally {
       setProcessingKey(null);
     }
@@ -1087,7 +1088,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       }
     } catch (importError) {
       console.error('Failed to preview admin import:', importError);
-      setError(importError instanceof Error ? importError.message : 'Não foi possível validar o arquivo.');
+      setError(getUserErrorMessage(importError, 'Não foi possível validar o arquivo.'));
     } finally {
       setProcessingKey(null);
     }

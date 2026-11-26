@@ -12,6 +12,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import RegionSelector from '../components/RegionSelector';
 import { ThemeSelector } from '../components/theme/ThemeSelector';
+import { LanguageSelector } from '../components/i18n/LanguageSelector';
 import { CityAutocomplete } from '../components/ui/CityAutocomplete';
 import { formatLoosePhoneInput } from '../lib/forms/phone';
 import { normalizeUrlFieldValue } from '../lib/forms/validation';
@@ -25,6 +26,7 @@ import { Modal } from '../components/ui/Modal';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-navy';
@@ -374,7 +376,7 @@ const Profile: React.FC<{
       return true;
     } catch (error) {
       console.error('Failed to save profile:', error);
-      showToast(error instanceof Error ? error.message : 'Não foi possível salvar o perfil.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível salvar o perfil.'), 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -401,7 +403,7 @@ const Profile: React.FC<{
       return true;
     } catch (error) {
       console.error('Failed to update avatar:', error);
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua foto.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar sua foto.'), 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -425,7 +427,7 @@ const Profile: React.FC<{
       showToast('Enviamos um link de confirmação para o novo email.', 'success');
     } catch (error) {
       console.error('Failed to request email change:', error);
-      showToast(error instanceof Error ? error.message : 'Não foi possível iniciar a troca de email.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível iniciar a troca de email.'), 'error');
     } finally {
       setRequestingEmailChange(false);
     }
@@ -456,7 +458,7 @@ const Profile: React.FC<{
       return true;
     } catch (error) {
       console.error('Failed to save region:', error);
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua região.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar sua região.'), 'error');
       return false;
     } finally {
       setSavingKey(null);
@@ -816,13 +818,19 @@ const Profile: React.FC<{
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
-                    <RegionSelector citySearch label="Cidade atual (EUA)" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negócios e eventos priorizam esta região." />
+                    <RegionSelector citySearch label="Cidade atual" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negócios e eventos priorizam esta região." />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-1 text-sm font-bold text-slate-600">Aparência</h3>
                     <p className="mb-3 text-xs text-slate-500">Escolha o tema claro ou escuro. Em &ldquo;Sistema&rdquo;, o app segue a configuração do seu aparelho. Vale só para este aparelho.</p>
                     <ThemeSelector />
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-4">
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">Idioma</h3>
+                    <p className="mb-3 text-xs text-slate-500">Os idiomas disponíveis dependem das regiões ativas. Vale só para este aparelho.</p>
+                    <LanguageSelector />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">

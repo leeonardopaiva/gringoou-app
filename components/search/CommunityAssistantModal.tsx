@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowUp, BriefcaseBusiness, CalendarDays, Check, ChevronRight, ExternalLink, Home, LoaderCircle, MapPin, Mic, PencilLine, RotateCcw, Share2, Sparkles, ThumbsDown, ThumbsUp, Users, Utensils, X } from 'lucide-react';
 import { buildSearchPath } from '@/lib/search-navigation';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type AssistantReference = { id: string; label: string; href: string; type: string };
 type ChatMessage = {
@@ -193,7 +194,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
       setMessages((current) => [...current, {
         id: crypto.randomUUID(),
         role: 'assistant',
-        text: error instanceof Error ? error.message : 'Não foi possível responder agora. Tente novamente.',
+        text: getUserErrorMessage(error, 'Não foi possível responder agora. Tente novamente.'),
         error: true,
       }]);
     } finally {

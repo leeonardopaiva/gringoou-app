@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import RegionSelector from '@/components/RegionSelector';
 import { useToast } from '@/components/feedback/ToastProvider';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type GroupDraft = {
   name: string;
@@ -56,7 +57,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
       onClose();
       onCreated(payload?.group ?? null);
     } catch (createError) {
-      showToast(createError instanceof Error ? createError.message : 'Não foi possível criar o grupo.', 'error');
+      showToast(getUserErrorMessage(createError, 'Não foi possível criar o grupo.'), 'error');
     } finally {
       setCreating(false);
     }

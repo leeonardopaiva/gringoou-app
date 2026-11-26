@@ -7,6 +7,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { Badge, Button, Modal, Skeleton } from '@/components/ui';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@/lib/news';
 import type { NewsAdminArticleContract } from '@/lib/content-contracts';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Filters = { status: string; authorId: string; category: string; from: string; to: string; q: string };
 type FormState = {
@@ -67,7 +68,7 @@ export default function NewsEditorialSection() {
       setAuthors(payload.authors ?? []);
       setTotalPages(payload.totalPages ?? 1);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar as notícias.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar as notícias.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -131,7 +132,7 @@ export default function NewsEditorialSection() {
       setEditing(null);
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível salvar a notícia.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível salvar a notícia.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -154,7 +155,7 @@ export default function NewsEditorialSection() {
       showToast(article.status === 'PUBLISHED' ? 'Notícia despublicada.' : 'Notícia publicada.', 'success');
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a notícia.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar a notícia.'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -171,7 +172,7 @@ export default function NewsEditorialSection() {
       setDeleting(null);
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível excluir a notícia.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível excluir a notícia.'), 'error');
     } finally {
       setBusyId(null);
     }

@@ -23,7 +23,7 @@ interface RegionSelectorProps {
   hint?: string;
   inlineMenu?: boolean;
   /**
-   * Habilita a busca por cidades dos EUA no menu. A cidade escolhida é ligada à região
+   * Habilita a busca por cidades do(s) país(es) ativo(s) do usuário no menu. A cidade escolhida é ligada à região
    * mais próxima, que é o que define o conteúdo local exibido.
    */
   citySearch?: boolean;
@@ -105,7 +105,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
     const timeout = window.setTimeout(async () => {
       setCityLoading(true);
       try {
-        const params = new URLSearchParams({ q: query, scope: 'us' });
+        const params = new URLSearchParams({ q: query, scope: 'mine' });
         const response = await fetch(`/api/places/cities?${params.toString()}`, { signal: controller.signal });
         const payload = await response.json().catch(() => null);
         setCityResults(response.ok && Array.isArray(payload?.cities) ? payload.cities : []);
@@ -203,12 +203,15 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
   const pickCity = (city: CitySuggestion) => {
     const nearest = findNearestRegion(city.lat, city.lng, regionPool);
-    const miles = Math.round(calculateDistanceKm(city.lat, city.lng, nearest.lat, nearest.lng) * 0.621371);
+    const km = calculateDistanceKm(city.lat, city.lng, nearest.lat, nearest.lng);
+    // Milhas só nos EUA; nos demais países, quilômetros.
+    const useMiles = (nearest.countryCode || 'US') === 'US';
+    const distance = useMiles ? Math.round(km * 0.621371) : Math.round(km);
     onChange(nearest);
     setCityNotice(
-      miles <= 40
+      km <= 65
         ? `${city.label}: você verá o conteúdo da região ${nearest.label}.`
-        : `Ainda não temos uma região em ${city.label}. Você verá o conteúdo de ${nearest.label} (cerca de ${miles} milhas) e poderá trocar quando quiser.`,
+        : `Ainda não temos uma região em ${city.label}. Você verá o conteúdo de ${nearest.label} (cerca de ${distance} ${useMiles ? 'milhas' : 'km'}) e poderá trocar quando quiser.`,
     );
     setOpen(false);
     setSearch('');
@@ -266,7 +269,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={citySearch ? 'Buscar cidade dos EUA ou região' : 'Buscar região'}
+              placeholder={citySearch ? 'Buscar cidade ou região' : 'Buscar região'}
               autoFocus
               className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-surface pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
@@ -285,8 +288,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
           <div className="mt-2 max-h-56 overflow-y-auto" role="listbox">
             {citySearch && search.trim().length >= 2 ? (
-              <div className="mb-1" role="group" aria-label="Cidades dos EUA">
-                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Cidades dos EUA</p>
+              <div className="mb-1" role="group" aria-label="Cidades">
+                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Cidades</p>
                 {cityResults.map((city) => (
                   <button
                     key={city.id}

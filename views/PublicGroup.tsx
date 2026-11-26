@@ -12,6 +12,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
 import GroupFeed from '../components/groups/GroupFeed';
 import { notifyContentUpdated } from '../lib/content-refresh';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type GroupMember = {
   id: string;
@@ -136,7 +137,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         }
       } catch (loadError) {
         if (!ignore) {
-          setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar este grupo.');
+          setError(getUserErrorMessage(loadError, 'Não foi possível carregar este grupo.'));
         }
       } finally {
         if (!ignore) {
@@ -173,7 +174,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       setRefreshKey((current) => current + 1);
     } catch (membershipError) {
       showToast(
-        membershipError instanceof Error ? membershipError.message : 'Não foi possível atualizar sua participação.',
+        getUserErrorMessage(membershipError, 'Não foi possível atualizar sua participação.'),
         'error',
       );
     } finally {
@@ -207,7 +208,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       setSettingsOpen(false);
       setRefreshKey((current) => current + 1);
       notifyContentUpdated();
-    } catch (settingsError) { showToast(settingsError instanceof Error ? settingsError.message : 'Não foi possível atualizar o grupo.', 'error'); }
+    } catch (settingsError) { showToast(getUserErrorMessage(settingsError, 'Não foi possível atualizar o grupo.'), 'error'); }
     finally { setSavingSettings(false); }
   };
 
@@ -222,7 +223,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       showToast(payload?.message || 'Participação atualizada.', 'success');
       setSelectedMember(null);
       setRefreshKey((current) => current + 1);
-    } catch (moderationError) { showToast(moderationError instanceof Error ? moderationError.message : 'Não foi possível moderar este membro.', 'error'); }
+    } catch (moderationError) { showToast(getUserErrorMessage(moderationError, 'Não foi possível moderar este membro.'), 'error'); }
     finally { setModeratingMemberId(null); }
   };
 
@@ -237,7 +238,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       setReportReason('');
       showToast(payload.message || 'Denúncia enviada para moderação.', 'success');
     } catch (reportError) {
-      showToast(reportError instanceof Error ? reportError.message : 'Não foi possível enviar a denúncia.', 'error');
+      showToast(getUserErrorMessage(reportError, 'Não foi possível enviar a denúncia.'), 'error');
     } finally {
       setReporting(false);
     }

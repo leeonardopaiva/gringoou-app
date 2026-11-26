@@ -5,6 +5,7 @@ import { CheckCircle2, CircleAlert, CreditCard, TriangleAlert } from 'lucide-rea
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -30,7 +31,7 @@ export default function StripeIntegrationPanel() {
       if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível executar o diagnóstico.');
       setReport(payload);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Falha no diagnóstico.', 'error');
+      showToast(getUserErrorMessage(error, 'Falha no diagnóstico.'), 'error');
     } finally {
       setRunning(false);
     }
@@ -51,7 +52,7 @@ export default function StripeIntegrationPanel() {
       );
       await run();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Falha ao verificar pagamentos.', 'error');
+      showToast(getUserErrorMessage(error, 'Falha ao verificar pagamentos.'), 'error');
     } finally {
       setReconciling(false);
     }

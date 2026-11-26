@@ -1,7 +1,8 @@
-export type Language = 'pt-BR' | 'en-US' | 'es';
+export type Language = 'pt-BR' | 'pt-PT' | 'en-US' | 'es';
 
 export const LANGUAGES: Array<{ code: Language; label: string }> = [
-  { code: 'pt-BR', label: 'Português (BR)' },
+  { code: 'pt-BR', label: 'Português (Brasil)' },
+  { code: 'pt-PT', label: 'Português (Portugal)' },
   { code: 'en-US', label: 'English (US)' },
   { code: 'es', label: 'Español' },
 ];
@@ -111,8 +112,22 @@ const es: Record<keyof typeof ptBR, string> = {
   'common.back': 'Volver',
 };
 
+// Português de Portugal: parte do português do Brasil e troca só o que muda (vocabulário e tratamento).
+const ptPT: Record<keyof typeof ptBR, string> = {
+  ...ptBR,
+  'news.search': 'Pesquisar notícias...',
+  'news.emptyDesc': 'Tente outra pesquisa ou categoria. As notícias são atualizadas ao longo do dia.',
+  'marketplace.search': 'Pesquisar anúncios...',
+  'marketplace.saved': 'Guardados',
+  'marketplace.contact': 'Contactar anunciante',
+  'marketplace.nearby': 'Mais anúncios perto de si',
+  'common.loading': 'A carregar...',
+  'common.error': 'Não foi possível carregar neste momento.',
+};
+
 export const dictionaries: Record<Language, Record<keyof typeof ptBR, string>> = {
   'pt-BR': ptBR,
+  'pt-PT': ptPT,
   'en-US': enUS,
   es,
 };

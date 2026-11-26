@@ -5,6 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import PostCard from '@/components/community/PostCard';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Comment = { id: string; content: string; isHidden?: boolean; createdAt: string; canEdit?: boolean; canDelete?: boolean; canHide?: boolean; author: { id: string; name?: string | null; username?: string | null; image?: string | null }; replies?: Comment[] };
 
@@ -36,7 +37,7 @@ export default function CommentWall({ endpoint, title = 'Conversa da comunidade'
     return () => controller.abort();
   }, [load, showToast]);
 
-  const refresh = async () => { try { await load(); } catch (error) { showToast(error instanceof Error ? error.message : 'Erro ao atualizar comentários.', 'error'); } };
+  const refresh = async () => { try { await load(); } catch (error) { showToast(getUserErrorMessage(error, 'Erro ao atualizar comentários.'), 'error'); } };
 
   const submit = async () => {
     if (!content.trim() || saving) return;
@@ -51,7 +52,7 @@ export default function CommentWall({ endpoint, title = 'Conversa da comunidade'
       setEditing(null);
       await refresh();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível comentar.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível comentar.'), 'error');
     } finally {
       setSaving(false);
     }

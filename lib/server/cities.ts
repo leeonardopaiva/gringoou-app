@@ -7,7 +7,8 @@ import citiesFile from '@/data/geo/cities.json';
  * A lista vem ordenada por população (maior primeiro), o que dá o desempate natural.
  */
 
-export type CityScope = 'world' | 'us';
+/** `world` = qualquer país; uma lista de códigos ISO (ex.: ['PT']) limita a busca a esses países. */
+export type CityScope = 'world' | string[];
 
 export type CitySuggestion = {
   id: string;
@@ -84,7 +85,7 @@ const BR_UF: Record<string, string> = {
   rondonia: 'RO', roraima: 'RR', 'santa catarina': 'SC', 'sao paulo': 'SP', sergipe: 'SE', tocantins: 'TO',
 };
 
-let cachedIndex: { all: IndexedCity[]; us: IndexedCity[] } | null = null;
+let cachedIndex: { all: IndexedCity[] } | null = null;
 
 const getIndex = () => {
   if (cachedIndex) return cachedIndex;
@@ -109,19 +110,21 @@ const getIndex = () => {
     },
   );
 
-  cachedIndex = { all, us: all.filter((city) => city.countryCode === 'US') };
+  cachedIndex = { all };
   return cachedIndex;
 };
 
-const buildLabel = (city: IndexedCity, scope: CityScope) => {
+// O país só aparece no texto quando a busca cobre mais de um país (ou o mundo todo).
+const buildLabel = (city: IndexedCity, showCountry: boolean) => {
   const country = getCountryName(city.countryCode);
-  // Estados Unidos e Brasil: "Cidade, UF" (o país só entra na busca mundial).
+  // Estados Unidos e Brasil: "Cidade, UF".
   if ((city.countryCode === 'US' || city.countryCode === 'BR') && city.stateCode) {
-    return scope === 'us' ? `${city.name}, ${city.stateCode}` : `${city.name}, ${city.stateCode}, ${country}`;
+    return showCountry ? `${city.name}, ${city.stateCode}, ${country}` : `${city.name}, ${city.stateCode}`;
   }
-  // Demais países: omite a região quando repete o nome da cidade (ex.: Singapura).
+  // Canadá usa a sigla da província quando a base traz; demais países usam o nome da região.
+  // A região é omitida quando repete o nome da cidade (ex.: Bragança, Singapura).
   const region = city.admin1 && city.admin1 !== city.name ? city.admin1 : '';
-  return [city.name, region, country].filter(Boolean).join(', ');
+  return [city.name, region, showCountry ? country : ''].filter(Boolean).join(', ');
 };
 
 const collect = (pool: IndexedCity[], namePart: string, qualifier: string, max: number) => {
@@ -160,7 +163,11 @@ export function searchCities(rawQuery: string, scope: CityScope, limit = 8): Cit
   const qualifier = normalize(rest.join(' '));
   if (namePart.length < 2) return [];
 
-  const pool = scope === 'us' ? getIndex().us : getIndex().all;
+  const countries = scope === 'world' ? null : new Set(scope.map((code) => code.toUpperCase()));
+  // Sem nenhum país na lista, não há o que buscar (nunca cai para o mundo todo por engano).
+  if (countries && countries.size === 0) return [];
+  const pool = countries ? getIndex().all.filter((city) => countries.has(city.countryCode)) : getIndex().all;
+  const showCountry = !countries || countries.size > 1;
   const max = Math.max(1, Math.min(limit, 15));
   let found = collect(pool, namePart, qualifier, max);
 
@@ -174,7 +181,7 @@ export function searchCities(rawQuery: string, scope: CityScope, limit = 8): Cit
 
   return found.map((city) => ({
     id: `${city.countryCode}-${city.index}`,
-    label: buildLabel(city, scope),
+    label: buildLabel(city, showCountry),
     city: city.name,
     countryCode: city.countryCode,
     lat: city.lat,

@@ -13,6 +13,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import { PublicLinksBlock } from '@/components/profile/PublicLinksBlock';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type AccountData = {
   id: string; name: string; websiteUrl: string | null; phone: string | null; businessAddress: string | null;
@@ -50,7 +51,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       await refreshAccounts();
       setEditOpen(false);
       showToast('Conta comercial atualizada.', 'success');
-    } catch (reason) { showToast(reason instanceof Error ? reason.message : 'Falha ao atualizar a empresa.', 'error'); }
+    } catch (reason) { showToast(getUserErrorMessage(reason, 'Falha ao atualizar a empresa.'), 'error'); }
     finally { setSavingAccount(false); }
   };
 
@@ -61,7 +62,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar seus dados.');
       showToast('Dados pessoais atualizados.', 'success');
-    } catch (reason) { showToast(reason instanceof Error ? reason.message : 'Falha ao salvar seus dados.', 'error'); }
+    } catch (reason) { showToast(getUserErrorMessage(reason, 'Falha ao salvar seus dados.'), 'error'); }
     finally { setSavingUser(false); }
   };
 

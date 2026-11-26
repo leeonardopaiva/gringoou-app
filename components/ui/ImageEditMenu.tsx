@@ -8,6 +8,7 @@ import { ImageLightbox } from '@/components/community/ImageLightbox';
 import { Modal } from '@/components/ui/Modal';
 import { ImageCropper, type ImageCropperHandle } from '@/components/ui/ImageCropper';
 import { cn } from '@/lib/cn';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type ImageEditMenuProps = {
   folder: CloudinaryFolder;
@@ -108,7 +109,7 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
       setEditing(false);
       setFile(null);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível enviar a imagem.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível enviar a imagem.'), 'error');
     } finally {
       setSaving(false);
     }

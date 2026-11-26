@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { Skeleton } from '@/components/ui';
 import { buildUtmUrl, type UtmParams } from '@/lib/utm';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type RuleState = UtmParams & { enabled: boolean };
 
@@ -60,7 +61,7 @@ const RuleCard: React.FC<{ kind: Kind; onSaved: () => void }> = ({ kind, onSaved
       showToast('Regra de UTM salva.', 'success');
       onSaved();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível salvar.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível salvar.'), 'error');
     } finally {
       setBusy(false);
     }
@@ -74,7 +75,7 @@ const RuleCard: React.FC<{ kind: Kind; onSaved: () => void }> = ({ kind, onSaved
       showToast('Padrão restaurado.', 'success');
       onSaved();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível restaurar.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível restaurar.'), 'error');
     } finally {
       setBusy(false);
     }
@@ -162,7 +163,7 @@ const ManagersCard: React.FC = () => {
       showToast('Permissão concedida.', 'success');
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível conceder.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível conceder.'), 'error');
     } finally {
       setBusy(false);
     }

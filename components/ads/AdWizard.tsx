@@ -15,6 +15,7 @@ import { WizardStepper } from './WizardStepper';
 import { useAdAccount } from './AdAccountProvider';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { useAdPlans } from '@/hooks/useAdPlans';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const LEGACY_STORAGE_KEY = 'gringoou:ad-wizard-draft';
 const STORAGE_KEY_PREFIX = 'gringoou:ad-wizard-draft';
@@ -170,7 +171,7 @@ export const AdWizard: React.FC = () => {
       if (showSuccess) showToast('Rascunho salvo.', 'success');
       return draftId;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Não foi possível salvar o rascunho.';
+      const message = getUserErrorMessage(error, 'Não foi possível salvar o rascunho.');
       setRequestError(message);
       if (showSuccess) showToast(message, 'error');
       return null;
@@ -233,7 +234,7 @@ export const AdWizard: React.FC = () => {
       setClientSecret(payload.clientSecret);
       return true;
     } catch (error) {
-      setRequestError(error instanceof Error ? error.message : 'Não foi possível preparar o pagamento.');
+      setRequestError(getUserErrorMessage(error, 'Não foi possível preparar o pagamento.'));
       return false;
     } finally {
       setSaving(false);
@@ -302,7 +303,7 @@ export const AdWizard: React.FC = () => {
       router.replace('/ads/wizard');
       showToast('Rascunho descartado.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível descartar o rascunho.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível descartar o rascunho.'), 'error');
     } finally {
       setDiscarding(false);
     }

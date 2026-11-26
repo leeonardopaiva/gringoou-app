@@ -8,6 +8,7 @@ import { ImagePlus, LoaderCircle, Pencil, Trash2 } from 'lucide-react';
 import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type CloudinaryFolder } from '@/lib/cloudinary';
 import { isValidHttpUrl } from '@/lib/url';
 import FieldErrorMessage from './FieldErrorMessage';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type CloudinaryUploadResponse = {
   secure_url?: string;
@@ -106,7 +107,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       await uploadFile(file);
     } catch (cropFailure) {
       setPendingFile(null);
-      setUploadError(cropFailure instanceof Error ? cropFailure.message : 'Não foi possível processar a imagem.');
+      setUploadError(getUserErrorMessage(cropFailure, 'Não foi possível processar a imagem.'));
     }
   };
 

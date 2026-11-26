@@ -17,8 +17,8 @@ type CityAutocompleteProps = {
   value: string;
   /** Chamado a cada digitação (texto livre) e ao escolher uma sugestão. */
   onChange: (value: string, suggestion?: CitySuggestion) => void;
-  /** `world`: qualquer país (cidade natal). `us`: apenas Estados Unidos. */
-  scope?: 'world' | 'us';
+  /** `world`: qualquer país (cidade natal). `mine`: apenas o(s) país(es) ativo(s) do usuário. */
+  scope?: 'world' | 'mine';
   placeholder?: string;
   error?: string;
   disabled?: boolean;

@@ -8,6 +8,7 @@ import { InfoTip } from '@/components/ui/InfoTip';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { AD_PLANS } from '@/lib/ads/contracts';
 import type { AdPlanInfo } from '@/lib/ads/plans';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Draft = { name: string; price: string; durationMonths: number; estimatedImpressions: string; description: string; highlights: string; isActive: boolean };
 
@@ -45,7 +46,7 @@ export default function AdPlansSection() {
         return [slot, found ? toDraft(found) : blankDraft];
       })));
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar os pacotes.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar os pacotes.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ export default function AdPlansSection() {
       setPlans(payload.plans);
       showToast(successMessage, 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível salvar.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível salvar.'), 'error');
     } finally {
       setSaving(null);
     }

@@ -26,6 +26,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { ServiceCard } from '../components/ui/ServiceCard';
 import { useActiveRegion } from '../components/RegionContext';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
   const router = useRouter();
@@ -148,7 +149,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
       showToast(payload?.message ?? 'Cadastro registrado.', 'success');
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.',
+        getUserErrorMessage(error, 'Não foi possível registrar seu interesse.'),
         'error',
       );
     } finally {

@@ -93,6 +93,8 @@ const GEO_EXEMPT_PREFIXES = [
   '/access-blocked',
   '/region-unavailable',
   '/maintenance',
+  '/terms',
+  '/privacy',
 ];
 
 export const isGeoExemptPath = (pathname: string) =>

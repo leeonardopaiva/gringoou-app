@@ -36,6 +36,7 @@ import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 interface EventDetailProps {
   eventId?: string;
@@ -231,7 +232,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       } catch (error) {
         console.error('Failed to load event detail:', error);
         if (!ignore) {
-          showToast(error instanceof Error ? error.message : 'Não foi possível carregar o evento.', 'error');
+          showToast(getUserErrorMessage(error, 'Não foi possível carregar o evento.'), 'error');
         }
       } finally {
         if (!ignore) {
@@ -345,7 +346,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       notifyContentUpdated();
       showToast('Informações do evento atualizadas.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar o evento.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar o evento.'), 'error');
     } finally {
       setSavingDetails(false);
     }

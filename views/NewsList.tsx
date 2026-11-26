@@ -21,6 +21,7 @@ import { useIntersectionTrigger } from '../hooks/useIntersectionTrigger';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '../lib/news';
 import type { NewsArticleContract, NewsInitialData } from '../lib/content-contracts';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const ALL = 'all';
 const CATEGORY_TABS = [{ id: ALL, label: 'Todas' }, ...NEWS_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))];
@@ -70,7 +71,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
       setLikers(article.recentLikers);
       setLiked(!nextLiked);
       setLikeCount((count) => Math.max(0, count + (nextLiked ? -1 : 1)));
-      showToast(error instanceof Error ? error.message : 'Não foi possível curtir agora.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível curtir agora.'), 'error');
     } finally {
       setLikeBusy(false);
     }

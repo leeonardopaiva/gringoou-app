@@ -44,6 +44,9 @@ const PUBLIC_AUTH_PATHS = [
   '/access-blocked',
   '/maintenance',
   '/styleguide',
+  // Legal pages must be readable before signing up (and by visitors from any country).
+  '/terms',
+  '/privacy',
   '/ads/login',
   '/ads/register',
   '/api/ads/auth/register',
@@ -73,6 +76,8 @@ const PRE_LAUNCH_PUBLIC_PATHS = [
   '/maintenance',
   '/access-blocked',
   '/styleguide',
+  '/terms',
+  '/privacy',
   '/api/dev/',
   '/api/waitlist',
   ...PUBLIC_ASSET_PREFIXES,

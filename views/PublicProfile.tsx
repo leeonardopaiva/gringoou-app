@@ -34,6 +34,7 @@ import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import CreateGroupModal from '../components/groups/CreateGroupModal';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type PublicProfileProps = {
   username: string;
@@ -159,7 +160,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         }
       } catch (loadError) {
         if (!ignore) {
-          setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar este perfil.');
+          setError(getUserErrorMessage(loadError, 'Não foi possível carregar este perfil.'));
         }
       } finally {
         if (!ignore) {
@@ -234,7 +235,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar o perfil.');
       showToast('Perfil atualizado.', 'success'); setEditModal(null); refreshProfile();
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível salvar o perfil.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível salvar o perfil.'), 'error'); }
     finally { setSavingProfile(false); }
   };
 
@@ -291,7 +292,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       refreshProfile();
     } catch (actionError) {
       showToast(
-        actionError instanceof Error ? actionError.message : 'Não foi possível atualizar a conexão.',
+        getUserErrorMessage(actionError, 'Não foi possível atualizar a conexão.'),
         'error',
       );
     } finally {

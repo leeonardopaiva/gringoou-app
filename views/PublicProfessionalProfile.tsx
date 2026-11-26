@@ -8,6 +8,7 @@ import { Logo } from '../components/Layout';
 import PageHeader from '../components/navigation/PageHeader';
 import { handleAvatarError } from '../lib/avatar';
 import { PublicProfessionalProfile, User } from '../types';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type PublicProfessionalProfileProps = {
   username: string;
@@ -80,7 +81,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
       } catch (loadError) {
         if (!ignore) {
           setError(
-            loadError instanceof Error ? loadError.message : 'Não foi possível carregar a vitrine profissional.',
+            getUserErrorMessage(loadError, 'Não foi possível carregar a vitrine profissional.'),
           );
         }
       } finally {

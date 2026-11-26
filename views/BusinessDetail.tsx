@@ -36,6 +36,7 @@ import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
 import { useMessaging } from '../lib/MessagingProvider';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -191,7 +192,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       } catch (error) {
         console.error('Failed to load business detail:', error);
         if (!ignore) {
-          showToast(error instanceof Error ? error.message : 'Não foi possível carregar o negócio.', 'error');
+          showToast(getUserErrorMessage(error, 'Não foi possível carregar o negócio.'), 'error');
         }
       } finally {
         if (!ignore) {

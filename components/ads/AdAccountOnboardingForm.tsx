@@ -13,6 +13,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import type { AdvertisableBusiness } from '@/lib/ads/businesses';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type AdAccountOnboardingFormProps = {
   mode?: 'initial' | 'additional';
@@ -58,7 +59,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
       router.replace('/ads/overview');
       router.refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Não foi possível cadastrar a empresa.');
+      setError(getUserErrorMessage(reason, 'Não foi possível cadastrar a empresa.'));
     } finally {
       setLoading(false);
     }

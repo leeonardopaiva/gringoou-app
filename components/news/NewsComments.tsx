@@ -8,6 +8,7 @@ import { Loader2, MessageCircle, Send } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { formatRelativeTime } from '@/components/marketplace/MarketplaceCard';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type NewsComment = {
   id: string;
@@ -52,7 +53,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
         setComments(payload.comments ?? []);
         setTotal(payload.total ?? 0);
       } catch (error) {
-        showToast(error instanceof Error ? error.message : 'Não foi possível carregar os comentários.', 'error');
+        showToast(getUserErrorMessage(error, 'Não foi possível carregar os comentários.'), 'error');
       } finally {
         setLoading(false);
       }
@@ -88,7 +89,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
       // Na prévia, o comentário novo passa a ser o único exibido; aberto, entra no fim da lista.
       setComments((current) => (open ? [...current, payload.comment] : [payload.comment]));
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível comentar agora.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível comentar agora.'), 'error');
     } finally {
       setSending(false);
     }

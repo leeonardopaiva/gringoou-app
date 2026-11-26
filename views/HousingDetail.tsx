@@ -15,6 +15,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Housing = { id: string; title: string; description: string; propertyType: string; locationLabel: string; price: string; imageUrl?: string | null; galleryUrls: string[]; contactUrl?: string | null; canEdit?: boolean; createdBy?: { name?: string | null }; publisher?: Publisher | null };
 
@@ -28,7 +29,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [coverFailed, setCoverFailed] = useState(false);
 
-  useEffect(() => { let ignore = false; void fetch(`/api/housing/${housingId}`).then(async (response) => { const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.error || 'Moradia não encontrada.'); if (!ignore) { setItem(payload.housing); setDraft(payload.housing); } }).catch((error) => { if (!ignore) showToast(error instanceof Error ? error.message : 'Moradia não encontrada.', 'error'); }).finally(() => { if (!ignore) setLoading(false); }); return () => { ignore = true; }; }, [housingId, showToast]);
+  useEffect(() => { let ignore = false; void fetch(`/api/housing/${housingId}`).then(async (response) => { const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.error || 'Moradia não encontrada.'); if (!ignore) { setItem(payload.housing); setDraft(payload.housing); } }).catch((error) => { if (!ignore) showToast(getUserErrorMessage(error, 'Moradia não encontrada.'), 'error'); }).finally(() => { if (!ignore) setLoading(false); }); return () => { ignore = true; }; }, [housingId, showToast]);
 
   const updateDraft = <K extends keyof Housing>(field: K, value: Housing[K]) => setDraft((current) => current ? { ...current, [field]: value } : current);
   const save = async () => {
@@ -42,7 +43,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
       setEditing(false);
       notifyContentUpdated();
       showToast('Moradia atualizada.', 'success');
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a moradia.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível atualizar a moradia.'), 'error'); }
     finally { setSaving(false); }
   };
 

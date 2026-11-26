@@ -11,6 +11,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import type { Post, User } from '@/types';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type GroupFeedProps = { groupId: string; groupSlug: string; user?: User | null; canPost: boolean };
 
@@ -36,7 +37,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
       setPosts((current) => append ? [...current, ...(payload.posts || [])] : payload.posts || []);
       setHasMore(Boolean(payload.hasMore));
       setNextOffset(Number(payload.nextOffset || 0));
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível carregar o mural.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível carregar o mural.'), 'error'); }
     finally { setLoading(false); setLoadingMore(false); }
   }, [groupId, showToast]);
   useEffect(() => { void loadPosts(); }, [loadPosts]);
@@ -63,7 +64,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
       resetComposer();
       await loadPosts();
       showToast(payload?.message || 'Publicação criada.', 'success');
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível publicar.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível publicar.'), 'error'); }
     finally { setPublishing(false); }
   };
   const request = async (url: string, init?: RequestInit) => {
@@ -76,7 +77,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
     try {
       const payload = await request(`/api/community/posts/${postId}/reactions`, { method: 'POST' });
       setPosts((current) => current.map((post) => post.id === postId ? { ...post, viewerHasLiked: Boolean(payload.liked), likeCount: Number(payload.likeCount), likedBy: payload.likedBy || [] } : post));
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Não foi possível curtir.', 'error'); }
+    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível curtir.'), 'error'); }
   };
   const refreshAction = async (url: string, init?: RequestInit) => { const payload = await request(url, init); await loadPosts(); if (payload?.message) showToast(payload.message, 'success'); };
   const share = async (post: Post) => {

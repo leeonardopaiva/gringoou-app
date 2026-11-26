@@ -46,6 +46,7 @@ import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
 import { ActiveRegionProvider } from './RegionContext';
 import { LanguageProvider } from './i18n/LanguageProvider';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -418,7 +419,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         locationLabel: confirmedRegion.label,
       });
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar sua região.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar sua região.'), 'error');
     } finally {
       setSavingRegion(false);
     }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CheckCircle2, MessageSquareWarning, RefreshCcw, XCircle } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Avatar, Skeleton } from '@/components/ui';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Person = { id: string; name: string | null; username: string | null; image: string | null };
 type Report = {
@@ -50,7 +51,7 @@ export default function MessageReportsSection() {
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar as denúncias.');
       setReports(payload.reports || []);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar as denúncias.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar as denúncias.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export default function MessageReportsSection() {
       showToast(status === 'RESOLVED' ? 'Denúncia marcada como resolvida.' : 'Denúncia arquivada.', 'success');
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a denúncia.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar a denúncia.'), 'error');
     } finally {
       setUpdating(null);
     }

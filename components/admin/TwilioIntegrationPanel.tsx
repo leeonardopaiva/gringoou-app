@@ -5,6 +5,7 @@ import { CheckCircle2, CircleAlert, MessageSquareText, TriangleAlert } from 'luc
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -49,7 +50,7 @@ export default function TwilioIntegrationPanel() {
     try {
       setReport(await call({ action: 'diagnose' }));
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Falha no diagnóstico.', 'error');
+      showToast(getUserErrorMessage(error, 'Falha no diagnóstico.'), 'error');
     } finally {
       setRunning(false);
     }
@@ -63,7 +64,7 @@ export default function TwilioIntegrationPanel() {
       setResult({ ok: Boolean(payload.ok), message: payload.message });
       setSent(Boolean(payload.ok));
     } catch (error) {
-      setResult({ ok: false, message: error instanceof Error ? error.message : 'Falha no envio.' });
+      setResult({ ok: false, message: getUserErrorMessage(error, 'Falha no envio.') });
     } finally {
       setTesting(false);
     }
@@ -80,7 +81,7 @@ export default function TwilioIntegrationPanel() {
         setCode('');
       }
     } catch (error) {
-      setResult({ ok: false, message: error instanceof Error ? error.message : 'Falha na conferência.' });
+      setResult({ ok: false, message: getUserErrorMessage(error, 'Falha na conferência.') });
     } finally {
       setTesting(false);
     }

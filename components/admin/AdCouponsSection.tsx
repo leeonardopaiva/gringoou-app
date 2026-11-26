@@ -6,6 +6,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { ConfirmModal, Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Coupon = {
   id: string;
@@ -40,7 +41,7 @@ export default function AdCouponsSection() {
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os cupons.');
       setCoupons(payload.coupons);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar os cupons.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar os cupons.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ export default function AdCouponsSection() {
       setForm({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível criar o cupom.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível criar o cupom.'), 'error');
     } finally {
       setCreating(false);
     }

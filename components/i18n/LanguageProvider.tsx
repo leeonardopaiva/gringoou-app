@@ -18,6 +18,7 @@ const getInitialLanguage = (): Language => {
   const stored = window.localStorage.getItem(STORAGE_KEY) as Language | null;
   if (stored && dictionaries[stored]) return stored;
   const nav = window.navigator.language.toLowerCase();
+  if (nav.startsWith('pt-pt')) return 'pt-PT';
   if (nav.startsWith('en')) return 'en-US';
   if (nav.startsWith('es')) return 'es';
   return 'pt-BR';

@@ -16,6 +16,7 @@ import {
   type ReportDimensionId,
   type ReportMetricId,
 } from '@/lib/ads/dashboard';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type ReportBuilderProps = {
   data: AdsReportData;
@@ -154,7 +155,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
       link.click();
       URL.revokeObjectURL(url);
     } catch (reason) {
-      showToast(reason instanceof Error ? reason.message : 'Não foi possível gerar o relatório.', 'error');
+      showToast(getUserErrorMessage(reason, 'Não foi possível gerar o relatório.'), 'error');
     } finally {
       setExporting(false);
     }

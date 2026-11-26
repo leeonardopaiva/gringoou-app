@@ -13,6 +13,7 @@ import ImageGalleryField from '../components/forms/ImageGalleryField';
 import AddressAutocomplete from '../components/ui/AddressAutocomplete';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const CATEGORIES = [
   'Eletrônicos', 'Móveis', 'Eletrodomésticos', 'Roupas', 'Brinquedos',
@@ -68,7 +69,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           longitude: null,
         });
       } catch (error) {
-        if (!cancelled) showToast(error instanceof Error ? error.message : 'Anúncio não encontrado.', 'error');
+        if (!cancelled) showToast(getUserErrorMessage(error, 'Anúncio não encontrado.'), 'error');
       } finally {
         if (!cancelled) setLoading(false);
       }

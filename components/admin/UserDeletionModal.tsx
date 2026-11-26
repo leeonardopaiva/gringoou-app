@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ArrowRightLeft, Database, ShieldAlert } from 'lucide-react';
 import { Button, Modal, Select } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type UserSummary = { id: string; name: string | null; username: string | null; email: string | null };
 type Impact = {
@@ -59,7 +60,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
       })
       .catch((loadError) => {
         if (loadError instanceof DOMException && loadError.name === 'AbortError') return;
-        setError(loadError instanceof Error ? loadError.message : 'Não foi possível analisar a exclusão.');
+        setError(getUserErrorMessage(loadError, 'Não foi possível analisar a exclusão.'));
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -97,7 +98,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
       showToast(hasTransfer ? 'Usuário excluído, propriedades transferidas e dados pessoais removidos.' : 'Usuário e dados vinculados excluidos.', 'success');
       onClose();
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Não foi possível excluir o usuário.');
+      setError(getUserErrorMessage(deleteError, 'Não foi possível excluir o usuário.'));
     } finally {
       setDeleting(false);
     }

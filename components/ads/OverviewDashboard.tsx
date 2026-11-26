@@ -16,6 +16,7 @@ import {
   type AdsOverviewData,
   type AdsOverviewRow,
 } from '@/lib/ads/dashboard';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type OverviewDashboardProps = { data: AdsOverviewData };
 type StatusView = { label: string; tone: 'success' | 'destaque' | 'erro' | 'neutro' };
@@ -86,7 +87,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       setRemoving(null);
       router.refresh();
     } catch (reason) {
-      showToast(reason instanceof Error ? reason.message : 'Não foi possível remover a campanha.', 'error');
+      showToast(getUserErrorMessage(reason, 'Não foi possível remover a campanha.'), 'error');
     } finally {
       setRemoveBusy(false);
     }
@@ -131,7 +132,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       showToast('Cópia criada como rascunho.', 'success');
       router.push(`/ads/wizard?draft=${encodeURIComponent(payload.id)}`);
     } catch (reason) {
-      showToast(reason instanceof Error ? reason.message : 'Não foi possível duplicar a campanha.', 'error');
+      showToast(getUserErrorMessage(reason, 'Não foi possível duplicar a campanha.'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -148,7 +149,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       setDiscarding(null);
       router.refresh();
     } catch (reason) {
-      showToast(reason instanceof Error ? reason.message : 'Não foi possível descartar o rascunho.', 'error');
+      showToast(getUserErrorMessage(reason, 'Não foi possível descartar o rascunho.'), 'error');
     } finally {
       setRemoveBusy(false);
     }
@@ -180,7 +181,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       router.refresh();
     } catch (reason) {
       setEnabledRows((current) => ({ ...current, [row.id]: previous }));
-      showToast(reason instanceof Error ? reason.message : 'Não foi possível atualizar a campanha.', 'error');
+      showToast(getUserErrorMessage(reason, 'Não foi possível atualizar a campanha.'), 'error');
     }
   };
   const openRevision = (row: AdsOverviewRow) => {
@@ -209,7 +210,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
       showToast('Criativo reenviado para análise sem nova cobrança.', 'success');
       router.refresh();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível reenviar a campanha.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível reenviar a campanha.'), 'error');
     } finally {
       setResubmitting(false);
     }

@@ -27,6 +27,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
 
@@ -465,7 +466,7 @@ const Community: React.FC<{
           : current,
       );
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível publicar agora.',
+        getUserErrorMessage(error, 'Não foi possível publicar agora.'),
         'error',
       );
     }
@@ -568,7 +569,7 @@ const Community: React.FC<{
       }
       showToast(payload?.message ?? (action === 'report' ? 'Publicação reportada.' : 'Preferência atualizada.'), 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível atualizar a preferência.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível atualizar a preferência.'), 'error');
     }
   };
 
@@ -688,7 +689,7 @@ const Community: React.FC<{
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível atualizar a publicação.',
+        getUserErrorMessage(error, 'Não foi possível atualizar a publicação.'),
         'error',
       );
       throw error;
@@ -708,7 +709,7 @@ const Community: React.FC<{
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível remover a publicação.',
+        getUserErrorMessage(error, 'Não foi possível remover a publicação.'),
         'error',
       );
       throw error;
@@ -732,7 +733,7 @@ const Community: React.FC<{
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível atualizar o comentário.',
+        getUserErrorMessage(error, 'Não foi possível atualizar o comentário.'),
         'error',
       );
       throw error;
@@ -754,7 +755,7 @@ const Community: React.FC<{
       await reloadPosts();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível remover o comentário.',
+        getUserErrorMessage(error, 'Não foi possível remover o comentário.'),
         'error',
       );
       throw error;
@@ -822,7 +823,7 @@ const Community: React.FC<{
       showToast(payload?.message ?? 'Cadastro registrado.', 'success');
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.',
+        getUserErrorMessage(error, 'Não foi possível registrar seu interesse.'),
         'error',
       );
     } finally {

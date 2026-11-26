@@ -8,6 +8,7 @@ import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Popover } from '../ui/Popover';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type PendingFriendRequest = {
   id: string;
@@ -100,7 +101,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       setPendingPosts((current) => current.filter((post) => post.id !== postId));
       showToast(action === 'approve' ? 'Publicação aprovada.' : 'Publicação recusada.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível revisar a publicação.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível revisar a publicação.'), 'error');
     } finally {
       setProcessingId(null);
     }
@@ -126,7 +127,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       setMessageRequests((current) => current.filter((request) => request.id !== conversationId));
       showToast(payload?.message ?? 'Pronto.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível responder a mensagem.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível responder a mensagem.'), 'error');
     } finally {
       setProcessingId(null);
     }
@@ -157,7 +158,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       setRequests((current) => current.filter((request) => request.id !== requestId));
       showToast(payload?.message ?? 'Solicitação respondida.', 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível responder a solicitação.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível responder a solicitação.'), 'error');
     } finally {
       setProcessingId(null);
     }

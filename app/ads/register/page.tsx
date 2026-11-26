@@ -7,6 +7,7 @@ import { signIn } from 'next-auth/react';
 import GringoouLogo from '@/components/icons/GringoouLogo';
 import { Button, Card, Input } from '@/components/ui';
 import { formatInternationalPhone } from '@/lib/phone';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 export default function AdsRegisterPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function AdsRegisterPage() {
       router.replace('/ads/onboarding');
       router.refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Não foi possível criar a conta.');
+      setError(getUserErrorMessage(reason, 'Não foi possível criar a conta.'));
     } finally {
       setLoading(false);
     }

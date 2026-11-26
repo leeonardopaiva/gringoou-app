@@ -23,6 +23,7 @@ import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type Housing = {
   id: string;
@@ -115,7 +116,7 @@ export default function HousingList({ user }: { user: User }) {
       showToast("Anúncio publicado.", "success");
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : "Não foi possível publicar.",
+        getUserErrorMessage(error, "Não foi possível publicar."),
         "error",
       );
     } finally {

@@ -9,6 +9,7 @@ import type {
   MarketplaceModerationDecision,
   MarketplaceModerationItem,
 } from '@/domain/marketplace/entities/marketplace.entity';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 type QueueStatus = 'PENDING_REVIEW' | 'ACTIVE' | 'REJECTED' | 'REMOVED';
 
@@ -49,7 +50,7 @@ export default function MarketplaceModerationSection() {
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os anúncios.');
       setItems(payload.items ?? []);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar os anúncios.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar os anúncios.'), 'error');
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function MarketplaceModerationSection() {
       showToast(`Anúncio ${DECISION_LABELS[decision].toLowerCase()}.`, 'success');
       await load();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível registrar a decisão.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível registrar a decisão.'), 'error');
     } finally {
       setBusyId(null);
     }

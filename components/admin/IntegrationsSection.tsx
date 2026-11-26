@@ -8,6 +8,7 @@ import { InfoTip } from '@/components/ui/InfoTip';
 import StripeIntegrationPanel from '@/components/admin/StripeIntegrationPanel';
 import TwilioIntegrationPanel from '@/components/admin/TwilioIntegrationPanel';
 import type { IntegrationState, IntegrationStatus } from '@/lib/integrations';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 const STATUS: Record<IntegrationStatus, { label: string; dot: string; chip: string }> = {
   configured: { label: 'Configurada', dot: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700' },
@@ -29,7 +30,7 @@ export default function IntegrationsSection() {
       if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar as integrações.');
       setItems(payload.integrations || []);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Não foi possível carregar as integrações.', 'error');
+      showToast(getUserErrorMessage(error, 'Não foi possível carregar as integrações.'), 'error');
     } finally {
       setLoading(false);
     }
