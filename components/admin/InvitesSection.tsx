@@ -2,7 +2,7 @@
 
 import { InfoTip } from '@/components/ui/InfoTip';
 import React, { startTransition, useEffect, useState } from 'react';
-import { Copy, Link2, Plus, Search, Ticket, Users } from 'lucide-react';
+import { Copy, Download, Link2, Plus, Search, Ticket, Users } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -17,6 +17,7 @@ type WaitlistStatus = 'PENDING' | 'INVITED' | 'ACTIVE';
 
 type InviteRow = {
   id: string;
+  number: number | null;
   status: InviteStatus;
   email: string | null;
   usageLimit: number;
@@ -31,6 +32,7 @@ type InviteRow = {
 
 type WaitlistRow = {
   id: string;
+  number: number | null;
   email: string;
   name: string | null;
   country: string | null;
@@ -82,6 +84,13 @@ const formatDate = (iso: string | null) => {
 
 const PAGE_SIZE = 20;
 
+// Número de referência com zeros à esquerda (ex.: 000042), o mesmo que vai no CSV.
+const formatNumber = (value: number | null) => (value === null ? '—' : String(value).padStart(6, '0'));
+
+const NO_COUNTRY = '__none__';
+
+type CountryOption = { country: string | null; count: number };
+
 const InvitesSection: React.FC = () => {
   const { showToast } = useToast();
   const [tab, setTab] = useState<'invites' | 'waitlist'>('invites');
@@ -100,6 +109,9 @@ const InvitesSection: React.FC = () => {
   const [waitlistPage, setWaitlistPage] = useState(1);
   const [waitlistSearch, setWaitlistSearch] = useState('');
   const [waitlistStatus, setWaitlistStatus] = useState('');
+  const [waitlistCountry, setWaitlistCountry] = useState('');
+  const [waitlistCountries, setWaitlistCountries] = useState<CountryOption[]>([]);
+  const [waitlistOverallTotal, setWaitlistOverallTotal] = useState(0);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
 
   // Create modal
@@ -140,6 +152,7 @@ const InvitesSection: React.FC = () => {
       const params = new URLSearchParams();
       if (waitlistSearch) params.set('q', waitlistSearch);
       if (waitlistStatus) params.set('status', waitlistStatus);
+      if (waitlistCountry) params.set('country', waitlistCountry);
       params.set('page', String(page));
       const response = await fetch(`/api/admin/waitlist?${params.toString()}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
@@ -147,6 +160,8 @@ const InvitesSection: React.FC = () => {
       startTransition(() => {
         setWaitlist(payload.entries ?? []);
         setWaitlistTotal(payload.total ?? 0);
+        setWaitlistCountries(payload.countries ?? []);
+        setWaitlistOverallTotal(payload.overallTotal ?? 0);
       });
     } catch (error) {
       console.error('Failed to load waitlist:', error);
@@ -164,7 +179,7 @@ const InvitesSection: React.FC = () => {
   useEffect(() => {
     if (tab === 'waitlist') void loadWaitlist();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, waitlistPage, waitlistSearch, waitlistStatus]);
+  }, [tab, waitlistPage, waitlistSearch, waitlistStatus, waitlistCountry]);
 
   const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -240,6 +255,17 @@ const InvitesSection: React.FC = () => {
   const inviteLink = (code: string) =>
     `${typeof window !== 'undefined' ? window.location.origin : ''}/login?invite=${encodeURIComponent(code)}`;
 
+  // O CSV respeita os filtros da tela: sem filtro sai a lista completa; com país, só aquele país/região.
+  const exportHref = (path: string, params: Record<string, string>) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (value) query.set(key, value);
+    return `${path}?${query.toString()}`;
+  };
+  const countryLabel = (country: string | null) => country ?? 'Não informado';
+  const waitlistExportLabel = waitlistCountry
+    ? `Exportar CSV: ${waitlistCountry === NO_COUNTRY ? 'sem país' : waitlistCountry}`
+    : 'Exportar CSV: lista completa';
+
   const invitesTotalPages = Math.max(1, Math.ceil(invitesTotal / PAGE_SIZE));
   const waitlistTotalPages = Math.max(1, Math.ceil(waitlistTotal / PAGE_SIZE));
 
@@ -302,7 +328,19 @@ const InvitesSection: React.FC = () => {
               <option value="EXPIRED">Expirado</option>
               <option value="REVOKED">Revogado</option>
             </select>
+            <a
+              href={exportHref('/api/admin/invites/export', { status: invitesStatus, q: invitesSearch })}
+              download
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              <Download size={15} aria-hidden /> Exportar CSV
+            </a>
           </div>
+
+          <p className="text-xs font-semibold text-slate-500" aria-live="polite">
+            {invitesTotal} {invitesTotal === 1 ? 'registro' : 'registros'}
+            {invitesStatus || invitesSearch ? ' com os filtros atuais' : ''}
+          </p>
 
           {invitesLoading ? (
             <div className="space-y-2">
@@ -314,9 +352,10 @@ const InvitesSection: React.FC = () => {
             <EmptyState icon={<Ticket size={28} />} title="Nenhum convite encontrado" description="Gere um convite para liberar o acesso de novos usuários." />
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
-              <table className="w-full min-w-[640px] text-left text-sm">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+                    <th className="px-4 py-3">Nº</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Usos</th>
@@ -328,6 +367,7 @@ const InvitesSection: React.FC = () => {
                 <tbody>
                   {invites.map((invite) => (
                     <tr key={invite.id} className="border-b border-slate-50 last:border-0">
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-slate-500">{formatNumber(invite.number)}</td>
                       <td className="px-4 py-3">
                         <p className="font-semibold text-slate-800">{invite.email ?? 'Sem email vinculado'}</p>
                         {invite.waitlistEntry ? (
@@ -404,7 +444,35 @@ const InvitesSection: React.FC = () => {
               <option value="INVITED">Convidado</option>
               <option value="ACTIVE">Cadastrado</option>
             </select>
+            <select
+              aria-label="Filtrar por país ou região"
+              value={waitlistCountry}
+              onChange={(event) => {
+                setWaitlistCountry(event.target.value);
+                setWaitlistPage(1);
+              }}
+              className="rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm"
+            >
+              <option value="">Todos os países</option>
+              {waitlistCountries.map((item) => (
+                <option key={item.country ?? NO_COUNTRY} value={item.country ?? NO_COUNTRY}>
+                  {countryLabel(item.country)} ({item.count})
+                </option>
+              ))}
+            </select>
+            <a
+              href={exportHref('/api/admin/waitlist/export', { status: waitlistStatus, country: waitlistCountry, q: waitlistSearch })}
+              download
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              <Download size={15} aria-hidden /> {waitlistExportLabel}
+            </a>
           </div>
+
+          <p className="text-xs font-semibold text-slate-500" aria-live="polite">
+            {waitlistTotal} {waitlistTotal === 1 ? 'registro' : 'registros'}
+            {waitlistStatus || waitlistSearch || waitlistCountry ? ` com os filtros atuais (de ${waitlistOverallTotal} no total)` : ''}
+          </p>
 
           {waitlistLoading ? (
             <div className="space-y-2">
@@ -416,9 +484,10 @@ const InvitesSection: React.FC = () => {
             <EmptyState icon={<Users size={28} />} title="Nenhum interessado encontrado" description="A lista de espera está vazia para os filtros selecionados." />
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface shadow-sm">
-              <table className="w-full min-w-[640px] text-left text-sm">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+                    <th className="px-4 py-3">Nº</th>
                     <th className="px-4 py-3">Nome</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">País</th>
@@ -430,6 +499,7 @@ const InvitesSection: React.FC = () => {
                 <tbody>
                   {waitlist.map((entry) => (
                     <tr key={entry.id} className="border-b border-slate-50 last:border-0">
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-slate-500">{formatNumber(entry.number)}</td>
                       <td className="px-4 py-3 font-semibold text-slate-800">{entry.name ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-600">{entry.email}</td>
                       <td className="px-4 py-3 text-slate-500">{entry.country ?? '—'}</td>

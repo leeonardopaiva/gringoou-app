@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
+import { CalendarDays, Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { getClientAppBaseUrl } from '../lib/client-app-url';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -36,6 +36,8 @@ const getInitials = (name: string) =>
     .slice(0, 2)
     .join('')
     .toUpperCase();
+
+type ProfileField = 'name' | 'username' | 'phone' | 'birthCity' | 'age' | 'gender' | 'timeAbroad';
 
 type ProfileState = {
   id: string;
@@ -143,6 +145,7 @@ const Profile: React.FC<{
   });
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [profileEditDraft, setProfileEditDraft] = useState<ProfileState | null>(null);
+  const [profileErrors, setProfileErrors] = useState<Partial<Record<ProfileField, string>>>({});
 
   useEffect(() => {
     if (!initialDataConsumedRef.current && initialData) {
@@ -533,6 +536,7 @@ const Profile: React.FC<{
     setPolicyDraft(stored?.policy ?? policySaved);
     setProfileEditDraft(stored ? { ...profile, ...stored.draft } : profile);
     setDraftRestored(Boolean(stored));
+    setProfileErrors({});
     setEditing((c) => ({ ...c, profile: true }));
   };
 
@@ -557,8 +561,33 @@ const Profile: React.FC<{
     setPolicyDraft(policySaved);
   };
 
+  const clearProfileError = (field: ProfileField) => {
+    setProfileErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
+  };
+
+  /** Campos obrigatórios do perfil: os mesmos do cadastro inicial. O telefone é opcional aqui. */
+  const validateProfileDraft = (draft: ProfileState): Partial<Record<ProfileField, string>> => {
+    const errors: Partial<Record<ProfileField, string>> = {};
+    if (draft.name.trim().length < 2) errors.name = 'Preencha seu nome.';
+    if (draft.username.trim().length < 3) errors.username = 'Preencha seu nome público.';
+    if (!draft.birthCity || draft.birthCity.trim().length < 2) errors.birthCity = 'Preencha sua cidade natal.';
+    if (!draft.age) errors.age = 'Preencha sua idade.';
+    else if (draft.age < 18 || draft.age > 120) errors.age = 'Informe uma idade entre 18 e 120 anos.';
+    if (!draft.gender) errors.gender = 'Selecione seu gênero.';
+    if (!draft.timeAbroad) errors.timeAbroad = 'Selecione seu tempo no exterior.';
+    const phoneDigits = draft.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 0 && phoneDigits.length < 8) errors.phone = 'O telefone está muito curto.';
+    return errors;
+  };
+
   const saveCompleteProfile = async () => {
     if (!profileEditDraft) return;
+    const validation = validateProfileDraft(profileEditDraft);
+    setProfileErrors(validation);
+    if (Object.values(validation).some(Boolean)) {
+      showToast('Revise os campos destacados.', 'error');
+      return;
+    }
     const patchData = {
       name: profileEditDraft.name,
       username: profileEditDraft.username,
@@ -709,19 +738,35 @@ const Profile: React.FC<{
 
                   <div className="border-t border-slate-200 pt-4">
                     <h3 className="mb-3 text-sm font-bold text-slate-600">Informações pessoais</h3>
-                    <div className="space-y-3">
-                      <Input value={profileEditDraft.name} onChange={(name) => setProfileEditDraft((c) => c ? { ...c, name } : null)} placeholder="Nome completo" icon={<UserRound size={16} />} />
-                      <Input value={profileEditDraft.username} onChange={(username) => setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null)} placeholder="Nome público" icon={<Globe size={16} />} />
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Input value={profileEditDraft.phone} onChange={(phone) => setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null)} placeholder="Telefone" icon={<Phone size={16} />} type="tel" />
-                        <CityAutocomplete value={profileEditDraft.birthCity} scope="world" onChange={(birthCity) => setProfileEditDraft((c) => c ? { ...c, birthCity } : null)} placeholder="Cidade natal" />
+                    <div className="space-y-4">
+                      <Field label="Nome completo" required error={profileErrors.name}>
+                        <Input label="Nome completo" required error={profileErrors.name} value={profileEditDraft.name} onChange={(name) => { clearProfileError('name'); setProfileEditDraft((c) => c ? { ...c, name } : null); }} placeholder="Seu nome completo" icon={<UserRound size={16} />} />
+                      </Field>
+                      <Field label="Nome público" required error={profileErrors.username}>
+                        <Input label="Nome público" required error={profileErrors.username} value={profileEditDraft.username} onChange={(username) => { clearProfileError('username'); setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null); }} placeholder="Como você aparece na comunidade" icon={<Globe size={16} />} />
+                      </Field>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Telefone" error={profileErrors.phone}>
+                          <Input label="Telefone" error={profileErrors.phone} value={profileEditDraft.phone} onChange={(phone) => { clearProfileError('phone'); setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null); }} placeholder="+1 305 000 0000" icon={<Phone size={16} />} type="tel" inputMode="tel" />
+                        </Field>
+                        <Field label="Cidade natal" required error={profileErrors.birthCity}>
+                          <CityAutocomplete value={profileEditDraft.birthCity} scope="world" error={profileErrors.birthCity} onChange={(birthCity) => { clearProfileError('birthCity'); setProfileEditDraft((c) => c ? { ...c, birthCity } : null); }} placeholder="Onde você nasceu" />
+                        </Field>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Input value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => setProfileEditDraft((c) => c ? { ...c, age: value ? Number(value) : null } : null)} placeholder="Idade" icon={<UserRound size={16} />} type="number" />
-                        <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Gênero</span><select value={profileEditDraft.gender} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null)} className="h-11 w-full rounded-full border border-input bg-surface px-4 text-sm"><option value="">Não informado</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select></label>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Idade" required error={profileErrors.age}>
+                          <Input label="Idade" required error={profileErrors.age} value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => { clearProfileError('age'); const digits = value.replace(/\D/g, '').slice(0, 3); setProfileEditDraft((c) => c ? { ...c, age: digits ? Number(digits) : null } : null); }} placeholder="18 ou mais" icon={<CalendarDays size={16} />} type="text" inputMode="numeric" maxLength={3} />
+                        </Field>
+                        <Field label="Gênero" required error={profileErrors.gender}>
+                          <select aria-label="Gênero" aria-required aria-invalid={Boolean(profileErrors.gender)} value={profileEditDraft.gender} onChange={(e) => { clearProfileError('gender'); setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.gender)}`}><option value="">Selecione</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select>
+                        </Field>
                       </div>
-                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500">Tempo no exterior</span><select value={profileEditDraft.timeAbroad} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null)} className="h-11 w-full rounded-full border border-input bg-surface px-4 text-sm"><option value="">Não informado</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select></label>
-                      <label className="space-y-2"><span className="text-xs font-bold text-slate-500 block">Sobre você</span><textarea rows={4} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre você" className="w-full rounded-md border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" /></label>
+                      <Field label="Tempo no exterior" required error={profileErrors.timeAbroad}>
+                        <select aria-label="Tempo no exterior" aria-required aria-invalid={Boolean(profileErrors.timeAbroad)} value={profileEditDraft.timeAbroad} onChange={(e) => { clearProfileError('timeAbroad'); setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.timeAbroad)}`}><option value="">Selecione</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select>
+                      </Field>
+                      <Field label="Sobre você">
+                        <textarea aria-label="Sobre você" rows={4} maxLength={220} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre você" className="w-full rounded-3xl border-2 border-input bg-surface px-4 py-3 text-sm text-text outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500" />
+                      </Field>
                     </div>
                   </div>
 
@@ -873,12 +918,30 @@ const ActionRow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex gap-2">{children}</div>
 );
 
-const Input: React.FC<{ value: string; onChange: (value: string) => void; placeholder: string; icon: React.ReactNode; type?: string; disabled?: boolean; }> = ({ value, onChange, placeholder, icon, type = 'text', disabled = false }) => (
-  <label className="relative block">
-    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
-    <input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} disabled={disabled} className="w-full rounded-full border border-input bg-surface px-11 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-bg disabled:text-muted-foreground" />
+// Campo do formulário de perfil: rótulo sempre visível, altura única (48px, igual ao CityAutocomplete)
+// e mensagem de erro abaixo. Todos os campos do modal usam este mesmo molde para ficarem alinhados.
+const FIELD_BOX = 'flex h-12 w-full items-center gap-2 rounded-full border-2 bg-surface px-4 transition-colors focus-within:border-brand-500';
+const fieldBorder = (error?: string) => (error ? 'border-red-400' : 'border-input');
+
+const Field: React.FC<{ label: string; required?: boolean; error?: string; children: React.ReactNode }> = ({ label, required, error, children }) => (
+  <div className="min-w-0">
+    <span className="mb-1.5 block text-xs font-bold text-slate-500">
+      {label}
+      {required ? <span className="ml-0.5 text-red-500" aria-hidden="true">*</span> : null}
+    </span>
+    {children}
+    {error ? <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">{error}</p> : null}
+  </div>
+);
+
+const Input: React.FC<{ value: string; onChange: (value: string) => void; placeholder: string; icon: React.ReactNode; type?: string; disabled?: boolean; inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']; maxLength?: number; error?: string; label?: string; required?: boolean; }> = ({ value, onChange, placeholder, icon, type = 'text', disabled = false, inputMode, maxLength, error, label, required }) => (
+  <label className={`${FIELD_BOX} ${fieldBorder(error)} ${disabled ? 'bg-bg' : ''}`}>
+    <span className="shrink-0 text-slate-400">{icon}</span>
+    <input type={type} inputMode={inputMode} maxLength={maxLength} aria-label={label ?? placeholder} aria-required={required} aria-invalid={Boolean(error)} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} disabled={disabled} className="h-full min-w-0 flex-1 bg-transparent text-sm text-text outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-muted-foreground" />
   </label>
 );
+
+const SELECT_CLASS = 'h-12 w-full rounded-full border-2 bg-surface px-4 text-sm text-text outline-none transition-colors focus:border-brand-500';
 
 const Meta: React.FC<{ label: string; value: string; icon: React.ReactNode }> = ({ label, value, icon }) => (
   <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">

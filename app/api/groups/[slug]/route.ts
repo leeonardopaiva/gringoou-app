@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findRegionByKey } from '@/lib/region-store';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { communityGroupSchema } from '@/lib/validators';
 import { getMockGroupDetail, USE_MOCKS } from '@/lib/server/mocks';
 
@@ -30,6 +31,11 @@ export async function GET(_request: Request, context: RouteContext) {
     },
   });
   if (!group) return NextResponse.json({ error: 'Grupo não encontrado.' }, { status: 404 });
+
+  // Regional isolation for signed-in members. Public share links for visitors keep working.
+  if (session?.user?.id && isOutsideViewerRegion(session, { regionKey: group.regionKey, ownerId: group.createdById })) {
+    return NextResponse.json({ error: 'Grupo não encontrado.' }, { status: 404 });
+  }
 
   const viewerMembership = session?.user?.id
     ? await prisma.communityGroupMember.findUnique({

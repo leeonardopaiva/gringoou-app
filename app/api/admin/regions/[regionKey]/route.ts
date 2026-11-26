@@ -50,6 +50,7 @@ export async function PUT(request: Request, context: RouteContext) {
           label: parsed.data.label,
           city: parsed.data.city,
           state: parsed.data.state,
+          countryCode: parsed.data.countryCode,
           lat: parsed.data.lat,
           lng: parsed.data.lng,
           aliases: parsed.data.aliases,

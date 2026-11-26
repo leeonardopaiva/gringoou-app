@@ -4,6 +4,7 @@ import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { findReferrerByUsername } from '@/lib/referrals';
 import { findRegionByKey } from '@/lib/region-store';
+import { canUseRegionCountry, REGION_COUNTRY_BLOCKED_MESSAGE } from '@/lib/region-country-access';
 import { validateUsernameValue } from '@/lib/username';
 import { onboardingSchema } from '@/lib/validators';
 
@@ -28,6 +29,10 @@ export async function POST(request: Request) {
 
   if (!region) {
     return NextResponse.json({ error: 'Invalid region' }, { status: 400 });
+  }
+
+  if (!(await canUseRegionCountry({ userId: session.user.id, role: session.user.role, request, regionCountryCode: region.countryCode }))) {
+    return NextResponse.json({ error: REGION_COUNTRY_BLOCKED_MESSAGE }, { status: 403 });
   }
 
   const usernameValidation = validateUsernameValue(parsed.data.username);

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { buildPublisher } from '@/lib/publisher';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { housingSchema } from '@/lib/validators';
 import { getMockHousingDetail, USE_MOCKS } from '@/lib/server/mocks';
 
@@ -19,6 +20,10 @@ export async function GET(_request: Request, context: RouteContext) {
     where: { id: housingId },
     include: { createdBy: { select: { id: true, name: true, username: true, image: true } } },
   });
+  // Regional isolation: opening another region's listing by id is treated as not found.
+  if (housing && isOutsideViewerRegion(session, { regionKey: housing.regionKey, ownerId: housing.createdById })) {
+    return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
+  }
   return housing ? NextResponse.json({ housing: { ...housing, publisher: buildPublisher(housing.createdBy, null, 'Membro da comunidade'), canEdit: session?.user?.id === housing.createdById || session?.user?.role === 'ADMIN' } }) : NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
 }
 

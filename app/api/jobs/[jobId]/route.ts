@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { buildPublisher } from '@/lib/publisher';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isOutsideViewerRegion } from '@/lib/region-scope';
 import { jobSchema } from '@/lib/validators';
 import { getMockJobDetail, USE_MOCKS } from '@/lib/server/mocks';
 
@@ -22,6 +23,10 @@ export async function GET(_request: Request, context: RouteContext) {
       business: { select: { id: true, slug: true, name: true, imageUrl: true } },
     },
   });
+  // Regional isolation: opening another region's job by id is treated as not found.
+  if (job && isOutsideViewerRegion(session, { regionKey: job.regionKey, ownerId: job.createdById })) {
+    return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
+  }
   return job
     ? NextResponse.json({ job: { ...job, publisher: buildPublisher(job.createdBy, job.business, job.company), canEdit: session?.user?.id === job.createdById || session?.user?.role === 'ADMIN' } })
     : NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });

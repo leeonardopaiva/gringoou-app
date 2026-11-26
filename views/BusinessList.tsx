@@ -192,6 +192,8 @@ const BusinessList: React.FC<BusinessListProps> = ({
 
     if (!createForm.name.trim()) {
       nextErrors.name = requiredFieldError('o nome do negócio');
+    } else if (createForm.name.trim().length < 2) {
+      nextErrors.name = 'O nome do negócio precisa ter pelo menos 2 caracteres.';
     }
 
     if (!createForm.phone.trim()) {
@@ -205,6 +207,8 @@ const BusinessList: React.FC<BusinessListProps> = ({
 
     if (!createForm.address.trim()) {
       nextErrors.address = requiredFieldError('o endereço');
+    } else if (createForm.address.trim().length < 5) {
+      nextErrors.address = 'Informe o endereço completo (rua, número e cidade).';
     }
 
     if (!createForm.regionKey.trim()) {
@@ -213,6 +217,8 @@ const BusinessList: React.FC<BusinessListProps> = ({
 
     if (!createForm.description.trim()) {
       nextErrors.description = requiredFieldError('a descrição');
+    } else if (createForm.description.trim().length < 10) {
+      nextErrors.description = 'Descreva o negócio com pelo menos 10 caracteres.';
     }
 
     const websiteError = validateOptionalUrlField(createForm.website, 'O website');

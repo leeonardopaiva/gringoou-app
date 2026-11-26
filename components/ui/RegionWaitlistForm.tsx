@@ -2,14 +2,19 @@
 
 import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 import { waitlistSchema } from '@/lib/waitlist';
 
 /**
  * "Avise-me" da página de região indisponível. Grava na mesma lista de interesse
  * (WaitlistEntry) usada pela landing, guardando o país detectado no acesso.
  */
-export function RegionWaitlistForm({ country }: { country?: string }) {
+export function RegionWaitlistForm({ country: detectedCountry }: { country?: string }) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  // When the country cannot be detected from the request, the person picks it.
+  const [pickedCountry, setPickedCountry] = useState('');
+  const country = detectedCountry || pickedCountry;
   const [website, setWebsite] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +24,9 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
     event.preventDefault();
     if (loading) return;
 
-    const parsed = waitlistSchema.safeParse({ email, country, website });
+    const parsed = waitlistSchema.safeParse({ name, email, country, website });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Confira o e-mail informado.');
+      setError(parsed.error.issues[0]?.message ?? 'Confira os dados informados.');
       return;
     }
 
@@ -69,12 +74,31 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
         }`}
       >
         <input
+          type="text"
+          autoComplete="name"
+          placeholder="Seu nome"
+          aria-label="Seu nome"
+          aria-invalid={Boolean(error)}
+          required
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+            if (error) setError(null);
+          }}
+          className={`h-14 w-full min-w-0 rounded-full border bg-surface px-6 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 sm:h-auto sm:flex-1 sm:border-0 sm:bg-transparent sm:px-0 sm:py-2 sm:text-[15px] sm:focus-visible:ring-0 ${
+            error ? 'border-red-300' : 'border-slate-200'
+          }`}
+        />
+        <span aria-hidden="true" className="hidden h-6 w-px shrink-0 bg-slate-200 sm:block" />
+
+        <input
           type="email"
           inputMode="email"
           autoComplete="email"
           placeholder="Seu e-mail"
           aria-label="Seu e-mail"
           aria-invalid={Boolean(error)}
+          required
           value={email}
           onChange={(event) => {
             setEmail(event.target.value);
@@ -112,6 +136,26 @@ export function RegionWaitlistForm({ country }: { country?: string }) {
           )}
         </button>
       </div>
+
+      {!detectedCountry ? (
+        <select
+          aria-label="Seu país"
+          required
+          value={pickedCountry}
+          onChange={(event) => {
+            setPickedCountry(event.target.value);
+            if (error) setError(null);
+          }}
+          className="mt-3 h-14 w-full rounded-full border border-slate-200 bg-surface px-6 text-base text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 sm:h-12 sm:text-[15px]"
+        >
+          <option value="">Selecione o seu país</option>
+          {COUNTRY_CALLING_CODE_OPTIONS.map((option) => (
+            <option key={option.iso2} value={option.country}>
+              {option.country}
+            </option>
+          ))}
+        </select>
+      ) : null}
 
       {error ? (
         <p role="alert" className="mt-3 text-sm font-medium text-red-600">

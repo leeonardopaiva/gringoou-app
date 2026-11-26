@@ -11,10 +11,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || undefined;
   const search = searchParams.get('q') || undefined;
+  const country = searchParams.get('country') || undefined;
   const page = Number(searchParams.get('page') ?? '1');
 
   const result = await listWaitlistEntries({
     search,
+    country,
     status: (status as 'PENDING' | 'INVITED' | 'ACTIVE') || undefined,
     page: Number.isFinite(page) ? page : 1,
   });

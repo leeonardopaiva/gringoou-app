@@ -250,16 +250,18 @@ export type InviteListFilters = {
   pageSize?: number;
 };
 
+const buildInviteWhere = (filters: { search?: string | null; status?: InviteStatus | null }) => ({
+  ...(filters.status ? { status: filters.status } : {}),
+  ...(filters.search
+    ? { email: { contains: filters.search.toLowerCase(), mode: 'insensitive' as const } }
+    : {}),
+});
+
 export async function listInvites(filters: InviteListFilters) {
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 20));
 
-  const where = {
-    ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.search
-      ? { email: { contains: filters.search.toLowerCase(), mode: 'insensitive' as const } }
-      : {}),
-  };
+  const where = buildInviteWhere(filters);
 
   const [invites, total] = await Promise.all([
     prisma.invite.findMany({
@@ -284,7 +286,14 @@ export async function listInvites(filters: InviteListFilters) {
     prisma.invite.count({ where }),
   ]);
 
-  return { invites, total, page, pageSize };
+  const numbers = await sequenceNumbers('Invite', invites.map((invite) => invite.id));
+
+  return {
+    invites: invites.map((invite) => ({ ...invite, number: numbers.get(invite.id) ?? null })),
+    total,
+    page,
+    pageSize,
+  };
 }
 
 export async function getInvite(id: string) {
@@ -317,25 +326,30 @@ export async function getInvite(id: string) {
 export type WaitlistListFilters = {
   search?: string | null;
   status?: WaitlistStatus | null;
+  /** Nome do país como gravado na lista; "__none__" filtra quem não informou. */
+  country?: string | null;
   page?: number;
   pageSize?: number;
 };
+
+const buildWaitlistWhere = (filters: { search?: string | null; status?: WaitlistStatus | null; country?: string | null }) => ({
+  ...(filters.status ? { status: filters.status } : {}),
+  ...(filters.country ? { country: filters.country === '__none__' ? null : filters.country } : {}),
+  ...(filters.search
+    ? {
+        OR: [
+          { email: { contains: filters.search.toLowerCase(), mode: 'insensitive' as const } },
+          { name: { contains: filters.search, mode: 'insensitive' as const } },
+        ],
+      }
+    : {}),
+});
 
 export async function listWaitlistEntries(filters: WaitlistListFilters) {
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 20));
 
-  const where = {
-    ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.search
-      ? {
-          OR: [
-            { email: { contains: filters.search.toLowerCase(), mode: 'insensitive' as const } },
-            { name: { contains: filters.search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {}),
-  };
+  const where = buildWaitlistWhere(filters);
 
   const [entries, total] = await Promise.all([
     prisma.waitlistEntry.findMany({
@@ -361,5 +375,129 @@ export async function listWaitlistEntries(filters: WaitlistListFilters) {
     prisma.waitlistEntry.count({ where }),
   ]);
 
-  return { entries, total, page, pageSize };
+  const numbers = await sequenceNumbers('WaitlistEntry', entries.map((entry) => entry.id));
+  const countries = await listWaitlistCountries();
+
+  return {
+    entries: entries.map((entry) => ({ ...entry, number: numbers.get(entry.id) ?? null })),
+    total,
+    page,
+    pageSize,
+    countries,
+    // Total da lista inteira, para comparar com o total dos filtros atuais.
+    overallTotal: countries.reduce((sum, item) => sum + item.count, 0),
+  };
+}
+/**
+ * Número sequencial estável de cada registro (1 = o mais antigo), independente de filtros e
+ * páginas. Serve como código de referência nas tabelas e no CSV, já que o código do convite
+ * em si só existe como hash.
+ */
+async function sequenceNumbers(table: 'WaitlistEntry' | 'Invite', ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+
+  const rows = await prisma.$queryRaw<Array<{ id: string; rn: bigint }>>(
+    Prisma.sql`
+      SELECT id, rn FROM (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY "createdAt" ASC, id ASC) AS rn
+        FROM ${Prisma.raw(`"${table}"`)}
+      ) numbered
+      WHERE id IN (${Prisma.join(ids)})
+    `,
+  );
+
+  return new Map(rows.map((row) => [row.id, Number(row.rn)]));
+}
+
+/** Países presentes na lista de interesse, com a quantidade de pessoas em cada um. */
+export async function listWaitlistCountries() {
+  const groups = await prisma.waitlistEntry.groupBy({
+    by: ['country'],
+    _count: { _all: true },
+    orderBy: { _count: { country: 'desc' } },
+  });
+
+  return groups.map((group) => ({ country: group.country, count: group._count._all }));
+}
+
+const CSV_SEPARATOR = ';';
+
+// Células que começam com estes caracteres viram fórmulas no Excel/Sheets; o apóstrofo impede.
+const csvCell = (value: string | number | null | undefined) => {
+  const text = value === null || value === undefined ? '' : String(value);
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return /[";\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+};
+
+const toCsv = (header: string[], rows: Array<Array<string | number | null | undefined>>) =>
+  // BOM para o Excel abrir em UTF-8 (acentos) e ponto e vírgula, o separador padrão no Brasil.
+  `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(CSV_SEPARATOR)).join('\r\n')}\r\n`;
+
+const csvDate = (value: Date | null) => (value ? value.toISOString() : '');
+
+export async function exportWaitlistCsv(filters: {
+  search?: string | null;
+  status?: WaitlistStatus | null;
+  country?: string | null;
+}) {
+  const where = buildWaitlistWhere(filters);
+  const entries = await prisma.waitlistEntry.findMany({
+    where,
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, email: true, name: true, country: true, status: true, invitedAt: true, createdAt: true },
+  });
+  const numbers = await sequenceNumbers('WaitlistEntry', entries.map((entry) => entry.id));
+
+  return {
+    total: entries.length,
+    csv: toCsv(
+      ['Nº', 'Nome', 'E-mail', 'País', 'Status', 'Convidado em', 'Cadastrado em'],
+      entries.map((entry) => [
+        numbers.get(entry.id) ?? '',
+        entry.name,
+        entry.email,
+        entry.country,
+        entry.status,
+        csvDate(entry.invitedAt),
+        csvDate(entry.createdAt),
+      ]),
+    ),
+  };
+}
+
+export async function exportInvitesCsv(filters: { search?: string | null; status?: InviteStatus | null }) {
+  const invites = await prisma.invite.findMany({
+    where: buildInviteWhere(filters),
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      status: true,
+      email: true,
+      usageLimit: true,
+      usedCount: true,
+      expiresAt: true,
+      createdAt: true,
+      waitlistEntry: { select: { email: true, name: true, country: true } },
+    },
+  });
+  const numbers = await sequenceNumbers('Invite', invites.map((invite) => invite.id));
+
+  return {
+    total: invites.length,
+    csv: toCsv(
+      ['Nº', 'E-mail do convite', 'Status', 'Usos', 'Limite de usos', 'Lista de interesse (nome)', 'Lista de interesse (e-mail)', 'País', 'Criado em', 'Expira em'],
+      invites.map((invite) => [
+        numbers.get(invite.id) ?? '',
+        invite.email,
+        invite.status,
+        invite.usedCount,
+        invite.usageLimit,
+        invite.waitlistEntry?.name,
+        invite.waitlistEntry?.email,
+        invite.waitlistEntry?.country,
+        csvDate(invite.createdAt),
+        csvDate(invite.expiresAt),
+      ]),
+    ),
+  };
 }

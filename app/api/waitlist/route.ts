@@ -43,10 +43,20 @@ export async function POST(request: Request) {
     where: { email: parsed.data.email },
     create: {
       email: parsed.data.email,
-      name: parsed.data.name || null,
-      country: parsed.data.country || null,
+      name: parsed.data.name,
+      country: parsed.data.country,
     },
     update: {},
+  });
+
+  // Older entries were saved without a name or country; complete them when the person returns.
+  await prisma.waitlistEntry.updateMany({
+    where: { email: parsed.data.email, name: null },
+    data: { name: parsed.data.name },
+  });
+  await prisma.waitlistEntry.updateMany({
+    where: { email: parsed.data.email, country: null },
+    data: { country: parsed.data.country },
   });
 
   return NextResponse.json({ ok: true, message: SUCCESS_MESSAGE });

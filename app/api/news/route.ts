@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
+import { resolveRegionScope } from '@/lib/region-scope';
 import { listPublishedNews, listPublishedNewsSources } from '@/lib/server/news-articles';
 
 /** Feed público de Notícias editoriais (somente publicadas), com paginação por cursor. */
@@ -12,7 +13,11 @@ export async function GET(request: Request) {
   try {
     const [feed, sources] = await Promise.all([
       listPublishedNews({
-        regionKey: searchParams.get('region')?.trim() || null,
+        // Signed-in members only get their own region (plus news without a region); the
+        // `region` parameter is honored for admins/moderators and for public visitors.
+        regionKey: session?.user?.id
+          ? (resolveRegionScope(session, searchParams.get('region')?.trim() || null).regionKey ?? null)
+          : searchParams.get('region')?.trim() || null,
         category: searchParams.get('category')?.trim() || null,
         source: searchParams.get('source')?.trim() || null,
         query: searchParams.get('q')?.trim() || null,

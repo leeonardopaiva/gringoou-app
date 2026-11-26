@@ -253,6 +253,7 @@ export async function GET() {
         label: true,
         city: true,
         state: true,
+        countryCode: true,
         lat: true,
         lng: true,
         aliases: true,

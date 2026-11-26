@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerAuthSession } from '@/lib/auth';
 import { findRegionByKey } from '@/lib/region-store';
+import { canUseRegionCountry, REGION_COUNTRY_BLOCKED_MESSAGE } from '@/lib/region-country-access';
 import { prisma } from '@/lib/prisma';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { updateRegionSchema } from '@/lib/validators';
@@ -40,6 +41,10 @@ export async function PUT(request: Request) {
 
   if (!region) {
     return NextResponse.json({ error: 'Invalid region' }, { status: 400 });
+  }
+
+  if (!(await canUseRegionCountry({ userId: session.user.id, role: session.user.role, request, regionCountryCode: region.countryCode }))) {
+    return NextResponse.json({ error: REGION_COUNTRY_BLOCKED_MESSAGE }, { status: 403 });
   }
 
   const user = await prisma.user.update({

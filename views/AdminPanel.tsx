@@ -95,6 +95,7 @@ type ManagedRegion = {
   label: string;
   city: string;
   state: string;
+  countryCode?: string;
   lat: number;
   lng: number;
   aliases: string[];
@@ -330,6 +331,7 @@ type RegionFormState = {
   label: string;
   city: string;
   state: string;
+  countryCode: string;
   lat: string;
   lng: string;
   aliases: string;
@@ -384,6 +386,7 @@ const emptyRegionForm: RegionFormState = {
   label: '',
   city: '',
   state: '',
+  countryCode: 'US',
   lat: '',
   lng: '',
   aliases: '',
@@ -747,6 +750,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       label: region.label,
       city: region.city,
       state: region.state,
+      countryCode: region.countryCode ?? 'US',
       lat: String(region.lat),
       lng: String(region.lng),
       aliases: region.aliases.join(', '),
@@ -783,6 +787,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             label: regionForm.label.trim(),
             city: regionForm.city.trim(),
             state: regionForm.state.trim(),
+            countryCode: regionForm.countryCode,
             lat: Number(regionForm.lat),
             lng: Number(regionForm.lng),
             aliases: regionForm.aliases
@@ -809,6 +814,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             label: region.label,
             city: region.city,
             state: region.state,
+            countryCode: region.countryCode ?? 'US',
             lat: region.lat,
             lng: region.lng,
             aliases: region.aliases,
@@ -1393,10 +1399,29 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
               <FormInput
                 value={regionForm.state}
                 onChange={(value) =>
-                  setRegionForm((current) => ({ ...current, state: value.toUpperCase() }))
+                  // Siglas (GA, ON) em maiúsculas; nomes por extenso (Lisboa, Alberta) ficam como digitados.
+                  setRegionForm((current) => ({ ...current, state: value.length <= 3 ? value.toUpperCase() : value }))
                 }
-                placeholder="Estado"
+                placeholder="Estado / província / distrito"
               />
+              <label className="col-span-2 block text-xs font-bold text-slate-500">
+                País da região
+                <select
+                  value={regionForm.countryCode}
+                  onChange={(event) => setRegionForm((current) => ({ ...current, countryCode: event.target.value }))}
+                  className="mt-1.5 h-12 w-full rounded-full border-2 border-input bg-surface px-4 text-sm font-normal text-text outline-none focus:border-brand-500"
+                >
+                  <option value="US">Estados Unidos (US)</option>
+                  <option value="CA">Canadá (CA)</option>
+                  <option value="PT">Portugal (PT)</option>
+                  <option value="ES">Espanha (ES)</option>
+                  <option value="GB">Reino Unido (GB)</option>
+                  <option value="IE">Irlanda (IE)</option>
+                  <option value="FR">França (FR)</option>
+                  <option value="DE">Alemanha (DE)</option>
+                  <option value="IT">Itália (IT)</option>
+                </select>
+              </label>
               <FormInput
                 value={regionForm.lat}
                 onChange={(value) => setRegionForm((current) => ({ ...current, lat: value }))}

@@ -233,6 +233,14 @@ export const adminRegionSchema = z.object({
   label: z.string().trim().min(3).max(80),
   city: z.string().trim().min(2).max(60),
   state: z.string().trim().min(2).max(40),
+  // País da região (ISO 3166-1 alfa-2): US, CA, PT... Define em que país a comunidade fica.
+  countryCode: z
+    .string()
+    .trim()
+    .length(2, 'Informe o país da região (2 letras, ex.: US, CA, PT).')
+    .regex(/^[A-Za-z]{2}$/, 'Informe o país da região (2 letras, ex.: US, CA, PT).')
+    .transform((value) => value.toUpperCase())
+    .default('US'),
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
   aliases: z.array(z.string().trim().min(2).max(60)).max(20).default([]),

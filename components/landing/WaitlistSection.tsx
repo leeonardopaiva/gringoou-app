@@ -136,6 +136,7 @@ export function WaitlistSection() {
               type="text"
               autoComplete="name"
               placeholder="Seu nome"
+              required
               value={name}
               onChange={(event) => setName(event.target.value)}
               className={inputClassName}
@@ -168,6 +169,7 @@ export function WaitlistSection() {
                   id="waitlist-country"
                   name="country"
                   autoComplete="country-name"
+                  required
                   value={country}
                   onChange={(event) => setCountry(event.target.value)}
                   className={inputClassName}

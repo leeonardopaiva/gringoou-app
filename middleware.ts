@@ -78,6 +78,25 @@ const PRE_LAUNCH_PUBLIC_PATHS = [
   ...PUBLIC_ASSET_PREFIXES,
 ];
 
+// API routes still open to a signed-in account whose phone is not confirmed yet: the SMS flow
+// itself, the profile step that follows it, account management (including deleting the
+// account) and technical/analytics calls.
+const PHONE_UNVERIFIED_API_ALLOWLIST = [
+  '/api/phone/',
+  '/api/onboarding',
+  '/api/profile',
+  '/api/me/',
+  '/api/regions',
+  '/api/places',
+  '/api/usernames',
+  '/api/invites/validate',
+  '/api/analytics',
+  '/api/monitoring',
+  '/api/utm',
+  '/api/ads/',
+  '/api/webhooks/',
+];
+
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 // Webhooks são assinados e chegam em rajadas legítimas; não limitamos por IP.
 const RATE_LIMIT_EXEMPT_PATHS = ['/api/webhooks/'];
@@ -283,6 +302,21 @@ export async function middleware(request: NextRequest) {
         url.pathname = request.nextUrl.pathname.startsWith('/ads') ? '/ads/login' : '/login';
         url.search = '';
         return NextResponse.redirect(url, 307);
+      }
+
+      // The SMS confirmation is required to use the platform. The screen already locks the app,
+      // but the API must refuse too, or anyone could skip the screen by calling it directly.
+      if (
+        isApiRequest &&
+        process.env.PHONE_VERIFICATION_ENABLED === 'true' &&
+        !isAdmin &&
+        token.phoneVerified !== true &&
+        !PHONE_UNVERIFIED_API_ALLOWLIST.some((prefix) => request.nextUrl.pathname.startsWith(prefix))
+      ) {
+        return NextResponse.json(
+          { error: 'Confirme seu telefone por SMS para continuar.', code: 'PHONE_NOT_VERIFIED' },
+          { status: 403 },
+        );
       }
 
       if (maintenanceEnabled && !isAdmin) {
