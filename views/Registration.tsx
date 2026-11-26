@@ -12,6 +12,7 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import PhoneNumberField from '../components/forms/PhoneNumberField';
 import { findCountryByIso2, splitPhoneNumber } from '../lib/country-calling-codes';
 import { buildInternationalPhone } from '../lib/forms/phone';
+import { SignupPhoneStep } from '../components/app/SignupPhoneStep';
 import {
   type FieldErrors,
   hasFieldErrors,
@@ -53,8 +54,9 @@ interface RegistrationProps {
   onPasswordRegister?: (values: {
     email: string;
     password: string;
-    captchaToken: string;
-    captchaAnswer: string;
+    captchaToken?: string;
+    captchaAnswer?: string;
+    phoneToken?: string;
     inviteCode?: string;
   }) => Promise<void>;
   onCompleteProfile?: (values: RegistrationValues) => Promise<void>;
@@ -134,6 +136,10 @@ const Registration: React.FC<RegistrationProps> = ({
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<RegistrationField>>({});
   const [passwordAuthView, setPasswordAuthView] = useState<PasswordAuthView>('none');
+  // Cadastro que começa pelo telefone: só depois do SMS confirmado aparecem e-mail e senha.
+  const phoneFirst = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
+  const [signupPhone, setSignupPhone] = useState<{ phone: string; token: string } | null>(null);
+  const needsSignupPhone = phoneFirst && !signupPhone;
   const [passwordSignIn, setPasswordSignIn] = useState({ email: '', password: '' });
   const [passwordSignUp, setPasswordSignUp] = useState({
     email: '',
@@ -348,10 +354,10 @@ const Registration: React.FC<RegistrationProps> = ({
   };
 
   useEffect(() => {
-    if (!isOnboarding && passwordEnabled && passwordAuthView === 'signup' && !captchaToken) {
+    if (!isOnboarding && passwordEnabled && passwordAuthView === 'signup' && !phoneFirst && !captchaToken) {
       void loadCaptcha();
     }
-  }, [captchaToken, isOnboarding, passwordAuthView, passwordEnabled]);
+  }, [captchaToken, isOnboarding, passwordAuthView, passwordEnabled, phoneFirst]);
 
   const openPasswordView = (view: Exclude<PasswordAuthView, 'none'>) => {
     setPasswordAuthView(view);
@@ -363,7 +369,7 @@ const Registration: React.FC<RegistrationProps> = ({
       captchaAnswer: undefined,
     }));
 
-    if (view === 'signup') {
+    if (view === 'signup' && !phoneFirst) {
       void loadCaptcha();
     }
   };
@@ -711,7 +717,10 @@ const Registration: React.FC<RegistrationProps> = ({
                   </div>
                 ) : null}
 
-                {passwordAuthView === 'signup' ? (
+                {passwordAuthView === 'signup' && needsSignupPhone ? (
+                  <SignupPhoneStep onVerified={setSignupPhone} onBack={() => setPasswordAuthView('none')} />
+                ) : null}
+{passwordAuthView === 'signup' && !needsSignupPhone ? (
                   <form
                     className="w-full max-w-[360px] space-y-3 pt-2"
                     onSubmit={async (event) => {
@@ -735,14 +744,14 @@ const Registration: React.FC<RegistrationProps> = ({
                         nextErrors.confirmPassword = 'As senhas precisam ser iguais.';
                       }
 
-                      if (!passwordSignUp.captchaAnswer.trim()) {
+                      if (!signupPhone && !passwordSignUp.captchaAnswer.trim()) {
                         nextErrors.captchaAnswer = 'Resolva o calculo de verificação.';
                       }
 
                       setFieldErrors(nextErrors);
 
-                      if (hasFieldErrors(nextErrors) || !captchaToken) {
-                        if (!captchaToken) {
+                      if (hasFieldErrors(nextErrors) || (!signupPhone && !captchaToken)) {
+                        if (!signupPhone && !captchaToken) {
                           await loadCaptcha();
                         }
                         return;
@@ -751,8 +760,9 @@ const Registration: React.FC<RegistrationProps> = ({
                       await onPasswordRegister?.({
                         email: passwordSignUp.email,
                         password: passwordSignUp.password,
-                        captchaToken,
-                        captchaAnswer: passwordSignUp.captchaAnswer,
+                        captchaToken: signupPhone ? undefined : captchaToken,
+                        captchaAnswer: signupPhone ? undefined : passwordSignUp.captchaAnswer,
+                        phoneToken: signupPhone?.token,
                         inviteCode,
                       });
                       // O desafio vence em 10 minutos: após cada envio, gera um novo e limpa a resposta,
@@ -819,7 +829,9 @@ const Registration: React.FC<RegistrationProps> = ({
                     />
                     <FieldErrorMessage message={fieldErrors.confirmPassword} />
 
-                    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    {!signupPhone ? (
+<>
+<div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <p className="flex-1 text-sm font-medium text-slate-700">
                         {loadingCaptcha
                           ? tx('Carregando captcha...')
@@ -853,6 +865,8 @@ const Registration: React.FC<RegistrationProps> = ({
                       className={inputClass}
                     />
                     <FieldErrorMessage message={fieldErrors.captchaAnswer} />
+</>
+) : null}
 
                     <Button
                       type="submit"
@@ -1197,7 +1211,10 @@ const Registration: React.FC<RegistrationProps> = ({
                       </div>
                     ) : null}
 
-                    {passwordAuthView === 'signup' ? (
+                    {passwordAuthView === 'signup' && needsSignupPhone ? (
+                      <SignupPhoneStep onVerified={setSignupPhone} onBack={() => setPasswordAuthView('none')} />
+                ) : null}
+{passwordAuthView === 'signup' && !needsSignupPhone ? (
                       <form
                         className="space-y-4"
                         onSubmit={async (event) => {
@@ -1221,14 +1238,14 @@ const Registration: React.FC<RegistrationProps> = ({
                             nextErrors.confirmPassword = 'As senhas precisam ser iguais.';
                           }
 
-                          if (!passwordSignUp.captchaAnswer.trim()) {
+                          if (!signupPhone && !passwordSignUp.captchaAnswer.trim()) {
                             nextErrors.captchaAnswer = 'Resolva o calculo de verificação.';
                           }
 
                           setFieldErrors(nextErrors);
 
-                          if (hasFieldErrors(nextErrors) || !captchaToken) {
-                            if (!captchaToken) {
+                          if (hasFieldErrors(nextErrors) || (!signupPhone && !captchaToken)) {
+                            if (!signupPhone && !captchaToken) {
                               await loadCaptcha();
                             }
                             return;
@@ -1237,8 +1254,9 @@ const Registration: React.FC<RegistrationProps> = ({
                           await onPasswordRegister?.({
                             email: passwordSignUp.email,
                             password: passwordSignUp.password,
-                            captchaToken,
-                            captchaAnswer: passwordSignUp.captchaAnswer,
+                            captchaToken: signupPhone ? undefined : captchaToken,
+                            captchaAnswer: signupPhone ? undefined : passwordSignUp.captchaAnswer,
+                            phoneToken: signupPhone?.token,
                             inviteCode,
                           });
                         }}
@@ -1337,7 +1355,9 @@ const Registration: React.FC<RegistrationProps> = ({
                           <FieldErrorMessage message={fieldErrors.confirmPassword} />
                         </div>
 
-                        <Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>
+                        {!signupPhone ? (
+<>
+<Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>
                           <Card.Content className="space-y-4 p-4">
                             <div className="flex items-center justify-between gap-3">
                               <p className="text-sm font-semibold text-slate-700">
@@ -1377,6 +1397,8 @@ const Registration: React.FC<RegistrationProps> = ({
                             </div>
                           </Card.Content>
                         </Card>
+</>
+) : null}
 
                         <Button
                           type="submit"

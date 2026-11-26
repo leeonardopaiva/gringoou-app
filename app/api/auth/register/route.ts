@@ -7,6 +7,8 @@ import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/
 import { getPasswordValidationIssues } from '@/lib/forms/password';
 import { hashPassword, normalizeAuthEmail } from '@/lib/password-auth';
 import { verifySimpleCaptcha } from '@/lib/simple-captcha';
+import { verifyPhoneProof } from '@/lib/phone-proof';
+import { getAccessCountry, getPhoneCountry, isPhoneVerificationConfigured, isPhoneVerificationEnabled } from '@/lib/phone-verification';
 import { z } from 'zod';
 import { isOperationalFeatureEnabled } from '@/lib/operational-flags';
 import { consumeInviteInTx, isInviteOnlyRegistration } from '@/lib/invites';
@@ -14,8 +16,10 @@ import { consumeInviteInTx, isInviteOnlyRegistration } from '@/lib/invites';
 const registerSchema = z.object({
   email: z.string().trim().email('Informe um email valido.'),
   password: z.string().min(8, 'Use uma senha mais forte.'),
-  captchaToken: z.string().min(10),
-  captchaAnswer: z.string().trim().min(1, 'Resolva o calculo de verificação.'),
+  // Com a verificação por telefone ativa, o captcha foi resolvido no passo do telefone e a prova do SMS o substitui.
+  captchaToken: z.string().optional(),
+  captchaAnswer: z.string().trim().optional(),
+  phoneToken: z.string().max(2000).optional(),
   inviteCode: z.string().trim().optional(),
 });
 
@@ -55,7 +59,16 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!verifySimpleCaptcha(parsed.data.captchaToken, parsed.data.captchaAnswer)) {
+  // Cadastro que começa pelo telefone: exige a prova assinada de que o SMS foi confirmado.
+  const phoneFirst = isPhoneVerificationEnabled() && isPhoneVerificationConfigured;
+  let verifiedPhone: string | null = null;
+
+  if (phoneFirst) {
+    verifiedPhone = verifyPhoneProof(parsed.data.phoneToken);
+    if (!verifiedPhone) {
+      return NextResponse.json({ error: 'Confirme seu telefone para continuar. Se demorou, peça um novo código.' }, { status: 400 });
+    }
+  } else if (!verifySimpleCaptcha(parsed.data.captchaToken ?? '', parsed.data.captchaAnswer ?? '')) {
     return NextResponse.json({ error: 'Verificação incorreta ou expirada. Resolva a nova conta mostrada e tente novamente.' }, { status: 400 });
   }
 
@@ -90,6 +103,11 @@ export async function POST(request: Request) {
   try {
     // Cria o usuário e consome o convite de forma atômica (se exigido).
     const user = await prisma.$transaction(async (tx) => {
+      if (verifiedPhone) {
+        const phoneTaken = await tx.user.findFirst({ where: { phone: verifiedPhone, phoneVerifiedAt: { not: null } }, select: { id: true } });
+        if (phoneTaken) throw new PhoneTakenError();
+      }
+
       const created = await tx.user.create({
         data: {
           email,
@@ -98,6 +116,9 @@ export async function POST(request: Request) {
           // O cadastro mostra o aviso "ao se cadastrar, você concorda" com os Termos e a Política.
           termsAcceptedAt: new Date(),
           termsVersion: LEGAL_VERSION,
+          ...(verifiedPhone
+            ? { phone: verifiedPhone, phoneVerifiedAt: new Date(), phoneCountry: getPhoneCountry(verifiedPhone), accessCountry: getAccessCountry(request) }
+            : {}),
         },
         select: {
           id: true,
@@ -120,6 +141,10 @@ export async function POST(request: Request) {
       message: 'Conta criada. Enviamos um link para confirmar seu email.',
     });
   } catch (error) {
+    if (error instanceof PhoneTakenError) {
+      return NextResponse.json({ error: 'Este telefone já está vinculado a uma conta. Entre com ela.' }, { status: 409 });
+    }
+
     if (error instanceof InviteRejectedError) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -133,3 +158,4 @@ export async function POST(request: Request) {
 }
 
 class InviteRejectedError extends Error {}
+class PhoneTakenError extends Error {}

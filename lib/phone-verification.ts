@@ -4,6 +4,7 @@ import twilio from 'twilio';
 import { DEFAULT_ALLOWED_COUNTRIES } from '@/lib/geo-access';
 import { normalizeInternationalPhone } from '@/lib/phone';
 import { prisma } from '@/lib/prisma';
+import { createCodeChallenge, readCodeChallenge } from '@/lib/phone-proof';
 
 // Server-only: Twilio credentials and the code hashing secret never reach the client.
 // Phone numbers are sent to Twilio in E.164 format (+ followed by up to 15 digits).
@@ -205,4 +206,71 @@ export const checkPhoneVerificationCode = async ({
   }
 
   return approved;
+};
+
+// ---------------------------------------------------------------------------------------------
+// Cadastro que começa pelo telefone: a pessoa ainda não tem conta, então não há usuário para
+// vincular o código. Com o Twilio Verify o próprio Twilio guarda o código; no modo de teste ou
+// com SMS comum o servidor devolve um "desafio" assinado com o hash do código.
+// ---------------------------------------------------------------------------------------------
+
+export const sendAnonymousVerificationCode = async ({
+  phoneE164,
+  deviceIp,
+}: {
+  phoneE164: string;
+  deviceIp?: string | null;
+}): Promise<{ challenge?: string }> => {
+  const verifyServiceSid = isDevSmsMode ? null : getVerifyServiceSid();
+
+  if (verifyServiceSid) {
+    await getTwilioClient()
+      .verify.v2.services(verifyServiceSid)
+      .verifications.create({ to: phoneE164, channel: 'sms', ...(deviceIp && deviceIp !== 'unknown' ? { deviceIp } : {}) });
+    return {};
+  }
+
+  const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const challenge = createCodeChallenge(phoneE164, hashCode(phoneE164, code));
+
+  if (isDevSmsMode) {
+    console.log(`[phone-verification] código de teste (cadastro) para ${phoneE164}: ${code}`);
+    return { challenge };
+  }
+
+  await getTwilioClient().messages.create({
+    to: phoneE164,
+    from: process.env.TWILIO_FROM_NUMBER!,
+    body: `Seu código Gringoou e ${code}. Ele expira em 5 minutos. Não compartilhe este código.`,
+  });
+  return { challenge };
+};
+
+export const checkAnonymousVerificationCode = async ({
+  phoneE164,
+  code,
+  challenge,
+}: {
+  phoneE164: string;
+  code: string;
+  challenge?: string | null;
+}) => {
+  const verifyServiceSid = isDevSmsMode ? null : getVerifyServiceSid();
+
+  if (verifyServiceSid) {
+    try {
+      const check = await getTwilioClient().verify.v2.services(verifyServiceSid).verificationChecks.create({ to: phoneE164, code });
+      return check.status === 'approved';
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 404) return false;
+      throw error;
+    }
+  }
+
+  const expectedHash = readCodeChallenge(challenge, phoneE164);
+  if (!expectedHash) return false;
+
+  const expected = Buffer.from(expectedHash, 'hex');
+  const actual = Buffer.from(hashCode(phoneE164, code), 'hex');
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 };

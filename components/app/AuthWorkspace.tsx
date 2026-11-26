@@ -37,8 +37,9 @@ type AuthWorkspaceProps = {
   onPasswordRegister?: (values: {
     email: string;
     password: string;
-    captchaToken: string;
-    captchaAnswer: string;
+    captchaToken?: string;
+    captchaAnswer?: string;
+    phoneToken?: string;
     inviteCode?: string;
   }) => Promise<void>;
   onCompleteProfile?: (values: RegistrationValues) => Promise<void>;

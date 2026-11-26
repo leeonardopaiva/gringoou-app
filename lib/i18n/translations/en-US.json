@@ -1994,5 +1994,8 @@
   "Reenviar e-mail": "Resend email",
   "Sem país informado": "No country provided",
   "Serão enviados": "Will send",
-  "Aguarde alguns segundos para reenviar de novo.": "Wait a few seconds before resending."
+  "Aguarde alguns segundos para reenviar de novo.": "Wait a few seconds before resending.",
+  "Enviar código": "Send code",
+  "Primeiro, confirme seu telefone. Enviaremos um código por SMS.": "First, confirm your phone number. We will send you a code by SMS.",
+  "Resolva o cálculo de verificação.": "Solve the verification math problem."
 }

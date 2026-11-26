@@ -8,7 +8,7 @@ import { buildInternationalPhone } from '@/lib/forms/phone';
 import { sanitizeUserMessage } from '@/lib/user-error';
 import { useLanguage } from '@/components/i18n/LanguageProvider';
 
-const CODE_LENGTH = 6;
+export const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
 
 const buttonClassName =
@@ -19,7 +19,7 @@ type Step = 'phone' | 'code' | 'done';
 const formatCountdown = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 /** Código em caixas separadas. Um único campo invisível recebe a digitação, a colagem e o preenchimento automático do SMS. */
-function CodeBoxes({ value, onChange, invalid, disabled }: { value: string; onChange: (value: string) => void; invalid: boolean; disabled: boolean }) {
+export function CodeBoxes({ value, onChange, invalid, disabled }: { value: string; onChange: (value: string) => void; invalid: boolean; disabled: boolean }) {
   const { tx } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);

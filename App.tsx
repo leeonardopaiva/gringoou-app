@@ -414,8 +414,9 @@ const App: React.FC<{
   const handlePasswordRegister = async (values: {
     email: string;
     password: string;
-    captchaToken: string;
-    captchaAnswer: string;
+    captchaToken?: string;
+    captchaAnswer?: string;
+    phoneToken?: string;
     inviteCode?: string;
   }) => {
     setRegistrationError(null);
@@ -433,7 +434,9 @@ const App: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        if (response.status === 409) {
+        if (response.status === 409 && /telefone/i.test(String(payload?.error ?? ''))) {
+          setRegistrationError(sanitizeUserMessage(payload?.error, 'Este telefone já está vinculado a uma conta. Entre com ela.'));
+        } else if (response.status === 409) {
           setRegistrationError('Já existe uma conta com este e-mail. Entre com a sua conta ou use "Esqueci minha senha" para definir uma nova senha.');
         } else if (response.status === 429) {
           setRegistrationError('Você fez muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.');
