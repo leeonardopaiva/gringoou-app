@@ -97,9 +97,9 @@ const ptBR = {
   'profile.language': 'Idioma',
   'profile.appearance': 'Aparência',
   'landing.hero.1': 'Comunidade',
-  'landing.hero.2a': 'brasileira',
-  'landing.hero.2b': 'pelo',
-  'landing.hero.3': 'mundo.',
+  'landing.hero.2': 'brasileira',
+  'landing.hero.3a': 'pelo',
+  'landing.hero.3b': 'mundo.',
 } as const;
 
 const enUS: Record<keyof typeof ptBR, string> = {
@@ -192,9 +192,9 @@ const enUS: Record<keyof typeof ptBR, string> = {
   'profile.language': 'Language',
   'profile.appearance': 'Appearance',
   'landing.hero.1': 'Brazilian',
-  'landing.hero.2a': 'community',
-  'landing.hero.2b': 'around',
-  'landing.hero.3': 'the world.',
+  'landing.hero.2': 'community',
+  'landing.hero.3a': 'around the',
+  'landing.hero.3b': 'world.',
 };
 
 const es: Record<keyof typeof ptBR, string> = {
@@ -287,9 +287,9 @@ const es: Record<keyof typeof ptBR, string> = {
   'profile.language': 'Idioma',
   'profile.appearance': 'Apariencia',
   'landing.hero.1': 'Comunidad',
-  'landing.hero.2a': 'brasileña',
-  'landing.hero.2b': 'por',
-  'landing.hero.3': 'el mundo.',
+  'landing.hero.2': 'brasileña',
+  'landing.hero.3a': 'por el',
+  'landing.hero.3b': 'mundo.',
 };
 
 // Português de Portugal: parte do português do Brasil e troca só o que muda (vocabulário e tratamento).

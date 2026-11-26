@@ -29,7 +29,7 @@ function CommunitySeal() {
 export function CommunityMetrics() {
   const { tx } = useLanguage();
   return (
-    <aside className="flex items-end justify-between gap-8 lg:h-[720px] lg:flex-col lg:items-start lg:py-8">
+    <aside className="hidden items-end justify-between gap-8 lg:flex lg:h-auto lg:flex-col lg:items-start lg:py-8">
       <div className="flex gap-8 lg:flex-col lg:gap-16">
         <div>
           <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">+5 M</strong>

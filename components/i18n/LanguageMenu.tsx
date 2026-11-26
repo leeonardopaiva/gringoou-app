@@ -6,14 +6,23 @@ import { useLanguage } from '@/components/i18n/LanguageProvider';
 import { getAvailableLanguages } from '@/lib/i18n/languages';
 import type { Language } from '@/lib/i18n/dictionaries';
 
-const SHORT_CODE: Record<Language, string> = { 'pt-BR': 'PT-BR', 'pt-PT': 'PT-PT', 'en-US': 'EN', es: 'ES' };
+// Nome curto exibido no botão do rodapé; o menu mostra o nome completo.
+const SHORT_NAME: Record<Language, string> = { 'pt-BR': 'Português', 'pt-PT': 'Português (PT)', 'en-US': 'English', es: 'Español' };
+
+type LanguageMenuProps = {
+  className?: string;
+  /** `pill`: botão com borda (cabeçalhos). `footer`: texto simples com globo (rodapé). */
+  variant?: 'pill' | 'footer';
+  /** Para onde o menu abre. No rodapé abre para cima. */
+  placement?: 'down' | 'up';
+};
 
 /**
  * Menu de idioma compacto (landing e telas públicas). Só oferece os idiomas das regiões ativas:
  * o português do Brasil sempre aparece, e os demais dependem de existir uma região ativa no país.
  * Funciona sem login: /api/regions é público.
  */
-export function LanguageMenu({ className = '' }: { className?: string }) {
+export function LanguageMenu({ className = '', variant = 'pill', placement = 'down' }: LanguageMenuProps) {
   const { language, setLanguage } = useLanguage();
   const [countries, setCountries] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
@@ -57,23 +66,26 @@ export function LanguageMenu({ className = '' }: { className?: string }) {
   // Com um único idioma não há o que escolher.
   if (options.length < 2) return null;
 
+  const buttonClass =
+    variant === 'footer'
+      ? 'inline-flex items-center gap-2 text-sm font-semibold text-[#6b7a9e] transition hover:text-[#0f2b63] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500'
+      : 'inline-flex h-10 items-center gap-1.5 rounded-full border border-[#dde3ef] bg-white px-3 text-xs font-extrabold text-[#0f2b63] transition hover:bg-[#f0f7ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
+
   return (
     <div ref={rootRef} className={`relative ${className}`}>
-      <button
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label="Idioma / Language"
-        onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-10 items-center gap-1.5 rounded-full border border-[#dde3ef] bg-white px-3 text-xs font-extrabold text-[#0f2b63] transition hover:bg-[#f0f7ff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-      >
-        <Globe size={15} aria-hidden="true" />
-        {SHORT_CODE[language]}
+      <button type="button" aria-haspopup="menu" aria-expanded={open} aria-label="Idioma / Language" onClick={() => setOpen((value) => !value)} className={buttonClass}>
+        <Globe size={variant === 'footer' ? 16 : 15} aria-hidden="true" className={variant === 'footer' ? 'text-brand-500' : ''} />
+        {SHORT_NAME[language]}
         <ChevronDown size={13} aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open ? (
-        <ul role="menu" className="absolute right-0 top-full z-50 mt-2 min-w-[190px] overflow-hidden rounded-2xl border border-[#dde3ef] bg-white p-1.5 shadow-[0_12px_32px_rgba(15,43,99,0.14)]">
+        <ul
+          role="menu"
+          className={`absolute right-0 z-50 min-w-[190px] overflow-hidden rounded-2xl border border-[#dde3ef] bg-white p-1.5 shadow-[0_12px_32px_rgba(15,43,99,0.14)] ${
+            placement === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+          }`}
+        >
           {options.map((option) => {
             const selected = option.code === language;
             return (

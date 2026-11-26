@@ -9,7 +9,7 @@ import { sanitizeUserMessage } from '@/lib/user-error';
 import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const inputClassName =
-  'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
+  'w-full rounded-full border border-[#dde3ef] bg-white px-5 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 
 export function WaitlistSection() {
   const { tx } = useLanguage();
@@ -113,14 +113,14 @@ export function WaitlistSection() {
   };
 
   return (
-    <section id="lista" className="mx-auto w-full max-w-[1440px] px-5 pb-16 sm:px-8 lg:px-16">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 rounded-[32px] bg-white px-6 py-10 text-center shadow-[0_8px_24px_rgba(15,43,99,0.08)] sm:px-10">
+    <section id="lista" className="w-full scroll-mt-24">
+      <div className="mx-auto flex w-full max-w-[420px] flex-col gap-4 rounded-[32px] bg-white px-6 py-7 text-center shadow-[0_8px_24px_rgba(15,43,99,0.08)] sm:px-8 lg:mx-0">
         <div className="flex flex-col gap-3">
-          <h2 className="text-2xl font-extrabold tracking-tight text-[#0f2b63] sm:text-3xl">
+          <h2 className="text-xl font-extrabold tracking-tight text-[#0f2b63] sm:text-2xl">
             {tx('Entre na lista de espera')}
           </h2>
-          <p className="text-sm leading-6 text-[#4a5672] sm:text-base">
-            {tx('Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponível.')}
+          <p className="hidden text-[13px] leading-5 text-[#4a5672] sm:block">
+            {tx('Seu acesso será liberado em breve. Deixe seu e-mail e avisamos você.')}
           </p>
         </div>
 
@@ -191,7 +191,7 @@ export function WaitlistSection() {
                 disabled={locating}
                 aria-label={tx('Usar minha localização')}
                 title={tx('Usar minha localização')}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-brand-500 transition hover:bg-[#f0f7ff] disabled:opacity-60"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#dde3ef] bg-white text-brand-500 transition hover:bg-[#f0f7ff] disabled:opacity-60"
               >
                 <LocateFixed size={18} className={locating ? 'animate-pulse' : ''} />
               </button>
@@ -227,7 +227,7 @@ export function WaitlistSection() {
           </form>
         )}
 
-        <div className="flex justify-center border-t border-[#eef1f7] pt-5">
+        <div className="flex justify-center pt-1">
           <Link
             href="/login"
             className="text-sm font-bold text-brand-500 transition hover:text-brand-600"
