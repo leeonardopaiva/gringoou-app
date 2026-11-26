@@ -6,6 +6,7 @@ import { Button, Modal, Select } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 import { useLanguage } from '@/components/i18n/LanguageProvider';
+import { AckCheckbox } from '@/components/admin/AckCheckbox';
 
 type UserSummary = { id: string; name: string | null; username: string | null; email: string | null };
 type Impact = {
@@ -125,7 +126,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
 
         <label className="block"><span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700"><ArrowRightLeft size={17} />{tx('Transferir propriedades antes de excluir')}</span><Select value={transferToUserId} onChange={(event) => { setTransferToUserId(event.target.value); setAcknowledged(false); }}><option value="">{tx('Não transferir')}</option>{transferCandidates.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name || candidate.username || tx('Usuário')} · {candidate.email || 'sem e-mail'}</option>)}</Select><p className="mt-2 text-xs leading-5 text-slate-500">{tx('A transferência preserva negócios, eventos, vagas, moradias, grupos e contas Ads críticas. Posts e interações pessoais não são atribuídos a outra pessoa.')}</p></label>
 
-        {needsAcknowledgement ? <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4 accent-red-600" /><span className="text-sm text-slate-700"><strong className="block text-slate-900">{tx('Revisei e aceito a exclusão dos registros indicados')}</strong>{tx('Mesmo com transferência, dados pessoais, posts e interações do usuário serão removidos. Interações de terceiros dentro de posts excluidos também podem ser afetadas.')}</span></label> : null}
+        {needsAcknowledgement ? <AckCheckbox checked={acknowledged} onChange={setAcknowledged} title={tx('Revisei e aceito a exclusão dos registros indicados')} description={tx('Mesmo com transferência, dados pessoais, posts e interações do usuário serão removidos. Interações de terceiros dentro de posts excluidos também podem ser afetadas.')} /> : null}
 
         {impact.externalAssetUrls.length ? <p className="text-xs leading-5 text-slate-500">{tx('Atenção:')} {impact.externalAssetUrls.length} {tx('arquivo(s) externo(s) podem permanecer no serviço de imagens. Eles não serão removidos automaticamente sem uma credencial segura de exclusão.')}</p> : null}
 

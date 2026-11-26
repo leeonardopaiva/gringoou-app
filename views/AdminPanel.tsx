@@ -34,6 +34,8 @@ import { Avatar } from '../components/ui/Avatar';
 import NewsCommentReportsSection from '../components/admin/NewsCommentReportsSection';
 import MarketplaceModerationSection from '../components/admin/MarketplaceModerationSection';
 import UserDeletionModal from '../components/admin/UserDeletionModal';
+import BulkUserDeletionModal from '../components/admin/BulkUserDeletionModal';
+import { TableCheckbox } from '../components/admin/AckCheckbox';
 import { Button, Modal } from '../components/ui';
 import { useToast } from '../components/feedback/ToastProvider';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -514,6 +516,7 @@ const formatSuggestionCategory = (category: SuggestionCategoryValue) =>
   category === 'FUNCTIONALITY' ? 'Funcionalidade' : 'Melhoria';
 
 const ADMIN_LIST_PREVIEW_LIMIT = 5;
+const USERS_PREVIEW_LIMIT = 25;
 type ExpandableSectionKey = 'regions' | 'businesses' | 'events' | 'users' | 'suggestions';
 
 type AdminSection = 'overview' | 'moderation' | 'ads' | 'imports' | 'banners' | 'regions' | 'businesses' | 'events' | 'users' | 'suggestions' | 'analytics';
@@ -557,6 +560,8 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<ManagedUser | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [bulkDeletingUsers, setBulkDeletingUsers] = useState(false);
   const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
   const [userSearch, setUserSearch] = useState('');
   const [suggestionSearch, setSuggestionSearch] = useState('');
@@ -1196,7 +1201,9 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
   const visibleRegions = getVisibleItems(sortedRegions, 'regions');
   const visibleBusinesses = getVisibleItems(filteredBusinesses, 'businesses', deferredBusinessSearch);
   const visibleEvents = getVisibleItems(filteredEvents, 'events', deferredEventSearch);
-  const visibleUsers = getVisibleItems(filteredUsers, 'users', deferredUserSearch);
+  // Tabela: mostra 25 por vez (a visualização por cartões de 5 não serve para gerir muita gente).
+  const visibleUsers = deferredUserSearch.trim() || expandedSections.users ? filteredUsers : filteredUsers.slice(0, USERS_PREVIEW_LIMIT);
+  const selectableVisibleIds = visibleUsers.filter((managedUser) => managedUser.id !== user.id).map((managedUser) => managedUser.id);
   const visibleSuggestions = getVisibleItems(
     filteredSuggestions,
     'suggestions',
@@ -2366,7 +2373,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             onChange={setUserSearch}
             placeholder={tx('Filtrar usuários por nome, username, email ou região')}
           />
-          {!deferredUserSearch.trim() && filteredUsers.length > ADMIN_LIST_PREVIEW_LIMIT ? (
+          {!deferredUserSearch.trim() && filteredUsers.length > USERS_PREVIEW_LIMIT ? (
             <div className="flex justify-end">
               <SectionListToggle
                 expanded={expandedSections.users}
@@ -2384,148 +2391,173 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
             <LoadingCards />
           ) : dashboard && filteredUsers.length > 0 ? (
             <div className="space-y-3">
-              {visibleUsers.map((managedUser) => (
-                <div key={managedUser.id} className="rounded-2xl border border-slate-200 bg-surface p-4 shadow-sm shadow-slate-200/40">
-                  <div className="flex items-start gap-4">
-                    <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || tx('Usuário')} size="sm" className="!h-10 !w-10" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-lg font-bold theme-text">
-                            {managedUser.name || tx('Usuário sem nome')}
-                          </p>
-                          <p className="text-sm font-medium text-slate-500">
-                            @{managedUser.username || 'sem-username'}
-                          </p>
-                        </div>
-                        <StatusBadge label={managedUser.role} tone="neutral" />
-                      </div>
-                      <div className="mt-3 space-y-1 text-sm text-slate-600">
-                        <p>{managedUser.email || tx('Sem email')}</p>
-                        <p>{managedUser.locationLabel || tx('Sem região definida')}</p>
-                        <p>
-                          {tx('Cadastro')} {managedUser.onboardingCompleted ? 'concluído' : 'pendente'}
-                        </p>
-                        <p>{tx('Atualizado em')} {formatDateTime(managedUser.updatedAt)}</p>
-                      </div>
-                    </div>
+              {selectedUserIds.length > 0 ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3" role="status">
+                  <p className="text-sm font-bold text-red-900">{selectedUserIds.length} {selectedUserIds.length === 1 ? tx('usuário selecionado') : tx('usuários selecionados')}</p>
+                  <div className="flex gap-2">
+                    <ActionButton label={tx('Limpar seleção')} tone="neutral" onClick={() => setSelectedUserIds([])} />
+                    <ActionButton label={tx('Excluir selecionados')} tone="danger" disabled={processingKey !== null} onClick={() => setBulkDeletingUsers(true)} />
                   </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <ActionButton
-                      label={editingUserId === managedUser.id ? tx('Fechar') : tx('Editar')}
-                      tone="neutral"
-                      disabled={processingKey !== null}
-                      onClick={() => (editingUserId === managedUser.id ? resetUserForm() : startUserEdit(managedUser))}
+                </div>
+              ) : null}
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-surface shadow-sm">
+                <table className="w-full min-w-[780px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+                      <th className="w-10 px-3 py-3">
+                        <TableCheckbox
+                          checked={selectableVisibleIds.length > 0 && selectableVisibleIds.every((id) => selectedUserIds.includes(id))}
+                          indeterminate={selectedUserIds.length > 0 && !selectableVisibleIds.every((id) => selectedUserIds.includes(id))}
+                          label={tx('Selecionar todos os usuários desta lista')}
+                          onChange={(checked) => setSelectedUserIds(checked ? Array.from(new Set([...selectedUserIds, ...selectableVisibleIds])) : selectedUserIds.filter((id) => !selectableVisibleIds.includes(id)))}
+                        />
+                      </th>
+                      <th className="px-3 py-3">{tx('Usuário')}</th>
+                      <th className="px-3 py-3">{tx('Papel')}</th>
+                      <th className="px-3 py-3">{tx('Região')}</th>
+                      <th className="px-3 py-3">{tx('Cadastro')}</th>
+                      <th className="hidden px-3 py-3 2xl:table-cell">{tx('Atualizado em')}</th>
+                      <th className="px-3 py-3">{tx('Ações')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleUsers.map((managedUser) => {
+                      const isSelf = managedUser.id === user.id;
+                      const selected = selectedUserIds.includes(managedUser.id);
+                      return (
+                        <tr key={managedUser.id} className={`border-b border-slate-50 last:border-0 ${selected ? 'bg-red-50/60' : 'hover:bg-slate-50/70'}`}>
+                          <td className="px-3 py-3">
+                            <TableCheckbox
+                              checked={selected}
+                              disabled={isSelf}
+                              label={`${tx('Selecionar')} ${managedUser.name || managedUser.email || managedUser.username || ''}`}
+                              onChange={(checked) => setSelectedUserIds((current) => (checked ? [...current, managedUser.id] : current.filter((id) => id !== managedUser.id)))}
+                            />
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar src={managedUser.image} name={managedUser.name || managedUser.email || tx('Usuário')} size="sm" className="!h-9 !w-9 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="truncate font-bold theme-text">{managedUser.name || tx('Usuário sem nome')}</p>
+                                <p className="max-w-[280px] truncate text-xs font-medium text-slate-500" title={managedUser.email || undefined}>@{managedUser.username || 'sem-username'} · {managedUser.email || tx('Sem email')}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3"><StatusBadge label={managedUser.role} tone="neutral" /></td>
+                          <td className="max-w-[180px] truncate px-3 py-3 text-slate-600" title={managedUser.locationLabel || undefined}>{managedUser.locationLabel || tx('Sem região definida')}</td>
+                          <td className="px-3 py-3"><StatusBadge label={managedUser.onboardingCompleted ? tx('Concluído') : tx('Pendente')} tone={managedUser.onboardingCompleted ? 'success' : 'warning'} /></td>
+                          <td className="hidden whitespace-nowrap px-3 py-3 text-slate-500 2xl:table-cell">{formatDateTime(managedUser.updatedAt)}</td>
+                          <td className="whitespace-nowrap px-3 py-3">
+                            <div className="flex flex-nowrap gap-1.5">
+                              <button type="button" className="rounded-full px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50 bg-slate-100 text-slate-700 hover:bg-slate-200" disabled={processingKey !== null} onClick={() => (editingUserId === managedUser.id ? resetUserForm() : startUserEdit(managedUser))}>
+                                {editingUserId === managedUser.id ? tx('Fechar') : tx('Editar')}
+                              </button>
+                              <button type="button" className="rounded-full px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50 bg-brand-50 text-brand-700 hover:bg-brand-100" disabled={processingKey !== null} onClick={() => openUserAnalytics(managedUser.id)}>
+                                {tx('Analytics')}
+                              </button>
+                              <button type="button" className="rounded-full px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50 bg-red-50 text-red-700 hover:bg-red-100" disabled={processingKey !== null || isSelf} onClick={() => setDeletingUser(managedUser)}>
+                                {tx('Excluir')}
+                              </button>
+                            </div>
+                {editingUserId === managedUser.id ? (
+                  <Modal open onClose={resetUserForm} title={tx('Editar usuário')} description={managedUser.name || managedUser.email || tx('Usuário')} className="max-w-2xl">
+                  <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
+                    <FormInput
+                      value={userForm.name}
+                      onChange={(value) => setUserForm((current) => ({ ...current, name: value }))}
+                      placeholder={tx('Nome completo')}
                     />
-                    <ActionButton
-                      label={tx('Analytics')}
-                      tone="primary"
-                      disabled={processingKey !== null}
-                      onClick={() => openUserAnalytics(managedUser.id)}
+                    <FormInput
+                      value={userForm.username}
+                      onChange={(value) =>
+                        setUserForm((current) => ({
+                          ...current,
+                          username: normalizeUsernameInput(value),
+                        }))
+                      }
+                      placeholder={tx('Nome público')}
                     />
-                    <ActionButton
-                      label={tx('Excluir')}
-                      tone="danger"
-                      disabled={processingKey !== null || managedUser.id === user.id}
-                      onClick={() => setDeletingUser(managedUser)}
-                    />
-                  </div>
-
-                  {editingUserId === managedUser.id ? (
-                    <Modal open onClose={resetUserForm} title={tx('Editar usuário')} description={managedUser.name || managedUser.email || tx('Usuário')} className="max-w-2xl">
-                    <div className="max-h-[72dvh] space-y-3 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-2 gap-3">
                       <FormInput
-                        value={userForm.name}
-                        onChange={(value) => setUserForm((current) => ({ ...current, name: value }))}
-                        placeholder={tx('Nome completo')}
+                        value={userForm.email}
+                        onChange={(value) => setUserForm((current) => ({ ...current, email: value }))}
+                        placeholder={tx('Email')}
                       />
                       <FormInput
-                        value={userForm.username}
+                        value={userForm.phone}
                         onChange={(value) =>
                           setUserForm((current) => ({
                             ...current,
-                            username: normalizeUsernameInput(value),
+                            phone: formatLoosePhoneInput(value),
                           }))
                         }
-                        placeholder={tx('Nome público')}
+                        placeholder={tx('Telefone')}
                       />
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormInput
-                          value={userForm.email}
-                          onChange={(value) => setUserForm((current) => ({ ...current, email: value }))}
-                          placeholder={tx('Email')}
-                        />
-                        <FormInput
-                          value={userForm.phone}
-                          onChange={(value) =>
+                    </div>
+                    <CloudinaryImageField
+                      value={userForm.image}
+                      onChange={(value) =>
+                        setUserForm((current) => ({ ...current, image: value }))
+                      }
+                      folder="profiles" cropAspect={1}
+                      placeholder={tx('Link da foto do usuário')}
+                      hint={tx('Envie uma foto do seu computador ou celular.')}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormSelect
+                        value={userForm.role}
+                        onChange={(value) =>
+                          setUserForm((current) => ({ ...current, role: value as UserRoleValue }))
+                        }
+                        options={userRoleOptions}
+                      />
+                      <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-medium text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={userForm.onboardingCompleted}
+                          onChange={(event) =>
                             setUserForm((current) => ({
                               ...current,
-                              phone: formatLoosePhoneInput(value),
+                              onboardingCompleted: event.target.checked,
                             }))
                           }
-                          placeholder={tx('Telefone')}
+                          className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
                         />
-                      </div>
-                      <CloudinaryImageField
-                        value={userForm.image}
-                        onChange={(value) =>
-                          setUserForm((current) => ({ ...current, image: value }))
-                        }
-                        folder="profiles" cropAspect={1}
-                        placeholder={tx('Link da foto do usuário')}
-                        hint={tx('Envie uma foto do seu computador ou celular.')}
-                      />
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormSelect
-                          value={userForm.role}
-                          onChange={(value) =>
-                            setUserForm((current) => ({ ...current, role: value as UserRoleValue }))
-                          }
-                          options={userRoleOptions}
-                        />
-                        <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-medium text-slate-600">
-                          <input
-                            type="checkbox"
-                            checked={userForm.onboardingCompleted}
-                            onChange={(event) =>
-                              setUserForm((current) => ({
-                                ...current,
-                                onboardingCompleted: event.target.checked,
-                              }))
-                            }
-                            className="h-4 w-4 rounded border-slate-300 theme-text theme-ring"
-                          />
-                          {tx('Cadastro concluído')}
-                        </label>
-                      </div>
-                      <RegionSelector
-                        value={userForm.regionKey}
-                        onChange={(region) =>
-                          setUserForm((current) => ({ ...current, regionKey: region.key }))
-                        }
-                        hint={tx('A região do usuário controla feed, negócios e eventos priorizados.')}
-                      />
-                      <div className="flex gap-2">
-                        <ActionButton
-                          label={tx('Salvar usuário')}
-                          tone="primary"
-                          disabled={processingKey !== null}
-                          loading={processingKey === `user:${managedUser.id}:save`}
-                          onClick={() => void requestUserUpdateConfirmation(managedUser)}
-                        />
-                        <ActionButton
-                          label={tx('Cancelar')}
-                          tone="neutral"
-                          disabled={processingKey !== null}
-                          onClick={resetUserForm}
-                        />
-                      </div>
+                        {tx('Cadastro concluído')}
+                      </label>
                     </div>
-                    </Modal>
-                  ) : null}
-                </div>
-              ))}
+                    <RegionSelector
+                      value={userForm.regionKey}
+                      onChange={(region) =>
+                        setUserForm((current) => ({ ...current, regionKey: region.key }))
+                      }
+                      hint={tx('A região do usuário controla feed, negócios e eventos priorizados.')}
+                    />
+                    <div className="flex gap-2">
+                      <ActionButton
+                        label={tx('Salvar usuário')}
+                        tone="primary"
+                        disabled={processingKey !== null}
+                        loading={processingKey === `user:${managedUser.id}:save`}
+                        onClick={() => void requestUserUpdateConfirmation(managedUser)}
+                      />
+                      <ActionButton
+                        label={tx('Cancelar')}
+                        tone="neutral"
+                        disabled={processingKey !== null}
+                        onClick={resetUserForm}
+                      />
+                    </div>
+                  </div>
+                  </Modal>
+                ) : null}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <EmptyState text={tx('Nenhum usuário encontrado para gestão.')} />
@@ -2545,6 +2577,17 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
           onConfirm={async () => {
             await confirmationDialog.onConfirm();
             setConfirmationDialog(null);
+          }}
+        />
+      ) : null}
+      {bulkDeletingUsers ? (
+        <BulkUserDeletionModal
+          userIds={selectedUserIds}
+          onClose={() => setBulkDeletingUsers(false)}
+          onDone={async () => {
+            setSelectedUserIds([]);
+            resetUserForm();
+            await loadDashboard(true);
           }}
         />
       ) : null}
