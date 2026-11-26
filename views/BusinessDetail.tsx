@@ -37,6 +37,7 @@ import { Dropdown } from '../components/ui/Dropdown';
 import { useMessaging } from '../lib/MessagingProvider';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -115,6 +116,7 @@ const normalizeWhatsappLink = (value: string) => {
 const GALLERY_PREVIEW_LIMIT = 8;
 
 const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, managementMode = false }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const { startDirectConversation } = useMessaging();
 
@@ -241,7 +243,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
     try {
       await navigator.clipboard.writeText(publicUrl);
-      showToast('Link do negócio copiado.', 'success');
+      showToast(tx('Link do negócio copiado.'), 'success');
     } catch {
       showToast(publicUrl, 'info', 5000);
     }
@@ -269,7 +271,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   const handleSaveBusiness = async () => {
     if ((phoneDraft.trim() && !isValidPhone(phoneDraft)) || (whatsappDraft.trim() && !isValidPhone(whatsappDraft))) {
-      showToast('Informe telefone e WhatsApp válidos, com DDD ou código do país.', 'error');
+      showToast(tx('Informe telefone e WhatsApp válidos, com DDD ou código do país.'), 'error');
       return;
     }
     setSavingBusiness(true);
@@ -321,10 +323,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       syncDrafts(updatedBusiness);
       setIsEditModalOpen(false);
       notifyContentUpdated();
-      showToast('Negócio atualizado com sucesso.', 'success');
+      showToast(tx('Negócio atualizado com sucesso.'), 'success');
     } catch (error) {
       console.error('Failed to save business:', error);
-      showToast('Não foi possível salvar as alterações.', 'error');
+      showToast(tx('Não foi possível salvar as alterações.'), 'error');
     } finally {
       setSavingBusiness(false);
     }
@@ -354,7 +356,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       );
     } catch (error) {
       console.error('Failed to toggle business favorite:', error);
-      showToast('Não foi possível atualizar seus favoritos.', 'error');
+      showToast(tx('Não foi possível atualizar seus favoritos.'), 'error');
     }
   };
 
@@ -389,10 +391,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         ratingCount: payload.ratingCount,
       }));
 
-      showToast('Sua avaliação foi registrada.', 'success');
+      showToast(tx('Sua avaliação foi registrada.'), 'success');
     } catch (error) {
       console.error('Failed to rate business:', error);
-      showToast('Não foi possível registrar sua avaliação.', 'error');
+      showToast(tx('Não foi possível registrar sua avaliação.'), 'error');
     }
   };
 
@@ -427,10 +429,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
     return (
       <ContentColumn size="compact" className="pb-8">
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-6 text-center">
-          <h1 className="text-xl font-bold text-red-700">Acesso não autorizado</h1>
-          <p className="mt-2 text-sm text-red-600">Somente proprietários e administradores podem gerenciar esta página.</p>
+          <h1 className="text-xl font-bold text-red-700">{tx('Acesso não autorizado')}</h1>
+          <p className="mt-2 text-sm text-red-600">{tx('Somente proprietários e administradores podem gerenciar esta página.')}</p>
           <Link href={business.publicPath} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-bold text-red-700 shadow-sm">
-            Voltar para a página pública
+            {tx('Voltar para a página pública')}
           </Link>
         </div>
       </ContentColumn>
@@ -439,20 +441,20 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <PageHeader title="Negócios" backHref="/businesses" historyBack />
+      <PageHeader title={tx('Negócios')} backHref="/businesses" historyBack />
       <div className="overflow-hidden bg-surface sm:rounded-card">
       {managementMode ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
-          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia esta página</p>
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> {tx('Você gerencia esta página')}</p>
           <Dropdown
             align="right"
             trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>}
-            sections={[{ heading: 'Ações do negócio', items: [
-              { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(business.publicPath) },
-              { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => handleOpenEditModal('info') },
-              { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => handleOpenEditModal('media') },
-              { label: 'Editar contato', icon: <Phone size={16} />, onClick: () => handleOpenEditModal('contact') },
-              ...(business.status === 'PUBLISHED' ? [{ label: 'Promover com Ads', icon: <Megaphone size={16} />, onClick: () => window.location.assign(`/ads/promover/${business.id}`) }] : []),
+            sections={[{ heading: tx('Ações do negócio'), items: [
+              { label: tx('Ver página pública'), icon: <ExternalLink size={16} />, onClick: () => window.location.assign(business.publicPath) },
+              { label: tx('Editar informações'), icon: <PencilLine size={16} />, onClick: () => handleOpenEditModal('info') },
+              { label: tx('Editar imagens'), icon: <Images size={16} />, onClick: () => handleOpenEditModal('media') },
+              { label: tx('Editar contato'), icon: <Phone size={16} />, onClick: () => handleOpenEditModal('contact') },
+              ...(business.status === 'PUBLISHED' ? [{ label: tx('Promover com Ads'), icon: <Megaphone size={16} />, onClick: () => window.location.assign(`/ads/promover/${business.id}`) }] : []),
             ] }]}
           />
 
@@ -472,7 +474,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               setCoverFailed(false);
               setBusiness((current) => ({ ...current, imageUrl: payload.business.imageUrl || current.imageUrl }));
               notifyContentUpdated();
-              showToast('Capa atualizada.', 'success');
+              showToast(tx('Capa atualizada.'), 'success');
             }}
           />
         ) : null}
@@ -491,7 +493,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${
               business.isFavorite ? 'bg-red-600 text-white' : 'bg-surface/90 text-slate-700 hover:bg-surface'
             }`}
-            aria-label="Favoritar negócio"
+            aria-label={tx('Favoritar negócio')}
           >
             <Heart size={19} fill={business.isFavorite ? 'currentColor' : 'none'} />
           </button>
@@ -499,7 +501,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             type="button"
             onClick={() => void handleShare()}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface"
-            aria-label="Compartilhar negócio"
+            aria-label={tx('Compartilhar negócio')}
           >
             <Share2 size={19} />
           </button>
@@ -509,7 +511,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       <div className="space-y-7 px-5 pb-2 pt-6 sm:px-7">
         {isPendingReview ? (
           <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-            Este negócio está aguardando aprovação e fica visível apenas para você e administradores.
+            {tx('Este negócio está aguardando aprovação e fica visível apenas para você e administradores.')}
           </div>
         ) : null}
 
@@ -519,7 +521,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             <div className="min-w-0 space-y-1.5">
               <h1 className="flex items-center gap-2 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-3xl">
                 <span className="min-w-0 break-words">{business.name}</span>
-                {business.ownershipVerifiedAt ? <BadgeCheck size={22} className="shrink-0 text-brand-500" aria-label="Propriedade verificada pela equipe" /> : null}
+                {business.ownershipVerifiedAt ? <BadgeCheck size={22} className="shrink-0 text-brand-500" aria-label={tx('Propriedade verificada pela equipe')} /> : null}
               </h1>
               <p className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />{business.locationLabel}</p>
             </div>
@@ -528,7 +530,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 href={`/businesses/${business.slug || business.id}/gerenciar`}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
               >
-                <PencilLine size={14} /> Gerenciar
+                <PencilLine size={14} /> {tx('Gerenciar')}
               </Link>
             ) : null}
           </div>
@@ -555,42 +557,42 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <MessageCircle size={18} />
-              {contacting ? 'Abrindo conversa...' : 'Falar com o negócio'}
+              {contacting ? tx('Abrindo conversa...') : tx('Falar com o negócio')}
             </button>
           ) : business.isOwner ? (
             <Link href="/ads/inbox" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105">
               <MessageCircle size={18} />
-              Ver mensagens do negócio
+              {tx('Ver mensagens do negócio')}
             </Link>
           ) : null}
           {whatsappHref ? (
-            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp" title="WhatsApp" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-emerald-600 transition hover:bg-emerald-50">
+            <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label={tx('Conversar no WhatsApp')} title={tx('WhatsApp')} className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-emerald-600 transition hover:bg-emerald-50">
               <Send size={18} />
             </a>
           ) : null}
           {callHref ? (
-            <a href={callHref} aria-label="Ligar" title="Ligar" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
+            <a href={callHref} aria-label={tx('Ligar')} title={tx('Ligar')} className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
               <Phone size={18} />
             </a>
           ) : null}
         </div>
 
         {business.description ? (
-          <section aria-label="Sobre o negócio">
-            <h2 className="text-base font-bold text-slate-900">Sobre</h2>
+          <section aria-label={tx('Sobre o negócio')}>
+            <h2 className="text-base font-bold text-slate-900">{tx('Sobre')}</h2>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">{business.description}</p>
           </section>
         ) : null}
 
-        <section aria-label="Informações de contato" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
+        <section aria-label={tx('Informações de contato')} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
           {business.address ? (
             <div className="flex items-start gap-3 py-3.5">
               <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-slate-900">{business.address}</p>
                 <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold text-brand-600">
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="hover:underline">Google Maps</a>
-                  <a href={`https://waze.com/ul?q=${mapQuery}&navigate=yes`} target="_blank" rel="noreferrer" className="hover:underline">Waze</a>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer" className="hover:underline">{tx('Google Maps')}</a>
+                  <a href={`https://waze.com/ul?q=${mapQuery}&navigate=yes`} target="_blank" rel="noreferrer" className="hover:underline">{tx('Waze')}</a>
                 </div>
               </div>
             </div>
@@ -622,8 +624,8 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         </section>
 
         {galleryImages.length > 0 ? (
-          <section aria-label="Galeria" className="space-y-3">
-            <h2 className="text-base font-bold text-slate-900">Fotos</h2>
+          <section aria-label={tx('Galeria')} className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900">{tx('Fotos')}</h2>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {(showAllGallery ? galleryImages : galleryImages.slice(0, GALLERY_PREVIEW_LIMIT)).map((imageUrl, index) => {
                 const hiddenCount = galleryImages.length - GALLERY_PREVIEW_LIMIT;
@@ -634,7 +636,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     type="button"
                     onClick={() => (isMoreTile ? setShowAllGallery(true) : setSelectedImage(imageUrl))}
                     className="relative overflow-hidden rounded-xl bg-slate-100"
-                    aria-label={isMoreTile ? `Ver mais ${hiddenCount + 1} imagens` : `Ampliar imagem ${index + 1}`}
+                    aria-label={isMoreTile ? `${tx('Ver mais')} ${hiddenCount + 1} ${tx('imagens')}` : `${tx('Ampliar imagem')} ${index + 1}`}
                   >
                     <img src={imageUrl} loading="lazy" className="aspect-square w-full object-cover" alt={`${business.name} - imagem ${index + 1}`} />
                     {isMoreTile ? (
@@ -648,10 +650,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         ) : null}
 
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
-          <span>Página administrada por {business.createdByName}</span>
+          <span>{tx('Página administrada por')} {business.createdByName}</span>
           {managementMode ? (
             <button type="button" onClick={() => void handleCopyUrl()} className="inline-flex items-center gap-1.5 font-semibold text-slate-500 hover:text-slate-700">
-              <Copy size={13} /> Copiar link da página
+              <Copy size={13} /> {tx('Copiar link da página')}
             </button>
           ) : null}
         </p>
@@ -660,7 +662,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       <div className="px-5 pb-8 sm:px-7">
         <BusinessPostsPanel businessId={business.id} businessName={business.name} management={managementMode} />
       </div>
-      <ImageLightbox open={Boolean(selectedImage)} onClose={() => setSelectedImage(null)} src={selectedImage || ''} alt={`Imagem de ${business.name}`} />
+      <ImageLightbox open={Boolean(selectedImage)} onClose={() => setSelectedImage(null)} src={selectedImage || ''} alt={`${tx('Imagem de')} ${business.name}`} />
 
       {isEditModalOpen ? (
         <div
@@ -676,10 +678,10 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
               <div>
                 <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
                   <PencilLine size={16} />
-                  Editar negócio
+                  {tx('Editar negócio')}
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
-                  Atualize apenas as informações básicas exibidas na página.
+                  {tx('Atualize apenas as informações básicas exibidas na página.')}
                 </p>
               </div>
 
@@ -688,7 +690,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 onClick={handleCloseEditModal}
                 disabled={savingBusiness}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 disabled:opacity-60"
-                aria-label="Fechar modal"
+                aria-label={tx('Fechar modal')}
               >
                 <X size={18} />
               </button>
@@ -704,7 +706,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Informações
+                {tx('Informações')}
               </button>
 
               <button
@@ -716,7 +718,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Contato
+                {tx('Contato')}
               </button>
 
               <button
@@ -728,7 +730,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Imagens
+                {tx('Imagens')}
               </button>
             </div>
 
@@ -737,47 +739,47 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 <>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Nome
+                      {tx('Nome')}
                     </label>
                     <input
                       value={nameDraft}
                       onChange={(event) => setNameDraft(event.target.value)}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Nome do negócio"
+                      placeholder={tx('Nome do negócio')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">URL da página</label>
+                    <label className="text-xs font-bold uppercase tracking-wide text-slate-400">{tx('URL da página')}</label>
                     <div className="flex overflow-hidden rounded-full border border-input bg-surface text-sm">
-                      <span className="shrink-0 px-4 py-3 text-slate-400">/businesses/</span>
-                      <input value={slugDraft} onChange={(event) => setSlugDraft(event.target.value)} className="min-w-0 flex-1 bg-transparent py-3 pr-4 font-medium text-foreground outline-none" placeholder="trustapizzashop" />
+                      <span className="shrink-0 px-4 py-3 text-slate-400">{'/businesses/'}</span>
+                      <input value={slugDraft} onChange={(event) => setSlugDraft(event.target.value)} className="min-w-0 flex-1 bg-transparent py-3 pr-4 font-medium text-foreground outline-none" placeholder={tx('trustapizzashop')} />
                     </div>
-                    <p className="text-xs text-slate-500">Use letras, números e hífens. Links antigos continuarão funcionando.</p>
+                    <p className="text-xs text-slate-500">{tx('Use letras, números e hífens. Links antigos continuarão funcionando.')}</p>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Categoria
+                      {tx('Categoria')}
                     </label>
                     <input
                       value={categoryDraft}
                       onChange={(event) => setCategoryDraft(event.target.value)}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Categoria"
+                      placeholder={tx('Categoria')}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Endereço
+                      {tx('Endereço')}
                     </label>
                     <AddressAutocomplete value={addressDraft} onChange={setAddressDraft} />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Descrição
+                      {tx('Descrição')}
                     </label>
                     <textarea
                       value={descriptionDraft}
@@ -785,7 +787,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       onChange={(event) => setDescriptionDraft(event.target.value)}
                       rows={5}
                       className="w-full resize-none rounded-md border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Descrição do negócio"
+                      placeholder={tx('Descrição do negócio')}
                     />
                     <div className="flex justify-end"><CharacterCounter current={descriptionDraft.length} max={600} /></div>
                   </div>
@@ -796,7 +798,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 <>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Telefone
+                      {tx('Telefone')}
                     </label>
                     <input
                       value={phoneDraft}
@@ -806,13 +808,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       maxLength={24}
                       onChange={(event) => setPhoneDraft(formatLoosePhoneInput(event.target.value))}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="Telefone"
+                      placeholder={tx('Telefone')}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      WhatsApp
+                      {tx('WhatsApp')}
                     </label>
                     <input
                       value={whatsappDraft}
@@ -822,13 +824,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                       maxLength={24}
                       onChange={(event) => setWhatsappDraft(formatLoosePhoneInput(event.target.value))}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="WhatsApp"
+                      placeholder={tx('WhatsApp')}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Website
+                      {tx('Website')}
                     </label>
                     <input
                       value={websiteDraft}
@@ -840,13 +842,13 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Instagram
+                      {tx('Instagram')}
                     </label>
                     <input
                       value={instagramDraft}
                       onChange={(event) => setInstagramDraft(event.target.value)}
                       className="w-full rounded-full border border-input bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none transition focus:border-brand-500"
-                      placeholder="@instagram"
+                      placeholder={tx('@instagram')}
                     />
                   </div>
                 </>
@@ -858,9 +860,9 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     value={coverDraft}
                     onChange={setCoverDraft}
                     folder="businesses"
-                    placeholder="Link da imagem de capa"
+                    placeholder={tx('Link da imagem de capa')}
                     cropAspect={2}
-                    hint="Essa imagem aparece no topo da página do negócio."
+                    hint={tx('Essa imagem aparece no topo da página do negócio.')}
                   />
 
                   <ImageGalleryField
@@ -868,7 +870,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                     onChange={setGalleryDraft}
                     folder="businesses"
                     cropAspect={1}
-                    hint="Use a galeria para mostrar ambiente, produtos e serviços."
+                    hint={tx('Use a galeria para mostrar ambiente, produtos e serviços.')}
                   />
                 </>
               ) : null}
@@ -881,7 +883,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 disabled={savingBusiness}
                 className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60"
               >
-                {savingBusiness ? 'Salvando...' : 'Salvar alterações'}
+                {savingBusiness ? tx('Salvando...') : tx('Salvar alterações')}
               </button>
 
               <button
@@ -890,7 +892,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
                 disabled={savingBusiness}
                 className="rounded-full bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200 disabled:opacity-60"
               >
-                Cancelar
+                {tx('Cancelar')}
               </button>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ImageCropper, type ImageCropperHandle } from '@/components/ui/ImageCropper';
 import { cn } from '@/lib/cn';
 import { getUserErrorMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type ImageEditMenuProps = {
   folder: CloudinaryFolder;
@@ -28,6 +29,7 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
  * oferece galeria/câmera) e botão Salvar.
  */
 export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind = 'cover', onUploaded, className }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -79,11 +81,11 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
   const pick = (candidate?: File | null) => {
     if (!candidate) return;
     if (!ACCEPTED.includes(candidate.type)) {
-      showToast('Use uma imagem JPG, PNG ou WebP.', 'error');
+      showToast(tx('Use uma imagem JPG, PNG ou WebP.'), 'error');
       return;
     }
     if (candidate.size > 10 * 1024 * 1024) {
-      showToast('A imagem deve ter no máximo 10 MB.', 'error');
+      showToast(tx('A imagem deve ter no máximo 10 MB.'), 'error');
       return;
     }
     setFile(candidate);
@@ -122,29 +124,29 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((value) => !value)}
-        aria-label={isCover ? 'Editar capa' : 'Editar foto'}
+        aria-label={isCover ? tx('Editar capa') : tx('Editar foto')}
         className={cn(
           'flex items-center justify-center gap-1.5 bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65',
           isCover ? 'h-9 rounded-full px-3 text-xs font-semibold' : 'h-8 w-8 rounded-full',
         )}
       >
         <Camera size={isCover ? 16 : 15} />
-        {isCover ? <span className="hidden sm:inline">Editar capa</span> : null}
+        {isCover ? <span className="hidden sm:inline">{tx('Editar capa')}</span> : null}
       </button>
       {menuOpen ? (
         <div role="menu" className={cn('absolute bottom-full mb-2 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-lg', isCover ? 'right-0' : 'left-0')}>
           {src ? (
             <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setViewing(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50">
-              <Eye size={17} className="text-slate-500" /> Ver {noun}
+              <Eye size={17} className="text-slate-500" /> {tx('Ver')} {noun}
             </button>
           ) : null}
           <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setEditing(true); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50">
-            <ImagePlus size={17} className="text-slate-500" /> Alterar {noun}
+            <ImagePlus size={17} className="text-slate-500" /> {tx('Alterar')} {noun}
           </button>
         </div>
       ) : null}
 
-      {src ? <ImageLightbox open={viewing} onClose={() => setViewing(false)} src={src} alt={isCover ? 'Capa' : 'Foto'} /> : null}
+      {src ? <ImageLightbox open={viewing} onClose={() => setViewing(false)} src={src} alt={isCover ? tx('Capa') : tx('Foto')} /> : null}
 
       <Modal
         open={editing}
@@ -155,20 +157,20 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
         {file && preview ? (
           <div className="bg-surface pb-4">
             <ImageCropper ref={cropperRef} src={preview} aspect={isCover ? 2 : 1} round={!isCover} outputWidth={isCover ? 1920 : 800} />
-            <p className="px-4 pt-1 text-center text-xs text-slate-500">Arraste a imagem para posicionar.</p>
+            <p className="px-4 pt-1 text-center text-xs text-slate-500">{tx('Arraste a imagem para posicionar.')}</p>
             <div className="mt-3 flex items-center justify-between gap-3 px-4">
               <button type="button" onClick={() => inputRef.current?.click()} disabled={saving} className="rounded-full px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50">
-                Escolher outra
+                {tx('Escolher outra')}
               </button>
               <button
                 type="button"
                 onClick={() => void save()}
                 disabled={saving}
-                aria-label="Salvar"
+                aria-label={tx('Salvar')}
                 className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? <LoaderCircle size={17} className="animate-spin" /> : <Save size={17} />}
-                Salvar
+                {tx('Salvar')}
               </button>
             </div>
           </div>
@@ -182,15 +184,15 @@ export const ImageEditMenu: React.FC<ImageEditMenuProps> = ({ folder, src, kind 
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              aria-label="Escolher imagem"
+              aria-label={tx('Escolher imagem')}
               className={cn('absolute inset-0 flex flex-col items-center justify-center gap-2 transition', dragging ? 'bg-brand-50' : 'hover:bg-slate-200/60')}
             >
               {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-60" /> : null}
               <ImagePlus size={34} className="relative text-slate-500" />
-              <span className="relative text-sm font-semibold text-slate-600">Escolher imagem</span>
+              <span className="relative text-sm font-semibold text-slate-600">{tx('Escolher imagem')}</span>
             </button>
             <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-              {isCover ? 'Editar capa' : 'Editar foto'}
+              {isCover ? tx('Editar capa') : tx('Editar foto')}
             </span>
           </div>
         )}

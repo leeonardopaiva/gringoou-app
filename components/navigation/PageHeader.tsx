@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { goBackOr } from '@/lib/navigation-history';
 import { SubHeaderFilter, type SubHeaderFilters } from '@/components/ui/SubHeader';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PageHeaderProps = {
   title: string;
@@ -42,6 +43,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   titleClassName,
   className,
 }) => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const handleBack = onBack ?? (historyBack ? () => goBackOr(router, backHref) : undefined);
 
@@ -59,8 +61,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 }
               : undefined
           }
-          aria-label="Voltar"
-          title="Voltar"
+          aria-label={tx('Voltar')}
+          title={tx('Voltar')}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
         >
           <ArrowLeft size={19} aria-hidden="true" />

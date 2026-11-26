@@ -8,6 +8,7 @@ import {
   findCountryByIso2,
 } from '@/lib/country-calling-codes';
 import { formatPhoneInputByCountry } from '@/lib/forms/phone';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PhoneNumberFieldProps = {
   countryIso2: string;
@@ -52,6 +53,7 @@ export default function PhoneNumberField({
   options = REGISTRATION_COUNTRY_OPTIONS,
   onInteract,
 }: PhoneNumberFieldProps) {
+  const { tx } = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -116,7 +118,7 @@ export default function PhoneNumberField({
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
-          aria-label={`País do telefone: ${selected.country} ${selected.dialCode}. Alterar`}
+          aria-label={`${tx('País do telefone:')} ${selected.country} ${selected.dialCode}${tx('. Alterar')}`}
           className="flex h-full shrink-0 items-center gap-2 rounded-l-full pl-5 pr-3 outline-none transition-colors hover:bg-slate-50 focus-visible:bg-slate-50"
         >
           <Flag country={selected} />
@@ -149,14 +151,14 @@ export default function PhoneNumberField({
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar país ou código"
-              aria-label="Buscar país ou código"
+              placeholder={tx('Buscar país ou código')}
+              aria-label={tx('Buscar país ou código')}
               className="min-w-0 flex-1 bg-transparent text-sm placeholder:text-slate-400 focus:outline-none"
             />
           </label>
           <ul id={listId} role="listbox" className="max-h-64 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-slate-500">Nenhum país encontrado.</li>
+              <li className="px-4 py-3 text-sm text-slate-500">{tx('Nenhum país encontrado.')}</li>
             ) : (
               filtered.map((option) => {
                 const isSelected = option.iso2 === selected.iso2;

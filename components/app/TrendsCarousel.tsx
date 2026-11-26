@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, useAnimationControls, type PanInfo } from 'framer-motion';
 import { ArrowRight, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type TrendItem = {
   href: string;
@@ -16,6 +17,8 @@ export type TrendItem = {
 };
 
 export const TrendsCarousel: React.FC<{ items: TrendItem[]; className?: string }> = ({ items, className }) => {
+  const { tx } = useLanguage();
+  const { t } = useLanguage();
   const count = items.length;
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
@@ -82,8 +85,8 @@ export const TrendsCarousel: React.FC<{ items: TrendItem[]; className?: string }
   return (
     <section className={cn('space-y-3', className)} aria-labelledby="trends-title">
       <div className="flex items-center justify-between gap-4">
-        <h2 id="trends-title" className="text-body-sm font-bold text-foreground">Trends</h2>
-        <span className="text-caption font-semibold text-muted-foreground">Deslize para explorar</span>
+        <h2 id="trends-title" className="text-body-sm font-bold text-foreground">{tx('Trends')}</h2>
+        <span className="text-caption font-semibold text-muted-foreground">{t('home.swipe')}</span>
       </div>
 
       <div
@@ -139,7 +142,7 @@ export const TrendsCarousel: React.FC<{ items: TrendItem[]; className?: string }
               key={item.href}
               type="button"
               onClick={() => slideTo(index)}
-              aria-label={`Ir para ${item.category}`}
+              aria-label={`${tx('Ir para')} ${item.category}`}
               aria-current={index === activeIndex ? 'true' : undefined}
               className={cn(
                 'h-1.5 rounded-full transition-all duration-300',

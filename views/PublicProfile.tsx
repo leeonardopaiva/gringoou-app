@@ -35,6 +35,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import CreateGroupModal from '../components/groups/CreateGroupModal';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PublicProfileProps = {
   username: string;
@@ -82,7 +83,7 @@ const formatEventDate = (value: string) =>
     timeStyle: 'short',
   }).format(new Date(value));
 
-const formatMembershipDuration = (value: string) => {
+const formatMembershipDuration = (value: string, tx: (text: string) => string) => {
   const joinedAt = new Date(value);
   const now = new Date();
   const monthDiff =
@@ -91,15 +92,15 @@ const formatMembershipDuration = (value: string) => {
 
   if (monthDiff >= 12) {
     const years = Math.floor(monthDiff / 12);
-    return `Gringo há ${years} ${years === 1 ? 'ano' : 'anos'}`;
+    return `${tx('Gringo há')} ${years} ${years === 1 ? tx('ano') : tx('anos')}`;
   }
 
   if (monthDiff >= 1) {
-    return `Gringo há ${monthDiff} ${monthDiff === 1 ? 'mês' : 'meses'}`;
+    return `${tx('Gringo há')} ${monthDiff} ${monthDiff === 1 ? tx('mês') : tx('meses')}`;
   }
 
   const dayDiff = Math.max(1, Math.floor((now.getTime() - joinedAt.getTime()) / (1000 * 60 * 60 * 24)));
-  return `Gringo há ${dayDiff} ${dayDiff === 1 ? 'dia' : 'dias'}`;
+  return `${tx('Gringo há')} ${dayDiff} ${dayDiff === 1 ? tx('dia') : tx('dias')}`;
 };
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
@@ -117,6 +118,7 @@ const uniqueStrings = (values: Array<string | null | undefined>) =>
   Array.from(new Set(values.filter((value): value is string => Boolean(value))));
 
 const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedded = false }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const { startDirectConversation } = useMessaging();
   const router = useRouter();
@@ -234,7 +236,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o perfil.'));
-      showToast('Perfil atualizado.', 'success'); setEditModal(null); refreshProfile();
+      showToast(tx('Perfil atualizado.'), 'success'); setEditModal(null); refreshProfile();
     } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível salvar o perfil.'), 'error'); }
     finally { setSavingProfile(false); }
   };
@@ -246,7 +248,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     });
     const payload = await response.json().catch(() => null);
     if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
-    showToast('Capa atualizada.', 'success');
+    showToast(tx('Capa atualizada.'), 'success');
     refreshProfile();
     return null;
   };
@@ -255,7 +257,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
     const response = await fetch('/api/profile/image', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: url }) });
     const payload = await response.json().catch(() => null);
     if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a foto.');
-    showToast('Foto atualizada.', 'success');
+    showToast(tx('Foto atualizada.'), 'success');
     refreshProfile();
     return null;
   };
@@ -330,9 +332,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             ) : null}
             <StatusPage
               icon={<UserX size={30} />}
-              title="Perfil indisponível"
+              title={tx('Perfil indisponível')}
               description={error}
-              actions={[{ label: 'Ir para o início', href: viewer ? '/home' : '/login' }]}
+              actions={[{ label: tx('Ir para o início'), href: viewer ? '/home' : '/login' }]}
               className="!px-0 !py-6"
             />
           </div>
@@ -342,11 +344,11 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   }
 
   const tabs = [
-    { id: 'about' as const, label: 'Sobre' },
-    { id: 'friends' as const, label: 'Amigos' },
-    { id: 'groups' as const, label: 'Grupos' },
-    { id: 'interests' as const, label: 'Interesses' },
-    { id: 'photos' as const, label: 'Fotos' },
+    { id: 'about' as const, label: tx('Sobre') },
+    { id: 'friends' as const, label: tx('Amigos') },
+    { id: 'groups' as const, label: tx('Grupos') },
+    { id: 'interests' as const, label: tx('Interesses') },
+    { id: 'photos' as const, label: tx('Fotos') },
   ];
   const friendStatus = profile.friendFeature.status || (viewer ? 'none' : 'signed_out');
 
@@ -359,13 +361,13 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <Logo size="lg" />
             </div>
           ) : null}
-          <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
+          <PageHeader title={tx('Perfil')} backHref={viewer ? '/community' : '/'} historyBack />
 
           <div className="relative">
             <div className="relative h-36 sm:h-44">
               <div className={`absolute inset-0 overflow-hidden rounded-t-[28px] ${heroImage ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
                 {heroImage ? (
-                  <img src={heroImage} className="h-full w-full object-cover object-center" alt={`Capa de ${profile.name}`} />
+                  <img src={heroImage} className="h-full w-full object-cover object-center" alt={`${tx('Capa de')} ${profile.name}`} />
                 ) : (
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
                 )}
@@ -404,7 +406,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-medium text-slate-400">
                 <span>@{profile.username}</span>
                 <span aria-hidden className="text-slate-300">•</span>
-                <span>{formatMembershipDuration(profile.joinedAt)}</span>
+                <span>{formatMembershipDuration(profile.joinedAt, tx)}</span>
               </p>
 
               {profileQuote ? (
@@ -429,7 +431,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {isOwnProfile ? (
                   <button type="button" onClick={() => openProfileEditor('details')} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600">
-                    Editar perfil
+                    {tx('Editar perfil')}
                   </button>
                 ) : friendStatus === 'signed_out' ? (
                   <Link
@@ -437,17 +439,17 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white"
                   >
                     <UserPlus size={16} />
-                    Entrar para adicionar
+                    {tx('Entrar para adicionar')}
                   </Link>
                 ) : friendStatus === 'accepted' ? (
                   <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-emerald-50 px-6 text-sm font-bold text-emerald-700">
                     <UserCheck size={16} />
-                    Conectado
+                    {tx('Conectado')}
                   </div>
                 ) : friendStatus === 'pending_sent' ? (
                   <div className="inline-flex min-h-10 items-center gap-2 rounded-full bg-slate-50 px-6 text-sm font-bold text-slate-500">
                     <UserPlus size={16} />
-                    Solicitado
+                    {tx('Solicitado')}
                   </div>
                 ) : (
                   <button
@@ -457,7 +459,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     className="inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white opacity-90"
                   >
                     {friendStatus === 'pending_received' ? <UserCheck size={16} /> : <UserPlus size={16} />}
-                    {friendActionLoading ? 'Aguarde...' : friendStatus === 'pending_received' ? 'Aceitar conexão' : 'Adicionar'}
+                    {friendActionLoading ? tx('Aguarde...') : friendStatus === 'pending_received' ? tx('Aceitar conexão') : tx('Adicionar')}
                   </button>
                 )}
                 {!isOwnProfile && friendStatus !== 'signed_out' && profile.acceptsMessages !== false ? (
@@ -471,7 +473,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     className="inline-flex min-h-10 items-center gap-2 rounded-full border border-brand-200 bg-surface px-5 text-sm font-bold text-brand-600 transition hover:bg-brand-50 disabled:opacity-60"
                   >
                     <MessageCircle size={16} aria-hidden />
-                    {messageLoading ? 'Abrindo...' : 'Enviar mensagem'}
+                    {messageLoading ? tx('Abrindo...') : tx('Enviar mensagem')}
                   </button>
                 ) : null}
                 {profile.stats.businessCount > 0 || profile.stats.eventCount > 0 ? (
@@ -480,7 +482,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                     onClick={() => setActiveTab('recommendations')}
                     className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600"
                   >
-                    Ver negócios e eventos
+                    {tx('Ver negócios e eventos')}
                   </button>
                 ) : null}
               </div>
@@ -499,7 +501,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       activeTab === tab.id ? 'text-brand-500' : 'text-muted-foreground'
                     }`}
                   >
-                    {tab.label}
+                    {tx(tab.label)}
                     {activeTab === tab.id ? (
                       <span className="absolute inset-x-2.5 bottom-0 h-0.5 rounded-full bg-brand-500" />
                     ) : null}
@@ -510,7 +512,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
             {activeTab === 'about' ? (
               <section className="mt-6 px-1 py-3">
-                <h2 className="text-2xl font-bold text-slate-900">Sobre</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{tx('Sobre')}</h2>
                 {profile.bio ? (
                   <p className="mt-4 text-base leading-7 text-slate-700">{profile.bio}</p>
                 ) : null}
@@ -524,17 +526,17 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 <div className="mt-5 grid grid-cols-1 border-t border-slate-100 pt-4 empty:hidden">
                   {profile.birthCity ? (
                     <div className="px-2 text-center">
-                      <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> Cidade natal</p>
+                      <p className="flex items-center flex-nowrap justify-center gap-1.5 text-xs font-bold text-slate-400"><Globe2 size={13} className="text-brand-500" /> {tx('Cidade natal')}</p>
                       <p className="mt-1 text-sm font-semibold text-slate-700">{profile.birthCity}</p>
                     </div>
                   ) : null}
                 </div>
 
                 <div className="mt-5 flex items-stretch divide-x divide-slate-100">
-                  <ProfileMetric icon={<Users size={15} />} value={profile.stats.friendCount} label="Conexões" onClick={() => setActiveTab('friends')} />
-                  <ProfileMetric icon={<Images size={15} />} value={profile.stats.businessCount} label="Negócios" onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
-                  <ProfileMetric icon={<CalendarDays size={15} />} value={profile.stats.eventCount} label="Eventos" onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
-                  <ProfileMetric icon={<MessageSquareText size={15} />} value={profile.stats.postCount} label="Posts" />
+                  <ProfileMetric icon={<Users size={15} />} value={profile.stats.friendCount} label={tx('Conexões')} onClick={() => setActiveTab('friends')} />
+                  <ProfileMetric icon={<Images size={15} />} value={profile.stats.businessCount} label={tx('Negócios')} onClick={profile.stats.businessCount > 0 ? () => setActiveTab('recommendations') : undefined} />
+                  <ProfileMetric icon={<CalendarDays size={15} />} value={profile.stats.eventCount} label={tx('Eventos')} onClick={profile.stats.eventCount > 0 ? () => setActiveTab('recommendations') : undefined} />
+                  <ProfileMetric icon={<MessageSquareText size={15} />} value={profile.stats.postCount} label={tx('Posts')} />
                 </div>
               </section>
             ) : null}
@@ -542,14 +544,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             {activeTab === 'friends' ? (
               <section className="mt-6 px-1 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-2xl font-bold text-slate-900">Amigos</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">{tx('Amigos')}</h2>
                   <span className="text-sm font-semibold text-slate-400">
                     {profile.friends.length} {profile.friends.length === 1 ? '' : 'conexões'}
                   </span>
                 </div>
 
                 {profile.friends.length === 0 ? (
-                  <EmptyPublicState text="Ainda não há conexões públicas neste perfil." />
+                  <EmptyPublicState text={tx('Ainda não há conexões públicas neste perfil.')} />
                 ) : (
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {profile.friends.map((friend) => (
@@ -590,8 +592,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                         <Plus size={20} />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold text-slate-900">Criar grupo</h2>
-                        <p className="text-sm text-slate-500">Organize pessoas por cidade, bairro ou interesse.</p>
+                        <h2 className="text-xl font-bold text-slate-900">{tx('Criar grupo')}</h2>
+                        <p className="text-sm text-slate-500">{tx('Organize pessoas por cidade, bairro ou interesse.')}</p>
                       </div>
                     </div>
                     <button
@@ -599,7 +601,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                       onClick={() => setGroupModalOpen(true)}
                       className="theme-bg theme-shadow mt-4 inline-flex rounded-full px-5 py-2.5 text-sm font-bold"
                     >
-                      Criar novo grupo
+                      {tx('Criar novo grupo')}
                     </button>
                     <CreateGroupModal
                       open={groupModalOpen}
@@ -611,14 +613,14 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
                 <div className="border-t border-slate-100 px-1 pt-6">
                   <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-2xl font-bold text-slate-900">Grupos</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">{tx('Grupos')}</h2>
                     <span className="text-sm font-semibold text-slate-400">
                       {profile.groups.length} {profile.groups.length === 1 ? '' : 'grupos'}
                     </span>
                   </div>
 
                   {profile.groups.length === 0 ? (
-                    <EmptyPublicState text="Ainda não há grupos públicos neste perfil." />
+                    <EmptyPublicState text={tx('Ainda não há grupos públicos neste perfil.')} />
                   ) : (
                     <div className="mt-4 grid gap-x-5 sm:grid-cols-2">
                       {profile.groups.map((group) => (
@@ -638,7 +640,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                             <div className="min-w-0">
                               <p className="truncate text-base font-bold text-slate-900">{group.name}</p>
                               <p className="truncate text-xs font-semibold uppercase text-slate-400">
-                                {group.category || 'Comunidade'}
+                                {group.category || tx('Comunidade')}
                               </p>
                             </div>
                           </div>
@@ -648,7 +650,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-slate-500">
                             {group.regionLabel ? <span>{group.regionLabel}</span> : null}
                             <span>
-                              {group.memberCount} membro{group.memberCount === 1 ? '' : 'membros'}
+                              {group.memberCount} {tx('membro')}{group.memberCount === 1 ? '' : 'membros'}
                             </span>
                           </div>
                         </Link>
@@ -661,9 +663,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
             {activeTab === 'interests' ? (
               <section className="mt-6 px-1 py-3">
-                <h2 className="text-2xl font-bold text-slate-900">Interesses</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{tx('Interesses')}</h2>
                 {interests.length === 0 ? (
-                  <EmptyPublicState text="Ainda não há interesses públicos suficientes para este perfil." />
+                  <EmptyPublicState text={tx('Ainda não há interesses públicos suficientes para este perfil.')} />
                 ) : (
                   <div className="mt-5 flex flex-wrap gap-3">
                     {interests.map((interest) => (
@@ -682,15 +684,15 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             {activeTab === 'photos' ? (
               <section className="mt-6 px-1 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-2xl font-bold text-slate-900">Fotos</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">{tx('Fotos')}</h2>
                   <div className="flex items-center gap-3">
                     {photoItems.length > 0 ? <span className="text-sm font-semibold text-slate-400">{photoItems.length} {photoItems.length === 1 ? 'foto' : 'fotos'}</span> : null}
-                    {isOwnProfile ? <button type="button" onClick={() => openProfileEditor('details')} className="text-sm font-semibold text-brand-600 hover:underline">Gerenciar</button> : null}
+                    {isOwnProfile ? <button type="button" onClick={() => openProfileEditor('details')} className="text-sm font-semibold text-brand-600 hover:underline">{tx('Gerenciar')}</button> : null}
                   </div>
                 </div>
 
                 {photoPreview.length === 0 ? (
-                  <EmptyPublicState text="Nenhuma foto pública disponível para este perfil." />
+                  <EmptyPublicState text={tx('Nenhuma foto pública disponível para este perfil.')} />
                 ) : (
                   <div className="mt-5 grid auto-rows-[104px] grid-cols-3 gap-1.5 sm:auto-rows-[150px] sm:gap-2" style={{ gridAutoFlow: 'dense' }}>
                     {photoPreview.map((photo, index) => {
@@ -702,7 +704,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                           key={`${photo}-${index}`}
                           onClick={() => setSelectedPhoto(photo)}
                           className={`group relative overflow-hidden rounded-2xl bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${featured ? 'col-span-2 row-span-2' : wide ? 'col-span-2' : ''}`}
-                          aria-label={`Ampliar foto ${index + 1} de ${profile.name}`}
+                          aria-label={`${tx('Ampliar foto')} ${index + 1} ${tx('de')} ${profile.name}`}
                         >
                           <img src={photo} alt={`${profile.name} - foto ${index + 1}`} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
                           <span className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
@@ -718,7 +720,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
               <section className="mt-6 space-y-4">
                 {profile.businesses.length > 0 ? (
                   <div className="border-b border-slate-100 px-1 pb-6">
-                    <h2 className="text-2xl font-bold text-slate-900">Negócios em destaque</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">{tx('Negócios em destaque')}</h2>
                     <div className="mt-5 space-y-3">
                       {profile.businesses.slice(0, 3).map((business) => (
                         <Link
@@ -751,7 +753,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
                 {profile.events.length > 0 ? (
                   <div className="px-1 py-3">
-                    <h2 className="text-2xl font-bold text-slate-900">Agenda recomendada</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">{tx('Agenda recomendada')}</h2>
                     <div className="mt-5 space-y-3">
                       {profile.events.slice(0, 3).map((event) => (
                         <Link
@@ -781,7 +783,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                 ) : null}
 
                 {profile.businesses.length === 0 && profile.events.length === 0 ? (
-                  <EmptyPublicState text="Ainda não há negócios ou eventos suficientes para montar recomendações." />
+                  <EmptyPublicState text={tx('Ainda não há negócios ou eventos suficientes para montar recomendações.')} />
                 ) : null}
               </section>
             ) : null}
@@ -789,16 +791,16 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
           <ImageLightbox
             open={Boolean(selectedPhoto)}
             src={selectedPhoto || ''}
-            alt={`Foto ampliada de ${profile.name}`}
+            alt={`${tx('Foto ampliada de')} ${profile.name}`}
             onClose={() => setSelectedPhoto(null)}
           />
-          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title="Editar perfil" description="As alterações serão atualizadas na sua página pública.">
+          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title={tx('Editar perfil')} description={tx('As alterações serão atualizadas na sua página pública.')}>
             {editModal === 'details' ? (
               <div className="space-y-4">
-                <label className="block text-sm font-bold text-slate-700">Nome<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
-                <label className="block text-sm font-bold text-slate-700">Sobre você<textarea value={detailsDraft.bio} onChange={(event) => setDetailsDraft((current) => ({ ...current, bio: event.target.value }))} rows={4} className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400" /></label>
-                <ImageGalleryField value={detailsDraft.galleryUrls} onChange={(galleryUrls) => setDetailsDraft((current) => ({ ...current, galleryUrls }))} folder="profiles" maxItems={8} hint="Adicione imagens que serão exibidas na aba Fotos do seu perfil público." />
-                <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? 'Salvando...' : 'Salvar alterações'}</button>
+                <label className="block text-sm font-bold text-slate-700">{tx('Nome')}<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
+                <label className="block text-sm font-bold text-slate-700">{tx('Sobre você')}<textarea value={detailsDraft.bio} onChange={(event) => setDetailsDraft((current) => ({ ...current, bio: event.target.value }))} rows={4} className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400" /></label>
+                <ImageGalleryField value={detailsDraft.galleryUrls} onChange={(galleryUrls) => setDetailsDraft((current) => ({ ...current, galleryUrls }))} folder="profiles" maxItems={8} hint={tx('Adicione imagens que serão exibidas na aba Fotos do seu perfil público.')} />
+                <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? tx('Salvando...') : tx('Salvar alterações')}</button>
               </div>
             ) : null}
           </Modal>

@@ -60,6 +60,8 @@ const PUBLIC_AUTH_PATHS = [
   '/api/pre-launch',
   // Waiting list signup from the landing page must work for anonymous visitors.
   '/api/waitlist',
+  // Active regions (names only): the landing page uses them to offer the right languages.
+  '/api/regions',
 ];
 
 // Paths that stay reachable while the pre-launch gate is active. Everything
@@ -80,6 +82,7 @@ const PRE_LAUNCH_PUBLIC_PATHS = [
   '/privacy',
   '/api/dev/',
   '/api/waitlist',
+  '/api/regions',
   ...PUBLIC_ASSET_PREFIXES,
 ];
 

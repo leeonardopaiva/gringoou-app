@@ -17,6 +17,7 @@ import { parseAppRoute } from '@/lib/app-route';
 import { Compass } from 'lucide-react';
 import { StatusPage } from '@/components/ui/StatusPage';
 import type { CommunityInitialData, HomeInitialData, JobsInitialData, NewsInitialData, ProfileInitialData } from '@/lib/content-contracts';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type UserWorkspaceProps = {
   currentUser: User;
@@ -47,6 +48,7 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
   initialNewsData,
   initialProfileData,
 }) => {
+  const { tx } = useLanguage();
   const { segments, rootSegment } = parseAppRoute(pathname);
 
   if (segments.length === 0) {
@@ -91,11 +93,11 @@ const UserWorkspace: React.FC<UserWorkspaceProps> = ({
         <StatusPage
           icon={<Compass size={30} />}
           code="404"
-          title="Página não encontrada"
-          description="O endereço que você tentou acessar não existe ou foi movido."
+          title={tx('Página não encontrada')}
+          description={tx('O endereço que você tentou acessar não existe ou foi movido.')}
           actions={[
-            { label: 'Ir para o início', href: '/home' },
-            { label: 'Ver a comunidade', href: '/community', variant: 'secondary' },
+            { label: tx('Ir para o início'), href: '/home' },
+            { label: tx('Ver a comunidade'), href: '/community', variant: 'secondary' },
           ]}
         />
       );

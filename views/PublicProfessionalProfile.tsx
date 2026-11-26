@@ -9,6 +9,7 @@ import PageHeader from '../components/navigation/PageHeader';
 import { handleAvatarError } from '../lib/avatar';
 import { PublicProfessionalProfile, User } from '../types';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PublicProfessionalProfileProps = {
   username: string;
@@ -54,6 +55,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
   viewer,
   embedded = false,
 }) => {
+  const { tx } = useLanguage();
   const [profile, setProfile] = useState<PublicProfessionalProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +137,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
               </div>
             ) : null}
             <div className="rounded-[32px] border border-red-100 bg-red-50 p-6 text-center">
-              <h1 className="text-xl font-bold text-red-700">Vitrine indisponível</h1>
+              <h1 className="text-xl font-bold text-red-700">{tx('Vitrine indisponível')}</h1>
               <p className="mt-3 text-sm text-red-600">{error}</p>
             </div>
           </div>
@@ -153,19 +155,19 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
               <Logo size="lg" />
             </div>
           ) : null}
-          <PageHeader title="Perfil" backHref={viewer ? '/community' : '/'} historyBack />
+          <PageHeader title={tx('Perfil')} backHref={viewer ? '/community' : '/'} historyBack />
 
           <section className="overflow-hidden rounded-[36px] bg-surface shadow-sm">
             <div className={`relative h-80 ${profile.coverImageUrl ? 'bg-slate-100' : PROFILE_GRADIENT_CLASS}`}>
               {profile.coverImageUrl ? (
-                <img src={profile.coverImageUrl} alt={`Capa profissional de ${profile.name}`} className="h-full w-full object-cover object-center" />
+                <img src={profile.coverImageUrl} alt={`${tx('Capa profissional de')} ${profile.name}`} className="h-full w-full object-cover object-center" />
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-scrim/40 via-scrim/10 to-transparent" />
               <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                 <BriefcaseBusiness size={14} />
-                Vitrine profissional
+                {tx('Vitrine profissional')}
               </div>
             </div>
 
@@ -198,7 +200,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                   ) : null}
                   <span className="inline-flex items-center gap-2">
                     <Globe2 size={16} />
-                    Presença pública profissional
+                    {tx('Presença pública profissional')}
                   </span>
                 </div>
 
@@ -207,24 +209,24 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                     href={profile.personalPublicPath}
                     className="inline-flex min-h-12 items-center justify-center rounded-[22px] border border-slate-200 bg-surface px-6 text-sm font-bold text-slate-700 shadow-sm"
                   >
-                    Ver perfil pessoal
+                    {tx('Ver perfil pessoal')}
                   </Link>
                   {isOwnProfile ? (
                     <Link
                       href="/profile?mode=professional"
                       className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-bold text-white shadow-sm"
                     >
-                      Editar perfil profissional
+                      {tx('Editar perfil profissional')}
                     </Link>
                   ) : null}
                 </div>
               </div>
 
               <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <MetricCard icon={<BriefcaseBusiness size={18} />} value={profile.stats.businessCount} label="Negócios" />
-                <MetricCard icon={<CalendarDays size={18} />} value={profile.stats.eventCount} label="Eventos" />
-                <MetricCard icon={<BadgeCheck size={18} />} value={profile.businesses.length} label="Em destaque" />
-                <MetricCard icon={<Globe2 size={18} />} value={1} label="Vitrine ativa" />
+                <MetricCard icon={<BriefcaseBusiness size={18} />} value={profile.stats.businessCount} label={tx('Negócios')} />
+                <MetricCard icon={<CalendarDays size={18} />} value={profile.stats.eventCount} label={tx('Eventos')} />
+                <MetricCard icon={<BadgeCheck size={18} />} value={profile.businesses.length} label={tx('Em destaque')} />
+                <MetricCard icon={<Globe2 size={18} />} value={1} label={tx('Vitrine ativa')} />
               </div>
             </div>
           </section>
@@ -232,7 +234,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
           <section className="mt-6 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <BriefcaseBusiness size={16} />
-              Negócios em destaque
+              {tx('Negócios em destaque')}
             </div>
             {profile.businesses.length > 0 ? (
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -251,23 +253,23 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                         <StarRating average={business.ratingAverage} count={business.ratingCount} compact />
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Link href={`/businesses/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-surface px-3 text-xs font-bold text-slate-700">Ver página</Link>
-                        {isOwnProfile ? <Link href={`/businesses/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">Gerenciar</Link> : null}
-                        {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />Promover</Link> : null}
+                        <Link href={`/businesses/${business.slug}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-surface px-3 text-xs font-bold text-slate-700">{tx('Ver página')}</Link>
+                        {isOwnProfile ? <Link href={`/businesses/${business.slug || business.id}/gerenciar`} className="inline-flex min-h-9 items-center rounded-full border border-brand-100 bg-brand-50 px-3 text-xs font-bold text-brand-600">{tx('Gerenciar')}</Link> : null}
+                        {isOwnProfile ? <Link href={`/ads/promover/${business.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-500 px-3 text-xs font-bold text-white"><Megaphone size={13} />{tx('Promover')}</Link> : null}
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <EmptyState text="Nenhum negócio público disponível nesta vitrine profissional." />
+              <EmptyState text={tx('Nenhum negócio público disponível nesta vitrine profissional.')} />
             )}
           </section>
 
           <section className="mt-6 rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-400">
               <CalendarDays size={16} />
-              Agenda profissional
+              {tx('Agenda profissional')}
             </div>
             {profile.events.length > 0 ? (
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -290,7 +292,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
                 ))}
               </div>
             ) : (
-              <EmptyState text="Nenhum evento público disponível nesta vitrine profissional." />
+              <EmptyState text={tx('Nenhum evento público disponível nesta vitrine profissional.')} />
             )}
           </section>
         </div>

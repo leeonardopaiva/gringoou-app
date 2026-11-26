@@ -21,6 +21,7 @@ import { CharacterCounter } from '@/components/ui/CharacterCounter';
 import { FeedCard } from '@/components/ui/FeedCard';
 import { Popover } from '@/components/ui/Popover';
 import { ImageLightbox } from '@/components/community/ImageLightbox';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const POST_CONTENT_MAX_LENGTH = 600;
 
@@ -96,11 +97,13 @@ type CommentComposerProps = {
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
-const Root: React.FC<RootProps> = ({ children, className = '', flat = false }) => (
+const Root: React.FC<RootProps> = ({ children, className = '', flat = false }) => {
+  return (
   <FeedCard.Root flat={flat} className={`space-y-3 ${flat ? '' : 'rounded-[18px] p-4'} ${className}`.trim()}>
     {children}
   </FeedCard.Root>
 );
+};
 
 const Header: React.FC<HeaderProps> = ({
   authorImage,
@@ -143,12 +146,15 @@ const Header: React.FC<HeaderProps> = ({
   </div>
 );
 
-const BusinessBadge = () => (
+const BusinessBadge = () => {
+  const { tx } = useLanguage();
+  return (
   <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-600">
     <Store size={10} />
-    Negócio
+    {tx('Negócio')}
   </span>
 );
+};
 
 const Menu: React.FC<MenuProps> = ({ open, onToggle, children }) => {
   const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -175,7 +181,8 @@ const MenuItem: React.FC<{
   disabled?: boolean;
   onClick: () => void;
   children: React.ReactNode;
-}> = ({ tone = 'default', disabled = false, onClick, children }) => (
+}> = ({ tone = 'default', disabled = false, onClick, children }) => {
+  return (
   <button
     type="button"
     disabled={disabled}
@@ -187,8 +194,10 @@ const MenuItem: React.FC<{
     {children}
   </button>
 );
+};
 
 const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) => {
+  const { tx } = useLanguage();
   const [imageOpen, setImageOpen] = React.useState(false);
   const youtubeEmbedUrl = buildYoutubeEmbedUrl(externalUrl);
   const externalHostname = getExternalHostname(externalUrl);
@@ -209,7 +218,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-scrim">
           <iframe
             src={youtubeEmbedUrl}
-            title={`Vídeo externo ${postId}`}
+            title={`${tx('Vídeo externo')} ${postId}`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="aspect-video w-full"
@@ -226,7 +235,7 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
         >
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-400">
             <LinkIcon size={14} />
-            Link externo
+            {tx('Link externo')}
           </div>
           <p className="mt-2 break-all text-sm font-bold text-brand-500">{externalUrl}</p>
           {externalHostname ? (
@@ -237,10 +246,10 @@ const Body: React.FC<BodyProps> = ({ postId, content, imageUrl, externalUrl }) =
 
       {imageUrl ? (
         <>
-          <button type="button" onClick={() => setImageOpen(true)} className="-mx-4 block w-[calc(100%+2rem)] overflow-hidden bg-bg md:-mx-6 md:w-[calc(100%+3rem)]" aria-label="Ampliar imagem da publicação">
-            <FeedCard.Media src={imageUrl} alt="Imagem da publicação" className="aspect-[4/3] rounded-none" />
+          <button type="button" onClick={() => setImageOpen(true)} className="-mx-4 block w-[calc(100%+2rem)] overflow-hidden bg-bg md:-mx-6 md:w-[calc(100%+3rem)]" aria-label={tx('Ampliar imagem da publicação')}>
+            <FeedCard.Media src={imageUrl} alt={tx('Imagem da publicação')} className="aspect-[4/3] rounded-none" />
           </button>
-          <ImageLightbox open={imageOpen} onClose={() => setImageOpen(false)} src={imageUrl} alt="Imagem ampliada da publicação" />
+          <ImageLightbox open={imageOpen} onClose={() => setImageOpen(false)} src={imageUrl} alt={tx('Imagem ampliada da publicação')} />
         </>
       ) : null}
     </>
@@ -257,7 +266,9 @@ const Editor: React.FC<EditorProps> = ({
   onSave,
   onCancel,
   saving,
-}) => (
+}) => {
+  const { tx } = useLanguage();
+  return (
   <div className="space-y-3 rounded-card bg-bg p-4">
     <textarea
       rows={4}
@@ -273,26 +284,27 @@ const Editor: React.FC<EditorProps> = ({
       value={imageUrl}
       onChange={onImageChange}
       folder="community" cropAspect={4 / 3}
-      placeholder="Link da imagem do post"
-      hint="Atualize a imagem da publicação quando precisar."
+      placeholder={tx('Link da imagem do post')}
+      hint={tx('Atualize a imagem da publicação quando precisar.')}
     />
     <input
       type="url"
       value={externalUrl}
       onChange={(event) => onExternalChange(event.target.value)}
-      placeholder="Link externo ou YouTube"
+      placeholder={tx('Link externo ou YouTube')}
       className="w-full rounded-full border border-input px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200"
     />
     <div className="flex gap-2">
       <Button type="button" onClick={onSave} disabled={saving} loading={saving} fullWidth size="sm">
-        {saving ? 'Salvando...' : 'Salvar publicação'}
+        {saving ? tx('Salvando...') : tx('Salvar publicação')}
       </Button>
       <Button type="button" onClick={onCancel} disabled={saving} variant="ghost" size="sm">
-        Cancelar
+        {tx('Cancelar')}
       </Button>
     </div>
   </div>
 );
+};
 
 const Actions: React.FC<ActionsProps> = ({
   liked,
@@ -307,7 +319,9 @@ const Actions: React.FC<ActionsProps> = ({
   likesAnchorRef,
   likesPreview,
   onShare,
-}) => (
+}) => {
+  const { tx } = useLanguage();
+  return (
   <div className="flex items-center justify-between border-t border-slate-100 pt-2">
     <div className="flex items-center gap-2">
       <div
@@ -352,11 +366,12 @@ const Actions: React.FC<ActionsProps> = ({
         <MessageSquare size={16} /> {commentCount}
       </button>
     </div>
-    <button type="button" onClick={onShare} aria-label="Compartilhar publicação" className="text-slate-400 transition hover:text-brand-500">
+    <button type="button" onClick={onShare} aria-label={tx('Compartilhar publicação')} className="text-slate-400 transition hover:text-brand-500">
       <Share2 size={16} />
     </button>
   </div>
 );
+};
 
 const CommentItem: React.FC<CommentItemProps> = ({
   authorImage,
@@ -400,14 +415,17 @@ const CommentComposer: React.FC<CommentComposerProps> = ({
   onChange,
   onSubmit,
   onKeyDown,
-}) => (
+}) => {
+  const { tx } = useLanguage();
+  return (
   <div className="flex items-center gap-2">
-    <MentionInput value={value} onChange={onChange} onKeyDown={onKeyDown} placeholder="Escreva um comentário... (use @ para marcar)" />
+    <MentionInput value={value} onChange={onChange} onKeyDown={onKeyDown} placeholder={tx('Escreva um comentário... (use @ para marcar)')} />
     <Button type="button" onClick={onSubmit} size="xs">
-      Responder
+      {tx('Responder')}
     </Button>
   </div>
 );
+};
 
 const PostCard = {
   Root,

@@ -5,6 +5,7 @@ import PostCard from '@/components/community/PostCard';
 import { MentionText } from '@/components/community/MentionText';
 import { Popover } from '@/components/ui/Popover';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type FeedPostCardProps = {
   post: Post;
@@ -31,6 +32,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onPostPreference = () => undefined,
   flat = false,
 }) => {
+  const { tx } = useLanguage();
   const authorHref = post.authorHref || (post.author.username ? `/${post.author.username}` : undefined);
   const [commentText, setCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
@@ -182,7 +184,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
       <div className="space-y-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            Curtiram este post
+            {tx('Curtiram este post')}
           </p>
           <p className="mt-1 text-sm font-medium text-slate-500">
             {post.likeCount} {post.likeCount === 1 ? 'curtida' : 'curtidas'}
@@ -202,7 +204,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
           ))}
           {hiddenLikesCount > 0 ? (
             <p className="pt-1 text-xs font-bold uppercase tracking-wide text-slate-400">
-              +{hiddenLikesCount} pessoas
+              +{hiddenLikesCount} {tx('pessoas')}
             </p>
           ) : null}
         </div>
@@ -215,7 +217,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
     <PostCard.Root flat={flat} className={isPendingReview ? 'opacity-65' : ''}>
       {isPendingReview ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-          Aguardando aprovação da administração. Esta publicação está visível apenas para você e administradores.
+          {tx('Aguardando aprovação da administração. Esta publicação está visível apenas para você e administradores.')}
         </div>
       ) : null}
       <PostCard.Header
@@ -237,7 +239,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   setPostMenuOpen(false);
                 }}
               >
-                Editar
+                {tx('Editar')}
               </PostCard.MenuItem>
             ) : null}
             {post.canDelete ? (
@@ -248,19 +250,19 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   void handleDeletePost();
                 }}
               >
-                Apagar
+                {tx('Apagar')}
               </PostCard.MenuItem>
             ) : null}
             <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('interest'); }}>
-              {post.viewerIsInterested ? 'Remover interesse' : 'Tenho interesse'}
+              {post.viewerIsInterested ? tx('Remover interesse') : tx('Tenho interesse')}
             </PostCard.MenuItem>
-            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>Não tenho interesse</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>{tx('Não tenho interesse')}</PostCard.MenuItem>
             <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('save'); }}>
-              {post.viewerHasSaved ? 'Remover dos salvos' : 'Salvar post'}
+              {post.viewerHasSaved ? tx('Remover dos salvos') : tx('Salvar post')}
             </PostCard.MenuItem>
-            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>Ocultar</PostCard.MenuItem>
-            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('report'); }}>Reportar</PostCard.MenuItem>
-            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('mute'); }}>Mutar usuário</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('hide'); }}>{tx('Ocultar')}</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('report'); }}>{tx('Reportar')}</PostCard.MenuItem>
+            <PostCard.MenuItem onClick={() => { setPostMenuOpen(false); onPostPreference('mute'); }}>{tx('Mutar usuário')}</PostCard.MenuItem>
           </PostCard.Menu>
         }
       />
@@ -342,7 +344,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
           onClick={() => setCommentsExpanded((current) => !current)}
           className="w-fit text-xs font-bold text-brand-500 transition hover:text-brand-600"
         >
-          {commentsExpanded ? 'Ocultar comentários' : collapsedCommentsLabel}
+          {commentsExpanded ? tx('Ocultar comentários') : collapsedCommentsLabel}
         </button>
       ) : null}
 
@@ -379,7 +381,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                     setOpenCommentMenuId(null);
                   }}
                 >
-                  Editar
+                  {tx('Editar')}
                 </PostCard.MenuItem>
               ) : null}
               {comment.canDelete ? (
@@ -388,7 +390,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   disabled={savingCommentId === comment.id}
                   onClick={() => void handleDeleteComment(comment.id)}
                 >
-                  {savingCommentId === comment.id ? 'Apagando...' : 'Apagar'}
+                  {savingCommentId === comment.id ? tx('Apagando...') : tx('Apagar')}
                 </PostCard.MenuItem>
               ) : null}
             </PostCard.Menu>
@@ -402,7 +404,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   disabled={savingCommentId === comment.id}
                   className="rounded-full bg-brand-500 px-4 py-2 text-[11px] font-bold text-white disabled:opacity-60"
                 >
-                  {savingCommentId === comment.id ? 'Salvando...' : 'Salvar'}
+                  {savingCommentId === comment.id ? tx('Salvando...') : tx('Salvar')}
                 </button>
                 <button
                   type="button"
@@ -413,17 +415,17 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   disabled={savingCommentId === comment.id}
                   className="rounded-2xl border border-slate-200 bg-surface px-4 py-2 text-[11px] font-bold text-slate-600 disabled:opacity-60"
                 >
-                  Cancelar
+                  {tx('Cancelar')}
                 </button>
               </div>
-            ) : <button type="button" onClick={() => setReplyingTo({ id: comment.id, name: comment.author.name })} className="mt-2 text-[11px] font-bold text-brand-600">Responder</button>
+            ) : <button type="button" onClick={() => setReplyingTo({ id: comment.id, name: comment.author.name })} className="mt-2 text-[11px] font-bold text-brand-600">{tx('Responder')}</button>
           }
         />
         {comment.replies?.map((reply) => <div key={reply.id} className="ml-10 border-l-2 border-brand-100 pl-3"><PostCard.CommentItem authorImage={reply.author.image || DEFAULT_AVATAR_URL} authorName={reply.author.name} authorHref={reply.author.username ? `/${reply.author.username}` : undefined} content={<p className="text-[11px] leading-tight text-slate-600"><MentionText text={reply.content} /></p>} /></div>)}
         </React.Fragment>
       ))}
 
-      {replyingTo ? <div className="flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-[11px] text-brand-700"><span>Respondendo a <strong>{replyingTo.name}</strong></span><button type="button" onClick={() => setReplyingTo(null)} className="font-bold">Cancelar</button></div> : null}
+      {replyingTo ? <div className="flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-[11px] text-brand-700"><span>{tx('Respondendo a')} <strong>{replyingTo.name}</strong></span><button type="button" onClick={() => setReplyingTo(null)} className="font-bold">{tx('Cancelar')}</button></div> : null}
       <PostCard.CommentComposer
         value={commentText}
         onChange={setCommentText}
@@ -444,7 +446,7 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 type="button"
                 onClick={() => setLikesOpen(false)}
                 className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Fechar lista de curtidas"
+                aria-label={tx('Fechar lista de curtidas')}
               >
                 <X size={18} />
               </button>

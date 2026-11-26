@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { formatRelativeTime } from '@/components/marketplace/MarketplaceCard';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type NewsComment = {
   id: string;
@@ -36,6 +37,7 @@ const PREVIEW_LIMIT = 1;
  * na página da notícia já abre completo.
  */
 export function NewsComments({ articleId, initialCount = 0, expanded = false }: NewsCommentsProps) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [open, setOpen] = useState(expanded);
   const [comments, setComments] = useState<NewsComment[]>([]);
@@ -98,7 +100,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
   const remove = async (comment: NewsComment) => {
     const response = await fetch(`/api/news/${articleId}/comments/${comment.id}`, { method: 'DELETE' });
     if (!response.ok) {
-      showToast('Não foi possível excluir o comentário.', 'error');
+      showToast(tx('Não foi possível excluir o comentário.'), 'error');
       return;
     }
     setComments((current) => current.filter((item) => item.id !== comment.id));
@@ -112,7 +114,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
       body: JSON.stringify({ action: comment.isHidden ? 'unhide' : 'hide' }),
     });
     if (!response.ok) {
-      showToast('Não foi possível atualizar o comentário.', 'error');
+      showToast(tx('Não foi possível atualizar o comentário.'), 'error');
       return;
     }
     setComments((current) => current.map((item) => (item.id === comment.id ? { ...item, isHidden: !item.isHidden } : item)));
@@ -131,12 +133,12 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
     <div className="border-t border-slate-100 pt-3">
       {!open && total > PREVIEW_LIMIT ? (
         <button type="button" onClick={() => void openAll()} className="mb-2 text-xs font-semibold text-slate-500 transition hover:text-brand-600">
-          Ver todos os {total} comentários
+          {tx('Ver todos os')} {total} {tx('comentários')}
         </button>
       ) : null}
 
       {loading ? (
-        <div className="flex justify-center py-3" role="status" aria-label="Carregando comentários">
+        <div className="flex justify-center py-3" role="status" aria-label={tx('Carregando comentários')}>
           <Loader2 size={16} className="animate-spin text-slate-400" aria-hidden />
         </div>
       ) : (
@@ -159,20 +161,20 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
                   </p>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[11px] text-slate-400">
                     <span>{formatRelativeTime(comment.createdAt)}</span>
-                    {comment.isHidden ? <span className="font-semibold text-amber-600">Oculto</span> : null}
+                    {comment.isHidden ? <span className="font-semibold text-amber-600">{tx('Oculto')}</span> : null}
                     {comment.canHide ? (
                       <button type="button" onClick={() => void toggleHidden(comment)} className={actionClass}>
-                        {comment.isHidden ? 'Reexibir' : 'Ocultar'}
+                        {comment.isHidden ? tx('Reexibir') : tx('Ocultar')}
                       </button>
                     ) : null}
                     {comment.canDelete ? (
                       <button type="button" onClick={() => void remove(comment)} className={actionClass}>
-                        Excluir
+                        {tx('Excluir')}
                       </button>
                     ) : null}
                     {comment.canReport ? (
                       <button type="button" onClick={() => void report(comment)} className={actionClass}>
-                        Denunciar
+                        {tx('Denunciar')}
                       </button>
                     ) : null}
                   </p>
@@ -184,7 +186,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
       )}
 
       {open && remaining > 0 ? (
-        <p className="mt-2 text-xs text-slate-400">Mostrando os {comments.length} comentários mais recentes.</p>
+        <p className="mt-2 text-xs text-slate-400">{tx('Mostrando os')} {comments.length} {tx('comentários mais recentes.')}</p>
       ) : null}
 
       <form
@@ -195,11 +197,11 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
         }}
       >
         <MessageCircle size={16} className="shrink-0 text-slate-400" aria-hidden />
-        <MentionInput value={draft} onChange={setDraft} maxLength={500} placeholder="Escreva um comentário (use @ para marcar)" ariaLabel="Escreva um comentário" className="w-full rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none focus:border-brand-400" />
+        <MentionInput value={draft} onChange={setDraft} maxLength={500} placeholder={tx('Escreva um comentário (use @ para marcar)')} ariaLabel={tx('Escreva um comentário')} className="w-full rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none focus:border-brand-400" />
         <button
           type="submit"
           disabled={draft.trim().length < 2 || sending}
-          aria-label="Enviar comentário"
+          aria-label={tx('Enviar comentário')}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-40"
         >
           {sending ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Send size={16} aria-hidden />}

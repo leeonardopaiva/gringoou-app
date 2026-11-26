@@ -4,6 +4,7 @@ import React, { useId, useRef, useState } from 'react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Popover } from '@/components/ui/Popover';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export interface InfoTipProps {
   /** Texto explicativo mostrado ao passar o mouse, focar ou tocar. */
@@ -14,6 +15,7 @@ export interface InfoTipProps {
 
 /** Ícone discreto (cinza claro) que abre uma dica curta; substitui parágrafos informativos fixos. */
 export const InfoTip: React.FC<InfoTipProps> = ({ text, className, align = 'start' }) => {
+  const { tx } = useLanguage();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const tipId = useId();
@@ -30,7 +32,7 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, className, align = 'star
     >
       <button
         type="button"
-        aria-label="Mais informações"
+        aria-label={tx('Mais informações')}
         aria-expanded={open}
         aria-describedby={open ? tipId : undefined}
         onClick={() => setOpen((value) => !value)}

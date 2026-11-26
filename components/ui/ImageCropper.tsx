@@ -3,6 +3,7 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type ImageCropperHandle = {
   /** Gera a imagem recortada exatamente como está enquadrada. */
@@ -28,6 +29,7 @@ const MAX_ZOOM = 3;
  * use o controle (ou a roda do mouse / pinça) para ampliar. Não depende de bibliotecas externas.
  */
 export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(({ src, aspect, round = false, outputWidth = 1600, className }, ref) => {
+  const { tx } = useLanguage();
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
@@ -172,7 +174,7 @@ export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(({
         ref={frameRef}
         tabIndex={0}
         role="group"
-        aria-label="Posicione a imagem: arraste para mover"
+        aria-label={tx('Posicione a imagem: arraste para mover')}
         style={{ aspectRatio: String(aspect) }}
         className="relative w-full cursor-grab touch-none select-none overflow-hidden bg-scrim-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-300 active:cursor-grabbing"
         onPointerDown={onPointerDown}
@@ -202,7 +204,7 @@ export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(({
         )}
       </div>
       <div className="flex items-center gap-3 px-1">
-        <button type="button" onClick={() => applyZoom(zoom - 0.2)} aria-label="Diminuir zoom" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
+        <button type="button" onClick={() => applyZoom(zoom - 0.2)} aria-label={tx('Diminuir zoom')} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
           <Minus size={16} />
         </button>
         <input
@@ -212,10 +214,10 @@ export const ImageCropper = forwardRef<ImageCropperHandle, ImageCropperProps>(({
           step={0.01}
           value={zoom}
           onChange={(event) => applyZoom(Number(event.target.value))}
-          aria-label="Zoom"
+          aria-label={tx('Zoom')}
           className="h-1.5 flex-1 cursor-pointer accent-brand-500"
         />
-        <button type="button" onClick={() => applyZoom(zoom + 0.2)} aria-label="Aumentar zoom" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
+        <button type="button" onClick={() => applyZoom(zoom + 0.2)} aria-label={tx('Aumentar zoom')} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
           <Plus size={16} />
         </button>
       </div>

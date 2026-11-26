@@ -30,6 +30,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { DateTimeField } from '../components/ui/DateTimeField';
 import { useActiveRegion } from '../components/RegionContext';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const EVENT_TABS = ['Hoje', 'Esta semana', 'Próximos', 'Cultural', 'Networking', 'Outros', 'Passados'];
 const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
@@ -97,6 +98,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   professionalIdentity = null,
   initialData,
 }) => {
+  const { tx } = useLanguage();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -269,13 +271,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         return;
       }
 
-      showToast('Seu evento foi enviado para aprovação.', 'success');
+      showToast(tx('Seu evento foi enviado para aprovação.'), 'success');
       setCreateForm(emptyForm);
       setShowCreateForm(false);
       setRefreshKey((current) => current + 1);
     } catch (error) {
       console.error('Failed to create event:', error);
-      showToast('Não foi possível enviar o evento.', 'error');
+      showToast(tx('Não foi possível enviar o evento.'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -310,7 +312,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       );
     } catch (error) {
       console.error('Failed to toggle event favorite from list:', error);
-      showToast('Não foi possível atualizar seus favoritos.', 'error');
+      showToast(tx('Não foi possível atualizar seus favoritos.'), 'error');
     } finally {
       setTogglingInterestId(null);
     }
@@ -353,12 +355,12 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   return (
     <ContentColumn size="compact" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
-        <PageHeader title="Eventos" action={
+        <PageHeader title={tx('Eventos')} action={
           <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
-            <Plus size={16} /> Criar evento
+            <Plus size={16} /> {tx('Criar evento')}
           </button>
         } />
-        <Modal open={showCreateForm} onClose={() => setShowCreateForm(false)} title="Cadastrar evento" className="max-w-2xl">
+        <Modal open={showCreateForm} onClose={() => setShowCreateForm(false)} title={tx('Cadastrar evento')} className="max-w-2xl">
               <form
                 onSubmit={handleCreateEvent}
                 className="space-y-3"
@@ -371,7 +373,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('title')}
               aria-invalid={Boolean(fieldErrors.title)}
-              placeholder="Título do evento"
+              placeholder={tx('Título do evento')}
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.title} />
@@ -384,7 +386,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('description')}
               aria-invalid={Boolean(fieldErrors.description)}
-              placeholder="Descrição do evento"
+              placeholder={tx('Descrição do evento')}
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.description} />
@@ -396,7 +398,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('venueName')}
               aria-invalid={Boolean(fieldErrors.venueName)}
-              placeholder="Local"
+              placeholder={tx('Local')}
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.venueName} />
@@ -405,7 +407,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             </select>
             <div className="space-y-3">
               <DateTimeField
-                label="Início"
+                label={tx('Início')}
                 required
                 value={createForm.startsAt}
                 invalid={Boolean(fieldErrors.startsAt)}
@@ -416,7 +418,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               />
               <FieldErrorMessage message={fieldErrors.startsAt} />
               <DateTimeField
-                label="Término (opcional)"
+                label={tx('Término (opcional)')}
                 value={createForm.endsAt}
                 onChange={(value) => setCreateForm((current) => ({ ...current, endsAt: value }))}
               />
@@ -427,7 +429,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                 clearFieldError('regionKey');
                 setCreateForm((current) => ({ ...current, regionKey: region.key }));
               }}
-              hint="Escolha uma região existente para padronizar a agenda."
+              hint={tx('Escolha uma região existente para padronizar a agenda.')}
             />
             <FieldErrorMessage message={fieldErrors.regionKey} />
             <input
@@ -437,7 +439,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               }
               onInput={() => clearFieldError('externalUrl')}
               aria-invalid={Boolean(fieldErrors.externalUrl)}
-              placeholder="Link externo do evento"
+              placeholder={tx('Link externo do evento')}
               className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
             />
             <FieldErrorMessage message={fieldErrors.externalUrl} />
@@ -449,7 +451,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               onClearError={() => clearFieldError('imageUrl')}
               error={fieldErrors.imageUrl}
               folder="events" cropAspect={2}
-              placeholder="Link da imagem do evento"
+              placeholder={tx('Link da imagem do evento')}
               hint=""
             />
             <ImageGalleryField
@@ -458,14 +460,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                 setCreateForm((current) => ({ ...current, galleryUrls: value }))
               }
               folder="events"
-              hint="Adicione mais imagens para a página detalhada do evento."
+              hint={tx('Adicione mais imagens para a página detalhada do evento.')}
             />
                 <button
                   type="submit"
                   disabled={submitting || !createForm.regionKey}
                   className="theme-bg theme-bg-hover w-full rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-md disabled:opacity-60"
                 >
-                  {submitting ? 'Enviando...' : 'Enviar para aprovação'}
+                  {submitting ? tx('Enviando...') : tx('Enviar para aprovação')}
                 </button>
               </form>
         </Modal>
@@ -473,12 +475,12 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
       <div className="space-y-4">
         <SubHeader
-          tabsLabel="Categorias de eventos"
+          tabsLabel={tx('Categorias de eventos')}
           tabs={EVENT_TAB_OPTIONS}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           filters={{
-            fields: [{ type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar eventos' }],
+            fields: [{ type: 'search', id: 'q', label: tx('Buscar'), placeholder: tx('Buscar eventos') }],
             values: { q: search },
             onApply: (values) => setSearch(String(values.q ?? '')),
             onClear: () => setSearch(''),
@@ -486,11 +488,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         />
         {resultScope === 'global' && events.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
-            Ainda não há eventos publicados na sua região. Mostrando eventos de outras regiões.
+            {tx('Ainda não há eventos publicados na sua região. Mostrando eventos de outras regiões.')}
           </div>
         ) : null}
         {displayedEvents.length === 0 ? (
-          <EmptyNotice icon="events" title="Nenhum evento para este filtro" description="Experimente outra data ou categoria." />
+          <EmptyNotice icon="events" title={tx('Nenhum evento para este filtro')} description={tx('Experimente outra data ou categoria.')} />
         ) : null}
         <ListingGrid variant="row">
         {displayedEvents.map((item) => (
@@ -552,13 +554,15 @@ const EventCard: React.FC<{
   img,
   onToggleFavorite,
   onEdit,
-}) => (
+}) => {
+  const { tx } = useLanguage();
+  return (
     <div
       className={`relative flex min-h-32 rounded-2xl border border-slate-100 bg-surface shadow-sm transition hover:border-slate-200 ${
         item.status === 'PENDING_REVIEW' || item.isPendingReview ? 'bg-slate-50 opacity-65 grayscale' : ''
       }`}
     >
-        <Link href={href} className="absolute inset-0 z-20" aria-label={`Abrir ${title}`} />
+        <Link href={href} className="absolute inset-0 z-20" aria-label={`${tx('Abrir')} ${title}`} />
         <img src={img} className="w-28 shrink-0 self-stretch rounded-l-2xl object-cover" alt={title} />
         <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-between p-4">
             <div>
@@ -572,17 +576,17 @@ const EventCard: React.FC<{
                             <span
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200"
                               role="img"
-                              aria-label="Mais ações do evento"
+                              aria-label={tx('Mais ações do evento')}
                             >
                               <MoreHorizontal size={16} />
                             </span>
                           }
                           sections={[
                             {
-                              heading: 'Ações do evento',
+                              heading: tx('Ações do evento'),
                               items: [
-                                { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: () => onEdit('info') },
-                                { label: 'Editar imagens', icon: <Images size={16} />, onClick: () => onEdit('imagens') },
+                                { label: tx('Editar informações'), icon: <PencilLine size={16} />, onClick: () => onEdit('info') },
+                                { label: tx('Editar imagens'), icon: <Images size={16} />, onClick: () => onEdit('imagens') },
                               ],
                             },
                           ]}
@@ -593,7 +597,7 @@ const EventCard: React.FC<{
                           type="button"
                           onClick={onToggleFavorite}
                           className={`flex h-8 w-8 items-center justify-center rounded-full ${item.isFavorite ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'}`}
-                          aria-label={item.isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
+                          aria-label={item.isFavorite ? tx('Remover dos favoritos') : tx('Favoritar evento')}
                         >
                           <Heart size={14} fill={item.isFavorite ? 'currentColor' : 'none'} />
                         </button>
@@ -602,7 +606,7 @@ const EventCard: React.FC<{
                 </div>
                 {item.status === 'PENDING_REVIEW' || item.isPendingReview ? (
                   <span className="mt-2 inline-flex w-fit rounded-xl border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                    Aguardando aprovação
+                    {tx('Aguardando aprovação')}
                   </span>
                 ) : null}
                 <p className="text-slate-500 text-[10px] mt-1 font-medium">{date}</p>
@@ -620,7 +624,7 @@ const EventCard: React.FC<{
                     type="button"
                     onClick={onToggleFavorite}
                     disabled={interestLoading}
-                    title={item.isFavorite ? 'Remover interesse' : 'Marcar interesse'}
+                    title={item.isFavorite ? tx('Remover interesse') : tx('Marcar interesse')}
                     aria-pressed={Boolean(item.isFavorite)}
                     className={`relative z-30 inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold disabled:opacity-60 ${
                       item.isFavorite
@@ -629,15 +633,15 @@ const EventCard: React.FC<{
                     }`}
                   >
                     {item.isFavorite ? <Check size={13} aria-hidden /> : null}
-                    {interestLoading ? '...' : 'Interessado'}
+                    {interestLoading ? '...' : tx('Interessado')}
                   </button>
                 </div>
                 {interestExpanded ? (
                   <p className="mt-1 text-[10px] text-slate-500">
                     {item.canViewInterestedUsers
-                      ? (item.interestPreview ?? []).map((person) => person.name || 'Usuário').join(', ') || 'Sem nomes disponíveis.'
+                      ? (item.interestPreview ?? []).map((person) => person.name || tx('Usuário')).join(', ') || tx('Sem nomes disponíveis.')
                       : item.canUnlockInterestedUsers
-                        ? 'Lista de pessoas: recurso premium em breve. Hoje exibimos apenas a quantidade.'
+                        ? tx('Lista de pessoas: recurso premium em breve. Hoje exibimos apenas a quantidade.')
                         : `${item.interestCount ?? 0} pessoas confirmaram interesse.`}
                   </p>
                 ) : null}
@@ -647,7 +651,7 @@ const EventCard: React.FC<{
                 type="button"
                 onClick={onToggleInterestPreview}
                 className="relative z-30 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-500"
-                aria-label={`${item.interestCount ?? 0} interessados. Ver detalhes`}
+                aria-label={`${item.interestCount ?? 0} ${tx('interessados. Ver detalhes')}`}
               >
                 <span
                   className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${
@@ -656,15 +660,16 @@ const EventCard: React.FC<{
                 >
                   {item.interestCount ?? 0}
                 </span>
-                <span className="truncate">interessados</span>
+                <span className="truncate">{tx('interessados')}</span>
               </button>
               <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-brand-600" aria-hidden="true">
-                Ver mais
+                {tx('Ver mais')}
               </span>
             </div>
         </div>
     </div>
 );
+};
 
 export default Marketplace;
 

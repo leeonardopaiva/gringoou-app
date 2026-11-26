@@ -16,10 +16,12 @@ import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Housing = { id: string; title: string; description: string; propertyType: string; locationLabel: string; price: string; imageUrl?: string | null; galleryUrls: string[]; contactUrl?: string | null; canEdit?: boolean; createdBy?: { name?: string | null }; publisher?: Publisher | null };
 
 export default function HousingDetail({ housingId }: { housingId: string }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [item, setItem] = useState<Housing | null>(null);
   const [draft, setDraft] = useState<Housing | null>(null);
@@ -42,7 +44,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
       setItem((current) => current ? { ...current, ...payload.housing, canEdit: current.canEdit } : current);
       setEditing(false);
       notifyContentUpdated();
-      showToast('Moradia atualizada.', 'success');
+      showToast(tx('Moradia atualizada.'), 'success');
     } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível atualizar a moradia.'), 'error'); }
     finally { setSaving(false); }
   };
@@ -59,24 +61,24 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
     setCoverFailed(false);
     setItem((current) => (current ? { ...current, ...payload.housing, canEdit: current.canEdit } : current));
     notifyContentUpdated();
-    showToast('Capa atualizada.', 'success');
+    showToast(tx('Capa atualizada.'), 'success');
     return null;
   };
 
   if (loading) return <ContentColumn size="compact" className="space-y-4 pb-6"><div className="h-72 animate-pulse rounded-[28px] bg-slate-100" /></ContentColumn>;
-  if (!item) return <ContentColumn size="compact" className="pb-10 text-center text-muted-foreground">Moradia não encontrada.</ContentColumn>;
+  if (!item) return <ContentColumn size="compact" className="pb-10 text-center text-muted-foreground">{tx('Moradia não encontrada.')}</ContentColumn>;
   const contactIsUrl = Boolean(item.contactUrl && /^https?:\/\//i.test(item.contactUrl));
   const contactHref = item.contactUrl ? (contactIsUrl ? item.contactUrl : `tel:${item.contactUrl.replace(/\D/g, '')}`) : '';
   const amount = Number(item.price.replace(/[^0-9.,]/g, '').replace(',', '.'));
   const formattedPrice = Number.isFinite(amount) && amount > 0 ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount) : item.price;
 
   return <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-    <PageHeader title="Moradia" backHref="/housing" historyBack />
+    <PageHeader title={tx('Moradia')} backHref="/housing" historyBack />
     <div className="overflow-hidden bg-surface sm:rounded-card">
       {item.canEdit ? (
         <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
-          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia este anúncio</p>
-          <Dropdown align="right" trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações da moradia', items: [{ label: 'Editar moradia', icon: <PencilLine size={16} />, onClick: () => { setDraft(item); setEditing(true); } }] }]} />
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> {tx('Você gerencia este anúncio')}</p>
+          <Dropdown align="right" trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>} sections={[{ heading: tx('Ações da moradia'), items: [{ label: tx('Editar moradia'), icon: <PencilLine size={16} />, onClick: () => { setDraft(item); setEditing(true); } }] }]} />
         </div>
       ) : null}
       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-64">
@@ -99,19 +101,19 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
 
         {contactHref ? (
           <a href={contactHref} target={contactIsUrl ? '_blank' : undefined} rel={contactIsUrl ? 'noreferrer' : undefined} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105">
-            {contactIsUrl ? <ExternalLink size={18} /> : <Phone size={18} />} Entrar em contato
+            {contactIsUrl ? <ExternalLink size={18} /> : <Phone size={18} />} {tx('Entrar em contato')}
           </a>
         ) : null}
 
-        <section aria-label="Sobre a moradia">
-          <h2 className="text-base font-bold text-slate-900">Sobre a moradia</h2>
+        <section aria-label={tx('Sobre a moradia')}>
+          <h2 className="text-base font-bold text-slate-900">{tx('Sobre a moradia')}</h2>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-600">{item.description}</p>
-          <PublisherSignature className="mt-4" publisher={item.publisher ?? { name: item.createdBy?.name || 'Membro da comunidade', image: null, href: null, kind: 'USER' }} />
+          <PublisherSignature className="mt-4" publisher={item.publisher ?? { name: item.createdBy?.name || tx('Membro da comunidade'), image: null, href: null, kind: 'USER' }} />
         </section>
 
         {item.galleryUrls?.length ? (
-          <section aria-label="Galeria" className="space-y-3">
-            <h2 className="text-base font-bold text-slate-900">Fotos</h2>
+          <section aria-label={tx('Galeria')} className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900">{tx('Fotos')}</h2>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {item.galleryUrls.map((url, index) => (
                 <button key={url + index} type="button" onClick={() => setLightboxImage(url)} className="aspect-square overflow-hidden rounded-xl bg-slate-100">
@@ -122,10 +124,10 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
           </section>
         ) : null}
 
-        <CommentWall endpoint={`/api/housing/${housingId}/comments`} title="Comentários sobre a moradia" />
+        <CommentWall endpoint={`/api/housing/${housingId}/comments`} title={tx('Comentários sobre a moradia')} />
       </div>
     </div>
-    <Modal open={editing} onClose={() => setEditing(false)} title="Editar moradia" description="Atualize os dados e a galeria. Para trocar a capa, use a câmera sobre a imagem." className="max-w-xl"><div className="space-y-3"><ImageGalleryField value={draft?.galleryUrls || []} onChange={(value) => updateDraft('galleryUrls', value)} folder="housing" maxItems={6} hint="Adicione até 6 fotos dos ambientes." /><Input value={draft?.title || ''} onChange={(event) => updateDraft('title', event.target.value)} placeholder="Título" /><Textarea value={draft?.description || ''} onChange={(event) => updateDraft('description', event.target.value)} placeholder="Descrição" /><Select value={draft?.propertyType || ''} onChange={(event) => updateDraft('propertyType', event.target.value)}><option>Apartamento</option><option>Casa</option><option>Quarto</option><option>República</option></Select><Input value={draft?.locationLabel || ''} onChange={(event) => updateDraft('locationLabel', event.target.value)} placeholder="Localização" /><Input value={draft?.price || ''} onChange={(event) => updateDraft('price', event.target.value)} placeholder="Preço" /><Input value={draft?.contactUrl || ''} onChange={(event) => updateDraft('contactUrl', event.target.value)} placeholder="Link ou telefone para contato" /><Button fullWidth loading={saving} onClick={() => void save()}>Salvar alterações</Button></div></Modal>
-    <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`Imagem ampliada de ${item.title}`} onClose={() => setLightboxImage(null)} />
+    <Modal open={editing} onClose={() => setEditing(false)} title={tx('Editar moradia')} description={tx('Atualize os dados e a galeria. Para trocar a capa, use a câmera sobre a imagem.')} className="max-w-xl"><div className="space-y-3"><ImageGalleryField value={draft?.galleryUrls || []} onChange={(value) => updateDraft('galleryUrls', value)} folder="housing" maxItems={6} hint={tx('Adicione até 6 fotos dos ambientes.')} /><Input value={draft?.title || ''} onChange={(event) => updateDraft('title', event.target.value)} placeholder={tx('Título')} /><Textarea value={draft?.description || ''} onChange={(event) => updateDraft('description', event.target.value)} placeholder={tx('Descrição')} /><Select value={draft?.propertyType || ''} onChange={(event) => updateDraft('propertyType', event.target.value)}><option>{tx('Apartamento')}</option><option>{tx('Casa')}</option><option>{tx('Quarto')}</option><option>{tx('República')}</option></Select><Input value={draft?.locationLabel || ''} onChange={(event) => updateDraft('locationLabel', event.target.value)} placeholder={tx('Localização')} /><Input value={draft?.price || ''} onChange={(event) => updateDraft('price', event.target.value)} placeholder={tx('Preço')} /><Input value={draft?.contactUrl || ''} onChange={(event) => updateDraft('contactUrl', event.target.value)} placeholder={tx('Link ou telefone para contato')} /><Button fullWidth loading={saving} onClick={() => void save()}>{tx('Salvar alterações')}</Button></div></Modal>
+    <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`${tx('Imagem ampliada de')} ${item.title}`} onClose={() => setLightboxImage(null)} />
   </ContentColumn>;
 }

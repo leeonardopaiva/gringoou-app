@@ -3,6 +3,7 @@
 import React from 'react';
 import { BadgeCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type AlertTone = 'info' | 'success' | 'atencao' | 'erro';
 
@@ -29,7 +30,9 @@ export interface AlertProps {
   className?: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ tone = 'info', title, description, children, onClose, className }) => (
+export const Alert: React.FC<AlertProps> = ({ tone = 'info', title, description, children, onClose, className }) => {
+  const { tx } = useLanguage();
+  return (
   <div
     className={cn(
       'flex items-start gap-3 rounded-xl border px-4 py-4 shadow-xs',
@@ -48,10 +51,11 @@ export const Alert: React.FC<AlertProps> = ({ tone = 'info', title, description,
         type="button"
         onClick={onClose}
         className="rounded-full p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
-        aria-label="Fechar"
+        aria-label={tx('Fechar')}
       >
         <X size={16} />
       </button>
     )}
   </div>
 );
+};

@@ -14,6 +14,7 @@ import AddressAutocomplete from '../components/ui/AddressAutocomplete';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const CATEGORIES = [
   'Eletrônicos', 'Móveis', 'Eletrodomésticos', 'Roupas', 'Brinquedos',
@@ -32,6 +33,7 @@ type MarketplaceEditProps = { itemId: string; user: User };
 
 /** Edição de anúncio pelo proprietário. Editar um anúncio rejeitado o reenvia para revisão (regra no servidor). */
 const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { showToast } = useToast();
   const [item, setItem] = useState<MarketplaceItemContract | null>(null);
@@ -84,11 +86,11 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (form.title.trim().length < 3 || form.description.trim().length < 10) {
-      showToast('Informe um título (mín. 3) e uma descrição (mín. 10 caracteres).', 'error');
+      showToast(tx('Informe um título (mín. 3) e uma descrição (mín. 10 caracteres).'), 'error');
       return;
     }
     if (!form.isFree && !(Number(form.price) >= 0 && form.price !== '')) {
-      showToast('Informe um preço válido.', 'error');
+      showToast(tx('Informe um preço válido.'), 'error');
       return;
     }
 
@@ -122,7 +124,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
       router.push(backHref);
       router.refresh();
     } catch {
-      showToast('Não foi possível salvar o anúncio.', 'error');
+      showToast(tx('Não foi possível salvar o anúncio.'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -139,30 +141,29 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
   if (!item || !item.canEdit) {
     return (
       <ContentColumn size="reading" className="pb-20">
-        <PageHeader title="Editar anúncio" backHref="/marketplace" />
-        <p className="mt-6 text-center text-sm text-slate-500">Você não pode editar este anúncio.</p>
+        <PageHeader title={tx('Editar anúncio')} backHref="/marketplace" />
+        <p className="mt-6 text-center text-sm text-slate-500">{tx('Você não pode editar este anúncio.')}</p>
       </ContentColumn>
     );
   }
 
   return (
     <ContentColumn size="reading" className="pb-24">
-      <PageHeader title="Editar anúncio" backHref={backHref} />
+      <PageHeader title={tx('Editar anúncio')} backHref={backHref} />
 
       {item.status === 'REJECTED' ? (
         <p role="alert" className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-          Este anúncio foi rejeitado{item.moderationReason ? `: ${item.moderationReason}` : '.'} Ao salvar, ele será
-          reenviado para revisão.
+          {tx('Este anúncio foi rejeitado')}{item.moderationReason ? `: ${item.moderationReason}` : '.'} {tx('Ao salvar, ele será reenviado para revisão.')}
         </p>
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-bold text-slate-600">Título</label>
+          <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Título')}</label>
           <Input value={form.title} maxLength={120} onChange={(e) => setForm((c) => ({ ...c, title: e.target.value }))} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-slate-600">Descrição</label>
+          <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Descrição')}</label>
           <textarea
             value={form.description}
             maxLength={4000}
@@ -174,7 +175,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Categoria</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Categoria')}</label>
             <select
               value={form.category}
               onChange={(e) => setForm((c) => ({ ...c, category: e.target.value }))}
@@ -186,14 +187,14 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Condição</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Condição')}</label>
             <select
               value={form.condition}
               onChange={(e) => setForm((c) => ({ ...c, condition: e.target.value as typeof c.condition }))}
               className="w-full rounded-xl border-2 border-slate-200 bg-surface px-3 py-2.5 text-sm"
             >
               {CONDITIONS.map((c) => (
-                <option key={c.id} value={c.id}>{c.label}</option>
+                <option key={c.id} value={c.id}>{tx(c.label)}</option>
               ))}
             </select>
           </div>
@@ -207,11 +208,11 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
               onChange={(e) => setForm((c) => ({ ...c, isFree: e.target.checked }))}
               className="h-4 w-4 rounded border-slate-300 text-brand-500"
             />
-            Grátis / Doação
+            {tx('Grátis / Doação')}
           </label>
           {!form.isFree ? (
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-bold text-slate-600">Preço (US$)</label>
+              <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Preço (US$)')}</label>
               <Input
                 type="number"
                 min="0"
@@ -224,7 +225,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold text-slate-600">Localização</label>
+          <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Localização')}</label>
           <AddressAutocomplete
             value={form.locationLabel}
             onChange={(value, latitude, longitude) =>
@@ -233,12 +234,12 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
                 setForm((c) => ({ ...c, locationLabel: value, latitude: latitude ?? null, longitude: longitude ?? null }));
               }
             }
-            placeholder="Bairro, cidade ou endereço"
+            placeholder={tx('Bairro, cidade ou endereço')}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold text-slate-600">Imagem principal</label>
+          <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Imagem principal')}</label>
           <CloudinaryImageField
             value={form.imageUrl}
             onChange={(value) => setForm((c) => ({ ...c, imageUrl: value }))}
@@ -246,7 +247,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-slate-600">Galeria</label>
+          <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Galeria')}</label>
           <ImageGalleryField
             value={form.galleryUrls}
             onChange={(value) => setForm((c) => ({ ...c, galleryUrls: value }))}
@@ -257,10 +258,10 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
 
         <div className="flex gap-2 pt-2">
           <Button type="submit" loading={submitting}>
-            {item.status === 'REJECTED' ? 'Salvar e reenviar' : 'Salvar'}
+            {item.status === 'REJECTED' ? tx('Salvar e reenviar') : tx('Salvar')}
           </Button>
           <Button type="button" variant="ghost" onClick={() => router.push(backHref)}>
-            Cancelar
+            {tx('Cancelar')}
           </Button>
         </div>
       </form>

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Search } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Suggestion = {
   id: string;
@@ -31,6 +32,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   disabled = false,
   country,
 }) => {
+  const { tx } = useLanguage();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -153,7 +155,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
       {!MAPBOX_TOKEN ? (
         <p className="mt-1 text-[11px] text-amber-600">
-          Configure NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para habilitar o autocomplete de endereço.
+          {tx('Configure NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para habilitar o autocomplete de endereço.')}
         </p>
       ) : null}
     </div>

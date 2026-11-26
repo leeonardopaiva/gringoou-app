@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type ImageLightboxProps = {
   open: boolean;
@@ -11,6 +12,7 @@ type ImageLightboxProps = {
 };
 
 export function ImageLightbox({ open, src, alt, onClose }: ImageLightboxProps) {
+  const { tx } = useLanguage();
   useEffect(() => {
     if (!open) return;
 
@@ -33,7 +35,7 @@ export function ImageLightbox({ open, src, alt, onClose }: ImageLightboxProps) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Imagem ampliada"
+      aria-label={tx('Imagem ampliada')}
       className="fixed inset-0 z-[200] flex items-center justify-center bg-scrim/95 p-3 sm:p-6"
       onClick={onClose}
     >
@@ -41,7 +43,7 @@ export function ImageLightbox({ open, src, alt, onClose }: ImageLightboxProps) {
         type="button"
         onClick={onClose}
         className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-        aria-label="Fechar imagem ampliada"
+        aria-label={tx('Fechar imagem ampliada')}
       >
         <X size={24} />
       </button>

@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type RootProps = React.HTMLAttributes<HTMLElement> & {
   variant?: 'community' | 'business' | 'sponsored';
@@ -33,7 +34,8 @@ type ContentProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const Root = React.forwardRef<HTMLElement, RootProps>(
-  ({ variant = 'community', flat = false, className, ...props }, ref) => (
+  ({ variant = 'community', flat = false, className, ...props }, ref) => {
+  return (
     <article
       ref={ref}
       data-variant={variant}
@@ -44,7 +46,8 @@ const Root = React.forwardRef<HTMLElement, RootProps>(
       )}
       {...props}
     />
-  ),
+  );
+},
 );
 Root.displayName = 'FeedCard.Root';
 
@@ -89,6 +92,7 @@ const Header: React.FC<HeaderProps> = ({
 };
 
 const Content: React.FC<ContentProps> = ({ text, clampAt = 280, children, className, ...props }) => {
+  const { tx } = useLanguage();
   const [expanded, setExpanded] = React.useState(false);
   const shouldClamp = Boolean(text && text.length > clampAt);
   const visibleText = shouldClamp && !expanded ? `${text!.slice(0, clampAt).trimEnd()}...` : text;
@@ -103,7 +107,7 @@ const Content: React.FC<ContentProps> = ({ text, clampAt = 280, children, classN
           className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700"
           aria-expanded={expanded}
         >
-          {expanded ? 'Ver menos' : 'Ver mais'}
+          {expanded ? tx('Ver menos') : tx('Ver mais')}
           <ChevronDown size={13} className={cn('transition-transform', expanded && 'rotate-180')} />
         </button>
       ) : null}
@@ -136,10 +140,13 @@ const Footer: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...
   <div className={cn('border-t border-slate-100 px-5 py-3', className)} {...props} />
 );
 
-const SponsoredBadge: React.FC = () => (
+const SponsoredBadge: React.FC = () => {
+  const { tx } = useLanguage();
+  return (
   <span className="inline-flex shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-700">
-    Patrocinado
+    {tx('Patrocinado')}
   </span>
 );
+};
 
 export const FeedCard = Object.assign(Root, { Root, Header, Content, Media, Headline, CTA, Footer, SponsoredBadge });

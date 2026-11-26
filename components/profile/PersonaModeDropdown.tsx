@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BriefcaseBusiness, ChevronDown, UserRound } from 'lucide-react';
 import type { PersonaMode } from '../../types';
 import { Popover } from '../ui/Popover';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PersonaModeDropdownProps = {
   value: PersonaMode;
@@ -32,6 +33,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
   selectedBusinessId,
   onBusinessChange,
 }) => {
+  const { tx } = useLanguage();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isProfessional = value === 'professional';
@@ -54,7 +56,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
           type="button"
           onClick={() => setOpen((current) => !current)}
           className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-brand-100 hover:text-brand-500 ${buttonClassName}`.trim()}
-          aria-label="Trocar perfil"
+          aria-label={tx('Trocar perfil')}
           aria-haspopup="menu"
           aria-expanded={open}
         >
@@ -71,7 +73,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
           } ${buttonClassName}`.trim()}
         >
           {isProfessional ? <BriefcaseBusiness size={14} /> : <UserRound size={14} />}
-          {isProfessional ? 'Profissional' : 'Pessoal'}
+          {isProfessional ? tx('Profissional') : tx('Pessoal')}
           <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
       )}
@@ -86,7 +88,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
       >
         <div>
           <PersonaMenuOption
-            title="Pessoal"
+            title={tx('Pessoal')}
             subtitle={personalSubtitle}
             active={!isProfessional}
             icon={<UserRound size={16} />}
@@ -94,12 +96,12 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
           />
           {businesses.length ? (
             <>
-              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Negócios</p>
+              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">{tx('Negócios')}</p>
               {businesses.map((business) => (
                 <PersonaMenuOption
                   key={business.id}
                   title={business.name}
-                  subtitle={business.status === 'PUBLISHED' ? 'Página publicada' : business.status === 'PENDING_REVIEW' ? 'Em análise' : professionalSubtitle}
+                  subtitle={business.status === 'PUBLISHED' ? tx('Página publicada') : business.status === 'PENDING_REVIEW' ? tx('Em análise') : professionalSubtitle}
                   active={isProfessional && selectedBusinessId === business.id}
                   icon={business.imageUrl ? <img src={business.imageUrl} alt="" className="h-5 w-5 rounded-md object-cover" /> : <BriefcaseBusiness size={16} />}
                   onClick={() => {
@@ -111,7 +113,7 @@ const PersonaModeDropdown: React.FC<PersonaModeDropdownProps> = ({
             </>
           ) : (
             <PersonaMenuOption
-              title="Profissional"
+              title={tx('Profissional')}
               subtitle={professionalSubtitle}
               active={isProfessional}
               disabled={professionalDisabled}
@@ -134,7 +136,8 @@ const PersonaMenuOption: React.FC<{
   active?: boolean;
   disabled?: boolean;
   onClick: () => void;
-}> = ({ title, subtitle, icon, active = false, disabled = false, onClick }) => (
+}> = ({ title, subtitle, icon, active = false, disabled = false, onClick }) => {
+  return (
   <button
     type="button"
     onClick={onClick}
@@ -159,5 +162,6 @@ const PersonaMenuOption: React.FC<{
     {active ? <span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> : null}
   </button>
 );
+};
 
 export default PersonaModeDropdown;

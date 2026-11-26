@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { BadgeCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type ToastTone = 'success' | 'error' | 'info' | 'warning';
 
@@ -38,6 +39,7 @@ const toneIcons: Record<ToastTone, React.ReactNode> = {
 };
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { tx } = useLanguage();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const dismissToast = useCallback((id: number) => {
@@ -95,7 +97,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     type="button"
                     onClick={() => dismissToast(toast.id)}
                     className="rounded-full p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
-                    aria-label="Fechar notificação"
+                    aria-label={tx('Fechar notificação')}
                   >
                     <X size={16} />
                   </button>

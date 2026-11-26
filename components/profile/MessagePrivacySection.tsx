@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Policy = 'EVERYONE' | 'FRIENDS' | 'NOBODY';
 
@@ -20,8 +21,9 @@ export type MessagePolicy = Policy;
 
 /** Opções de privacidade de mensagens, controladas por quem usa (sem salvar sozinho). */
 export function MessagePolicyOptions({ value, onChange, disabled }: { value: Policy | null; onChange: (next: Policy) => void; disabled?: boolean }) {
+  const { tx } = useLanguage();
   return (
-    <div className="space-y-2" role="radiogroup" aria-label="Quem pode me enviar mensagens">
+    <div className="space-y-2" role="radiogroup" aria-label={tx('Quem pode me enviar mensagens')}>
       {OPTIONS.map((option) => {
         const selected = value === option.value;
         return (
@@ -50,6 +52,7 @@ export function MessagePolicyOptions({ value, onChange, disabled }: { value: Pol
 
 /** Direitos do titular (LGPD): baixar os próprios dados e excluir a conta. */
 function MyDataSection({ disabled }: { disabled?: boolean }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const { data: session } = useSession();
   const [confirming, setConfirming] = useState(false);
@@ -73,7 +76,7 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
       }
       await signOut({ callbackUrl: '/login' });
     } catch {
-      showToast('Não foi possível excluir a conta agora. Tente novamente.', 'error');
+      showToast(tx('Não foi possível excluir a conta agora. Tente novamente.'), 'error');
     } finally {
       setBusy(false);
     }
@@ -81,15 +84,15 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
 
   return (
     <div className="mt-6 border-t border-slate-100 pt-5">
-      <h3 className="text-sm font-semibold text-slate-900">Seus dados</h3>
-      <p className="mt-1 text-xs leading-5 text-slate-500">Você pode baixar uma cópia dos seus dados ou excluir sua conta a qualquer momento.</p>
+      <h3 className="text-sm font-semibold text-slate-900">{tx('Seus dados')}</h3>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{tx('Você pode baixar uma cópia dos seus dados ou excluir sua conta a qualquer momento.')}</p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <a
           href="/api/me/export"
           download
           className="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
         >
-          Baixar meus dados
+          {tx('Baixar meus dados')}
         </a>
         {!confirming ? (
           <button
@@ -98,17 +101,17 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
             onClick={() => setConfirming(true)}
             className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
           >
-            Excluir minha conta
+            {tx('Excluir minha conta')}
           </button>
         ) : null}
       </div>
       {confirming ? (
         <div className="mt-3 rounded-2xl border border-red-200 bg-red-50/50 p-4">
           <p className="text-xs leading-5 text-slate-700">
-            Seu perfil, publicações, comentários e mensagens serão apagados. Registros de pagamento e auditoria ficam sem identificação. Essa ação não pode ser desfeita.
+            {tx('Seu perfil, publicações, comentários e mensagens serão apagados. Registros de pagamento e auditoria ficam sem identificação. Essa ação não pode ser desfeita.')}
           </p>
           <label className="mt-3 block text-xs font-semibold text-slate-700" htmlFor="delete-account-confirmation">
-            Para confirmar, digite {expected}
+            {tx('Para confirmar, digite')} {expected}
           </label>
           <input
             id="delete-account-confirmation"
@@ -118,8 +121,8 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
             className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm outline-none focus:border-red-300"
           />
           <div className="mt-3 flex justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={() => { setConfirming(false); setConfirmation(''); }} disabled={busy}>Cancelar</Button>
-            <Button type="button" onClick={() => void deleteAccount()} disabled={busy || !confirmation.trim()}>{busy ? 'Excluindo...' : 'Excluir definitivamente'}</Button>
+            <Button type="button" variant="secondary" onClick={() => { setConfirming(false); setConfirmation(''); }} disabled={busy}>{tx('Cancelar')}</Button>
+            <Button type="button" onClick={() => void deleteAccount()} disabled={busy || !confirmation.trim()}>{busy ? tx('Excluindo...') : tx('Excluir definitivamente')}</Button>
           </div>
         </div>
       ) : null}
@@ -132,6 +135,7 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
  * carrega a escolha salva e grava ao clicar em Salvar. Negócios e organizadores de evento continuam recebendo contatos.
  */
 export function MessagePrivacyModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [saved, setSaved] = useState<Policy | null>(null);
   const [draft, setDraft] = useState<Policy | null>(null);
@@ -168,10 +172,10 @@ export function MessagePrivacyModal({ open, onClose }: { open: boolean; onClose:
       });
       if (!response.ok) throw new Error();
       setSaved(draft);
-      showToast('Privacidade de mensagens atualizada.', 'success');
+      showToast(tx('Privacidade de mensagens atualizada.'), 'success');
       onClose();
     } catch {
-      showToast('Não foi possível salvar agora. Tente novamente.', 'error');
+      showToast(tx('Não foi possível salvar agora. Tente novamente.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -181,13 +185,13 @@ export function MessagePrivacyModal({ open, onClose }: { open: boolean; onClose:
     <Modal
       open={open}
       onClose={saving ? () => undefined : onClose}
-      title="Privacidade"
-      description="Quem pode iniciar uma conversa com você."
+      title={tx('Privacidade')}
+      description={tx('Quem pode iniciar uma conversa com você.')}
       className="sm:max-w-md"
       footer={
         <div className="flex w-full justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>Cancelar</Button>
-          <Button type="button" onClick={() => void save()} disabled={!draft || saving}>{saving ? 'Salvando...' : 'Salvar'}</Button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>{tx('Cancelar')}</Button>
+          <Button type="button" onClick={() => void save()} disabled={!draft || saving}>{saving ? tx('Salvando...') : tx('Salvar')}</Button>
         </div>
       }
     >

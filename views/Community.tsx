@@ -28,6 +28,7 @@ import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
 
@@ -43,6 +44,7 @@ const Community: React.FC<{
   professionalIdentity?: ProfessionalProfileIdentity | null;
   initialData?: CommunityInitialData;
 }> = ({ user, personaMode = 'personal', professionalIdentity = null, initialData }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const targetPostId = searchParams?.get('post');
@@ -305,13 +307,13 @@ const Community: React.FC<{
 
   const handleCopyReferralLink = async () => {
     if (!referralSummary.referralUrl) {
-      showToast('Seu link de indicação ainda não está disponível.', 'error');
+      showToast(tx('Seu link de indicação ainda não está disponível.'), 'error');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(withUtm('referral_invite', referralSummary.referralUrl));
-      showToast('Link de indicação copiado.', 'success');
+      showToast(tx('Link de indicação copiado.'), 'success');
     } catch {
       showToast(withUtm('referral_invite', referralSummary.referralUrl), 'info', 5000);
     }
@@ -319,7 +321,7 @@ const Community: React.FC<{
 
   const handleShareReferralLink = async () => {
     if (!referralSummary.referralUrl) {
-      showToast('Seu link de indicação ainda não está disponível.', 'error');
+      showToast(tx('Seu link de indicação ainda não está disponível.'), 'error');
       return;
     }
 
@@ -344,36 +346,36 @@ const Community: React.FC<{
     const normalizedExternalUrl = normalizeUrlFieldValue(postExternalUrl);
 
     if (composerMode === 'photo' && !normalizedImageUrl) {
-      showToast('Adicione uma imagem para publicar uma foto.', 'error');
+      showToast(tx('Adicione uma imagem para publicar uma foto.'), 'error');
       return;
     }
 
     if (composerMode === 'link') {
       if (!normalizedExternalUrl) {
-        showToast('Informe o link externo da publicação.', 'error');
+        showToast(tx('Informe o link externo da publicação.'), 'error');
         return;
       }
 
       if (!postContent.trim()) {
-        showToast('Adicione uma descrição para o link.', 'error');
+        showToast(tx('Adicione uma descrição para o link.'), 'error');
         return;
       }
     }
 
     if (composerMode === 'video') {
       if (!normalizedExternalUrl) {
-        showToast('Informe o link do vídeo.', 'error');
+        showToast(tx('Informe o link do vídeo.'), 'error');
         return;
       }
 
       if (!isYoutubeUrl(normalizedExternalUrl)) {
-        showToast('Por enquanto, o vídeo externo precisa ser um link do YouTube.', 'error');
+        showToast(tx('Por enquanto, o vídeo externo precisa ser um link do YouTube.'), 'error');
         return;
       }
     }
 
     if (!postContent.trim() && !normalizedImageUrl && !normalizedExternalUrl) {
-      showToast('Escreva algo antes de publicar.', 'error');
+      showToast(tx('Escreva algo antes de publicar.'), 'error');
       return;
     }
 
@@ -545,7 +547,7 @@ const Community: React.FC<{
             : post,
         ),
       );
-      showToast('Não foi possível curtir esse post agora.', 'error');
+      showToast(tx('Não foi possível curtir esse post agora.'), 'error');
     } finally {
       pendingLikeIdsRef.current.delete(postId);
     }
@@ -658,7 +660,7 @@ const Community: React.FC<{
           };
         }),
       );
-      showToast('Não foi possível comentar agora.', 'error');
+      showToast(tx('Não foi possível comentar agora.'), 'error');
       throw error;
     }
   };
@@ -782,7 +784,7 @@ const Community: React.FC<{
 
     try {
       await navigator.clipboard.writeText(postUrl);
-      showToast('Link da publicação copiado.', 'success');
+      showToast(tx('Link da publicação copiado.'), 'success');
     } catch {
       showToast(postUrl, 'info', 5000);
     }
@@ -790,7 +792,7 @@ const Community: React.FC<{
 
   const handleBannerLinkClick = (banner: BannerAd) => {
     if (!banner.targetUrl) {
-      showToast('Esse banner ainda não tem um link configurado.', 'error');
+      showToast(tx('Esse banner ainda não tem um link configurado.'), 'error');
       return;
     }
 
@@ -857,7 +859,7 @@ const Community: React.FC<{
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-3 pb-20 fade-in duration-500">
-      <PageHeader title="Comunidade" backHref="/home" />
+      <PageHeader title={tx('Comunidade')} backHref="/home" />
       <div className="flex flex-col gap-3">
       <div ref={composerRef} className="order-2">
         {isComposerExpanded ? (
@@ -879,12 +881,12 @@ const Community: React.FC<{
                 autoFocus
                 placeholder={
                   composerMode === 'link'
-                    ? 'Adicione uma descrição para o link...'
+                    ? tx('Adicione uma descrição para o link...')
                     : composerMode === 'video'
-                      ? 'Adicione um contexto para o vídeo...'
+                      ? tx('Adicione um contexto para o vídeo...')
                       : isProfessionalMode
-                        ? `Publique como ${composerName}...`
-                        : 'No que você está pensando?'
+                        ? `${tx('Publique como')} ${composerName}...`
+                        : tx('No que você está pensando?')
                 }
               />
               <CommunityComposer.MediaField
@@ -905,7 +907,7 @@ const Community: React.FC<{
           <div className="animate-in fade-in duration-200">
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-surface p-2 shadow-sm">
               {composerHref ? (
-                <Link href={composerHref} aria-label={`Abrir perfil de ${composerName}`} className="shrink-0">
+                <Link href={composerHref} aria-label={`${tx('Abrir perfil de')} ${composerName}`} className="shrink-0">
                   <img src={composerAvatar} alt="" className="h-9 w-9 rounded-full object-cover" onError={handleAvatarError} />
                 </Link>
               ) : (
@@ -915,15 +917,15 @@ const Community: React.FC<{
                 type="button"
                 onClick={() => setIsComposerExpanded(true)}
                 className="h-11 min-w-0 flex-1 truncate rounded-full bg-slate-100 px-4 text-left text-sm text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
-                aria-label={`Criar publicação como ${composerName}`}
+                aria-label={`${tx('Criar publicação como')} ${composerName}`}
               >
-                {postContent.trim() || `Publique como ${composerName}...`}
+                {postContent.trim() || `${tx('Publique como')} ${composerName}...`}
               </button>
               <Button
                 iconOnly
                 size="sm"
-                aria-label={postContent.trim() || postImageUrl || postExternalUrl ? 'Publicar rascunho' : 'Escrever publicação'}
-                title="Publicar"
+                aria-label={postContent.trim() || postImageUrl || postExternalUrl ? tx('Publicar rascunho') : tx('Escrever publicação')}
+                title={tx('Publicar')}
                 onClick={() => {
                   if (postContent.trim() || postImageUrl || postExternalUrl) {
                     void handlePublish();
@@ -947,15 +949,15 @@ const Community: React.FC<{
               <UserPlus size={19} aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-caption font-bold uppercase tracking-wide text-brand-600">Faça parte do Gringoou!</p>
-              <p className="mt-0.5 text-body-sm font-semibold leading-snug">Convide amigos para fortalecer a comunidade.</p>
-              <p className="mt-1 text-caption text-muted-foreground">{referralSummary.registrationCount} indicações confirmadas</p>
+              <p className="text-caption font-bold uppercase tracking-wide text-brand-600">{tx('Faça parte do Gringoou!')}</p>
+              <p className="mt-0.5 text-body-sm font-semibold leading-snug">{tx('Convide amigos para fortalecer a comunidade.')}</p>
+              <p className="mt-1 text-caption text-muted-foreground">{referralSummary.registrationCount} {tx('indicações confirmadas')}</p>
             </div>
             <div className="flex shrink-0 gap-1">
-              <Button iconOnly size="xs" variant="ghost" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
+              <Button iconOnly size="xs" variant="ghost" aria-label={tx('Copiar link de indicação')} onClick={() => void handleCopyReferralLink()}>
                 <Copy size={15} aria-hidden="true" />
               </Button>
-              <Button iconOnly size="xs" variant="primary" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
+              <Button iconOnly size="xs" variant="primary" aria-label={tx('Compartilhar indicação')} onClick={() => void handleShareReferralLink()}>
                 <Share2 size={15} aria-hidden="true" />
               </Button>
             </div>
@@ -966,17 +968,17 @@ const Community: React.FC<{
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
             <UserPlus size={16} aria-hidden="true" />
           </span>
-          <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${referralSummary.registrationCount} indicações confirmadas`}>
+          <span className="shrink-0 text-sm font-extrabold tabular-nums" aria-label={`${referralSummary.registrationCount} ${tx('indicações confirmadas')}`}>
             {referralSummary.registrationCount}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-bold text-white">Convide amigos para o Gringoou</p>
+            <p className="truncate text-xs font-bold text-white">{tx('Convide amigos para o Gringoou')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-0.5">
-            <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={() => void handleCopyReferralLink()}>
+            <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label={tx('Copiar link de indicação')} onClick={() => void handleCopyReferralLink()}>
               <Copy size={14} aria-hidden="true" />
             </Button>
-            <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label="Compartilhar indicação" onClick={() => void handleShareReferralLink()}>
+            <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label={tx('Compartilhar indicação')} onClick={() => void handleShareReferralLink()}>
               <Share2 size={14} aria-hidden="true" />
             </Button>
           </div>
@@ -985,7 +987,7 @@ const Community: React.FC<{
       </div>
 
       <SubHeader
-        tabsLabel="Publicações"
+        tabsLabel={tx('Publicações')}
         tabs={[...FEED_FILTER_OPTIONS]}
         activeTab={feedFilter}
         onTabChange={(value) => setFeedFilter(value as typeof feedFilter)}
@@ -993,7 +995,7 @@ const Community: React.FC<{
 
       <div className="space-y-3">
         {displayedPosts.length === 0 && !postsLoading ? (
-          <EmptyNotice icon="posts" title="Ninguém publicou por aqui ainda" description="Seja a primeira pessoa da sua região a compartilhar algo." />
+          <EmptyNotice icon="posts" title={tx('Ninguém publicou por aqui ainda')} description={tx('Seja a primeira pessoa da sua região a compartilhar algo.')} />
         ) : null}
         {filteredPosts.map((post, index) => {
           const banner = getBannerAfterPost(index);
@@ -1036,7 +1038,7 @@ const Community: React.FC<{
           );
         })}
         {postsLoading ? (
-          <div className="space-y-3" aria-label="Carregando publicações">
+          <div className="space-y-3" aria-label={tx('Carregando publicações')}>
             <CommunityFeedSkeleton />
             <CommunityFeedSkeleton />
             <CommunityFeedSkeleton />
@@ -1072,30 +1074,35 @@ const ReferralInviteCard: React.FC<{
   registrationCount: number;
   onCopy: () => void;
   onShare: () => void;
-}> = ({ registrationCount, onCopy, onShare }) => (
-  <CompactActionCard icon={<UserPlus size={16} aria-hidden="true" />} eyebrow={`${registrationCount} indicações confirmadas`} title="Convide amigos para o Gringoou" trailing={<>
-      <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label="Copiar link de indicação" onClick={onCopy}>
+}> = ({ registrationCount, onCopy, onShare }) => {
+  const { tx } = useLanguage();
+  return (
+  <CompactActionCard icon={<UserPlus size={16} aria-hidden="true" />} eyebrow={`${registrationCount} ${tx('indicações confirmadas')}`} title={tx('Convide amigos para o Gringoou')} trailing={<>
+      <Button iconOnly size="xs" variant="ghost" className="!text-white hover:!bg-white/10" aria-label={tx('Copiar link de indicação')} onClick={onCopy}>
         <Copy size={14} aria-hidden="true" />
       </Button>
-      <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label="Compartilhar indicação" onClick={onShare}>
+      <Button iconOnly size="xs" variant="primary" className="!bg-surface !text-brand-600" aria-label={tx('Compartilhar indicação')} onClick={onShare}>
         <Share2 size={14} aria-hidden="true" />
       </Button>
     </>} />
 );
+};
 
 const FeedBannerCard: React.FC<{
   banner: BannerAd;
   submitting: boolean;
   onOpen: () => void;
   onRegister: () => void;
-}> = ({ banner, submitting, onOpen, onRegister }) => (
+}> = ({ banner, submitting, onOpen, onRegister }) => {
+  const { tx } = useLanguage();
+  return (
   <ViewableAdSlot banner={banner} placement="FEED">
     <FeedCard.Root variant="sponsored">
       <FeedCard.Header
         avatarUrl={banner.advertiserLogoUrl || DEFAULT_AVATAR_URL}
         avatarAlt={banner.advertiserName || banner.name}
         title={banner.advertiserName || banner.name}
-        subtitle={banner.regionLabel || 'Toda a comunidade'}
+        subtitle={banner.regionLabel || tx('Toda a comunidade')}
         badge={<FeedCard.SponsoredBadge />}
         onAvatarError={handleAvatarError}
       />
@@ -1106,18 +1113,19 @@ const FeedBannerCard: React.FC<{
         {banner.type === 'REGISTRATION' ? (
           <FeedCard.CTA onClick={onRegister} disabled={submitting}>
             <UserPlus size={17} className="mr-2" />
-            {submitting ? 'Registrando...' : banner.ctaLabel || 'Tenho interesse'}
+            {submitting ? tx('Registrando...') : banner.ctaLabel || tx('Tenho interesse')}
           </FeedCard.CTA>
         ) : (
           <FeedCard.CTA onClick={onOpen}>
             <ExternalLink size={17} className="mr-2" />
-            {banner.ctaLabel || (banner.goal === 'WHATSAPP' ? 'Falar no WhatsApp' : 'Saiba mais')}
+            {banner.ctaLabel || (banner.goal === 'WHATSAPP' ? tx('Falar no WhatsApp') : tx('Saiba mais'))}
           </FeedCard.CTA>
         )}
       </div>
     </FeedCard.Root>
   </ViewableAdSlot>
 );
+};
 
 export default Community;
 

@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import RegionSelector from '@/components/RegionSelector';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type GroupDraft = {
   name: string;
@@ -33,6 +34,7 @@ type CreateGroupModalProps = {
 };
 
 export default function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalProps) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [draft, setDraft] = useState<GroupDraft>(emptyDraft);
   const [creating, setCreating] = useState(false);
@@ -67,26 +69,26 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
     <Modal
       open={open}
       onClose={onClose}
-      title="Criar grupo"
-      description="Organize pessoas por cidade, bairro ou interesse."
+      title={tx('Criar grupo')}
+      description={tx('Organize pessoas por cidade, bairro ou interesse.')}
     >
       <div className="space-y-3">
         <input
           value={draft.name}
           onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-          placeholder="Nome do grupo"
+          placeholder={tx('Nome do grupo')}
           className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
         <input
           value={draft.category}
           onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
-          placeholder="Categoria, ex: Bairro, Música, Cidade"
+          placeholder={tx('Categoria, ex: Bairro, Música, Cidade')}
           className="theme-outline-ring w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
         <textarea
           value={draft.description}
           onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-          placeholder="Descrição curta"
+          placeholder={tx('Descrição curta')}
           rows={3}
           className="theme-outline-ring w-full resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none"
         />
@@ -95,23 +97,23 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
           onChange={(region) => setDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))}
           onClear={() => setDraft((current) => ({ ...current, regionKey: '' }))}
           allowEmpty
-          emptyLabel="Sem região específica"
-          label="Região opcional"
-          hint="Use apenas quando o grupo for local."
+          emptyLabel={tx('Sem região específica')}
+          label={tx('Região opcional')}
+          hint={tx('Use apenas quando o grupo for local.')}
         />
         <label className="space-y-2">
-          <span className="text-sm font-bold text-slate-800">País de descoberta</span>
+          <span className="text-sm font-bold text-slate-800">{tx('País de descoberta')}</span>
           <select
             value={draft.countryCode}
             onChange={(event) => setDraft((current) => ({ ...current, countryCode: event.target.value }))}
             className="h-11 w-full rounded-full border-2 border-border bg-surface px-4 text-sm"
           >
-            <option value="US">Estados Unidos</option>
-            <option value="BR">Brasil</option>
-            <option value="PT">Portugal</option>
-            <option value="CA">Canadá</option>
-            <option value="GB">Reino Unido</option>
-            <option value="IE">Irlanda</option>
+            <option value="US">{tx('Estados Unidos')}</option>
+            <option value="BR">{tx('Brasil')}</option>
+            <option value="PT">{tx('Portugal')}</option>
+            <option value="CA">{tx('Canadá')}</option>
+            <option value="GB">{tx('Reino Unido')}</option>
+            <option value="IE">{tx('Irlanda')}</option>
           </select>
         </label>
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4">
@@ -122,8 +124,8 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
             className="mt-1"
           />
           <span>
-            <strong className="block text-sm">Grupo público</strong>
-            <span className="text-xs text-slate-500">Grupos restritos exigem aprovação para acessar o mural.</span>
+            <strong className="block text-sm">{tx('Grupo público')}</strong>
+            <span className="text-xs text-slate-500">{tx('Grupos restritos exigem aprovação para acessar o mural.')}</span>
           </span>
         </label>
         <button
@@ -132,7 +134,7 @@ export default function CreateGroupModal({ open, onClose, onCreated }: CreateGro
           disabled={creating || draft.name.trim().length < 2}
           className="theme-bg theme-shadow w-full rounded-2xl px-4 py-3 text-sm font-bold disabled:opacity-60"
         >
-          {creating ? 'Criando...' : 'Criar grupo'}
+          {creating ? tx('Criando...') : tx('Criar grupo')}
         </button>
       </div>
     </Modal>

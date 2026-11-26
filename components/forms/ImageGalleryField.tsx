@@ -4,6 +4,7 @@ import React from 'react';
 import { Images, Plus, Trash2 } from 'lucide-react';
 import type { CloudinaryFolder } from '@/lib/cloudinary';
 import CloudinaryImageField from './CloudinaryImageField';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type ImageGalleryFieldProps = {
   value: string[];
@@ -25,6 +26,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
   disabled = false,
   cropAspect = 4 / 3,
 }) => {
+  const { tx } = useLanguage();
   const gallery = value.length > 0 ? value : [''];
 
   const updateItem = (index: number, nextValue: string) => {
@@ -53,10 +55,10 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
         <div>
           <div className="inline-flex items-center gap-2 text-sm font-bold text-brand-500">
             <Images size={16} />
-            Galeria de imagens
+            {tx('Galeria de imagens')}
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            {hint || `Adicione até ${maxItems} imagens extras para destacar o negócio.`}
+            {hint || `${tx('Adicione até')} ${maxItems} ${tx('imagens extras para destacar o negócio.')}`}
           </p>
         </div>
         <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-500">
@@ -71,7 +73,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
               value={imageUrl}
               onChange={(nextValue) => updateItem(index, nextValue)}
               folder={folder}
-              placeholder={`Imagem ${index + 1} da galeria`}
+              placeholder={`${tx('Imagem')} ${index + 1} ${tx('da galeria')}`}
               disabled={disabled}
               cropAspect={cropAspect}
             />
@@ -83,7 +85,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
                 className="inline-flex items-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-50"
               >
                 <Trash2 size={14} />
-                Remover
+                {tx('Remover')}
               </button>
             </div>
           </div>
@@ -97,7 +99,7 @@ const ImageGalleryField: React.FC<ImageGalleryFieldProps> = ({
         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
       >
         <Plus size={16} />
-        Adicionar imagem
+        {tx('Adicionar imagem')}
       </button>
     </div>
   );

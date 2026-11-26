@@ -30,6 +30,7 @@ import PageHeader from '../components/navigation/PageHeader';
 import { SubHeader } from '../components/ui/SubHeader';
 import { useActiveRegion } from '../components/RegionContext';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const emptyForm = {
   name: '',
@@ -64,6 +65,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
   professionalIdentity = null,
   initialData,
 }) => {
+  const { tx } = useLanguage();
   const { data: session, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -274,7 +276,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       if (legacyAdAccountId) router.push('/ads/overview');
     } catch (error) {
       console.error('Failed to create business:', error);
-      showToast('Não foi possível enviar seu negócio.', 'error');
+      showToast(tx('Não foi possível enviar seu negócio.'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -304,16 +306,16 @@ const BusinessList: React.FC<BusinessListProps> = ({
       );
     } catch (error) {
       console.error('Failed to toggle business favorite from list:', error);
-      showToast('Não foi possível atualizar seus favoritos.', 'error');
+      showToast(tx('Não foi possível atualizar seus favoritos.'), 'error');
     }
   };
 
   return (
     <ContentColumn size="compact" className="space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="space-y-4">
-        <PageHeader title="Negócios" action={
+        <PageHeader title={tx('Negócios')} action={
           <button type="button" onClick={() => setShowCreateForm(true)} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105">
-            <Plus size={16} /> Criar negócio
+            <Plus size={16} /> {tx('Criar negócio')}
           </button>
         } />
       </div>
@@ -321,34 +323,34 @@ const BusinessList: React.FC<BusinessListProps> = ({
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-scrim/45 p-3 sm:items-center sm:p-6">
           <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-surface p-4 shadow-2xl sm:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-bold theme-text">Cadastrar negócio</h3>
-              <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">Fechar</button>
+              <h3 className="text-lg font-bold theme-text">{tx('Cadastrar negócio')}</h3>
+              <button type="button" onClick={() => setShowCreateForm(false)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">{tx('Fechar')}</button>
             </div>
             <form onSubmit={handleCreateBusiness} className="space-y-3">
-              <input required value={createForm.name} onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))} onInput={() => clearFieldError('name')} aria-invalid={Boolean(fieldErrors.name)} placeholder="Nome do negócio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <input required value={createForm.name} onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))} onInput={() => clearFieldError('name')} aria-invalid={Boolean(fieldErrors.name)} placeholder={tx('Nome do negócio')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <FieldErrorMessage message={fieldErrors.name} />
               <div className="grid grid-cols-2 gap-3">
                 <select value={createForm.category} onChange={(event) => setCreateForm((current) => ({ ...current, category: event.target.value }))} className="theme-outline-ring h-11 w-full appearance-none rounded-full border-2 border-border bg-surface px-4 text-body-sm text-foreground outline-none">
                   {['Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => <option key={category} value={category}>{category}</option>)}
                 </select>
-                <input required value={createForm.phone} onChange={(event) => setCreateForm((current) => ({ ...current, phone: formatLoosePhoneInput(event.target.value) }))} onInput={() => clearFieldError('phone')} aria-invalid={Boolean(fieldErrors.phone)} placeholder="Telefone" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+                <input required value={createForm.phone} onChange={(event) => setCreateForm((current) => ({ ...current, phone: formatLoosePhoneInput(event.target.value) }))} onInput={() => clearFieldError('phone')} aria-invalid={Boolean(fieldErrors.phone)} placeholder={tx('Telefone')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               </div>
               <FieldErrorMessage message={fieldErrors.phone} />
-              <AddressAutocomplete value={createForm.address} onChange={(address) => { setCreateForm((current) => ({ ...current, address })); clearFieldError('address'); }} placeholder="Pesquise rua, número, cidade e estado" />
+              <AddressAutocomplete value={createForm.address} onChange={(address) => { setCreateForm((current) => ({ ...current, address })); clearFieldError('address'); }} placeholder={tx('Pesquise rua, número, cidade e estado')} />
               <FieldErrorMessage message={fieldErrors.address} />
-              <RegionSelector value={createForm.regionKey} onChange={(region) => { clearFieldError('regionKey'); setCreateForm((current) => ({ ...current, regionKey: region.key })); }} hint="Escolha uma região existente para padronizar a publicação." />
+              <RegionSelector value={createForm.regionKey} onChange={(region) => { clearFieldError('regionKey'); setCreateForm((current) => ({ ...current, regionKey: region.key })); }} hint={tx('Escolha uma região existente para padronizar a publicação.')} />
               <FieldErrorMessage message={fieldErrors.regionKey} />
-              <textarea required rows={3} maxLength={600} value={createForm.description} onChange={(event) => setCreateForm((current) => ({ ...current, description: event.target.value }))} onInput={() => clearFieldError('description')} aria-invalid={Boolean(fieldErrors.description)} placeholder="Descrição do negócio" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <textarea required rows={3} maxLength={600} value={createForm.description} onChange={(event) => setCreateForm((current) => ({ ...current, description: event.target.value }))} onInput={() => clearFieldError('description')} aria-invalid={Boolean(fieldErrors.description)} placeholder={tx('Descrição do negócio')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <div className="flex justify-end"><CharacterCounter current={createForm.description.length} max={600} /></div>
               <FieldErrorMessage message={fieldErrors.description} />
               <div className="grid grid-cols-2 gap-3">
-                <input value={createForm.website} onChange={(event) => setCreateForm((current) => ({ ...current, website: event.target.value }))} onInput={() => clearFieldError('website')} aria-invalid={Boolean(fieldErrors.website)} placeholder="Website" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
-                <input value={createForm.instagram} onChange={(event) => setCreateForm((current) => ({ ...current, instagram: event.target.value }))} placeholder="Instagram" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+                <input value={createForm.website} onChange={(event) => setCreateForm((current) => ({ ...current, website: event.target.value }))} onInput={() => clearFieldError('website')} aria-invalid={Boolean(fieldErrors.website)} placeholder={tx('Website')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+                <input value={createForm.instagram} onChange={(event) => setCreateForm((current) => ({ ...current, instagram: event.target.value }))} placeholder={tx('Instagram')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               </div>
               <FieldErrorMessage message={fieldErrors.website} />
-              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" cropAspect={2} placeholder="Link da imagem de capa" hint="Envie a capa pela Cloudinary ou cole uma URL pública." />
+              <CloudinaryImageField value={createForm.imageUrl} onChange={(value) => setCreateForm((current) => ({ ...current, imageUrl: value }))} onClearError={() => clearFieldError('imageUrl')} error={fieldErrors.imageUrl} folder="businesses" cropAspect={2} placeholder={tx('Link da imagem de capa')} hint={tx('Envie a capa pela Cloudinary ou cole uma URL pública.')} />
               <button type="submit" disabled={submitting || !createForm.regionKey} className="theme-bg theme-bg-hover w-full rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-md disabled:opacity-60">
-                {submitting ? 'Enviando...' : 'Enviar para aprovação'}
+                {submitting ? tx('Enviando...') : tx('Enviar para aprovação')}
               </button>
             </form>
           </div>
@@ -356,7 +358,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       ) : null}
 
       <SubHeader
-        tabsLabel="Categorias de negócios"
+        tabsLabel={tx('Categorias de negócios')}
         tabs={['Todos', 'Restaurante', 'Mercado', 'Beleza', 'Saude'].map((category) => ({ id: category, label: category }))}
         activeTab={activeFilter}
         onTabChange={setActiveFilter}
@@ -365,11 +367,11 @@ const BusinessList: React.FC<BusinessListProps> = ({
       <div className="space-y-4 pb-20">
         {resultScope === 'global' && businesses.length > 0 ? (
           <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
-            Ainda não há negócios publicados na sua região. Mostrando resultados de outras regiões.
+            {tx('Ainda não há negócios publicados na sua região. Mostrando resultados de outras regiões.')}
           </div>
         ) : null}
         {businesses.length === 0 ? (
-          <EmptyNotice icon="business" title="Nenhum negócio por aqui ainda" description="Quando negócios da sua região forem publicados, eles aparecem aqui." />
+          <EmptyNotice icon="business" title={tx('Nenhum negócio por aqui ainda')} description={tx('Quando negócios da sua região forem publicados, eles aparecem aqui.')} />
         ) : null}
         {businesses.map((business) => {
           const isPendingReview = business.status === 'PENDING_REVIEW' || business.isPendingReview;
@@ -386,20 +388,20 @@ const BusinessList: React.FC<BusinessListProps> = ({
               title={business.name}
               subtitle={`${business.category} · ${business.locationLabel || business.address}`}
               href={`/businesses/${business.slug || business.id}`}
-              badge={isPendingReview ? <Badge tone="destaque">Em análise</Badge> : <Badge tone="primary">Negócio</Badge>}
+              badge={isPendingReview ? <Badge tone="destaque">{tx('Em análise')}</Badge> : <Badge tone="primary">{tx('Negócio')}</Badge>}
               action={!isPendingReview ? (
                 <button
                   type="button"
                   onClick={() => void handleFavoriteToggle(business)}
                   className={`rounded-full p-2 transition ${business.isFavorite ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                  aria-label={business.isFavorite ? 'Remover dos favoritos' : 'Favoritar negócio'}
+                  aria-label={business.isFavorite ? tx('Remover dos favoritos') : tx('Favoritar negócio')}
                 >
                   <Heart size={16} fill={business.isFavorite ? 'currentColor' : 'none'} />
                 </button>
               ) : undefined}
             />
             {business.description ? <FeedCard.Content text={business.description} /> : null}
-            <Link href={`/businesses/${business.slug || business.id}`} aria-label={`Abrir ${business.name}`}>
+            <Link href={`/businesses/${business.slug || business.id}`} aria-label={`${tx('Abrir')} ${business.name}`}>
               <FeedCard.Media
                 src={business.imageUrl || PLACEHOLDER_IMAGE}
                 alt={business.name}
@@ -416,7 +418,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
                 href={business.canEdit ? `/businesses/${business.slug || business.id}/gerenciar` : `/businesses/${business.slug || business.id}`}
                 className="shrink-0 rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
               >
-                {business.canEdit ? 'Gerenciar' : 'Ver negócio'}
+                {business.canEdit ? tx('Gerenciar') : tx('Ver negócio')}
               </Link>
             </FeedCard.Footer>
           </FeedCard.Root>

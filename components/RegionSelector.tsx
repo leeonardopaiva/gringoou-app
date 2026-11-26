@@ -11,6 +11,7 @@ import {
   type RegionOption,
 } from '../lib/regions';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 interface RegionSelectorProps {
   value?: string;
@@ -64,6 +65,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
   inlineMenu = false,
   citySearch = false,
 }) => {
+  const { tx } = useLanguage();
   const [regions, setRegions] = useState<RegionOption[]>(cachedRegions ?? []);
   const [regionsLoaded, setRegionsLoaded] = useState(Boolean(cachedRegions));
   const [search, setSearch] = useState('');
@@ -161,12 +163,12 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
 
   const detectUserRegion = async () => {
     if (regionsLoaded && regions.length === 0) {
-      setLocationNotice('Nenhuma região ativa disponível no momento. Fale com o administrador.');
+      setLocationNotice(tx('Nenhuma região ativa disponível no momento. Fale com o administrador.'));
       return;
     }
 
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocationNotice('Seu navegador não suporta geolocalização. Escolha a região manualmente.');
+      setLocationNotice(tx('Seu navegador não suporta geolocalização. Escolha a região manualmente.'));
       return;
     }
 
@@ -182,11 +184,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
             regions,
           );
           onChange(nearestRegion);
-          setLocationNotice(`Região sugerida: ${nearestRegion.label}. Você pode trocar abaixo.`);
+          setLocationNotice(`${tx('Região sugerida:')} ${nearestRegion.label}${tx('. Você pode trocar abaixo.')}`);
           resolve();
         },
         () => {
-          setLocationNotice('Não foi possível detectar sua localização. Escolha a região manualmente.');
+          setLocationNotice(tx('Não foi possível detectar sua localização. Escolha a região manualmente.'));
           resolve();
         },
         {
@@ -211,8 +213,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
     onChange(nearest);
     setCityNotice(
       km <= 65
-        ? `${city.label}: você verá o conteúdo da região ${nearest.label}.`
-        : `Ainda não temos uma região em ${city.label}. Você verá o conteúdo de ${nearest.label} (cerca de ${distance} ${useMiles ? 'milhas' : 'km'}) e poderá trocar quando quiser.`,
+        ? `${city.label}${tx(': você verá o conteúdo da região')} ${nearest.label}.`
+        : `${tx('Ainda não temos uma região em')} ${city.label}${tx('. Você verá o conteúdo de')} ${nearest.label} ${tx('(cerca de')} ${distance} ${useMiles ? 'milhas' : 'km'}${tx(') e poderá trocar quando quiser.')}`,
     );
     setOpen(false);
     setSearch('');
@@ -254,7 +256,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
       >
         <MapPin size={16} className="shrink-0 text-brand-500" />
         <span className={`min-w-0 flex-1 truncate ${selectedRegion ? 'font-semibold' : 'text-muted-foreground'}`}>
-          {selectedRegion?.label || (allowEmpty ? emptyLabel : 'Selecione uma região')}
+          {selectedRegion?.label || (allowEmpty ? emptyLabel : tx('Selecione uma região'))}
         </span>
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -270,7 +272,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={citySearch ? 'Buscar cidade ou região' : 'Buscar região'}
+              placeholder={citySearch ? tx('Buscar cidade ou região') : tx('Buscar região')}
               autoFocus
               className="theme-outline-ring h-10 w-full rounded-full border-2 border-border bg-surface pl-10 pr-3 text-body-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
@@ -284,13 +286,13 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
             className="mt-2 inline-flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-caption font-semibold text-brand-500 transition hover:bg-brand-100 disabled:opacity-50"
           >
             <Crosshair size={14} />
-            {isLocating ? 'Localizando...' : 'Usar minha localização'}
+            {isLocating ? tx('Localizando...') : tx('Usar minha localização')}
           </button>
 
           <div className="mt-2 max-h-56 overflow-y-auto" role="listbox">
             {citySearch && search.trim().length >= 2 ? (
-              <div className="mb-1" role="group" aria-label="Cidades">
-                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Cidades</p>
+              <div className="mb-1" role="group" aria-label={tx('Cidades')}>
+                <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">{tx('Cidades')}</p>
                 {cityResults.map((city) => (
                   <button
                     key={city.id}
@@ -301,16 +303,16 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
                     className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-body-sm text-foreground transition hover:bg-brand-100"
                   >
                     <MapPin size={14} className="shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1 truncate">{city.label}</span>
+                    <span className="min-w-0 flex-1 truncate">{tx(city.label)}</span>
                   </button>
                 ))}
                 {cityResults.length === 0 ? (
-                  <p className="px-3 py-2 text-caption text-muted-foreground">{cityLoading ? 'Buscando cidades...' : 'Nenhuma cidade encontrada.'}</p>
+                  <p className="px-3 py-2 text-caption text-muted-foreground">{cityLoading ? tx('Buscando cidades...') : tx('Nenhuma cidade encontrada.')}</p>
                 ) : null}
               </div>
             ) : null}
             {citySearch && search.trim().length >= 2 && visibleRegions.length > 0 ? (
-              <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">Regiões</p>
+              <p className="px-3 pb-1 pt-2 text-caption font-semibold uppercase text-muted-foreground">{tx('Regiões')}</p>
             ) : null}
             {allowEmpty ? (
               <button
@@ -333,11 +335,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
                 onClick={() => { setCityNotice(null); onChange(region); setOpen(false); setSearch(''); }}
                 className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-body-sm transition hover:bg-brand-100 ${region.key === value ? 'bg-brand-100 font-semibold text-brand-600' : 'text-foreground'}`}
               >
-                <span className="min-w-0 flex-1 truncate">{region.label}</span>
+                <span className="min-w-0 flex-1 truncate">{tx(region.label)}</span>
                 {region.key === value ? <Check size={15} className="text-brand-500" /> : null}
               </button>
             ))}
-            {visibleRegions.length === 0 && !(citySearch && cityResults.length > 0) ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">Nenhuma região encontrada.</p> : null}
+            {visibleRegions.length === 0 && !(citySearch && cityResults.length > 0) ? <p className="px-3 py-4 text-center text-caption text-muted-foreground">{tx('Nenhuma região encontrada.')}</p> : null}
           </div>
 
           {locationNotice ? <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-caption font-medium text-brand-600">{locationNotice}</p> : null}

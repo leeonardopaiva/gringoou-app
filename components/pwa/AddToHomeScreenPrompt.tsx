@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Download, Share, Smartphone, X } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -15,6 +16,7 @@ const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 const SHOW_DELAY_MS = 6000;
 
 export default function AddToHomeScreenPrompt() {
+  const { tx } = useLanguage();
   const [visible, setVisible] = useState(false);
   const [isIos, setIsIos] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
@@ -74,23 +76,23 @@ export default function AddToHomeScreenPrompt() {
   if (!visible) return null;
 
   return (
-    <aside className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-sm rounded-2xl border border-brand-100 bg-surface p-4 shadow-[0_18px_55px_rgba(15,23,42,0.18)] md:hidden" aria-label="Adicionar Gringoou à tela inicial">
-      <button type="button" onClick={dismiss} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Fechar instrução"><X size={17} /></button>
+    <aside className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-sm rounded-2xl border border-brand-100 bg-surface p-4 shadow-[0_18px_55px_rgba(15,23,42,0.18)] md:hidden" aria-label={tx('Adicionar Gringoou à tela inicial')}>
+      <button type="button" onClick={dismiss} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label={tx('Fechar instrução')}><X size={17} /></button>
       <div className="flex gap-3 pr-7">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Smartphone size={22} /></span>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-900">Tenha o Gringoou sempre por perto</p>
+          <p className="text-sm font-bold text-slate-900">{tx('Tenha o Gringoou sempre por perto')}</p>
           <p className="mt-1 text-xs leading-5 text-slate-600">
             {installPrompt
-              ? 'Adicione o app à tela inicial para acessar a comunidade mais rápido.'
+              ? tx('Adicione o app à tela inicial para acessar a comunidade mais rápido.')
               : isIos
-                ? 'No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.'
-                : 'Abra o menu do navegador e escolha Adicionar à tela inicial.'}
+                ? tx('No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.')
+                : tx('Abra o menu do navegador e escolha Adicionar à tela inicial.')}
           </p>
           {installPrompt ? (
-            <button type="button" onClick={() => void install()} className="mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-brand-500 px-4 text-xs font-bold text-white transition hover:brightness-105"><Download size={15} /> Adicionar agora</button>
+            <button type="button" onClick={() => void install()} className="mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-brand-500 px-4 text-xs font-bold text-white transition hover:brightness-105"><Download size={15} /> {tx('Adicionar agora')}</button>
           ) : isIos ? (
-            <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-brand-600"><Share size={14} /> Compartilhar</span>
+            <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-brand-600"><Share size={14} /> {tx('Compartilhar')}</span>
           ) : null}
         </div>
       </div>

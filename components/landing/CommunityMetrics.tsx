@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const circularLabel = 'REDE SOCIAL • IMIGRANTE • BRASILEIRO • ';
 
@@ -24,21 +27,22 @@ function CommunitySeal() {
 }
 
 export function CommunityMetrics() {
+  const { tx } = useLanguage();
   return (
     <aside className="flex items-end justify-between gap-8 lg:h-[720px] lg:flex-col lg:items-start lg:py-8">
       <div className="flex gap-8 lg:flex-col lg:gap-16">
         <div>
           <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">+5 M</strong>
-          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-wide text-[#6b7a9e]">Brasileiros<br />pelo mundo</span>
+          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-wide text-[#6b7a9e]">{tx('Brasileiros')}<br />{tx('pelo mundo')}</span>
         </div>
         <div>
           <strong className="block text-5xl font-extrabold tracking-[-0.04em] text-[#0f2b63] sm:text-7xl lg:text-[100px] lg:leading-[0.78]">
             <span className="ml-1 text-[0.6em] text-brand-500"> +</span> 130
           </strong>
-          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-wide text-[#6b7a9e]">Países com <br />brasileiros conectados</span>
+          <span className="mt-3 block text-[10px] font-bold uppercase leading-4 tracking-wide text-[#6b7a9e]">{tx('Países com')} <br />{tx('brasileiros conectados')}</span>
         </div>
       </div>
-      <a href="/login" aria-label="Fazer parte da rede social Gringoou" className="group hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500 lg:block">
+      <a href="/login" aria-label={tx('Fazer parte da rede social Gringoou')} className="group hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500 lg:block">
         <CommunitySeal />
       </a>
     </aside>

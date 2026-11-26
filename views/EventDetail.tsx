@@ -37,6 +37,7 @@ import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 interface EventDetailProps {
   eventId?: string;
@@ -121,6 +122,7 @@ type EventDetailsDraft = Pick<EventDetailState, 'title' | 'description' | 'venue
 };
 
 const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const { startDirectConversation } = useMessaging();
   const initialState: EventDetailState = initialEvent
@@ -254,7 +256,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(publicUrl);
-      showToast('Link do evento copiado.', 'success');
+      showToast(tx('Link do evento copiado.'), 'success');
     } catch {
       showToast(publicUrl, 'info', 5000);
     }
@@ -311,7 +313,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   const handleSaveDetails = async () => {
     if (!detailsDraft.title.trim() || !detailsDraft.description.trim() || !detailsDraft.venueName.trim() || !detailsDraft.regionKey || !detailsDraft.startsAt) {
-      showToast('Preencha os campos obrigatórios do evento.', 'error');
+      showToast(tx('Preencha os campos obrigatórios do evento.'), 'error');
       return;
     }
 
@@ -344,7 +346,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       }));
       setEditingDetails(false);
       notifyContentUpdated();
-      showToast('Informações do evento atualizadas.', 'success');
+      showToast(tx('Informações do evento atualizadas.'), 'success');
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível atualizar o evento.'), 'error');
     } finally {
@@ -374,7 +376,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       );
     } catch (error) {
       console.error('Failed to toggle event favorite:', error);
-      showToast('Não foi possível atualizar seus favoritos.', 'error');
+      showToast(tx('Não foi possível atualizar seus favoritos.'), 'error');
     }
   };
 
@@ -407,10 +409,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         ratingAverage: payload.ratingAverage,
         ratingCount: payload.ratingCount,
       }));
-      showToast('Sua avaliação foi registrada.', 'success');
+      showToast(tx('Sua avaliação foi registrada.'), 'success');
     } catch (error) {
       console.error('Failed to rate event:', error);
-      showToast('Não foi possível registrar sua avaliação.', 'error');
+      showToast(tx('Não foi possível registrar sua avaliação.'), 'error');
     }
   };
 
@@ -448,10 +450,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       setGalleryDraft(nextGalleryUrls);
       setEditingMedia(false);
       notifyContentUpdated();
-      showToast('Capa e galeria do evento atualizadas.', 'success');
+      showToast(tx('Capa e galeria do evento atualizadas.'), 'success');
     } catch (error) {
       console.error('Failed to save event media:', error);
-      showToast('Não foi possível salvar a galeria do evento.', 'error');
+      showToast(tx('Não foi possível salvar a galeria do evento.'), 'error');
     } finally {
       setSavingMedia(false);
     }
@@ -477,15 +479,15 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <PageHeader title="Eventos" backHref="/events" historyBack />
+      <PageHeader title={tx('Eventos')} backHref="/events" historyBack />
       <div className="overflow-hidden bg-surface sm:rounded-card">
         {event.canEdit ? (
           <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> Você gerencia este evento</p>
-            <Dropdown align="right" trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>} sections={[{ heading: 'Ações do evento', items: [
-              { label: 'Ver página pública', icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
-              { label: 'Editar informações', icon: <PencilLine size={16} />, onClick: openDetailsEditor },
-              { label: 'Editar galeria', icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><BadgeCheck size={14} aria-hidden /> {tx('Você gerencia este evento')}</p>
+            <Dropdown align="right" trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100"><MoreHorizontal size={18} /></span>} sections={[{ heading: tx('Ações do evento'), items: [
+              { label: tx('Ver página pública'), icon: <ExternalLink size={16} />, onClick: () => window.location.assign(event.publicPath) },
+              { label: tx('Editar informações'), icon: <PencilLine size={16} />, onClick: openDetailsEditor },
+              { label: tx('Editar galeria'), icon: <Images size={16} />, onClick: () => { setCoverDraft(event.imageUrl); setGalleryDraft(event.galleryUrls); setEditingMedia(true); } },
             ] }]} />
           </div>
         ) : null}
@@ -510,7 +512,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 setCoverFailed(false);
                 setEvent((current) => ({ ...current, imageUrl: payload.event?.imageUrl || url }));
                 notifyContentUpdated();
-                showToast('Capa atualizada.', 'success');
+                showToast(tx('Capa atualizada.'), 'success');
               }}
             />
           ) : null}
@@ -519,7 +521,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               type="button"
               onClick={() => void handleFavoriteToggle()}
               className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm backdrop-blur transition ${event.isFavorite ? 'bg-red-600 text-white' : 'bg-surface/90 text-slate-700 hover:bg-surface'}`}
-              aria-label="Favoritar evento"
+              aria-label={tx('Favoritar evento')}
             >
               <Heart size={19} fill={event.isFavorite ? 'currentColor' : 'none'} />
             </button>
@@ -527,7 +529,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               type="button"
               onClick={() => void handleShare()}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface"
-              aria-label="Compartilhar evento"
+              aria-label={tx('Compartilhar evento')}
             >
               <Share2 size={19} />
             </button>
@@ -537,15 +539,15 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         <div className="space-y-7 px-5 pb-2 pt-6 sm:px-7">
           {isPendingReview ? (
             <div className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
-              Este evento está aguardando aprovação e fica visível apenas para você e administradores.
+              {tx('Este evento está aguardando aprovação e fica visível apenas para você e administradores.')}
             </div>
           ) : null}
 
           <header className="space-y-3">
-            <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">{event.category || 'Evento'}</span>
+            <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">{event.category || tx('Evento')}</span>
             <h1 className="flex items-center gap-2 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-3xl">
               <span className="min-w-0 break-words">{event.title}</span>
-              {event.ownershipVerifiedAt ? <ShieldCheck size={22} className="shrink-0 text-brand-500" aria-label="Evento verificado pela equipe" /> : null}
+              {event.ownershipVerifiedAt ? <ShieldCheck size={22} className="shrink-0 text-brand-500" aria-label={tx('Evento verificado pela equipe')} /> : null}
             </h1>
             <p className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin size={15} className="shrink-0 text-slate-400" aria-hidden />{event.locationLabel}</p>
             <StarRating
@@ -558,8 +560,8 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               onBlockedClick={() =>
                 showToast(
                   !event.canRate
-                    ? 'Organizadores e administradores não podem avaliar este evento.'
-                    : 'Você já avaliou este evento. Cada pessoa avalia uma única vez.',
+                    ? tx('Organizadores e administradores não podem avaliar este evento.')
+                    : tx('Você já avaliou este evento. Cada pessoa avalia uma única vez.'),
                   'info',
                 )
               }
@@ -575,55 +577,55 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-105"
               >
                 <MessageCircle size={18} aria-hidden />
-                Falar com o organizador
+                {tx('Falar com o organizador')}
               </button>
             ) : null}
             {event.externalUrl ? (
-              <a href={event.externalUrl} target="_blank" rel="noreferrer" aria-label="Abrir link do evento" title="Link do evento" className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
+              <a href={event.externalUrl} target="_blank" rel="noreferrer" aria-label={tx('Abrir link do evento')} title={tx('Link do evento')} className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50">
                 <Globe2 size={18} />
               </a>
             ) : null}
-            <button type="button" onClick={() => void handleCopyUrl()} aria-label="Copiar link do evento" title="Copiar link" className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50 ${!event.isOwner && event.organizerId ? 'w-12' : 'flex-1 gap-2 px-5 text-sm font-bold'}`}>
+            <button type="button" onClick={() => void handleCopyUrl()} aria-label={tx('Copiar link do evento')} title={tx('Copiar link')} className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-surface text-slate-700 transition hover:bg-slate-50 ${!event.isOwner && event.organizerId ? 'w-12' : 'flex-1 gap-2 px-5 text-sm font-bold'}`}>
               <Copy size={18} />
-              {!event.isOwner && event.organizerId ? null : 'Copiar link do evento'}
+              {!event.isOwner && event.organizerId ? null : tx('Copiar link do evento')}
             </button>
           </div>
 
-          <section aria-label="Data e local" className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
+          <section aria-label={tx('Data e local')} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-surface px-4">
             <div className="flex items-start gap-3 py-3.5">
               <CalendarDays size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Início</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{tx('Início')}</p>
                 <p className="mt-0.5 text-sm font-semibold text-slate-900">{formatEventDateTime(event.startsAt)}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 py-3.5">
               <Clock3 size={18} className="mt-0.5 shrink-0 text-emerald-600" aria-hidden />
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Encerramento</p>
-                <p className="mt-0.5 text-sm font-semibold text-slate-900">{event.endsAt ? formatEventDateTime(event.endsAt) : 'Não informado'}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{tx('Encerramento')}</p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-900">{event.endsAt ? formatEventDateTime(event.endsAt) : tx('Não informado')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 py-3.5">
               <MapPin size={18} className="mt-0.5 shrink-0 text-brand-500" aria-hidden />
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Local</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{tx('Local')}</p>
                 <p className="mt-0.5 text-sm font-semibold text-slate-900">{event.venueName}</p>
                 <p className="text-sm text-slate-500">{event.locationLabel}{showCityRegion ? ` · ${cityRegion}` : ''}</p>
               </div>
             </div>
           </section>
 
-          <section aria-label="Sobre o evento">
-            <h2 className="text-base font-bold text-slate-900">Sobre o evento</h2>
+          <section aria-label={tx('Sobre o evento')}>
+            <h2 className="text-base font-bold text-slate-900">{tx('Sobre o evento')}</h2>
             <LinkifiedText text={event.description} className="mt-2 block text-sm leading-7 text-slate-600" />
             <PublisherSignature className="mt-4" publisher={event.publisher ?? { name: event.createdByName, image: null, href: null, kind: 'USER' }} />
           </section>
 
-          <section aria-label="Galeria" className="space-y-3">
-            <h2 className="text-base font-bold text-slate-900">Fotos</h2>
+          <section aria-label={tx('Galeria')} className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900">{tx('Fotos')}</h2>
             {galleryImages.length === 0 ? (
-              <EmptyNotice title="Sem fotos adicionais" description="O organizador ainda não adicionou fotos." />
+              <EmptyNotice title={tx('Sem fotos adicionais')} description={tx('O organizador ainda não adicionou fotos.')} />
             ) : (
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                 {galleryImages.map((imageUrl, index) => (
@@ -643,26 +645,26 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         }}>
           <div className="animate-in max-h-[92dvh] w-full max-w-xl overflow-hidden rounded-[28px] bg-surface shadow-2xl fade-in zoom-in duration-200">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
-              <div><p className="theme-text text-sm font-bold">Editar evento</p><p className="mt-1 text-xs text-slate-500">Atualize as informações exibidas na página pública.</p></div>
-              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500" aria-label="Fechar modal"><X size={18} /></button>
+              <div><p className="theme-text text-sm font-bold">{tx('Editar evento')}</p><p className="mt-1 text-xs text-slate-500">{tx('Atualize as informações exibidas na página pública.')}</p></div>
+              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500" aria-label={tx('Fechar modal')}><X size={18} /></button>
             </div>
             <div className="max-h-[70dvh] space-y-3 overflow-y-auto px-5 py-5">
-              <input value={detailsDraft.title} onChange={(input) => setDetailsDraft((current) => ({ ...current, title: input.target.value }))} placeholder="Título do evento" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
-              <textarea rows={4} value={detailsDraft.description} onChange={(input) => setDetailsDraft((current) => ({ ...current, description: input.target.value }))} placeholder="Descrição" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
-              <input value={detailsDraft.venueName} onChange={(input) => setDetailsDraft((current) => ({ ...current, venueName: input.target.value }))} placeholder="Local" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <input value={detailsDraft.title} onChange={(input) => setDetailsDraft((current) => ({ ...current, title: input.target.value }))} placeholder={tx('Título do evento')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <textarea rows={4} value={detailsDraft.description} onChange={(input) => setDetailsDraft((current) => ({ ...current, description: input.target.value }))} placeholder={tx('Descrição')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <input value={detailsDraft.venueName} onChange={(input) => setDetailsDraft((current) => ({ ...current, venueName: input.target.value }))} placeholder={tx('Local')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
               <select value={detailsDraft.category} onChange={(input) => setDetailsDraft((current) => ({ ...current, category: input.target.value }))} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none">
                 {['Cultural', 'Networking', 'Esporte', 'Gastronomia', 'Família', 'Outros'].map((category) => <option key={category}>{category}</option>)}
               </select>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="space-y-1 text-xs font-bold text-slate-500">Início<input type="datetime-local" value={detailsDraft.startsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, startsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
-                <label className="space-y-1 text-xs font-bold text-slate-500">Encerramento<input type="datetime-local" value={detailsDraft.endsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, endsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
+                <label className="space-y-1 text-xs font-bold text-slate-500">{tx('Início')}<input type="datetime-local" value={detailsDraft.startsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, startsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
+                <label className="space-y-1 text-xs font-bold text-slate-500">{tx('Encerramento')}<input type="datetime-local" value={detailsDraft.endsAt} onChange={(input) => setDetailsDraft((current) => ({ ...current, endsAt: input.target.value }))} className="theme-outline-ring block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-normal text-slate-800 outline-none" /></label>
               </div>
-              <RegionSelector value={detailsDraft.regionKey} onChange={(region) => setDetailsDraft((current) => ({ ...current, regionKey: region.key }))} label="Região" hint="A página será atualizada para a região selecionada." />
-              <input value={detailsDraft.externalUrl} onChange={(input) => setDetailsDraft((current) => ({ ...current, externalUrl: input.target.value }))} placeholder="Link externo (opcional)" className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
+              <RegionSelector value={detailsDraft.regionKey} onChange={(region) => setDetailsDraft((current) => ({ ...current, regionKey: region.key }))} label={tx('Região')} hint={tx('A página será atualizada para a região selecionada.')} />
+              <input value={detailsDraft.externalUrl} onChange={(input) => setDetailsDraft((current) => ({ ...current, externalUrl: input.target.value }))} placeholder={tx('Link externo (opcional)')} className="theme-outline-ring w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none" />
             </div>
             <div className="flex gap-2 border-t border-slate-100 px-5 py-4">
-              <button type="button" disabled={savingDetails} onClick={() => void handleSaveDetails()} className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60">{savingDetails ? 'Salvando...' : 'Salvar alterações'}</button>
-              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="rounded-full bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600 disabled:opacity-60">Cancelar</button>
+              <button type="button" disabled={savingDetails} onClick={() => void handleSaveDetails()} className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60">{savingDetails ? tx('Salvando...') : tx('Salvar alterações')}</button>
+              <button type="button" disabled={savingDetails} onClick={() => setEditingDetails(false)} className="rounded-full bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600 disabled:opacity-60">{tx('Cancelar')}</button>
             </div>
           </div>
         </div>
@@ -684,12 +686,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               <div>
                 <div className="theme-text inline-flex items-center gap-2 text-sm font-bold">
                   <PencilLine size={16} />
-                  Editar imagens
+                  {tx('Editar imagens')}
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
                   {user.role === 'ADMIN'
-                    ? 'Atualize a capa e a galeria deste evento como administrador.'
-                    : 'Atualize a capa e a galeria exibidas na página.'}
+                    ? tx('Atualize a capa e a galeria deste evento como administrador.')
+                    : tx('Atualize a capa e a galeria exibidas na página.')}
                 </p>
               </div>
 
@@ -703,7 +705,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 }}
                 disabled={savingMedia}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 disabled:opacity-60"
-                aria-label="Fechar modal"
+                aria-label={tx('Fechar modal')}
               >
                 <X size={18} />
               </button>
@@ -714,14 +716,14 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 value={coverDraft}
                 onChange={setCoverDraft}
                 folder="events" cropAspect={2}
-                placeholder="Link da imagem de capa"
-                hint="Essa imagem aparece no topo da página do evento."
+                placeholder={tx('Link da imagem de capa')}
+                hint={tx('Essa imagem aparece no topo da página do evento.')}
               />
               <ImageGalleryField
                 value={galleryDraft}
                 onChange={setGalleryDraft}
                 folder="events"
-                hint="Use a galeria para mostrar ambiente, palestrantes e bastidores."
+                hint={tx('Use a galeria para mostrar ambiente, palestrantes e bastidores.')}
               />
             </div>
 
@@ -732,7 +734,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 disabled={savingMedia}
                 className="theme-bg theme-shadow flex-1 rounded-full px-4 py-3 text-sm font-bold disabled:opacity-60"
               >
-                {savingMedia ? 'Salvando...' : 'Salvar mídia'}
+                {savingMedia ? tx('Salvando...') : tx('Salvar mídia')}
               </button>
               <button
                 type="button"
@@ -744,13 +746,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
                 disabled={savingMedia}
                 className="rounded-full bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200 disabled:opacity-60"
               >
-                Cancelar
+                {tx('Cancelar')}
               </button>
             </div>
           </div>
         </div>
       ) : null}
-      <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`Imagem ampliada de ${event.title}`} onClose={() => setLightboxImage(null)} />
+      <ImageLightbox open={Boolean(lightboxImage)} src={lightboxImage || ''} alt={`${tx('Imagem ampliada de')} ${event.title}`} onClose={() => setLightboxImage(null)} />
     </ContentColumn>
   );
 };

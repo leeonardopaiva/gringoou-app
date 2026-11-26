@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heart, MessageCircle, Newspaper, Plus } from 'lucide-react';
 import type { Post } from '@/types';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type BusinessPostsPanelProps = {
   businessId: string;
@@ -25,6 +26,7 @@ const statusClass = (status?: Post['status']) => {
 };
 
 export function BusinessPostsPanel({ businessId, businessName, management = false }: BusinessPostsPanelProps) {
+  const { tx } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -57,14 +59,14 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
   const formatDate = (value: string) => new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(value)).replace('.', '');
 
   return (
-    <section aria-label={management ? 'Publicações do negócio' : `Novidades de ${businessName}`}>
+    <section aria-label={management ? tx('Publicações do negócio') : `${tx('Novidades de')} ${businessName}`}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-          {management ? 'Publicações' : 'Novidades'}
+          {management ? tx('Publicações') : tx('Novidades')}
           {!loading && posts.length > 0 ? <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">{posts.length}</span> : null}
         </h2>
         {management ? (
-          <Link href="/community" aria-label="Nova publicação" title="Nova publicação" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
+          <Link href="/community" aria-label={tx('Nova publicação')} title={tx('Nova publicação')} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
             <Plus size={18} />
           </Link>
         ) : null}
@@ -101,13 +103,13 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
               </li>
             ))}
           </ul>
-          {posts.length > 1 ? <p className="mt-1 text-center text-[11px] text-slate-400">Deslize para ver as {posts.length} publicações</p> : null}
+          {posts.length > 1 ? <p className="mt-1 text-center text-[11px] text-slate-400">{tx('Deslize para ver as')} {posts.length} {tx('publicações')}</p> : null}
         </>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Newspaper size={22} aria-hidden /></span>
-          <p className="text-sm font-semibold text-slate-700">{management ? 'Nenhuma publicação ainda' : 'Sem novidades por aqui'}</p>
-          <p className="max-w-xs text-xs text-slate-400">{management ? 'Use o botão + para compartilhar uma novidade com a comunidade.' : 'Quando este negócio publicar algo, aparece aqui.'}</p>
+          <p className="text-sm font-semibold text-slate-700">{management ? tx('Nenhuma publicação ainda') : tx('Sem novidades por aqui')}</p>
+          <p className="max-w-xs text-xs text-slate-400">{management ? tx('Use o botão + para compartilhar uma novidade com a comunidade.') : tx('Quando este negócio publicar algo, aparece aqui.')}</p>
         </div>
       )}
     </section>

@@ -9,9 +9,11 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { NewsCard } from './NewsList';
 import { newsIdFromSlug } from '../lib/news-url';
 import type { NewsArticleContract } from '../lib/content-contracts';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 /** Página da notícia no Gringoou: a matéria, curtidas, compartilhar e comentários completos. */
 const NewsDetail: React.FC<{ slug: string }> = ({ slug }) => {
+  const { tx } = useLanguage();
   const [article, setArticle] = useState<NewsArticleContract | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'missing'>('loading');
   const [related, setRelated] = useState<NewsArticleContract[]>([]);
@@ -57,21 +59,21 @@ const NewsDetail: React.FC<{ slug: string }> = ({ slug }) => {
 
   return (
     <ContentColumn size="compact" className="animate-in pb-24 fade-in duration-500">
-      <PageHeader title="Notícias" backHref="/news" historyBack />
+      <PageHeader title={tx('Notícias')} backHref="/news" historyBack />
       {state === 'loading' ? (
-        <div className="space-y-3" role="status" aria-label="Carregando notícia">
+        <div className="space-y-3" role="status" aria-label={tx('Carregando notícia')}>
           <Skeleton className="aspect-[16/9] w-full rounded-2xl" />
           <Skeleton className="h-5 w-4/5" />
           <Skeleton className="h-4 w-full" />
         </div>
       ) : state === 'missing' || !article ? (
-        <EmptyState title="Notícia indisponível" description="Esta notícia não está mais disponível." />
+        <EmptyState title={tx('Notícia indisponível')} description={tx('Esta notícia não está mais disponível.')} />
       ) : (
         <>
           <NewsCard article={article} detail />
           {related.length > 0 ? (
-            <section aria-label="Leia também" className="mt-8">
-              <h2 className="mb-3 text-base font-bold text-slate-900">Leia também</h2>
+            <section aria-label={tx('Leia também')} className="mt-8">
+              <h2 className="mb-3 text-base font-bold text-slate-900">{tx('Leia também')}</h2>
               <ul className="space-y-3">
                 {related.map((item) => (
                   <li key={item.id}>

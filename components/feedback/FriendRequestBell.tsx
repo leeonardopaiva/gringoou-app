@@ -9,6 +9,7 @@ import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Popover } from '../ui/Popover';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type PendingFriendRequest = {
   id: string;
@@ -42,6 +43,8 @@ type PendingMessageRequest = {
 };
 
 const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = false }) => {
+  const { tx } = useLanguage();
+  const { t } = useLanguage();
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -170,7 +173,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-foreground transition hover:bg-brand-100"
-        aria-label={adminMode ? 'Alertas' : 'Alertas'}
+        aria-label={t('bell.alerts')}
       >
         <Bell size={18} />
         {notificationCount > 0 ? (
@@ -186,7 +189,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
         <div>
           <div className="max-h-[420px] overflow-y-auto">
             {loading && notificationCount === 0 ? (
-              <div className="flex justify-center px-4 py-8" role="status" aria-label="Carregando notificações">
+              <div className="flex justify-center px-4 py-8" role="status" aria-label={t('bell.loading')}>
                 <Spinner size="sm" />
               </div>
             ) : notificationCount === 0 ? (
@@ -194,7 +197,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                   <Bell size={20} aria-hidden />
                 </span>
-                <p className="text-sm font-medium text-slate-500">Nada novo por aqui</p>
+                <p className="text-sm font-medium text-slate-500">{t('bell.empty')}</p>
               </div>
             ) : (
               <ul className="divide-y divide-slate-100">
@@ -213,7 +216,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                         </Link>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-slate-900">{senderName}</p>
-                          <p className="truncate text-xs text-slate-500">quer enviar uma mensagem</p>
+                          <p className="truncate text-xs text-slate-500">{t('bell.wantsMessage')}</p>
                         </div>
                       </div>
                       {request.preview ? <p className="mt-2 line-clamp-2 pl-[3.25rem] text-xs leading-5 text-slate-600">{request.preview}</p> : null}
@@ -224,7 +227,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                           onClick={() => void handleMessageRequest(request.id, 'accept')}
                           className="rounded-full bg-brand-500 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:brightness-105 disabled:opacity-50"
                         >
-                          Aceitar
+                          {tx('Aceitar')}
                         </button>
                         <button
                           type="button"
@@ -232,7 +235,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                           onClick={() => void handleMessageRequest(request.id, 'delete')}
                           className="rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
                         >
-                          Excluir
+                          {tx('Excluir')}
                         </button>
                         <button
                           type="button"
@@ -240,7 +243,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                           onClick={() => void handleMessageRequest(request.id, 'block')}
                           className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                         >
-                          Bloquear
+                          {tx('Bloquear')}
                         </button>
                       </div>
                     </li>
@@ -260,12 +263,12 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                       </Link>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-slate-900">{requesterName}</p>
-                        <p className="truncate text-xs text-slate-500">quer se conectar com você</p>
+                        <p className="truncate text-xs text-slate-500">{t('bell.wantsConnect')}</p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
                         <button
                           type="button"
-                          aria-label={`Aceitar ${requesterName}`}
+                          aria-label={`${tx('Aceitar')} ${requesterName}`}
                           disabled={processingId === request.id}
                           onClick={() => void handleDecision(request.id, 'accept')}
                           className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-50"
@@ -274,7 +277,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                         </button>
                         <button
                           type="button"
-                          aria-label={`Recusar ${requesterName}`}
+                          aria-label={`${tx('Recusar')} ${requesterName}`}
                           disabled={processingId === request.id}
                           onClick={() => void handleDecision(request.id, 'decline')}
                           className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
@@ -294,12 +297,12 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                         <Avatar src={post.author.image} name={authorName} size="lg" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-slate-900">{authorName}</p>
-                          <p className="truncate text-xs text-slate-500">publicação aguardando aprovação · {post.locationLabel}</p>
+                          <p className="truncate text-xs text-slate-500">{tx('publicação aguardando aprovação ·')} {post.locationLabel}</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1.5">
                           <button
                             type="button"
-                            aria-label="Aprovar publicação"
+                            aria-label={tx('Aprovar publicação')}
                             disabled={processingId === post.id}
                             onClick={() => void handlePostDecision(post.id, 'approve')}
                             className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-50"
@@ -308,7 +311,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
                           </button>
                           <button
                             type="button"
-                            aria-label="Recusar publicação"
+                            aria-label={tx('Recusar publicação')}
                             disabled={processingId === post.id}
                             onClick={() => void handlePostDecision(post.id, 'remove')}
                             className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"

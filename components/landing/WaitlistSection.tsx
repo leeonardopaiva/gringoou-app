@@ -6,11 +6,13 @@ import { LocateFixed } from 'lucide-react';
 import { waitlistSchema } from '@/lib/waitlist';
 import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const inputClassName =
   'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 
 export function WaitlistSection() {
+  const { tx } = useLanguage();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
@@ -22,7 +24,7 @@ export function WaitlistSection() {
 
   const detectLocation = () => {
     if (!('geolocation' in navigator)) {
-      setError('Seu navegador não suporta localização. Selecione o país manualmente.');
+      setError(tx('Seu navegador não suporta localização. Selecione o país manualmente.'));
       return;
     }
 
@@ -56,17 +58,17 @@ export function WaitlistSection() {
           if (match) {
             setCountry(match.country);
           } else {
-            setError('Não foi possível detectar o país. Selecione manualmente.');
+            setError(tx('Não foi possível detectar o país. Selecione manualmente.'));
           }
         } catch {
-          setError('Não foi possível detectar o país. Selecione manualmente.');
+          setError(tx('Não foi possível detectar o país. Selecione manualmente.'));
         } finally {
           setLocating(false);
         }
       },
       () => {
         setLocating(false);
-        setError('Permita o acesso a localização para detectar o país automaticamente.');
+        setError(tx('Permita o acesso a localização para detectar o país automaticamente.'));
       },
       { timeout: 10000 },
     );
@@ -104,7 +106,7 @@ export function WaitlistSection() {
 
       setSuccess(data?.message ?? 'Pronto! Você está na lista.');
     } catch {
-      setError('Não foi possível concluir agora. Tente novamente.');
+      setError(tx('Não foi possível concluir agora. Tente novamente.'));
     } finally {
       setLoading(false);
     }
@@ -115,10 +117,10 @@ export function WaitlistSection() {
       <div className="mx-auto flex max-w-2xl flex-col gap-6 rounded-[32px] bg-white px-6 py-10 text-center shadow-[0_8px_24px_rgba(15,43,99,0.08)] sm:px-10">
         <div className="flex flex-col gap-3">
           <h2 className="text-2xl font-extrabold tracking-tight text-[#0f2b63] sm:text-3xl">
-            Entre na lista de espera
+            {tx('Entre na lista de espera')}
           </h2>
           <p className="text-sm leading-6 text-[#4a5672] sm:text-base">
-            Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponível.
+            {tx('Estamos liberando a Gringoou aos poucos. Deixe seu email e avisaremos assim que o seu acesso estiver disponível.')}
           </p>
         </div>
 
@@ -129,14 +131,14 @@ export function WaitlistSection() {
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-left" noValidate>
             <label htmlFor="waitlist-name" className="sr-only">
-              Nome
+              {tx('Nome')}
             </label>
             <input
               id="waitlist-name"
               name="name"
               type="text"
               autoComplete="name"
-              placeholder="Seu nome"
+              placeholder={tx('Seu nome')}
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -144,7 +146,7 @@ export function WaitlistSection() {
             />
 
             <label htmlFor="waitlist-email" className="sr-only">
-              Email
+              {tx('Email')}
             </label>
             <input
               id="waitlist-email"
@@ -152,7 +154,7 @@ export function WaitlistSection() {
               type="email"
               autoComplete="email"
               inputMode="email"
-              placeholder="Seu melhor email"
+              placeholder={tx('Seu melhor email')}
               required
               value={email}
               onChange={(event) => setEmail(event.target.value.toLowerCase())}
@@ -164,7 +166,7 @@ export function WaitlistSection() {
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <label htmlFor="waitlist-country" className="sr-only">
-                  Pais onde você mora
+                  {tx('Pais onde você mora')}
                 </label>
                 <select
                   id="waitlist-country"
@@ -175,7 +177,7 @@ export function WaitlistSection() {
                   onChange={(event) => setCountry(event.target.value)}
                   className={inputClassName}
                 >
-                  <option value="">Selecione o país</option>
+                  <option value="">{tx('Selecione o país')}</option>
                   {COUNTRY_CALLING_CODE_OPTIONS.map((option) => (
                     <option key={option.iso2} value={option.country}>
                       {option.country}
@@ -187,8 +189,8 @@ export function WaitlistSection() {
                 type="button"
                 onClick={detectLocation}
                 disabled={locating}
-                aria-label="Usar minha localização"
-                title="Usar minha localização"
+                aria-label={tx('Usar minha localização')}
+                title={tx('Usar minha localização')}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#dde3ef] bg-white text-brand-500 transition hover:bg-[#f0f7ff] disabled:opacity-60"
               >
                 <LocateFixed size={18} className={locating ? 'animate-pulse' : ''} />
@@ -197,7 +199,7 @@ export function WaitlistSection() {
 
             {/* Honeypot: hidden from people and screen readers, bots tend to fill it. */}
             <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-              <label htmlFor="waitlist-website">Site</label>
+              <label htmlFor="waitlist-website">{tx('Site')}</label>
               <input
                 id="waitlist-website"
                 name="website"
@@ -220,7 +222,7 @@ export function WaitlistSection() {
               disabled={loading}
               className="mt-2 rounded-full bg-brand-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,255,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             >
-              {loading ? 'Enviando...' : 'Quero entrar na lista'}
+              {loading ? tx('Enviando...') : tx('Quero entrar na lista')}
             </button>
           </form>
         )}
@@ -230,7 +232,7 @@ export function WaitlistSection() {
             href="/login"
             className="text-sm font-bold text-brand-500 transition hover:text-brand-600"
           >
-            Já tem convite ou conta? Entrar
+            {tx('Já tem convite ou conta? Entrar')}
           </Link>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../../lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export interface DropdownItem {
   label: string;
@@ -24,6 +25,7 @@ export interface DropdownProps {
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({ trigger, sections, align = 'right', className }) => {
+  const { tx } = useLanguage();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +85,7 @@ export const Dropdown: React.FC<DropdownProps> = ({ trigger, sections, align = '
                   )}
                 >
                   {item.icon}
-                  {item.label}
+                  {tx(item.label)}
                 </button>
               ))}
             </div>

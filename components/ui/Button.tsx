@@ -3,6 +3,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'dark' | 'ghost' | 'yellow' | 'success' | 'destructive';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -59,7 +60,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ...rest
     },
     ref,
-  ) => (
+  ) => {
+  const { tx } = useLanguage();
+  return (
     <button
       ref={ref}
       type={rest.type ?? 'button'}
@@ -76,7 +79,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       {loading ? (
         <>
           <Loader2 size={16} className="animate-spin" />
-          {!iconOnly && <span>Carregando...</span>}
+          {!iconOnly && <span>{tx('Carregando...')}</span>}
         </>
       ) : (
         <>
@@ -87,7 +90,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         </>
       )}
     </button>
-  ),
+  );
+},
 );
 
 Button.displayName = 'Button';

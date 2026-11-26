@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Briefcase, ShoppingBag, UserRound } from 'lucide-react';
 import { knownMentionsFrom, toDisplayText, toStoredText, type KnownMention, type MentionKind } from '@/lib/mentions';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Suggestion = { kind: MentionKind; ref: string; label: string; subtitle: string; image: string | null };
 
@@ -21,6 +22,7 @@ const ICONS = { user: UserRound, business: Briefcase, item: ShoppingBag } as con
 
 /** Campo de comentário que sugere pessoas, negócios e anúncios ao digitar "@". */
 export const MentionInput: React.FC<MentionInputProps> = ({ value, onChange, onKeyDown, placeholder, className, maxLength, ariaLabel }) => {
+  const { tx } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const picked = useRef<KnownMention[]>([]);
   const [trigger, setTrigger] = useState<{ start: number; query: string } | null>(null);
@@ -112,7 +114,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({ value, onChange, onK
                 <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(suggestion)} className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left ${index === active ? 'bg-brand-50' : 'hover:bg-slate-50'}`}>
                   {suggestion.image ? <img src={suggestion.image} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" /> : <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Icon size={15} /></span>}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-slate-900">{suggestion.label}</span>
+                    <span className="block truncate text-sm font-semibold text-slate-900">{tx(suggestion.label)}</span>
                     <span className="block truncate text-[11px] text-slate-400">{suggestion.subtitle}</span>
                   </span>
                 </button>

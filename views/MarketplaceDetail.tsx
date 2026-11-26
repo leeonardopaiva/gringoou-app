@@ -22,6 +22,7 @@ import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
 import { withUtm } from '@/lib/utm-client';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const CONDITION_LABELS: Record<string, string> = {
   NEW: 'Novo',
@@ -37,6 +38,7 @@ type MarketplaceDetailProps = {
 };
 
 const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) => {
+  const { tx } = useLanguage();
   const { data: session } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
@@ -78,7 +80,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         }
       } catch (err) {
         console.error('Failed to load listing:', err);
-        if (!ignore) setError('Não foi possível carregar o anúncio.');
+        if (!ignore) setError(tx('Não foi possível carregar o anúncio.'));
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -143,7 +145,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       }
       setItem((current) => (current ? { ...current, isFavorite: payload.isFavorite } : current));
     } catch {
-      showToast('Não foi possível salvar.', 'error');
+      showToast(tx('Não foi possível salvar.'), 'error');
     } finally {
       setTogglingFavorite(false);
     }
@@ -156,10 +158,10 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         await navigator.share({ title: item?.title, url });
       } else {
         await navigator.clipboard.writeText(url);
-        showToast('Link copiado.', 'success');
+        showToast(tx('Link copiado.'), 'success');
       }
     } catch {
-      showToast('Não foi possível compartilhar.', 'error');
+      showToast(tx('Não foi possível compartilhar.'), 'error');
     }
   };
 
@@ -181,10 +183,10 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         showToast(sanitizeUserMessage(payload?.error, 'Não foi possível excluir.'), 'error');
         return;
       }
-      showToast('Anúncio removido.', 'success');
+      showToast(tx('Anúncio removido.'), 'success');
       router.push('/marketplace');
     } catch {
-      showToast('Não foi possível excluir.', 'error');
+      showToast(tx('Não foi possível excluir.'), 'error');
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -207,14 +209,14 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       setItem(payload.item);
       showToast(status === 'SOLD' ? 'Anúncio marcado como vendido.' : status === 'UNAVAILABLE' ? 'Anúncio marcado como indisponível.' : 'Anúncio reativado.', 'success');
     } catch {
-      showToast('Não foi possível atualizar.', 'error');
+      showToast(tx('Não foi possível atualizar.'), 'error');
     }
   };
 
   if (loading) {
     return (
       <ContentColumn size="wide" className="pb-20 pt-2">
-        <PageHeader title="Anúncio" backHref="/marketplace" />
+        <PageHeader title={tx('Anúncio')} backHref="/marketplace" />
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
             <Skeleton className="aspect-[4/3] w-full rounded-2xl sm:aspect-[16/10]" />
@@ -235,9 +237,9 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   if (error || !item) {
     return (
       <ContentColumn size="wide" className="pb-20 pt-2">
-        <PageHeader title="Anúncio" backHref="/marketplace" />
+        <PageHeader title={tx('Anúncio')} backHref="/marketplace" />
         <div className="mt-6">
-          <EmptyState icon={<ShoppingBag size={28} />} title="Anúncio indisponível" description={error ?? 'Este anúncio não está mais disponível.'} />
+          <EmptyState icon={<ShoppingBag size={28} />} title={tx('Anúncio indisponível')} description={error ?? tx('Este anúncio não está mais disponível.')} />
         </div>
       </ContentColumn>
     );
@@ -248,11 +250,11 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
   // Largura total (size="wide") no desktop é INTENCIONAL: melhor exibição da galeria e dos itens. Não padronizar.
   return (
     <ContentColumn size="wide" className="pb-24 pt-2">
-      <PageHeader title="Anúncio" backHref="/marketplace" />
+      <PageHeader title={tx('Anúncio')} backHref="/marketplace" />
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Galeria */}
-        <section className="min-w-0" aria-label="Galeria de imagens">
+        <section className="min-w-0" aria-label={tx('Galeria de imagens')}>
           <div className="relative overflow-hidden rounded-2xl bg-slate-100">
             <div className="aspect-[4/3] w-full sm:aspect-[16/10]">
               {currentImage ? (
@@ -274,7 +276,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 <button
                   type="button"
                   onClick={() => setActiveImage((current) => (current - 1 + gallery.length) % gallery.length)}
-                  aria-label="Imagem anterior"
+                  aria-label={tx('Imagem anterior')}
                   className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow-sm backdrop-blur transition hover:bg-surface"
                 >
                   <ChevronLeft size={18} />
@@ -282,7 +284,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 <button
                   type="button"
                   onClick={() => setActiveImage((current) => (current + 1) % gallery.length)}
-                  aria-label="Próxima imagem"
+                  aria-label={tx('Próxima imagem')}
                   className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow-sm backdrop-blur transition hover:bg-surface"
                 >
                   <ChevronRight size={18} />
@@ -294,14 +296,14 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             ) : null}
             {item.status === 'SOLD' ? (
               <span className="absolute left-3 top-3 rounded-full bg-scrim-2/80 px-3 py-1 text-xs font-bold text-white">
-                Vendido
+                {tx('Vendido')}
               </span>
             ) : null}
             {currentImage ? (
               <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                aria-label="Ampliar imagem"
+                aria-label={tx('Ampliar imagem')}
                 className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 shadow-sm backdrop-blur transition hover:bg-surface"
               >
                 <Maximize2 size={16} />
@@ -316,7 +318,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   key={url}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  aria-label={`Ir para imagem ${index + 1}`}
+                  aria-label={`${tx('Ir para imagem')} ${index + 1}`}
                   className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
                     index === activeImage ? 'border-brand-500' : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
@@ -343,7 +345,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                 type="button"
                 onClick={handleToggleFavorite}
                 disabled={togglingFavorite}
-                aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
+                aria-label={item.isFavorite ? tx('Remover dos salvos') : tx('Salvar anúncio')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
               >
                 <Heart size={17} className={item.isFavorite ? 'fill-red-500 text-red-500' : ''} />
@@ -351,7 +353,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <button
                 type="button"
                 onClick={handleShare}
-                aria-label="Compartilhar anúncio"
+                aria-label={tx('Compartilhar anúncio')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
               >
                 <Share2 size={17} />
@@ -363,25 +365,25 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                       className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
                     >
                       <MoreHorizontal size={17} />
-                      <span className="sr-only">Mais opções</span>
+                      <span className="sr-only">{tx('Mais opções')}</span>
                     </span>
                   }
                   sections={[
                     {
                       items: [
                         {
-                          label: 'Editar anúncio',
+                          label: tx('Editar anúncio'),
                           icon: <Edit size={14} />,
                           onClick: () => router.push(`/marketplace/${item.id}/editar`),
                         },
                         {
-                          label: 'Excluir anúncio',
+                          label: tx('Excluir anúncio'),
                           icon: <Trash2 size={14} />,
                           onClick: () => setShowDeleteConfirm(true),
                           destructive: true,
                         },
                         ...(item.status === 'SOLD' || item.status === 'UNAVAILABLE' ? [{
-                          label: 'Reativar anúncio',
+                          label: tx('Reativar anúncio'),
                           icon: <RotateCcw size={14} />,
                           onClick: () => handleStatusChange('ACTIVE'),
                         }] : []),
@@ -407,18 +409,18 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <Badge tone="neutro" variant="outline">
                 {CONDITION_LABELS[item.condition] ?? item.condition}
               </Badge>
-              {item.status === 'SOLD' ? <Badge tone="erro">Vendido</Badge> : null}
-              {item.status === 'UNAVAILABLE' ? <Badge tone="neutro">Indisponível no momento</Badge> : null}
-              {item.status === 'PENDING_REVIEW' ? <Badge tone="neutro">Em análise</Badge> : null}
-              {item.status === 'REJECTED' ? <Badge tone="erro">Rejeitado</Badge> : null}
-              {item.status === 'REMOVED' ? <Badge tone="erro">Removido</Badge> : null}
+              {item.status === 'SOLD' ? <Badge tone="erro">{tx('Vendido')}</Badge> : null}
+              {item.status === 'UNAVAILABLE' ? <Badge tone="neutro">{tx('Indisponível no momento')}</Badge> : null}
+              {item.status === 'PENDING_REVIEW' ? <Badge tone="neutro">{tx('Em análise')}</Badge> : null}
+              {item.status === 'REJECTED' ? <Badge tone="erro">{tx('Rejeitado')}</Badge> : null}
+              {item.status === 'REMOVED' ? <Badge tone="erro">{tx('Removido')}</Badge> : null}
             </div>
 
             {item.canEdit && (item.status === 'REJECTED' || item.status === 'REMOVED') ? (
               <p role="alert" className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-                {item.status === 'REJECTED' ? 'Anúncio rejeitado pela moderação.' : 'Anúncio removido pela moderação.'}
-                {item.moderationReason ? <span className="mt-1 block font-medium">Motivo: {item.moderationReason}</span> : null}
-                {item.status === 'REJECTED' ? <span className="mt-1 block text-xs">Edite o anúncio para reenviá-lo à revisão.</span> : null}
+                {item.status === 'REJECTED' ? tx('Anúncio rejeitado pela moderação.') : tx('Anúncio removido pela moderação.')}
+                {item.moderationReason ? <span className="mt-1 block font-medium">{tx('Motivo:')} {item.moderationReason}</span> : null}
+                {item.status === 'REJECTED' ? <span className="mt-1 block text-xs">{tx('Edite o anúncio para reenviá-lo à revisão.')}</span> : null}
               </p>
             ) : null}
 
@@ -428,31 +430,31 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   <div className="grid grid-cols-2 gap-2">
                     {/* Ações discretas (borda cinza clara): a ação principal da tela é "Enviar Mensagem". */}
                     <Button size="sm" variant="ghost" iconLeft={<CheckCircle2 size={15} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('SOLD')}>
-                      Marcar vendido
+                      {tx('Marcar vendido')}
                     </Button>
                     <Button size="sm" variant="ghost" iconLeft={<PauseCircle size={15} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('UNAVAILABLE')}>
-                      Pausar anúncio
+                      {tx('Pausar anúncio')}
                     </Button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
                     {item.status === 'SOLD' || item.status === 'UNAVAILABLE' ? (
                     <Button size="sm" variant="ghost" iconLeft={<RotateCcw size={14} />} className="border border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => handleStatusChange('ACTIVE')}>
-                      Reativar
+                      {tx('Reativar')}
                     </Button>
                     ) : null}
                     <Dropdown
                       trigger={
                         <span className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100">
                           <MoreHorizontal size={14} />
-                          <span className="sr-only">Mais opções</span>
+                          <span className="sr-only">{tx('Mais opções')}</span>
                         </span>
                       }
                       sections={[
                         {
                           items: [
                             {
-                              label: 'Excluir anúncio',
+                              label: tx('Excluir anúncio'),
                               icon: <Trash2 size={14} />,
                               onClick: () => setShowDeleteConfirm(true),
                               destructive: true,
@@ -478,15 +480,15 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                     loading={contacting}
                     onClick={() => void handleContactSeller()}
                   >
-                    Enviar Mensagem
+                    {tx('Enviar Mensagem')}
                   </Button>
                 ) : (
                   <Button size="md" fullWidth disabled>
-                    Enviar Mensagem
+                    {tx('Enviar Mensagem')}
                   </Button>
                 )}
                 <p className="mt-2 text-center text-[11px] text-slate-400">
-                  A conversa acontece dentro do Gringoou, sem abrir seus contatos.
+                  {tx('A conversa acontece dentro do Gringoou, sem abrir seus contatos.')}
                 </p>
               </div>
             ) : null}
@@ -498,13 +500,13 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-50">
                 {item.sellerImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.sellerImage} alt={item.sellerName ?? 'Anunciante'} className="h-full w-full object-cover" />
+                  <img src={item.sellerImage} alt={item.sellerName ?? tx('Anunciante')} className="h-full w-full object-cover" />
                 ) : (
                   <UserIcon size={18} className="text-brand-500" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-text">{item.sellerName ?? 'Membro da comunidade'}</p>
+                <p className="truncate text-sm font-semibold text-text">{item.sellerName ?? tx('Membro da comunidade')}</p>
                 <p className="truncate text-xs text-slate-400">
                   {item.sellerUsername ? `@${item.sellerUsername} · ` : ''}
                   {item.sellerLocationLabel ?? sellerLocation}
@@ -513,7 +515,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
                   </>
                 );
                 return item.sellerUsername ? (
-                  <Link href={`/${item.sellerUsername}`} aria-label={`Ver perfil de ${item.sellerName ?? item.sellerUsername}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl transition hover:opacity-80">
+                  <Link href={`/${item.sellerUsername}`} aria-label={`${tx('Ver perfil de')} ${item.sellerName ?? item.sellerUsername}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl transition hover:opacity-80">
                     {sellerContent}
                   </Link>
                 ) : (
@@ -527,11 +529,11 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               latitude={item.latitude}
               longitude={item.longitude}
               place={sellerLocation}
-              label={`Área aproximada: ${sellerLocation}`}
+              label={`${tx('Área aproximada:')} ${sellerLocation}`}
             />
 
             <div className="mt-5 border-t border-slate-100 pt-4">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Descrição</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{tx('Descrição')}</h2>
               <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-slate-700">{item.description}</p>
             </div>
           </div>
@@ -541,7 +543,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         <section className="min-w-0">
           {suggestions.length > 0 ? (
             <div>
-              <h2 className="text-base font-bold text-text">Mais anúncios perto de você</h2>
+              <h2 className="text-base font-bold text-text">{tx('Mais anúncios perto de você')}</h2>
               <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3">
                 {suggestions.map((suggestion) => (
                   <MarketplaceCard key={suggestion.id} item={suggestion} />
@@ -556,14 +558,14 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Visualização ampliada do anúncio"
+          aria-label={tx('Visualização ampliada do anúncio')}
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95"
           onClick={(event) => event.target === event.currentTarget && setLightboxOpen(false)}
         >
           <button
             type="button"
             onClick={() => setLightboxOpen(false)}
-            aria-label="Fechar visualização ampliada"
+            aria-label={tx('Fechar visualização ampliada')}
             className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
           >
             <X size={20} />
@@ -572,7 +574,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
             <button
               type="button"
               onClick={() => setActiveImage((current) => (current - 1 + gallery.length) % gallery.length)}
-              aria-label="Imagem anterior"
+              aria-label={tx('Imagem anterior')}
               className="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:left-6"
             >
               <ChevronLeft size={24} />
@@ -587,7 +589,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
               <button
                 type="button"
                 onClick={() => setActiveImage((current) => (current + 1) % gallery.length)}
-                aria-label="Próxima imagem"
+                aria-label={tx('Próxima imagem')}
                 className="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:right-6"
               >
                 <ChevronRight size={24} />
@@ -603,15 +605,15 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       <Modal
         open={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        title="Excluir anúncio"
-        description="Tem certeza que deseja excluir este anúncio? Esta ação não pode ser desfeita."
+        title={tx('Excluir anúncio')}
+        description={tx('Tem certeza que deseja excluir este anúncio? Esta ação não pode ser desfeita.')}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
-              Cancelar
+              {tx('Cancelar')}
             </Button>
             <Button variant="destructive" loading={deleting} onClick={handleDelete}>
-              Excluir
+              {tx('Excluir')}
             </Button>
           </div>
         }

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { Button } from './Button';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export interface ModalProps {
   open: boolean;
@@ -20,6 +21,7 @@ export interface ModalProps {
 const openModals: React.RefObject<HTMLDivElement | null>[] = [];
 
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description, footer, children, className, fullscreen = false }) => {
+  const { tx } = useLanguage();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -91,7 +93,7 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, description,
         <button
           type="button"
           onClick={onClose}
-          aria-label="Fechar"
+          aria-label={tx('Fechar')}
           className="absolute right-4 top-4 z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-black/5 hover:text-text"
         >
           <X size={18} />
@@ -132,7 +134,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   cancelLabel = 'Cancelar',
   destructive,
   loading,
-}) => (
+}) => {
+  return (
   <Modal
     open={open}
     onClose={onClose}
@@ -155,3 +158,4 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     }
   />
 );
+};

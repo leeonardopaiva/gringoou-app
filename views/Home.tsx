@@ -27,10 +27,13 @@ import { ServiceCard } from '../components/ui/ServiceCard';
 import { useActiveRegion } from '../components/RegionContext';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '../components/i18n/LanguageProvider';
 
 const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, initialData }) => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [latestBusiness, setLatestBusiness] = useState<Business | null>(initialData?.latestBusiness ?? null);
   const [latestEvent, setLatestEvent] = useState<EventItem | null>(initialData?.latestEvent ?? null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
@@ -43,12 +46,12 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   const latestJob = STATIC_JOBS[0];
   const latestHousing = STATIC_HOUSING[0];
   const trendItems: TrendItem[] = [
-    { href: latestPost ? `/community?post=${encodeURIComponent(latestPost.id)}` : '/community', category: 'Comunidade', title: latestPost?.content || 'Participe das conversas da comunidade', description: latestPost ? `Por ${latestPost.author.name}` : 'Veja as publicações mais recentes', icon: Users, imageUrl: latestPost?.imageUrl },
-    { href: latestBusiness?.publicPath || (latestBusiness ? `/businesses/${latestBusiness.slug || latestBusiness.id}` : '/businesses'), category: 'Negócios', title: latestBusiness?.name || 'Descubra negócios brasileiros', description: latestBusiness?.category || 'Serviços perto de você', icon: Building2, imageUrl: latestBusiness?.imageUrl },
-    { href: latestEvent?.publicPath || (latestEvent ? `/events/${latestEvent.slug || latestEvent.id}` : '/events'), category: 'Eventos', title: latestEvent?.title || 'Veja os próximos eventos', description: latestEvent?.venueName || 'Agenda da sua região', icon: CalendarDays, imageUrl: latestEvent?.imageUrl },
-    { href: '/jobs', category: 'Vagas', title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
-    { href: '/housing', category: 'Moradia', title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
-    { href: '/news', category: 'Notícias', title: latestNews?.title || 'Últimas notícias da comunidade', description: 'Veja as notícias mais recentes', icon: Newspaper, imageUrl: latestNews?.imageUrl },
+    { href: latestPost ? `/community?post=${encodeURIComponent(latestPost.id)}` : '/community', category: tx('Comunidade'), title: latestPost?.content || tx('Participe das conversas da comunidade'), description: latestPost ? `${tx('Por')} ${latestPost.author.name}` : tx('Veja as publicações mais recentes'), icon: Users, imageUrl: latestPost?.imageUrl },
+    { href: latestBusiness?.publicPath || (latestBusiness ? `/businesses/${latestBusiness.slug || latestBusiness.id}` : '/businesses'), category: tx('Negócios'), title: latestBusiness?.name || tx('Descubra negócios brasileiros'), description: latestBusiness?.category || tx('Serviços perto de você'), icon: Building2, imageUrl: latestBusiness?.imageUrl },
+    { href: latestEvent?.publicPath || (latestEvent ? `/events/${latestEvent.slug || latestEvent.id}` : '/events'), category: tx('Eventos'), title: latestEvent?.title || tx('Veja os próximos eventos'), description: latestEvent?.venueName || tx('Agenda da sua região'), icon: CalendarDays, imageUrl: latestEvent?.imageUrl },
+    { href: '/jobs', category: tx('Vagas'), title: latestJob.title, description: `${latestJob.company} · ${latestJob.salary}`, icon: Briefcase, imageUrl: latestJob.img },
+    { href: '/housing', category: tx('Moradia'), title: latestHousing.title, description: `${latestHousing.location} · ${latestHousing.price}`, icon: House, imageUrl: latestHousing.img },
+    { href: '/news', category: tx('Notícias'), title: latestNews?.title || tx('Últimas notícias da comunidade'), description: tx('Veja as notícias mais recentes'), icon: Newspaper, imageUrl: latestNews?.imageUrl },
   ];
 
   // Evita fetch no mount inicial — o servidor já forneceu initialData.
@@ -116,7 +119,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
 
   const handleBannerLinkClick = (banner: BannerAd) => {
     if (!banner.targetUrl) {
-      showToast('Esse banner ainda não tem um link configurado.', 'error');
+      showToast(tx('Esse banner ainda não tem um link configurado.'), 'error');
       return;
     }
 
@@ -160,32 +163,32 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
   return (
     <ContentColumn size="compact" className="animate-in space-y-5 pb-28 fade-in slide-in-from-bottom-4 duration-500 md:pb-8">
       <div className="flex items-center justify-between">
-        <h3 className="text-body-sm font-bold text-text">Categorias</h3>
+        <h3 className="text-body-sm font-bold text-text">{t('home.categories')}</h3>
         <button type="button" onClick={() => router.push('/search?browse=1')} className="text-body-sm font-semibold text-brand-500">
-          Ver todas
+          {t('home.seeAll')}
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <ServiceCard href="/businesses" icon={Building2} label="Negócios" onActivate={() => router.push('/businesses')} />
-        <ServiceCard href="/community" icon={Users} label="Comunidade" onActivate={() => router.push('/community')} />
-        <ServiceCard href="/events" icon={CalendarDays} label="Eventos" onActivate={() => router.push('/events')} />
+        <ServiceCard href="/businesses" icon={Building2} label={t('menu.businesses')} onActivate={() => router.push('/businesses')} />
+        <ServiceCard href="/community" icon={Users} label={t('menu.community')} onActivate={() => router.push('/community')} />
+        <ServiceCard href="/events" icon={CalendarDays} label={t('menu.events')} onActivate={() => router.push('/events')} />
         <ServiceCard
           href="/jobs"
           icon={Briefcase}
-          label="Vagas"
+          label={t('menu.jobs')}
           onActivate={() => router.push('/jobs')}
         />
         <ServiceCard
           href="/marketplace"
           icon={ShoppingBag}
-          label="Marketplace"
+          label={t('menu.marketplace')}
           onActivate={() => router.push('/marketplace')}
         />
         <ServiceCard
           href="/housing"
           icon={House}
-          label="Moradia"
+          label={t('menu.housing')}
           onActivate={() => router.push('/housing')}
         />
       </div>
@@ -209,21 +212,21 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                       <>
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover" />
                         <div className="flex items-center justify-between gap-3 px-4 py-3">
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Publicidade</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{t('home.advertising')}</span>
                           <Button
                             size="sm"
                             iconLeft={<UserPlus size={16} />}
                             onClick={() => void handleBannerRegistration(banner)}
                             loading={submittingBannerId === banner.id}
                           >
-                            {banner.ctaLabel || 'Tenho interesse'}
+                            {banner.ctaLabel || t('home.interested')}
                           </Button>
                         </div>
                       </>
                     ) : (
                       <button type="button" onClick={() => handleBannerLinkClick(banner)} className="group relative block w-full text-left">
                         <img src={banner.imageUrl} alt={banner.name} className="aspect-[16/7] w-full object-cover transition duration-300 group-hover:scale-[1.01]" />
-                        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur">Publicidade</span>
+                        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur">{t('home.advertising')}</span>
                         <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-foreground shadow-sm"><ExternalLink size={15} /></span>
                       </button>
                     )}
@@ -239,7 +242,7 @@ const Home: React.FC<{ user: User; initialData?: HomeInitialData }> = ({ user, i
                   key={banner.id}
                   type="button"
                   onClick={() => setActiveBannerIndex(index)}
-                  aria-label={`Ir para banner ${index + 1}`}
+                  aria-label={`${tx('Ir para banner')} ${index + 1}`}
                   className={`h-2.5 rounded-full transition-all ${
                     index === activeBannerIndex ? 'theme-bg w-6' : 'w-2.5 bg-slate-300'
                   }`}

@@ -24,6 +24,7 @@ import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import type { JobsInitialData } from "@/lib/content-contracts";
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Job = {
   id: string;
@@ -52,6 +53,7 @@ const emptyDraft = {
 };
 
 export default function JobList({ user, initialData }: { user: User; initialData?: JobsInitialData }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [jobs, setJobs] = useState<Job[]>(initialData?.jobs ?? []);
   const [employmentType, setEmploymentType] = useState("");
@@ -133,7 +135,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       setJobs((current) => [payload.job, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);
-      showToast("Vaga publicada.", "success");
+      showToast(tx('Vaga publicada.'), "success");
     } catch (error) {
       showToast(
         getUserErrorMessage(error, "Não foi possível publicar a vaga."),
@@ -146,11 +148,11 @@ export default function JobList({ user, initialData }: { user: User; initialData
 
   return (
     <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
-      <PageHeader title="Vagas" filters={{
+      <PageHeader title={tx('Vagas')} filters={{
             fields: [
-              { type: 'select', id: 'employmentType', label: 'Tipo de contrato', options: [{ value: '', label: 'Todos os contratos' }, ...['Tempo integral', 'Meio período', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
-              { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
-              { type: 'text', id: 'salary', label: 'Faixa salarial', placeholder: 'Ex.: 3000' },
+              { type: 'select', id: 'employmentType', label: tx('Tipo de contrato'), options: [{ value: '', label: tx('Todos os contratos') }, ...['Tempo integral', 'Meio período', 'Freelancer'].map((v) => ({ value: v, label: v }))] },
+              { type: 'text', id: 'location', label: tx('Localização'), placeholder: tx('Cidade ou bairro') },
+              { type: 'text', id: 'salary', label: tx('Faixa salarial'), placeholder: 'Ex.: 3000' },
             ],
             values: { employmentType, location, salary },
             onApply: (values) => {
@@ -178,12 +180,12 @@ export default function JobList({ user, initialData }: { user: User; initialData
             setModalOpen(true);
           }}
         >
-          Criar vaga
+          {tx('Criar vaga')}
         </Button>
       } />
       <section className="space-y-3">
         {loading ? (
-          <div className="space-y-3" role="status" aria-label="Carregando vagas" aria-busy="true">
+          <div className="space-y-3" role="status" aria-label={tx('Carregando vagas')} aria-busy="true">
             {[0, 1, 2].map((key) => (
               <div key={key} className="overflow-hidden rounded-2xl border border-border bg-surface">
                 <Skeleton className="h-28 w-full rounded-none" />
@@ -209,13 +211,13 @@ export default function JobList({ user, initialData }: { user: User; initialData
                   <MapPin size={13} /> {job.locationLabel}
                 </p>
                 <p className="mt-1 text-sm font-bold">
-                  {job.salary || "Salário a combinar"}
+                  {job.salary || tx('Salário a combinar')}
                 </p>
                 <Link
                   href={`/jobs/${job.id}`}
                   className="mt-3 inline-flex rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white"
                 >
-                  Ver vaga
+                  {tx('Ver vaga')}
                 </Link>
             </div>
             </div>
@@ -224,7 +226,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
           </ListingGrid>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Nenhuma vaga encontrada.
+            {tx('Nenhuma vaga encontrada.')}
           </p>
         )}
       </section>
@@ -232,58 +234,58 @@ export default function JobList({ user, initialData }: { user: User; initialData
       <Modal
         open={companyInviteOpen}
         onClose={() => setCompanyInviteOpen(false)}
-        title="Cadastre seu negócio"
-        description="Para publicar como empresa, cadastre primeiro a página profissional do negócio."
+        title={tx('Cadastre seu negócio')}
+        description={tx('Para publicar como empresa, cadastre primeiro a página profissional do negócio.')}
       >
         <p className="text-body-sm text-muted-foreground">
-          Você também pode publicar diretamente como pessoa pelo botão Criar vaga.
+          {tx('Você também pode publicar diretamente como pessoa pelo botão Criar vaga.')}
         </p>
         <Link
           href="/profile"
           className="mt-5 inline-flex rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white"
         >
-          Criar negócio
+          {tx('Criar negócio')}
         </Link>
       </Modal>
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Criar vaga"
+        title={tx('Criar vaga')}
       >
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1">
-            <button type="button" onClick={() => { setPublishAs('person'); setDraft((current) => ({ ...current, businessId: '' })); }} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'person' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como pessoa</button>
-            <button type="button" onClick={() => setPublishAs('business')} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'business' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>Como empresa</button>
+            <button type="button" onClick={() => { setPublishAs('person'); setDraft((current) => ({ ...current, businessId: '' })); }} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'person' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>{tx('Como pessoa')}</button>
+            <button type="button" onClick={() => setPublishAs('business')} className={`rounded-xl px-3 py-2 text-xs font-bold ${publishAs === 'business' ? 'bg-surface text-brand-600 shadow-sm' : 'text-slate-500'}`}>{tx('Como empresa')}</button>
           </div>
           {publishAs === 'business' ? businesses.length ? (
             <Select value={draft.businessId} onChange={(event) => setDraft({ ...draft, businessId: event.target.value })}>
-              <option value="">Selecione o negócio</option>
+              <option value="">{tx('Selecione o negócio')}</option>
               {businesses.map((business) => <option key={business.id} value={business.id}>{business.name}</option>)}
             </Select>
           ) : (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Você ainda não possui negócio cadastrado. <Link className="font-bold underline" href="/businesses?create=1">Criar negócio</Link></div>
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{tx('Você ainda não possui negócio cadastrado.')} <Link className="font-bold underline" href="/businesses?create=1">{tx('Criar negócio')}</Link></div>
           ) : null}
           <CloudinaryImageField
             value={draft.imageUrl}
             onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
             folder="jobs" cropAspect={4 / 3}
             height={160}
-            hint="Adicione uma capa para destacar a vaga."
+            hint={tx('Adicione uma capa para destacar a vaga.')}
           />
-          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="jobs" maxItems={6} hint="Adicione até 6 fotos da vaga, equipe ou ambiente." />
+          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="jobs" maxItems={6} hint={tx('Adicione até 6 fotos da vaga, equipe ou ambiente.')} />
           <Input
-            placeholder="Título"
+            placeholder={tx('Título')}
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
           />
           <Input
-            placeholder="Empresa"
+            placeholder={tx('Empresa')}
             value={draft.company}
             onChange={(e) => setDraft({ ...draft, company: e.target.value })}
             disabled={publishAs === 'business' && Boolean(draft.businessId)}
           />
           <Textarea
-            placeholder="Descrição"
+            placeholder={tx('Descrição')}
             value={draft.description}
             onChange={(e) =>
               setDraft({ ...draft, description: e.target.value })
@@ -295,12 +297,12 @@ export default function JobList({ user, initialData }: { user: User; initialData
               setDraft({ ...draft, employmentType: e.target.value })
             }
           >
-            <option>Tempo integral</option>
-            <option>Meio período</option>
-            <option>Freelancer</option>
+            <option>{tx('Tempo integral')}</option>
+            <option>{tx('Meio período')}</option>
+            <option>{tx('Freelancer')}</option>
           </Select>
           <Input
-            placeholder="Localização"
+            placeholder={tx('Localização')}
             value={draft.locationLabel}
             onChange={(e) =>
               setDraft({ ...draft, locationLabel: e.target.value })
@@ -309,24 +311,24 @@ export default function JobList({ user, initialData }: { user: User; initialData
           <RegionSelector
             value={draft.regionKey}
             onChange={(region) => setDraft({ ...draft, regionKey: region.key })}
-            label="Região"
-            hint="A vaga será exibida para esta região."
+            label={tx('Região')}
+            hint={tx('A vaga será exibida para esta região.')}
           />
           <Select value={draft.countryCode} onChange={(event) => setDraft({ ...draft, countryCode: event.target.value })}>
-            <option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option>
+            <option value="US">{tx('Estados Unidos')}</option><option value="BR">{tx('Brasil')}</option><option value="PT">{tx('Portugal')}</option><option value="CA">{tx('Canadá')}</option><option value="GB">{tx('Reino Unido')}</option><option value="IE">{tx('Irlanda')}</option>
           </Select>
           <Input
-            placeholder="Salário"
+            placeholder={tx('Salário')}
             value={draft.salary}
             onChange={(e) => setDraft({ ...draft, salary: e.target.value })}
           />
           <Input
-            placeholder="Link ou telefone para contato"
+            placeholder={tx('Link ou telefone para contato')}
             value={draft.contactUrl}
             onChange={(e) => setDraft({ ...draft, contactUrl: e.target.value })}
           />
           <Button fullWidth loading={saving} disabled={publishAs === 'business' && (!draft.businessId || businesses.length === 0)} onClick={() => void createJob()}>
-            Publicar vaga
+            {tx('Publicar vaga')}
           </Button>
         </div>
       </Modal>

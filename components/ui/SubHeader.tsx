@@ -4,6 +4,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { Popover } from './Popover';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 /**
  * SubHeader: faixa leve logo abaixo do PageHeader.
@@ -99,6 +100,7 @@ const FilterForm: React.FC<{
   filters: SubHeaderFilters;
   onDone: () => void;
 }> = ({ filters, onDone }) => {
+  const { tx } = useLanguage();
   const formId = useId();
   const [draft, setDraft] = useState<SubHeaderFilterValues>(() => {
     const initial: SubHeaderFilterValues = {};
@@ -129,7 +131,7 @@ const FilterForm: React.FC<{
                 onChange={(event) => setValue(field.id, event.target.checked)}
                 className="h-5 w-5 rounded border-slate-300 text-brand-500 focus:ring-brand-200"
               />
-              {field.label}
+              {tx(field.label)}
             </label>
           );
         }
@@ -139,13 +141,13 @@ const FilterForm: React.FC<{
         return (
           <div key={field.id} className="grid gap-1.5">
             <label htmlFor={fieldId} className="text-xs font-bold text-slate-500">
-              {field.label}
+              {tx(field.label)}
             </label>
             {field.type === 'select' ? (
               <select id={fieldId} value={String(draft[field.id] ?? '')} onChange={(event) => setValue(field.id, event.target.value)} className={inputClass}>
                 {field.options.map((option) => (
                   <option key={option.value} value={option.value} disabled={option.disabled}>
-                    {option.label}
+                    {tx(option.label)}
                   </option>
                 ))}
               </select>
@@ -172,13 +174,13 @@ const FilterForm: React.FC<{
           }}
           className="h-11 rounded-full px-4 text-sm font-bold text-slate-500 transition hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
         >
-          Limpar
+          {tx('Limpar')}
         </button>
         <button
           type="submit"
           className="h-11 rounded-full bg-brand-500 px-7 text-sm font-bold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
         >
-          Aplicar
+          {tx('Aplicar')}
         </button>
       </div>
     </form>
@@ -187,6 +189,7 @@ const FilterForm: React.FC<{
 
 /** Ícone de filtro (popover no desktop / folha inferior no celular). Também usado dentro do PageHeader (prop `filters`). */
 export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filters }) => {
+  const { tx } = useLanguage();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const isMobile = useIsMobile();
@@ -207,7 +210,7 @@ export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filte
       <button
         ref={triggerRef}
         type="button"
-        aria-label={active ? `${title} (${active} ativos)` : title}
+        aria-label={active ? `${title} (${active} ${tx('ativos)')}` : title}
         aria-haspopup="dialog"
         aria-expanded={open}
         title={title}
@@ -221,12 +224,12 @@ export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filte
       {isMobile ? (
         open ? (
           <div className="fixed inset-0 z-[150] flex items-end" role="dialog" aria-modal="true" aria-label={title}>
-            <button type="button" aria-label="Fechar filtros" className="absolute inset-0 bg-overlay" onClick={() => setOpen(false)} />
+            <button type="button" aria-label={tx('Fechar filtros')} className="absolute inset-0 bg-overlay" onClick={() => setOpen(false)} />
             <div className="relative max-h-[88dvh] w-full overflow-y-auto rounded-t-sheet bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-xl">
               <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200" aria-hidden />
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-base font-bold text-slate-900">{title}</h2>
-                <button type="button" aria-label="Fechar" onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
+                <button type="button" aria-label={tx('Fechar')} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
                   <X size={20} aria-hidden />
                 </button>
               </div>
@@ -244,6 +247,7 @@ export const SubHeaderFilter: React.FC<{ filters: SubHeaderFilters }> = ({ filte
 };
 
 export const SubHeader: React.FC<SubHeaderProps> = ({ tabs, activeTab, onTabChange, tabsLabel, filters, className }) => {
+  const { tx } = useLanguage();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const hasTabs = Boolean(tabs && tabs.length > 0);
 
@@ -289,7 +293,7 @@ export const SubHeader: React.FC<SubHeaderProps> = ({ tabs, activeTab, onTabChan
                   selected ? 'font-bold text-brand-600' : 'font-medium text-slate-500 hover:text-slate-800',
                 )}
               >
-                {tab.label}
+                {tx(tab.label)}
                 {selected ? <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-brand-500" aria-hidden /> : null}
               </button>
             );

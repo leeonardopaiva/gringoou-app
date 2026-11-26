@@ -4,6 +4,7 @@ import React from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import type { ThemePreference } from '@/lib/theme';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const OPTIONS: Array<{ value: ThemePreference; label: string; icon: React.ReactNode }> = [
   { value: 'system', label: 'Sistema', icon: <Monitor size={16} aria-hidden="true" /> },
@@ -13,10 +14,11 @@ const OPTIONS: Array<{ value: ThemePreference; label: string; icon: React.ReactN
 
 /** Escolha de aparência do app. A preferência fica salva neste aparelho. */
 export function ThemeSelector() {
+  const { tx } = useLanguage();
   const { preference, setPreference } = useTheme();
 
   return (
-    <div role="radiogroup" aria-label="Aparência do app" className="grid grid-cols-3 gap-2">
+    <div role="radiogroup" aria-label={tx('Aparência do app')} className="grid grid-cols-3 gap-2">
       {OPTIONS.map((option) => {
         const selected = preference === option.value;
         return (
@@ -33,7 +35,7 @@ export function ThemeSelector() {
             }`}
           >
             {option.icon}
-            {option.label}
+            {tx(option.label)}
           </button>
         );
       })}

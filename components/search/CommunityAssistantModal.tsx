@@ -7,6 +7,7 @@ import { ArrowUp, BriefcaseBusiness, CalendarDays, Check, ChevronRight, External
 import { buildSearchPath } from '@/lib/search-navigation';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { getUserErrorMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AssistantReference = { id: string; label: string; href: string; type: string };
 type ChatMessage = {
@@ -73,6 +74,7 @@ type CommunityAssistantModalProps = {
 };
 
 export default function CommunityAssistantModal({ open, initialQuery = '', autoSubmitRequest, regionLabel, onClose }: CommunityAssistantModalProps) {
+  const { tx } = useLanguage();
   const router = useRouter();
   const [draft, setDraft] = useState(initialQuery);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -240,16 +242,16 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
     .find((message) => message.role === 'assistant' && !message.error)?.suggestions || [];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-surface text-slate-900" role="dialog" aria-modal="true" aria-label="Assistente da comunidade">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-surface text-slate-900" role="dialog" aria-modal="true" aria-label={tx('Assistente da comunidade')}>
       <header className="border-b border-slate-100 bg-surface/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 w-full max-w-3xl items-center gap-3 px-4 py-2 sm:px-6">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-sm"><Sparkles size={20} /></span>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-lg font-bold text-slate-900">Fale com o Gringo</h2>
-            <p className="flex items-center gap-1 truncate text-xs text-slate-500"><MapPin size={12} /> Respostas da comunidade em {regionLabel}</p>
+            <h2 className="truncate text-lg font-bold text-slate-900">{tx('Fale com o Gringo')}</h2>
+            <p className="flex items-center gap-1 truncate text-xs text-slate-500"><MapPin size={12} /> {tx('Respostas da comunidade em')} {regionLabel}</p>
           </div>
-          {messages.length ? <button type="button" onClick={startNewQuestion} className="hidden h-9 items-center gap-2 rounded-full bg-slate-100 px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-200 sm:inline-flex"><PencilLine size={14} /> Nova pergunta</button> : null}
-          <button type="button" onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200" aria-label="Fechar assistente"><X size={20} /></button>
+          {messages.length ? <button type="button" onClick={startNewQuestion} className="hidden h-9 items-center gap-2 rounded-full bg-slate-100 px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-200 sm:inline-flex"><PencilLine size={14} /> {tx('Nova pergunta')}</button> : null}
+          <button type="button" onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200" aria-label={tx('Fechar assistente')}><X size={20} /></button>
         </div>
       </header>
 
@@ -267,22 +269,22 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                 <Sparkles size={36} className="relative text-brand-500" />
               </div>
               <h3 className="mx-auto mt-6 max-w-sm text-center text-2xl font-extrabold leading-8 text-slate-900 sm:text-[28px]">
-                Descubra recomendações e informações da sua região.
+                {tx('Descubra recomendações e informações da sua região.')}
               </h3>
               <p className="mx-auto mt-3 max-w-sm text-center text-sm leading-6 text-slate-500">
-                Pesquise negócios, vagas, moradias, eventos e publicações reais da comunidade.
+                {tx('Pesquise negócios, vagas, moradias, eventos e publicações reais da comunidade.')}
               </p>
 
               <div className="mt-9">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-bold text-slate-800">Sugestões para começar</p>
+                  <p className="text-sm font-bold text-slate-800">{tx('Sugestões para começar')}</p>
                   {!showAllSuggestions && suggestions.length > VISIBLE_SUGGESTIONS_COUNT ? (
                     <button
                       type="button"
                       onClick={() => setShowAllSuggestions(true)}
                       className="flex items-center gap-0.5 text-xs font-bold text-brand-600 transition hover:text-brand-700"
                     >
-                      Ver mais <ChevronRight size={14} />
+                      {tx('Ver mais')} <ChevronRight size={14} />
                     </button>
                   ) : null}
                 </div>
@@ -315,15 +317,15 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                     <div className="max-w-[88%] rounded-3xl rounded-br-md bg-brand-strong-hover px-5 py-3 text-sm font-semibold leading-6 text-white shadow-sm">{message.text}</div>
                   ) : (
                     <div className={message.error ? 'rounded-2xl border border-red-100 bg-red-50 p-4 text-sm leading-6 text-red-700' : ''}>
-                      {!message.error ? <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white"><Sparkles size={14} /></span> Resumo da comunidade</div> : null}
+                      {!message.error ? <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white"><Sparkles size={14} /></span> {tx('Resumo da comunidade')}</div> : null}
                       <p className="whitespace-pre-line text-sm leading-6 text-slate-800 sm:text-[15px]">{message.text}</p>
-                      {message.references?.length ? <div className="mt-5 grid gap-2 sm:grid-cols-2">{message.references.map((reference) => <Link key={reference.id} href={reference.href} onClick={onClose} className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"><span className="truncate text-xs font-bold text-slate-700 group-hover:text-brand-700">{reference.label}</span><ExternalLink size={14} className="shrink-0 text-brand-500" /></Link>)}</div> : null}
-                      {!message.error ? <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3"><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'up' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'up' ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Resposta útil"><ThumbsUp size={16} /></button><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'down' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'down' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Resposta não foi útil"><ThumbsDown size={16} /></button><button type="button" onClick={() => void shareAnswer(message)} className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100" aria-label="Compartilhar resposta">{copiedMessageId === message.id ? <Check size={16} /> : <Share2 size={16} />}{copiedMessageId === message.id ? 'Copiado' : ''}</button></div> : null}
+                      {message.references?.length ? <div className="mt-5 grid gap-2 sm:grid-cols-2">{message.references.map((reference) => <Link key={reference.id} href={reference.href} onClick={onClose} className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"><span className="truncate text-xs font-bold text-slate-700 group-hover:text-brand-700">{tx(reference.label)}</span><ExternalLink size={14} className="shrink-0 text-brand-500" /></Link>)}</div> : null}
+                      {!message.error ? <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3"><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'up' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'up' ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} aria-label={tx('Resposta útil')}><ThumbsUp size={16} /></button><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'down' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'down' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100'}`} aria-label={tx('Resposta não foi útil')}><ThumbsDown size={16} /></button><button type="button" onClick={() => void shareAnswer(message)} className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100" aria-label={tx('Compartilhar resposta')}>{copiedMessageId === message.id ? <Check size={16} /> : <Share2 size={16} />}{copiedMessageId === message.id ? tx('Copiado') : ''}</button></div> : null}
                     </div>
                   )}
                 </div>
               ))}
-              {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error && latestAssistantSuggestions.length ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">Continue explorando <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{latestAssistantSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
+              {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error && latestAssistantSuggestions.length ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">{tx('Continue explorando')} <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{latestAssistantSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
               {loading ? (
                 <div className="space-y-4 rounded-[26px] border border-brand-100 bg-brand-50/70 px-4 py-4 text-sm text-slate-700 shadow-sm">
                   <div className="flex items-center gap-3">
@@ -332,16 +334,16 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                     </span>
                     <div className="min-w-0">
                       <p className="font-extrabold text-slate-900">{loadingSteps[loadingStepIndex]}</p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">Resumo gerado a partir do que a comunidade já publicou.</p>
+                      <p className="mt-0.5 text-xs font-medium text-slate-500">{tx('Resumo gerado a partir do que a comunidade já publicou.')}</p>
                     </div>
                   </div>
                   {loadingPreview.length ? (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Encontrado na comunidade</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-brand-700">{tx('Encontrado na comunidade')}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {loadingPreview.map((reference) => (
                           <Link key={reference.id} href={reference.href} onClick={onClose} className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-surface px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:text-brand-700">
-                            <span className="truncate">{reference.label}</span>
+                            <span className="truncate">{tx(reference.label)}</span>
                             <ExternalLink size={13} className="shrink-0 text-brand-500" />
                           </Link>
                         ))}
@@ -364,26 +366,26 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
 
       <footer className="fixed inset-x-0 bottom-0 border-t border-slate-100 bg-surface/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_35px_rgba(15,23,42,0.04)] backdrop-blur">
         <div className="mx-auto w-full max-w-2xl">
-          {messages.length ? <button type="button" onClick={startNewQuestion} className="mb-2 inline-flex h-8 items-center gap-1.5 text-xs font-bold text-brand-600 sm:hidden"><RotateCcw size={14} /> Nova pergunta</button> : null}
+          {messages.length ? <button type="button" onClick={startNewQuestion} className="mb-2 inline-flex h-8 items-center gap-1.5 text-xs font-bold text-brand-600 sm:hidden"><RotateCcw size={14} /> {tx('Nova pergunta')}</button> : null}
           <form onSubmit={submit} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 pl-5 shadow-inner focus-within:border-brand-300 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand-100">
-            <input autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={voiceListening ? 'Ouvindo... fale agora' : messages.length ? 'Faça outra pergunta...' : 'Pergunte sobre sua comunidade'} maxLength={300} className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-slate-400" />
+            <input autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={voiceListening ? tx('Ouvindo... fale agora') : messages.length ? tx('Faça outra pergunta...') : tx('Pergunte sobre sua comunidade')} maxLength={300} className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-slate-400" />
             {voiceSupported ? (
               <button
                 type="button"
                 onClick={toggleVoice}
                 disabled={loading}
-                aria-label={voiceListening ? 'Parar pesquisa por voz' : 'Perguntar por voz'}
-                title={voiceListening ? 'Ouvindo...' : 'Perguntar por voz'}
+                aria-label={voiceListening ? tx('Parar pesquisa por voz') : tx('Perguntar por voz')}
+                title={voiceListening ? tx('Ouvindo...') : tx('Perguntar por voz')}
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${voiceListening ? 'animate-pulse bg-red-50 text-red-500' : 'text-slate-500 hover:bg-surface hover:text-brand-500'}`}
               >
                 <Mic size={17} aria-hidden="true" />
               </button>
             ) : null}
-            <button type="submit" disabled={!draft.trim() || loading} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-40" aria-label="Enviar pergunta"><ArrowUp size={20} /></button>
+            <button type="submit" disabled={!draft.trim() || loading} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:opacity-40" aria-label={tx('Enviar pergunta')}><ArrowUp size={20} /></button>
           </form>
           <div className="mt-2 flex items-center justify-between px-3 text-[11px] text-slate-400">
-            <span>Resposta por IA baseada em conteúdo público da comunidade.</span>
-            {lastSearchPath ? <button type="button" onClick={() => { onClose(); router.push(lastSearchPath); }} className="font-bold text-brand-600">Ver resultados</button> : null}
+            <span>{tx('Resposta por IA baseada em conteúdo público da comunidade.')}</span>
+            {lastSearchPath ? <button type="button" onClick={() => { onClose(); router.push(lastSearchPath); }} className="font-bold text-brand-600">{tx('Ver resultados')}</button> : null}
           </div>
         </div>
       </footer>

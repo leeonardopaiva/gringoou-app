@@ -12,6 +12,7 @@ import { useIntersectionTrigger } from '@/hooks/useIntersectionTrigger';
 import { loadRegionGroups } from '@/lib/content-api';
 import type { RegionalGroupCard } from '@/lib/content-contracts';
 import type { User } from '@/types';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const getInitials = (name: string) =>
   name
@@ -56,7 +57,9 @@ const GroupAvatar = ({ group }: { group: RegionalGroupCard }) => (
   </div>
 );
 
-const GroupRow = ({ group }: { group: RegionalGroupCard }) => (
+const GroupRow = ({ group }: { group: RegionalGroupCard }) => {
+  const { tx } = useLanguage();
+  return (
   <Link
     href={group.publicPath}
     className="group flex min-h-[76px] items-center gap-3 rounded-2xl px-1 py-2 transition hover:bg-slate-50"
@@ -64,16 +67,18 @@ const GroupRow = ({ group }: { group: RegionalGroupCard }) => (
     <GroupAvatar group={group} />
     <div className="min-w-0 flex-1">
       <p className="truncate text-sm font-extrabold text-slate-900 group-hover:text-brand-700">{group.name}</p>
-      <p className="mt-1 text-sm text-slate-600">{formatCompactMemberCount(group.memberCount)} membros</p>
+      <p className="mt-1 text-sm text-slate-600">{formatCompactMemberCount(group.memberCount)} {tx('membros')}</p>
       {group.category ? <p className="mt-0.5 truncate text-xs text-slate-400">{group.category}</p> : null}
     </div>
     <span className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-slate-100 px-5 text-sm font-bold text-slate-900 transition group-hover:bg-brand-500 group-hover:text-white">
-      Entrar
+      {tx('Entrar')}
     </span>
   </Link>
 );
+};
 
 const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [groups, setGroups] = useState<RegionalGroupCard[]>([]);
@@ -180,11 +185,11 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
   return (
     <ContentColumn size="compact" className="animate-in pb-20 fade-in slide-in-from-bottom-4 duration-500">
       <PageHeader
-        title="Grupos"
+        title={tx('Grupos')}
         filters={{
             fields: [
-              { type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar em todos os grupos' },
-              { type: 'select', id: 'country', label: 'País', options: countries.map(([value, label]) => ({ value, label })) },
+              { type: 'search', id: 'q', label: tx('Buscar'), placeholder: tx('Buscar em todos os grupos') },
+              { type: 'select', id: 'country', label: tx('País'), options: countries.map(([value, label]) => ({ value, label })) },
             ],
             values: { q: query, country },
             defaults: { country: 'US' },
@@ -201,7 +206,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
           <button
             type="button"
             onClick={() => setCreateModalOpen(true)}
-            aria-label="Criar grupo"
+            aria-label={tx('Criar grupo')}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-900 transition hover:bg-brand-50 hover:text-brand-700"
           >
             <Plus size={22} />
@@ -215,7 +220,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
           <section className="space-y-2">
             <div className="flex items-center gap-2">
               <UsersRound size={16} className="text-brand-500" />
-              <h2 className="text-sm font-extrabold text-slate-900">Seus grupos</h2>
+              <h2 className="text-sm font-extrabold text-slate-900">{tx('Seus grupos')}</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1">
               {myGroups.map((group) => (
@@ -230,7 +235,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
 
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">Grupos perto de você</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950">{tx('Grupos perto de você')}</h2>
             <span className="text-xs font-bold text-slate-400">{filteredGroups.length}</span>
           </div>
 
@@ -248,7 +253,7 @@ const GroupsDirectory: React.FC<{ user: User }> = ({ user }) => {
               ))}
             </div>
           ) : filteredGroups.length === 0 ? (
-            <EmptyNotice icon="groups" title="Nenhum grupo encontrado" description="Tente outro filtro ou crie um grupo para a sua região." />
+            <EmptyNotice icon="groups" title={tx('Nenhum grupo encontrado')} description={tx('Tente outro filtro ou crie um grupo para a sua região.')} />
           ) : (
             <div className="space-y-1">
               {filteredGroups.map((group) => <GroupRow key={group.id} group={group} />)}

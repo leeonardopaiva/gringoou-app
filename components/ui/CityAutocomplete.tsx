@@ -3,6 +3,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { LoaderCircle, MapPin } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export type CitySuggestion = {
   id: string;
@@ -40,6 +41,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({
   disabled,
   className,
 }) => {
+  const { tx } = useLanguage();
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -149,7 +151,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({
           maxLength={100}
           className="h-11 w-full bg-transparent text-body-sm text-text outline-none placeholder:text-slate-400 disabled:cursor-not-allowed"
         />
-        {loading ? <LoaderCircle size={16} className="shrink-0 animate-spin text-slate-400" aria-label="Buscando cidades" /> : null}
+        {loading ? <LoaderCircle size={16} className="shrink-0 animate-spin text-slate-400" aria-label={tx('Buscando cidades')} /> : null}
       </div>
 
       {showList ? (
@@ -171,11 +173,11 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({
                 index === activeIndex && 'bg-brand-50 text-brand-700',
               )}
             >
-              {suggestion.label}
+              {tx(suggestion.label)}
             </li>
           ))}
           {suggestions.length === 0 && loading ? (
-            <li className="px-3 py-2 text-caption text-slate-500">Buscando...</li>
+            <li className="px-3 py-2 text-caption text-slate-500">{tx('Buscando...')}</li>
           ) : null}
         </ul>
       ) : null}

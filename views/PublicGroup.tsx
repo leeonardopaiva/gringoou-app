@@ -13,6 +13,7 @@ import RegionSelector from '../components/RegionSelector';
 import GroupFeed from '../components/groups/GroupFeed';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type GroupMember = {
   id: string;
@@ -100,6 +101,7 @@ const getInitials = (name: string) =>
     .toUpperCase();
 
 const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = false }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [group, setGroup] = useState<PublicGroupState>(defaultGroup);
   const [loading, setLoading] = useState(true);
@@ -272,7 +274,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       <div className={pageContainerClass}>
         <div className={wrapperClass}>
           <div className="w-full rounded-[32px] border border-red-100 bg-red-50 p-6 text-center">
-            <h1 className="text-xl font-bold text-red-700">Grupo indisponível</h1>
+            <h1 className="text-xl font-bold text-red-700">{tx('Grupo indisponível')}</h1>
             <p className="mt-3 text-sm text-red-600">{error}</p>
           </div>
         </div>
@@ -286,19 +288,19 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         <div className="w-full">
           {!embedded ? <div className="mb-4 flex justify-center"><Logo size="lg" /></div> : null}
 
-          {embedded ? <PageHeader title="Grupos" backHref="/groups" historyBack /> : null}
+          {embedded ? <PageHeader title={tx('Grupos')} backHref="/groups" historyBack /> : null}
           <section className="overflow-hidden rounded-[28px] bg-surface shadow-sm">
             {group.canManage ? (
               <div className="flex items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-1.5 sm:px-6">
-                <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><ShieldCheck size={14} aria-hidden /> Você administra este grupo</p>
+                <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800"><ShieldCheck size={14} aria-hidden /> {tx('Você administra este grupo')}</p>
                 <Dropdown
                   align="right"
-                  trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100" aria-label="Ações do grupo"><MoreHorizontal size={18} /></span>}
-                  sections={[{ heading: 'Ações do grupo', items: [{ label: 'Configurações do grupo', icon: <Settings size={16} />, onClick: openSettings }] }]}
+                  trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-800 transition hover:bg-emerald-100" aria-label={tx('Ações do grupo')}><MoreHorizontal size={18} /></span>}
+                  sections={[{ heading: tx('Ações do grupo'), items: [{ label: tx('Configurações do grupo'), icon: <Settings size={16} />, onClick: openSettings }] }]}
                 />
               </div>
             ) : null}
-            <div className={`relative h-40 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-52`}>
+            <div className={'relative h-40 overflow-hidden bg-gradient-to-br from-[#004380] via-[#0065bf] to-[#66b6ff] sm:h-52'}>
               {group.coverImageUrl || group.imageUrl ? (
                 <img src={group.coverImageUrl || group.imageUrl || ''} alt="" className="h-full w-full object-cover object-center" />
               ) : (
@@ -317,20 +319,20 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                     if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
                     setRefreshKey((current) => current + 1);
                     notifyContentUpdated();
-                    showToast('Capa atualizada.', 'success');
+                    showToast(tx('Capa atualizada.'), 'success');
                   }}
                 />
               ) : null}
               {viewer && !group.canManage ? <div className="absolute right-4 top-4 z-30"><Dropdown
                 align="right"
-                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface" aria-label="Mais opções"><MoreHorizontal size={18} /></span>}
-                sections={[{ items: [{ label: 'Denunciar grupo', icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }] }]}
+                trigger={<span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-surface" aria-label={tx('Mais opções')}><MoreHorizontal size={18} /></span>}
+                sections={[{ items: [{ label: tx('Denunciar grupo'), icon: <Flag size={16} />, onClick: () => setReportOpen(true), destructive: true }] }]}
               /></div> : null}
             </div>
 
             <div className="relative -mt-9 px-5 sm:px-6">
               <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-surface text-xl font-bold text-brand-500 shadow-md">
-                {group.imageUrl ? <img src={group.imageUrl} alt={`Imagem de ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
+                {group.imageUrl ? <img src={group.imageUrl} alt={`${tx('Imagem de')} ${group.name}`} className="h-full w-full object-cover object-top" /> : getInitials(group.name)}
               </div>
               <h1 className="mt-3 break-words text-2xl font-extrabold leading-tight tracking-tight text-slate-900">{group.name}</h1>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-600">
@@ -340,8 +342,8 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                 {group.regionLabel ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1"><MapPin size={11} />{group.regionLabel}</span>
                 ) : null}
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1"><UsersRound size={11} />{group.memberCount} membro{group.memberCount === 1 ? '' : 's'}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">{group.isPublic ? <UsersRound size={11} /> : <LockKeyhole size={11} />}{group.isPublic ? 'Público' : 'Restrito'}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1"><UsersRound size={11} />{group.memberCount} {tx('membro')}{group.memberCount === 1 ? '' : 's'}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">{group.isPublic ? <UsersRound size={11} /> : <LockKeyhole size={11} />}{group.isPublic ? tx('Público') : tx('Restrito')}</span>
               </div>
             </div>
 
@@ -349,13 +351,13 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
               {group.description ? (
                 <p className="text-sm leading-6 text-slate-600">{group.description}</p>
               ) : (
-                <p className="text-sm leading-6 text-slate-500">Grupo público da comunidade Gringoou.</p>
+                <p className="text-sm leading-6 text-slate-500">{tx('Grupo público da comunidade Gringoou.')}</p>
               )}
 
               {viewer ? (
                 <button type="button" onClick={() => void handleMembership()} disabled={membershipLoading || group.viewerMembership?.role === 'OWNER' || group.viewerMembership?.status === 'BLOCKED'} className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-bold disabled:opacity-60 ${group.viewerMembership?.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700' : group.viewerMembership?.status === 'PENDING' ? 'bg-amber-50 text-amber-700' : group.viewerMembership?.status === 'BLOCKED' ? 'bg-red-50 text-red-700' : 'bg-brand-500 text-white'}`}>
                   <UserCheck size={17} />
-                  {membershipLoading ? 'Aguarde...' : group.viewerMembership?.status === 'APPROVED' ? 'Participando' : group.viewerMembership?.status === 'PENDING' ? 'Solicitação pendente' : group.viewerMembership?.status === 'BLOCKED' ? 'Participação bloqueada' : 'Participar'}
+                  {membershipLoading ? tx('Aguarde...') : group.viewerMembership?.status === 'APPROVED' ? tx('Participando') : group.viewerMembership?.status === 'PENDING' ? tx('Solicitação pendente') : group.viewerMembership?.status === 'BLOCKED' ? tx('Participação bloqueada') : tx('Participar')}
                   {group.viewerMembership?.status === 'APPROVED' ? <ChevronDown size={15} /> : null}
                 </button>
               ) : (
@@ -364,7 +366,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-sm font-bold text-white"
                 >
                   <LogIn size={17} />
-                  Entrar para participar
+                  {tx('Entrar para participar')}
                 </Link>
               )}
             </div>
@@ -389,7 +391,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                     groupTab === key ? 'text-brand-500' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
-                  {key === 'membros' ? `Membros · ${group.memberCount}` : label}
+                  {key === 'membros' ? `${tx('Membros ·')} ${group.memberCount}` : label}
                   {groupTab === key ? (
                     <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-brand-500" />
                   ) : null}
@@ -398,20 +400,20 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
             </div>
           ) : null}
 
-          {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">Conteúdo restrito</h2><p className="mt-2 text-sm text-amber-800">Sua solicitação precisa ser aprovada para acessar membros e publicações.</p></section> : null}
+          {!group.canViewContent ? <section className="mt-5 rounded-[32px] border border-amber-100 bg-amber-50 p-6 text-center"><LockKeyhole className="mx-auto text-amber-600" /><h2 className="mt-3 text-xl font-bold text-amber-900">{tx('Conteúdo restrito')}</h2><p className="mt-2 text-sm text-amber-800">{tx('Sua solicitação precisa ser aprovada para acessar membros e publicações.')}</p></section> : null}
 
           {group.canViewContent && groupTab === 'mural' ? (
             <div className="mt-4 px-4">
               {previewMembers.length ? (
                 <div className="mb-4 flex items-center justify-between gap-4">
-                  <p className="text-xs font-semibold text-slate-500">Quem participa</p>
+                  <p className="text-xs font-semibold text-slate-500">{tx('Quem participa')}</p>
                   <div className="flex items-center -space-x-2">
                     {previewMembers.map((member) => (
                       <Link key={member.id} href={member.user.username ? `/${member.user.username}` : '/'} className="relative z-10 block first:z-30 [&:nth-child(2)]:z-20">
-                        {member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="h-8 w-8 rounded-full border-2 border-white object-cover object-top" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-100 text-[10px] font-bold text-brand-600">{getInitials(member.user.name || 'Membro')}</span>}
+                        {member.user.image ? <img src={member.user.image} alt={member.user.name || tx('Membro')} className="h-8 w-8 rounded-full border-2 border-white object-cover object-top" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-100 text-[10px] font-bold text-brand-600">{getInitials(member.user.name || tx('Membro'))}</span>}
                       </Link>
                     ))}
-                    <button type="button" onClick={() => setMembersOpen(true)} className="relative z-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-slate-500" aria-label="Ver todos os membros"><MoreHorizontal size={15} /></button>
+                    <button type="button" onClick={() => setMembersOpen(true)} className="relative z-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-slate-500" aria-label={tx('Ver todos os membros')}><MoreHorizontal size={15} /></button>
                   </div>
                 </div>
               ) : null}
@@ -423,53 +425,53 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
             <div className="mt-10 px-1 py-10 text-center">
               <p className="text-sm font-semibold text-slate-400">
                 {groupTab === 'sobre'
-                  ? 'Em breve: mais detalhes sobre este grupo.'
+                  ? tx('Em breve: mais detalhes sobre este grupo.')
                   : groupTab === 'eventos'
-                    ? 'Em breve: eventos organizados por este grupo.'
-                    : 'Em breve: fotos e vídeos compartilhados pelo grupo.'}
+                    ? tx('Em breve: eventos organizados por este grupo.')
+                    : tx('Em breve: fotos e vídeos compartilhados pelo grupo.')}
               </p>
             </div>
           ) : null}
 
-          <Modal open={membersOpen} onClose={() => setMembersOpen(false)} title="Membros do grupo" description={`${group.memberCount} pessoa${group.memberCount === 1 ? '' : 's'} participando.`} className="max-w-lg">
+          <Modal open={membersOpen} onClose={() => setMembersOpen(false)} title={tx('Membros do grupo')} description={`${group.memberCount} ${tx('pessoa')}${group.memberCount === 1 ? '' : 's'} participando.`} className="max-w-lg">
             <div className="divide-y divide-slate-100">
               {group.members.map((member) => <div key={member.id} className="flex items-center gap-3 py-3">
                 <Link href={member.user.username ? `/${member.user.username}` : '/'} onClick={() => setMembersOpen(false)} className="flex min-w-0 flex-1 items-center gap-3">
-                  {member.user.image ? <img src={member.user.image} alt={member.user.name || 'Membro'} className="h-11 w-11 shrink-0 rounded-full object-cover object-top" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-600">{getInitials(member.user.name || 'Membro')}</span>}
-                  <span className="min-w-0"><span className="flex flex-wrap items-center gap-1.5"><strong className="truncate text-sm text-slate-900">{member.user.name || 'Membro'}</strong>{member.user.verified ? <ShieldCheck size={15} className="shrink-0 fill-brand-500 text-white" aria-label="Perfil verificado" /> : null}{member.role === 'OWNER' || member.role === 'ADMIN' ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold text-red-700">Admin</span> : member.role === 'MODERATOR' ? <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-bold text-orange-700">Moderador</span> : null}</span><span className="mt-0.5 block truncate text-xs text-slate-500">{member.user.locationLabel || group.regionLabel || 'Região não informada'}</span></span>
+                  {member.user.image ? <img src={member.user.image} alt={member.user.name || tx('Membro')} className="h-11 w-11 shrink-0 rounded-full object-cover object-top" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-600">{getInitials(member.user.name || tx('Membro'))}</span>}
+                  <span className="min-w-0"><span className="flex flex-wrap items-center gap-1.5"><strong className="truncate text-sm text-slate-900">{member.user.name || tx('Membro')}</strong>{member.user.verified ? <ShieldCheck size={15} className="shrink-0 fill-brand-500 text-white" aria-label={tx('Perfil verificado')} /> : null}{member.role === 'OWNER' || member.role === 'ADMIN' ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold text-red-700">{tx('Admin')}</span> : member.role === 'MODERATOR' ? <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-bold text-orange-700">{tx('Moderador')}</span> : null}</span><span className="mt-0.5 block truncate text-xs text-slate-500">{member.user.locationLabel || group.regionLabel || tx('Região não informada')}</span></span>
                 </Link>
-                {member.status === 'PENDING' ? <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">Pendente</span> : null}
-                {group.canManage && member.role !== 'OWNER' ? <button type="button" onClick={() => setSelectedMember(member)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100" aria-label={`Ações para ${member.user.name || 'membro'}`}><MoreHorizontal size={19} /></button> : null}
+                {member.status === 'PENDING' ? <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">{tx('Pendente')}</span> : null}
+                {group.canManage && member.role !== 'OWNER' ? <button type="button" onClick={() => setSelectedMember(member)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100" aria-label={`${tx('Ações para')} ${member.user.name || 'membro'}`}><MoreHorizontal size={19} /></button> : null}
               </div>)}
-              {group.members.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Ainda não há membros visíveis neste grupo.</p> : null}
+              {group.members.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">{tx('Ainda não há membros visíveis neste grupo.')}</p> : null}
             </div>
           </Modal>
 
-          <Modal open={Boolean(selectedMember)} onClose={() => setSelectedMember(null)} title="Gerenciar membro" description={selectedMember?.user.name || 'Membro do grupo'} className="max-w-sm">
+          <Modal open={Boolean(selectedMember)} onClose={() => setSelectedMember(null)} title={tx('Gerenciar membro')} description={selectedMember?.user.name || tx('Membro do grupo')} className="max-w-sm">
             {selectedMember ? <div className="space-y-2">
-              {selectedMember.status === 'PENDING' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'approve')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"><Check size={17} /> Aprovar participação</button> : null}
-              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'MEMBER' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'promote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-brand-700 transition hover:bg-brand-50"><UserCog size={17} /> Tornar administrador</button> : null}
-              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'ADMIN' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'demote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-100"><UserCog size={17} /> Remover permissão de administrador</button> : null}
-              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'block')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-amber-700 transition hover:bg-amber-50"><Ban size={17} /> Bloquear membro</button>
-              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'remove')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-red-700 transition hover:bg-red-50"><Trash2 size={17} /> Remover do grupo</button>
+              {selectedMember.status === 'PENDING' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'approve')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"><Check size={17} /> {tx('Aprovar participação')}</button> : null}
+              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'MEMBER' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'promote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-brand-700 transition hover:bg-brand-50"><UserCog size={17} /> {tx('Tornar administrador')}</button> : null}
+              {group.canManageAdmins && selectedMember.status === 'APPROVED' && selectedMember.role === 'ADMIN' ? <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'demote')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-100"><UserCog size={17} /> {tx('Remover permissão de administrador')}</button> : null}
+              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'block')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-amber-700 transition hover:bg-amber-50"><Ban size={17} /> {tx('Bloquear membro')}</button>
+              <button type="button" disabled={moderatingMemberId === selectedMember.id} onClick={() => void moderateMember(selectedMember.id, 'remove')} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold text-red-700 transition hover:bg-red-50"><Trash2 size={17} /> {tx('Remover do grupo')}</button>
             </div> : null}
           </Modal>
 
-          <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Configurações do grupo" description="Edite identidade, localização e acesso.">
+          <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title={tx('Configurações do grupo')} description={tx('Edite identidade, localização e acesso.')}>
             <div className="space-y-4">
-              <label className="space-y-2"><span className="text-sm font-bold">Nome</span><input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm" /></label>
-              <label className="space-y-2"><span className="text-sm font-bold">Categoria</span><input value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm" /></label>
-              <label className="space-y-2"><span className="text-sm font-bold">Descrição</span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} rows={3} className="w-full rounded-2xl border-2 border-border px-4 py-3 text-sm" /></label>
-              <div className="grid gap-4 sm:grid-cols-2"><div><p className="mb-2 text-sm font-bold">Avatar do grupo</p><CloudinaryImageField value={draft.imageUrl} onChange={(imageUrl) => setDraft((current) => ({ ...current, imageUrl }))} folder="groups" cropAspect={1} width="100%" height={160} /></div><div><p className="mb-2 text-sm font-bold">Imagem de capa</p><CloudinaryImageField value={draft.coverImageUrl} onChange={(coverImageUrl) => setDraft((current) => ({ ...current, coverImageUrl }))} folder="groups" cropAspect={2} width="100%" height={160} /></div></div>
-              <RegionSelector value={draft.regionKey} onChange={(region) => setDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))} onClear={() => setDraft((current) => ({ ...current, regionKey: '' }))} allowEmpty emptyLabel="Sem região específica" label="Região" />
-              <label className="space-y-2"><span className="text-sm font-bold">País de descoberta</span><select value={draft.countryCode} onChange={(event) => setDraft((current) => ({ ...current, countryCode: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm"><option value="US">Estados Unidos</option><option value="BR">Brasil</option><option value="PT">Portugal</option><option value="CA">Canadá</option><option value="GB">Reino Unido</option><option value="IE">Irlanda</option></select></label>
-              <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={draft.isPublic} onChange={(event) => setDraft((current) => ({ ...current, isPublic: event.target.checked }))} className="mt-1" /><span><strong className="block text-sm">Grupo público</strong><span className="text-xs text-slate-500">Desmarque para exigir aprovação antes de acessar membros e mural.</span></span></label>
-              <button type="button" disabled={savingSettings || draft.name.trim().length < 2} onClick={() => void saveSettings()} className="w-full rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{savingSettings ? 'Salvando...' : 'Salvar configurações'}</button>
+              <label className="space-y-2"><span className="text-sm font-bold">{tx('Nome')}</span><input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm" /></label>
+              <label className="space-y-2"><span className="text-sm font-bold">{tx('Categoria')}</span><input value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm" /></label>
+              <label className="space-y-2"><span className="text-sm font-bold">{tx('Descrição')}</span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} rows={3} className="w-full rounded-2xl border-2 border-border px-4 py-3 text-sm" /></label>
+              <div className="grid gap-4 sm:grid-cols-2"><div><p className="mb-2 text-sm font-bold">{tx('Avatar do grupo')}</p><CloudinaryImageField value={draft.imageUrl} onChange={(imageUrl) => setDraft((current) => ({ ...current, imageUrl }))} folder="groups" cropAspect={1} width="100%" height={160} /></div><div><p className="mb-2 text-sm font-bold">{tx('Imagem de capa')}</p><CloudinaryImageField value={draft.coverImageUrl} onChange={(coverImageUrl) => setDraft((current) => ({ ...current, coverImageUrl }))} folder="groups" cropAspect={2} width="100%" height={160} /></div></div>
+              <RegionSelector value={draft.regionKey} onChange={(region) => setDraft((current) => ({ ...current, regionKey: region.key, countryCode: region.countryCode || current.countryCode }))} onClear={() => setDraft((current) => ({ ...current, regionKey: '' }))} allowEmpty emptyLabel={tx('Sem região específica')} label={tx('Região')} />
+              <label className="space-y-2"><span className="text-sm font-bold">{tx('País de descoberta')}</span><select value={draft.countryCode} onChange={(event) => setDraft((current) => ({ ...current, countryCode: event.target.value }))} className="h-11 w-full rounded-full border-2 border-border px-4 text-sm"><option value="US">{tx('Estados Unidos')}</option><option value="BR">{tx('Brasil')}</option><option value="PT">{tx('Portugal')}</option><option value="CA">{tx('Canadá')}</option><option value="GB">{tx('Reino Unido')}</option><option value="IE">{tx('Irlanda')}</option></select></label>
+              <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" checked={draft.isPublic} onChange={(event) => setDraft((current) => ({ ...current, isPublic: event.target.checked }))} className="mt-1" /><span><strong className="block text-sm">{tx('Grupo público')}</strong><span className="text-xs text-slate-500">{tx('Desmarque para exigir aprovação antes de acessar membros e mural.')}</span></span></label>
+              <button type="button" disabled={savingSettings || draft.name.trim().length < 2} onClick={() => void saveSettings()} className="w-full rounded-full bg-brand-500 px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{savingSettings ? tx('Salvando...') : tx('Salvar configurações')}</button>
             </div>
           </Modal>
-          <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="O que há de errado com este grupo?" description="Sua denúncia será analisada pela equipe de moderação.">
+          <Modal open={reportOpen} onClose={() => setReportOpen(false)} title={tx('O que há de errado com este grupo?')} description={tx('Sua denúncia será analisada pela equipe de moderação.')}>
             <div className="space-y-2">{REPORT_REASONS.map(([value, label]) => <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${reportReason === value ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:bg-slate-50'}`}><input type="radio" name="group-report-reason" value={value} checked={reportReason === value} onChange={() => setReportReason(value)} className="mt-1" /><span className="text-sm font-semibold text-slate-700">{label}</span></label>)}</div>
-            <button type="button" disabled={!reportReason || reporting} onClick={() => void reportGroup()} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white disabled:opacity-50"><Flag size={16} />{reporting ? 'Enviando...' : 'Enviar denúncia'}</button>
+            <button type="button" disabled={!reportReason || reporting} onClick={() => void reportGroup()} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white disabled:opacity-50"><Flag size={16} />{reporting ? tx('Enviando...') : tx('Enviar denúncia')}</button>
           </Modal>
         </div>
       </div>

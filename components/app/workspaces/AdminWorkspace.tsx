@@ -16,25 +16,29 @@ import UtmSection from '@/components/admin/UtmSection';
 import IntegrationsSection from '@/components/admin/IntegrationsSection';
 import NewsEditorialSection from '@/components/admin/NewsEditorialSection';
 import { UserRole, type User } from '@/types';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AdminWorkspaceProps = {
   currentUser: User;
   pathname: string;
 };
 
-const AdminAccessDenied: React.FC = () => (
+const AdminAccessDenied: React.FC = () => {
+  const { tx } = useLanguage();
+  return (
   <div className="px-5 pt-4">
     <div className="rounded-[32px] border border-slate-100 bg-surface p-6 shadow-sm">
       <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-red-50 text-red-600">
         <ShieldAlert size={28} />
       </div>
-      <h1 className="mt-5 text-h2 font-bold text-foreground">Acesso restrito</h1>
+      <h1 className="mt-5 text-h2 font-bold text-foreground">{tx('Acesso restrito')}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">
-        Seu usuário não possui permissão de administrador para acessar esta área.
+        {tx('Seu usuário não possui permissão de administrador para acessar esta área.')}
       </p>
     </div>
   </div>
 );
+};
 
 const AdminWorkspace: React.FC<AdminWorkspaceProps> = ({ currentUser, pathname }) => {
   const isModerator = currentUser.role === UserRole.MODERATOR;

@@ -3,6 +3,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export interface PaginationProps {
   page: number;
@@ -29,14 +30,16 @@ const buildPageList = (page: number, totalPages: number): Array<number | 'ellips
   return result;
 };
 
-export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange, className }) => (
-  <nav aria-label="Paginação" className={cn('flex items-center gap-1', className)}>
+export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange, className }) => {
+  const { tx } = useLanguage();
+  return (
+  <nav aria-label={tx('Paginação')} className={cn('flex items-center gap-1', className)}>
     <button
       type="button"
       onClick={() => onChange(Math.max(1, page - 1))}
       disabled={page <= 1}
       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-      aria-label="Página anterior"
+      aria-label={tx('Página anterior')}
     >
       <ChevronLeft size={16} />
     </button>
@@ -50,7 +53,7 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChan
           key={item}
           type="button"
           onClick={() => onChange(item)}
-          aria-label={`Página ${item}`}
+          aria-label={`${tx('Página')} ${item}`}
           aria-current={item === page ? 'page' : undefined}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-full text-body-sm font-semibold transition-colors',
@@ -66,9 +69,10 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChan
       onClick={() => onChange(Math.min(totalPages, page + 1))}
       disabled={page >= totalPages}
       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
-      aria-label="Próxima página"
+      aria-label={tx('Próxima página')}
     >
       <ChevronRight size={16} />
     </button>
   </nav>
 );
+};

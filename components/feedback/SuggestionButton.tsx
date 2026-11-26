@@ -7,6 +7,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Input';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type SuggestionCategoryValue = 'FUNCTIONALITY' | 'IMPROVEMENT';
 
@@ -28,6 +29,8 @@ const categoryOptions: Array<{
 ];
 
 const SuggestionButton: React.FC = () => {
+  const { tx } = useLanguage();
+  const { t } = useLanguage();
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<SuggestionCategoryValue>('FUNCTIONALITY');
@@ -61,7 +64,7 @@ const SuggestionButton: React.FC = () => {
 
   const submitSuggestion = async () => {
     if (message.trim().length < 8) {
-      showToast('Descreva melhor a sua sugestão antes de enviar.', 'error');
+      showToast(tx('Descreva melhor a sua sugestão antes de enviar.'), 'error');
       return;
     }
 
@@ -86,11 +89,11 @@ const SuggestionButton: React.FC = () => {
         return;
       }
 
-      showToast('Sugestão enviada. Obrigado por ajudar a evoluir a plataforma.', 'success');
+      showToast(tx('Sugestão enviada. Obrigado por ajudar a evoluir a plataforma.'), 'success');
       closeModal();
     } catch (error) {
       console.error('Failed to submit suggestion:', error);
-      showToast('Não foi possível enviar sua sugestão.', 'error');
+      showToast(tx('Não foi possível enviar sua sugestão.'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +105,7 @@ const SuggestionButton: React.FC = () => {
         type="button"
         onClick={() => setOpen(true)}
         className="theme-bg theme-bg-hover theme-shadow fixed bottom-28 right-5 z-[70] inline-flex h-14 w-14 items-center justify-center rounded-full transition lg:bottom-8 lg:right-8 lg:h-auto lg:w-auto lg:gap-2 lg:px-4 lg:py-3"
-        aria-label="Enviar sugestão"
+        aria-label={t('menu.suggest')}
       >
         <MessageSquarePlus size={18} />
         <span className="hidden lg:inline">Sugestão</span>
@@ -114,21 +117,21 @@ const SuggestionButton: React.FC = () => {
         footer={
           <>
             <Button variant="secondary" fullWidth onClick={closeModal} disabled={submitting}>
-              Cancelar
+              {tx('Cancelar')}
             </Button>
             <Button variant="primary" fullWidth loading={submitting} onClick={() => void submitSuggestion()}>
-              Enviar sugestão
+              {t('menu.suggest')}
             </Button>
           </>
         }
       >
         <div className="theme-soft-surface inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
           <Lightbulb size={14} />
-          Sugestão
+          {tx('Sugestão')}
         </div>
-        <h2 className="mt-3 text-h3 font-bold text-slate-900">Envie suas sugestões</h2>
+        <h2 className="mt-3 text-h3 font-bold text-slate-900">{tx('Envie suas sugestões')}</h2>
         <p className="mt-2 text-body-sm leading-relaxed text-slate-500">
-          Escolha o tipo de sugestão e descreva o que faria diferenca para você na comunidade.
+          {tx('Escolha o tipo de sugestão e descreva o que faria diferenca para você na comunidade.')}
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -143,7 +146,7 @@ const SuggestionButton: React.FC = () => {
                   : 'border-slate-200 bg-surface text-slate-600 hover:border-slate-300'
               }`}
             >
-              <p className="text-body-sm font-bold">{option.label}</p>
+              <p className="text-body-sm font-bold">{tx(option.label)}</p>
               <p className="mt-1 text-caption leading-relaxed text-slate-500">{option.description}</p>
             </button>
           ))}
@@ -151,13 +154,13 @@ const SuggestionButton: React.FC = () => {
 
         <div className="mt-4">
           <p className="mb-2 text-caption font-bold uppercase tracking-wide text-slate-400">
-            {selectedCategory.label}
+            {tx(selectedCategory.label)}
           </p>
           <Textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             rows={5}
-            placeholder="Exemplo: seria melhor ter um filtro por tipo de documento na comunidade."
+            placeholder={tx('Exemplo: seria melhor ter um filtro por tipo de documento na comunidade.')}
           />
           <p className="mt-2 text-right text-caption text-slate-400">{message.trim().length}/600</p>
         </div>

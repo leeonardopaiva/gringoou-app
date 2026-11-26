@@ -24,6 +24,7 @@ import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type Housing = {
   id: string;
@@ -48,6 +49,7 @@ const emptyDraft = {
 };
 
 export default function HousingList({ user }: { user: User }) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [items, setItems] = useState<Housing[]>([]);
   const [propertyType, setPropertyType] = useState("");
@@ -111,7 +113,7 @@ export default function HousingList({ user }: { user: User }) {
       setItems((current) => [payload.housing, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);
-      showToast("Anúncio publicado.", "success");
+      showToast(tx('Anúncio publicado.'), "success");
     } catch (error) {
       showToast(
         getUserErrorMessage(error, "Não foi possível publicar."),
@@ -123,11 +125,11 @@ export default function HousingList({ user }: { user: User }) {
   };
   return (
     <ContentColumn size="compact" className="animate-in space-y-5 pb-24 fade-in duration-500">
-      <PageHeader title="Moradia" filters={{
+      <PageHeader title={tx('Moradia')} filters={{
             fields: [
-              { type: 'select', id: 'propertyType', label: 'Tipo de imóvel', options: [{ value: '', label: 'Todos os tipos' }, ...['Apartamento', 'Casa', 'Quarto', 'Republica'].map((v) => ({ value: v, label: v }))] },
-              { type: 'text', id: 'location', label: 'Localização', placeholder: 'Cidade ou bairro' },
-              { type: 'text', id: 'price', label: 'Preço', placeholder: 'Ex.: 1500' },
+              { type: 'select', id: 'propertyType', label: tx('Tipo de imóvel'), options: [{ value: '', label: tx('Todos os tipos') }, ...['Apartamento', 'Casa', 'Quarto', 'Republica'].map((v) => ({ value: v, label: v }))] },
+              { type: 'text', id: 'location', label: tx('Localização'), placeholder: tx('Cidade ou bairro') },
+              { type: 'text', id: 'price', label: tx('Preço'), placeholder: 'Ex.: 1500' },
             ],
             values: { propertyType, location, price },
             onApply: (values) => {
@@ -151,12 +153,12 @@ export default function HousingList({ user }: { user: User }) {
             setModalOpen(true);
           }}
         >
-          Criar anúncio
+          {tx('Criar anúncio')}
         </Button>
       } />
       <section className="space-y-3">
         {loading ? (
-          <div className="space-y-3" role="status" aria-label="Carregando moradias" aria-busy="true">
+          <div className="space-y-3" role="status" aria-label={tx('Carregando moradias')} aria-busy="true">
             {[0, 1, 2].map((key) => (
               <div key={key} className="overflow-hidden rounded-2xl border border-border bg-surface">
                 <Skeleton className="h-28 w-full rounded-none" />
@@ -196,7 +198,7 @@ export default function HousingList({ user }: { user: User }) {
                   href={`/housing/${item.id}`}
                   className="mt-3 inline-flex rounded-full bg-brand-500 px-4 py-2 text-xs font-bold text-white"
                 >
-                  Ver detalhes
+                  {tx('Ver detalhes')}
                 </Link>
             </div>
             </Card>
@@ -204,7 +206,7 @@ export default function HousingList({ user }: { user: User }) {
           </ListingGrid>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Nenhuma moradia encontrada.
+            {tx('Nenhuma moradia encontrada.')}
           </p>
         )}
       </section>
@@ -212,16 +214,16 @@ export default function HousingList({ user }: { user: User }) {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Criar anúncio de moradia"
+        title={tx('Criar anúncio de moradia')}
       >
         <div className="space-y-3">
           <Input
-            placeholder="Título"
+            placeholder={tx('Título')}
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
           />
           <Textarea
-            placeholder="Descrição"
+            placeholder={tx('Descrição')}
             value={draft.description}
             onChange={(e) =>
               setDraft({ ...draft, description: e.target.value })
@@ -233,24 +235,24 @@ export default function HousingList({ user }: { user: User }) {
               setDraft({ ...draft, propertyType: e.target.value })
             }
           >
-            <option>Apartamento</option>
-            <option>Casa</option>
-            <option>Quarto</option>
-            <option>República</option>
+            <option>{tx('Apartamento')}</option>
+            <option>{tx('Casa')}</option>
+            <option>{tx('Quarto')}</option>
+            <option>{tx('República')}</option>
           </Select>
           <AddressAutocomplete
-            placeholder="Pesquise cidade, rua ou endereço"
+            placeholder={tx('Pesquise cidade, rua ou endereço')}
             value={draft.locationLabel}
             onChange={(locationLabel) => setDraft({ ...draft, locationLabel })}
           />
           <RegionSelector
             value={draft.regionKey}
             onChange={(region) => setDraft({ ...draft, regionKey: region.key })}
-            label="Região"
-            hint="O anúncio será exibido para esta região."
+            label={tx('Região')}
+            hint={tx('O anúncio será exibido para esta região.')}
           />
           <Input
-            placeholder="Preço"
+            placeholder={tx('Preço')}
             value={draft.price}
             onChange={(e) => setDraft({ ...draft, price: e.target.value })}
           />
@@ -259,11 +261,11 @@ export default function HousingList({ user }: { user: User }) {
             onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
             folder="housing" cropAspect={4 / 3}
             height={180}
-            hint="Clique na área para selecionar a foto do anúncio."
+            hint={tx('Clique na área para selecionar a foto do anúncio.')}
           />
-          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="housing" maxItems={6} hint="Adicione até 6 fotos dos ambientes da moradia." />
+          <ImageGalleryField value={draft.galleryUrls} onChange={(galleryUrls) => setDraft({ ...draft, galleryUrls })} folder="housing" maxItems={6} hint={tx('Adicione até 6 fotos dos ambientes da moradia.')} />
           <Input
-            placeholder="Link de contato"
+            placeholder={tx('Link de contato')}
             value={draft.contactUrl}
             onChange={(e) => setDraft({ ...draft, contactUrl: e.target.value })}
           />
@@ -272,7 +274,7 @@ export default function HousingList({ user }: { user: User }) {
             loading={saving}
             onClick={() => void createHousing()}
           >
-            Publicar anúncio
+            {tx('Publicar anúncio')}
           </Button>
         </div>
       </Modal>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heart, MapPin, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { MarketplaceItemContract } from '@/lib/content-contracts';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export const formatPrice = (priceCents: number | null, isFree: boolean): string => {
   if (isFree || priceCents == null || priceCents === 0) return 'Grátis';
@@ -40,6 +41,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
   favoriteToggling,
   className,
 }) => {
+  const { tx } = useLanguage();
   const showFavorite = Boolean(onToggleFavorite);
   // "Meu anúncio" vale só para o anunciante; administradores editam, mas não são donos.
   const isMine = item.isOwner === true;
@@ -68,22 +70,22 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           )}
           {item.status === 'SOLD' ? (
             <span className="absolute left-2 top-2 rounded-full bg-scrim-2/75 px-2.5 py-1 text-[10px] font-bold text-white">
-              Vendido
+              {tx('Vendido')}
             </span>
           ) : null}
           {item.status === 'REJECTED' ? (
             <span className="absolute left-2 top-2 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-700">
-              Rejeitado
+              {tx('Rejeitado')}
             </span>
           ) : null}
           {item.isPendingReview ? (
             <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-700">
-              Em análise
+              {tx('Em análise')}
             </span>
           ) : null}
         {isMine ? (
             <span className="absolute bottom-2 left-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-              Meu anúncio
+              {tx('Meu anúncio')}
             </span>
           ) : null}
         </div>
@@ -112,7 +114,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
             onToggleFavorite?.(item.id);
           }}
           disabled={favoriteToggling}
-          aria-label={item.isFavorite ? 'Remover dos salvos' : 'Salvar anúncio'}
+          aria-label={item.isFavorite ? tx('Remover dos salvos') : tx('Salvar anúncio')}
           className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 shadow-sm backdrop-blur transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-60"
         >
           <Heart size={16} className={cn('transition-colors', item.isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-500')} />

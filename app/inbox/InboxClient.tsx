@@ -15,11 +15,13 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { MessageCircle, Package, Store, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
 type Conversation = MessagingConversation;
 
 export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
+  const { tx } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -145,11 +147,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
   };
 
   const REPORT_REASONS = [
-    { id: 'SPAM', label: 'Spam ou propaganda' },
-    { id: 'HARASSMENT', label: 'Assédio ou ofensas' },
-    { id: 'SCAM', label: 'Golpe ou fraude' },
-    { id: 'INAPPROPRIATE', label: 'Conteúdo impróprio' },
-    { id: 'OTHER', label: 'Outro motivo' },
+    { id: 'SPAM', label: tx('Spam ou propaganda') },
+    { id: 'HARASSMENT', label: tx('Assédio ou ofensas') },
+    { id: 'SCAM', label: tx('Golpe ou fraude') },
+    { id: 'INAPPROPRIATE', label: tx('Conteúdo impróprio') },
+    { id: 'OTHER', label: tx('Outro motivo') },
   ];
 
   const toggleBlock = async (conv: Conversation) => {
@@ -166,7 +168,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       showToast(unblock ? 'Pessoa desbloqueada.' : 'Pessoa bloqueada. Vocês não trocam mais mensagens.', 'success');
       await refreshConversations();
     } catch {
-      showToast('Não foi possível concluir agora. Tente novamente.', 'error');
+      showToast(tx('Não foi possível concluir agora. Tente novamente.'), 'error');
     } finally {
       setBlockBusy(false);
       setShowMenu(null);
@@ -184,7 +186,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível enviar a denúncia.'));
-      showToast('Denúncia enviada. Nossa equipe vai analisar.', 'success');
+      showToast(tx('Denúncia enviada. Nossa equipe vai analisar.'), 'success');
       setReportOpen(false);
       setReportReason('');
       setReportDetails('');
@@ -264,7 +266,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
         variant === 'mobile' && 'overflow-x-auto pb-2',
       )}
       role="tablist"
-      aria-label="Filtrar conversas"
+      aria-label={tx('Filtrar conversas')}
     >
       {(['todas', 'marketplace', 'negocios', 'diretas', 'arquivadas'] as const).map((t) => {
         const info = tabLabels[t];
@@ -284,7 +286,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             )}
           >
             <Icon size={16} />
-            {info.label}
+            {tx(info.label)}
             {info.count > 0 && (
               <span
                 className={cn(
@@ -307,7 +309,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
         <div className="mx-auto max-w-[1120px] px-4 py-1">
           <PageHeader
-            title="INBOX"
+            title={tx('INBOX')}
             titleClassName="text-brand-600"
             backHref="/community"
             onBack={handleBack}
@@ -359,21 +361,21 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 icon={tab === 'marketplace' ? <Package size={28} /> : tab === 'negocios' ? <Store size={28} /> : tab === 'diretas' ? <UserIconLucide size={28} /> : <MessageCircle size={28} />}
                 title={
                   tab === 'marketplace'
-                    ? 'Nenhuma conversa do Marketplace'
+                    ? tx('Nenhuma conversa do Marketplace')
                     : tab === 'negocios'
-                    ? 'Nenhuma conversa com negócios'
+                    ? tx('Nenhuma conversa com negócios')
                     : tab === 'diretas'
-                    ? 'Nenhuma conversa com pessoas'
-                    : 'Nenhuma conversa por aqui'
+                    ? tx('Nenhuma conversa com pessoas')
+                    : tx('Nenhuma conversa por aqui')
                 }
                 description={
                   tab === 'marketplace'
-                    ? 'Quando você envia uma mensagem sobre um anúncio, a conversa aparece aqui — tanto para comprador quanto para vendedor.'
+                    ? tx('Quando você envia uma mensagem sobre um anúncio, a conversa aparece aqui — tanto para comprador quanto para vendedor.')
                     : tab === 'negocios'
-                    ? 'Quando você fala com um negócio, ou alguém fala com o seu, a conversa aparece aqui.'
+                    ? tx('Quando você fala com um negócio, ou alguém fala com o seu, a conversa aparece aqui.')
                     : tab === 'diretas'
-                    ? 'Para conversar com alguém, abra o perfil da pessoa e toque em "Enviar mensagem".'
-                    : 'Suas conversas aparecerão aqui quando você começar a conversar.'
+                    ? tx('Para conversar com alguém, abra o perfil da pessoa e toque em "Enviar mensagem".')
+                    : tx('Suas conversas aparecerão aqui quando você começar a conversar.')
                 }
                 action={
                   tab === 'todas' && (
@@ -381,7 +383,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       href="/marketplace"
                       className="inline-flex items-center rounded-full bg-brand-strong px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-strong-hover"
                     >
-                      Explorar anúncios
+                      {tx('Explorar anúncios')}
                     </Link>
                   )
                 }
@@ -439,7 +441,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         <div className="flex items-center justify-between gap-2">
                           <p className="flex min-w-0 items-center gap-1.5 truncate font-medium text-slate-900">
                             <span className="truncate">{otherName}</span>
-                            {conv.muted ? <BellOff size={12} className="shrink-0 text-slate-400" aria-label="Silenciada" /> : null}
+                            {conv.muted ? <BellOff size={12} className="shrink-0 text-slate-400" aria-label={tx('Silenciada')} /> : null}
                           </p>
                           <p className="shrink-0 text-[10px] text-slate-400">{formatTime(conv.updatedAt)}</p>
                         </div>
@@ -457,7 +459,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         )}
                         {lastMsg && (
                           <p className="mt-0.5 truncate text-[11px] text-slate-400">
-                            {lastMsg.senderId === user.id ? 'Você: ' : ''}{lastMsg.content}
+                            {lastMsg.senderId === user.id ? `${tx('Você:')} ` : ''}{lastMsg.content}
                           </p>
                         )}
                       </div>
@@ -466,7 +468,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       type="button"
                       onClick={(event) => openMenu(conv.id, event.currentTarget)}
                       className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                      aria-label={`Opções da conversa com ${otherName}`}
+                      aria-label={`${tx('Opções da conversa com')} ${otherName}`}
                     >
                       <MoreHorizontal size={18} />
                     </button>
@@ -475,7 +477,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 })}
                 {filtered.length === 0 ? (
                   <p className="px-2 py-6 text-center text-sm text-slate-400">
-                    {tab === 'arquivadas' ? 'Nenhuma conversa arquivada.' : 'Nenhuma conversa por aqui.'}
+                    {tab === 'arquivadas' ? tx('Nenhuma conversa arquivada.') : tx('Nenhuma conversa por aqui.')}
                   </p>
                 ) : null}
               </div>
@@ -484,7 +486,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             {/* Chat Panel */}
             <div className={cn('relative flex h-[calc(100dvh-9rem)] min-h-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-sm md:h-[70dvh]', isMobile && mobileView !== 'chat' && 'hidden')}>
               {openingDirect && !activeConv ? (
-                <div className="flex flex-1 flex-col" role="status" aria-label="Abrindo conversa">
+                <div className="flex flex-1 flex-col" role="status" aria-label={tx('Abrindo conversa')}>
                   <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
                     <Skeleton className="h-10 w-10 rounded-full" />
                     <Skeleton className="h-4 w-40" />
@@ -501,10 +503,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       type="button"
                       onClick={handleBack}
                       className="mr-1 inline-flex h-10 shrink-0 items-center gap-0.5 rounded-full pl-1 pr-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 md:hidden"
-                      aria-label="Voltar para as conversas"
+                      aria-label={tx('Voltar para as conversas')}
                     >
                       <ChevronLeft size={22} />
-                      Conversas
+                      {tx('Conversas')}
                     </button>
                     <div className="flex-1 min-w-0">
                       {(() => {
@@ -522,7 +524,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                             <div className="min-w-0">
                               <p className="truncate text-sm font-semibold text-slate-900">{otherName}</p>
                               {activeConv.business ? (
-                                <p className="truncate text-xs text-slate-500">Sobre o negócio {activeConv.business.name}</p>
+                                <p className="truncate text-xs text-slate-500">{tx('Sobre o negócio')} {activeConv.business.name}</p>
                               ) : activeConv.item ? (
                                 <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p>
                               ) : other.username ? (
@@ -535,7 +537,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         return other.username ? (
                           <Link
                             href={`/${other.username}`}
-                            aria-label={`Ver perfil de ${otherName}`}
+                            aria-label={`${tx('Ver perfil de')} ${otherName}`}
                             className="flex min-w-0 items-center gap-3 rounded-xl transition hover:opacity-80"
                           >
                             {headerContent}
@@ -550,7 +552,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         type="button"
                         onClick={(event) => openMenu(activeConv.id, event.currentTarget)}
                         className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                        aria-label="Mais opções"
+                        aria-label={tx('Mais opções')}
                       >
                         <MoreHorizontal size={20} />
                       </button>
@@ -579,10 +581,10 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                         <p className="truncate text-xs text-slate-500">
                           {activeConv.item.priceCents && !activeConv.item.isFree
                             ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(activeConv.item.priceCents / 100)
-                            : 'Grátis'}
+                            : tx('Grátis')}
                         </p>
                       </div>
-                      <span className="text-xs font-medium text-brand-600">Ver anúncio</span>
+                      <span className="text-xs font-medium text-brand-600">{tx('Ver anúncio')}</span>
                     </Link>
                   )}
 
@@ -597,11 +599,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                             <MessageCircle size={28} className="text-brand-600" />
                           )}
                         </div>
-                        <p className="text-slate-500 text-sm">Nenhuma mensagem ainda</p>
+                        <p className="text-slate-500 text-sm">{tx('Nenhuma mensagem ainda')}</p>
                         <p className="text-slate-400 text-xs mt-1">
                           {activeConv.item
-                            ? 'Comece a conversa sobre o anúncio'
-                            : 'Envie a primeira mensagem'}
+                            ? tx('Comece a conversa sobre o anúncio')
+                            : tx('Envie a primeira mensagem')}
                         </p>
                       </div>
                     ) : (
@@ -618,7 +620,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                               )}
                             >
                               {msg.deleted ? (
-                                <p className={cn('text-sm italic', isMine ? 'text-white/85' : 'text-slate-400')}>Mensagem apagada</p>
+                                <p className={cn('text-sm italic', isMine ? 'text-white/85' : 'text-slate-400')}>{tx('Mensagem apagada')}</p>
                               ) : (
                                 <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
                               )}
@@ -629,8 +631,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                                 )}
                               >
                                 {isMine && !msg.deleted && Date.now() - new Date(msg.createdAt).getTime() < 15 * 60 * 1000 ? (
-                                  <button type="button" onClick={() => void handleDeleteMessage(msg.id)} className="font-semibold underline-offset-2 hover:underline" aria-label="Apagar mensagem">
-                                    Apagar
+                                  <button type="button" onClick={() => void handleDeleteMessage(msg.id)} className="font-semibold underline-offset-2 hover:underline" aria-label={tx('Apagar mensagem')}>
+                                    {tx('Apagar')}
                                   </button>
                                 ) : null}
                                 {formatTime(msg.createdAt)}
@@ -645,15 +647,15 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   {/* Input Area */}
                   {activeConv.blockedByViewer ? (
                     <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-center text-sm text-slate-500">
-                      Você bloqueou esta pessoa.{' '}
+                      {tx('Você bloqueou esta pessoa.')}{' '}
                       <button type="button" onClick={() => void toggleBlock(activeConv)} disabled={blockBusy} className="font-semibold text-brand-600 hover:underline disabled:opacity-50">
-                        Desbloquear
+                        {tx('Desbloquear')}
                       </button>
                     </div>
                   ) : (
                   <div className="shrink-0 border-t border-slate-200 bg-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
                     {activeConv.requestStatus === 'PENDING' && activeConv.buyer.id === user.id ? (
-                      <p className="mb-2 text-center text-xs text-slate-500">Sua mensagem foi enviada. A pessoa precisa aceitar para vocês conversarem.</p>
+                      <p className="mb-2 text-center text-xs text-slate-500">{tx('Sua mensagem foi enviada. A pessoa precisa aceitar para vocês conversarem.')}</p>
                     ) : null}
                     <div className="flex items-end gap-2">
                       <textarea
@@ -665,18 +667,18 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                             void handleSend();
                           }
                         }}
-                        placeholder="Escreva uma mensagem..."
+                        placeholder={tx('Escreva uma mensagem...')}
                         rows={1}
                         maxLength={2000}
                         className="flex-1 min-h-[44px] max-h-32 resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100 placeholder:text-slate-400"
-                        aria-label="Mensagem"
+                        aria-label={tx('Mensagem')}
                       />
                       <button
                         type="button"
                         onClick={() => void handleSend()}
                         disabled={!draft.trim() || sending}
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white shadow-sm transition-colors hover:bg-brand-strong-hover disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brand-300"
-                        aria-label="Enviar mensagem"
+                        aria-label={tx('Enviar mensagem')}
                       >
                         {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                       </button>
@@ -691,9 +693,9 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-4">
                       <MessageCircle size={28} className="text-slate-400" />
                     </div>
-                    <p className="text-lg font-medium text-slate-600">Selecione uma conversa</p>
+                    <p className="text-lg font-medium text-slate-600">{tx('Selecione uma conversa')}</p>
                     <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">
-                      Escolha uma conversa na lista ao lado para começar a conversar.
+                      {tx('Escolha uma conversa na lista ao lado para começar a conversar.')}
                     </p>
                   </div>
                 </div>
@@ -717,11 +719,11 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                   <>
                     <button type="button" role="menuitem" disabled={actionBusy} onClick={() => void runConversationAction(menuConv, menuConv.archived ? 'unarchive' : 'archive')} className={itemClass}>
                       {menuConv.archived ? <ArchiveRestore size={17} /> : <Archive size={17} />}
-                      {menuConv.archived ? 'Desarquivar' : 'Arquivar'}
+                      {menuConv.archived ? tx('Desarquivar') : tx('Arquivar')}
                     </button>
                     <button type="button" role="menuitem" disabled={actionBusy} onClick={() => void runConversationAction(menuConv, menuConv.muted ? 'unmute' : 'mute')} className={itemClass}>
                       {menuConv.muted ? <Bell size={17} /> : <BellOff size={17} />}
-                      {menuConv.muted ? 'Reativar notificações' : 'Silenciar'}
+                      {menuConv.muted ? tx('Reativar notificações') : tx('Silenciar')}
                     </button>
                     <button
                       type="button"
@@ -734,12 +736,12 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       className={itemClass}
                     >
                       <Flag size={17} />
-                      Denunciar
+                      {tx('Denunciar')}
                     </button>
                     <hr className="my-1 border-slate-100" />
                     <button type="button" role="menuitem" disabled={blockBusy} onClick={() => void toggleBlock(menuConv)} className={cn(itemClass, 'text-red-600 hover:bg-red-50')}>
                       <Ban size={17} />
-                      {menuConv.blockedByViewer ? 'Desbloquear pessoa' : 'Bloquear pessoa'}
+                      {menuConv.blockedByViewer ? tx('Desbloquear pessoa') : tx('Bloquear pessoa')}
                     </button>
                     <button
                       type="button"
@@ -751,7 +753,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                       className={cn(itemClass, 'text-red-600 hover:bg-red-50')}
                     >
                       <Trash2 size={17} />
-                      Excluir conversa
+                      {tx('Excluir conversa')}
                     </button>
                   </>
                 );
@@ -763,13 +765,13 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
         <Modal
           open={Boolean(deleteTarget)}
           onClose={() => setDeleteTarget(null)}
-          title="Excluir conversa?"
-          description="Ela some da sua lista, mas a outra pessoa continua vendo. Se ela escrever de novo, a conversa volta com o histórico."
+          title={tx('Excluir conversa?')}
+          description={tx('Ela some da sua lista, mas a outra pessoa continua vendo. Se ela escrever de novo, a conversa volta com o histórico.')}
           className="max-w-md"
           footer={
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
-                Cancelar
+                {tx('Cancelar')}
               </button>
               <button
                 type="button"
@@ -780,24 +782,24 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 }}
                 className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
               >
-                Excluir
+                {tx('Excluir')}
               </button>
             </div>
           }
         >
-          <span className="sr-only">Confirmação</span>
+          <span className="sr-only">{tx('Confirmação')}</span>
         </Modal>
 
         <Modal
           open={reportOpen}
           onClose={() => setReportOpen(false)}
-          title="Denunciar conversa"
-          description="Conte o que aconteceu. Nossa equipe analisa e a outra pessoa não é avisada."
+          title={tx('Denunciar conversa')}
+          description={tx('Conte o que aconteceu. Nossa equipe analisa e a outra pessoa não é avisada.')}
           className="max-w-md"
           footer={
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setReportOpen(false)} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
-                Cancelar
+                {tx('Cancelar')}
               </button>
               <button
                 type="button"
@@ -805,17 +807,17 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
                 disabled={!reportReason || reportSending}
                 className="rounded-full bg-brand-strong px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-strong-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {reportSending ? 'Enviando...' : 'Enviar denúncia'}
+                {reportSending ? tx('Enviando...') : tx('Enviar denúncia')}
               </button>
             </div>
           }
         >
           <fieldset className="space-y-2">
-            <legend className="sr-only">Motivo da denúncia</legend>
+            <legend className="sr-only">{tx('Motivo da denúncia')}</legend>
             {REPORT_REASONS.map((reason) => (
               <label key={reason.id} className={cn('flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition', reportReason === reason.id ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-700 hover:bg-slate-50')}>
                 <input type="radio" name="report-reason" value={reason.id} checked={reportReason === reason.id} onChange={() => setReportReason(reason.id)} className="accent-brand-600" />
-                {reason.label}
+                {tx(reason.label)}
               </label>
             ))}
           </fieldset>
@@ -824,8 +826,8 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
             onChange={(event) => setReportDetails(event.target.value)}
             maxLength={500}
             rows={3}
-            placeholder="Detalhes (opcional)"
-            aria-label="Detalhes da denúncia"
+            placeholder={tx('Detalhes (opcional)')}
+            aria-label={tx('Detalhes da denúncia')}
             className="mt-3 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
           />
         </Modal>

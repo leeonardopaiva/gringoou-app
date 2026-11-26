@@ -9,6 +9,7 @@ import { cloudinaryConfig, getCloudinaryFolderPath, isCloudinaryEnabled, type Cl
 import { isValidHttpUrl } from '@/lib/url';
 import FieldErrorMessage from './FieldErrorMessage';
 import { getUserErrorMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type CloudinaryUploadResponse = {
   secure_url?: string;
@@ -46,6 +47,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
   onClearError,
   cropAspect,
 }) => {
+  const { tx } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -165,7 +167,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
           type="button"
           onClick={openFilePicker}
           disabled={!isCloudinaryEnabled || disabled || uploading}
-          aria-label={currentImageUrl ? 'Alterar imagem' : 'Selecionar imagem'}
+          aria-label={currentImageUrl ? tx('Alterar imagem') : tx('Selecionar imagem')}
           aria-busy={uploading}
           onDragEnter={(event) => {
             event.preventDefault();
@@ -184,20 +186,20 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
           {currentImageUrl && isValidHttpUrl(currentImageUrl) ? (
             <img
               src={currentImageUrl}
-              alt="Imagem atual"
+              alt={tx('Imagem atual')}
               className="h-full w-full object-cover"
             />
           ) : (
             <span className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-sm font-bold">
               <ImagePlus size={24} />
-              Escolher imagem
+              {tx('Escolher imagem')}
             </span>
           )}
 
           {currentImageUrl || uploading ? (
             <span className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition group-hover:bg-black/70">
               {uploading ? <LoaderCircle size={14} className="animate-spin" /> : <Pencil size={14} />}
-              {uploading ? 'Enviando...' : 'Alterar'}
+              {uploading ? tx('Enviando...') : tx('Alterar')}
             </span>
           ) : null}
         </button>
@@ -209,7 +211,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
             className="inline-flex min-h-9 items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 text-xs font-bold text-red-700 transition hover:bg-red-100"
           >
             <Trash2 size={14} />
-            Remover imagem
+            {tx('Remover imagem')}
           </button>
         ) : null}
 
@@ -220,12 +222,12 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
         <Modal
           open={Boolean(pendingFile && pendingPreview)}
           onClose={() => setPendingFile(null)}
-          title="Posicionar imagem"
-          description="Arraste para enquadrar e use o zoom para ajustar."
+          title={tx('Posicionar imagem')}
+          description={tx('Arraste para enquadrar e use o zoom para ajustar.')}
           footer={
             <>
-              <Button variant="secondary" onClick={() => setPendingFile(null)}>Cancelar</Button>
-              <Button onClick={() => void confirmCrop()}>Usar imagem</Button>
+              <Button variant="secondary" onClick={() => setPendingFile(null)}>{tx('Cancelar')}</Button>
+              <Button onClick={() => void confirmCrop()}>{tx('Usar imagem')}</Button>
             </>
           }
         >
@@ -235,8 +237,8 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       <p className="px-1 text-xs text-slate-500">
         {hint ||
           (isCloudinaryEnabled
-            ? 'JPG, PNG ou WebP de até 10 MB.'
-            : 'O envio de imagens está indisponível no momento.')}
+            ? tx('JPG, PNG ou WebP de até 10 MB.')
+            : tx('O envio de imagens está indisponível no momento.'))}
       </p>
     </div>
   );

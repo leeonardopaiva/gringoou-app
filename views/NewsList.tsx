@@ -35,6 +35,7 @@ const formatPublishedAt = (iso: string) =>
 
 /** Cartão da notícia: na lista mostra a prévia; na página da notícia (`detail`) abre os comentários completos. */
 export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean }> = ({ article, detail = false }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [imageFailed, setImageFailed] = useState(false);
   const [liked, setLiked] = useState(article.viewerLiked);
@@ -98,10 +99,10 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
         return;
       }
       await navigator.clipboard.writeText(shareUrl);
-      showToast('Link da notícia copiado.', 'success');
+      showToast(tx('Link da notícia copiado.'), 'success');
     } catch (error) {
       // Cancelar o menu de compartilhamento não é erro.
-      if ((error as Error)?.name !== 'AbortError') showToast('Não foi possível compartilhar agora.', 'error');
+      if ((error as Error)?.name !== 'AbortError') showToast(tx('Não foi possível compartilhar agora.'), 'error');
     }
   };
 
@@ -122,7 +123,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
             <Newspaper size={36} className="text-brand-300" aria-hidden />
           </div>
         )}
-        {!detail ? <Link href={article.path} aria-label={`Abrir notícia: ${article.title}`} className="absolute inset-0" /> : null}
+        {!detail ? <Link href={article.path} aria-label={`${tx('Abrir notícia:')} ${article.title}`} className="absolute inset-0" /> : null}
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-brand-700 shadow-sm backdrop-blur">
           {getNewsCategoryLabel(article.category)}
         </span>
@@ -165,8 +166,8 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
             type="button"
             onClick={() => void handleLike()}
             aria-pressed={liked}
-            aria-label={liked ? 'Remover curtida' : 'Curtir notícia'}
-            title={liked ? 'Remover curtida' : 'Curtir'}
+            aria-label={liked ? tx('Remover curtida') : tx('Curtir notícia')}
+            title={liked ? tx('Remover curtida') : tx('Curtir')}
             className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${liked ? 'bg-brand-50 text-brand-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
           >
             <ThumbsUp size={18} fill={liked ? 'currentColor' : 'none'} aria-hidden />
@@ -175,34 +176,34 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
             <button
               type="button"
               onClick={() => void openLikers()}
-              aria-label={`Ver quem curtiu (${likeCount})`}
+              aria-label={`${tx('Ver quem curtiu (')}${likeCount})`}
               className="flex min-w-0 items-center gap-2 rounded-full py-1 pr-2 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
             >
               <span className="flex -space-x-2">
                 {likers.map((person) => (
-                  <Avatar key={person.id} src={person.image} name={person.name || person.username || 'Membro'} size="xs" />
+                  <Avatar key={person.id} src={person.image} name={person.name || person.username || tx('Membro')} size="xs" />
                 ))}
               </span>
               <span className="truncate text-xs font-semibold text-slate-600">
-                {likeCount === 1 ? '1 curtida' : `${likeCount} curtidas`}
+                {likeCount === 1 ? tx('1 curtida') : `${likeCount} ${tx('curtidas')}`}
               </span>
             </button>
           ) : null}
           <button
             type="button"
             onClick={() => void handleShare()}
-            aria-label="Compartilhar notícia"
+            aria-label={tx('Compartilhar notícia')}
             className="inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-transparent px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:px-4"
           >
             <Share2 size={17} aria-hidden />
-            <span className="hidden sm:inline">Compartilhar</span>
+            <span className="hidden sm:inline">{tx('Compartilhar')}</span>
           </button>
           <a
             href={article.externalUrl}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            aria-label={`Ler matéria original em ${article.source} (abre em nova aba)`}
-            title="Ler matéria original"
+            aria-label={`${tx('Ler matéria original em')} ${article.source} ${tx('(abre em nova aba)')}`}
+            title={tx('Ler matéria original')}
             className={`ml-auto h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${detail ? 'hidden' : 'flex'}`}
           >
             <ExternalLink size={18} aria-hidden />
@@ -215,23 +216,23 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
             rel="noopener noreferrer nofollow"
             className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white transition hover:brightness-105"
           >
-            Ler matéria completa em {article.source}
+            {tx('Ler matéria completa em')} {article.source}
             <ExternalLink size={16} aria-hidden />
           </a>
         ) : null}
         <div className={detail ? 'mt-6' : 'mt-3'}>
-          {detail ? <h2 className="mb-3 text-base font-bold text-slate-900">Comentários{article.commentCount > 0 ? ` (${article.commentCount})` : ''}</h2> : null}
+          {detail ? <h2 className="mb-3 text-base font-bold text-slate-900">{tx('Comentários')}{article.commentCount > 0 ? ` (${article.commentCount})` : ''}</h2> : null}
           <NewsComments articleId={article.id} initialCount={article.commentCount} expanded={detail} />
         </div>
       </div>
-      <Modal open={likersOpen} onClose={() => setLikersOpen(false)} title="Quem curtiu" className="max-w-md">
+      <Modal open={likersOpen} onClose={() => setLikersOpen(false)} title={tx('Quem curtiu')} className="max-w-md">
         {likersList === null ? (
-          <div className="space-y-3" role="status" aria-label="Carregando curtidas">
+          <div className="space-y-3" role="status" aria-label={tx('Carregando curtidas')}>
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
         ) : likersList.length === 0 ? (
-          <p className="py-4 text-center text-sm text-slate-500">Ninguém curtiu ainda.</p>
+          <p className="py-4 text-center text-sm text-slate-500">{tx('Ninguém curtiu ainda.')}</p>
         ) : (
           <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
             {likersList.map((person) => {
@@ -280,6 +281,7 @@ type NewsListProps = {
 };
 
 const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
+  const { tx } = useLanguage();
   const { data: session } = useSession();
   const { t } = useLanguage();
   const contextRegionKey = useActiveRegion();
@@ -367,7 +369,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
       } catch (err) {
         if (id !== requestId.current) return;
         console.error('Failed to load news:', err);
-        setError('Não foi possível carregar as notícias agora. Tente novamente em instantes.');
+        setError(tx('Não foi possível carregar as notícias agora. Tente novamente em instantes.'));
         setItems([]);
         setHasMore(false);
       } finally {
@@ -417,33 +419,33 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
 
       <SubHeader
         className="mt-2"
-        tabsLabel="Categorias de notícias"
+        tabsLabel={tx('Categorias de notícias')}
         tabs={CATEGORY_TABS}
         activeTab={category}
         onTabChange={setCategory}
         filters={{
           fields: [
-            { type: 'search', id: 'q', label: 'Buscar', placeholder: t('news.search') },
+            { type: 'search', id: 'q', label: tx('Buscar'), placeholder: t('news.search') },
             {
               type: 'select',
               id: 'scope',
-              label: 'Região',
+              label: tx('Região'),
               options: [
-                { value: 'mine', label: 'Minha região', disabled: !regionKey },
-                { value: 'all', label: 'Todas as regiões' },
+                { value: 'mine', label: tx('Minha região'), disabled: !regionKey },
+                { value: 'all', label: tx('Todas as regiões') },
               ],
             },
             {
               type: 'select',
               id: 'sort',
-              label: 'Ordenar por',
+              label: tx('Ordenar por'),
               options: [
-                { value: 'recent', label: 'Mais recentes' },
-                { value: 'oldest', label: 'Mais antigas' },
+                { value: 'recent', label: tx('Mais recentes') },
+                { value: 'oldest', label: tx('Mais antigas') },
               ],
             },
             ...(sources.length > 1
-              ? [{ type: 'select' as const, id: 'source', label: 'Fonte', options: [{ value: '', label: 'Todas as fontes' }, ...sources.map((name) => ({ value: name, label: name }))] }]
+              ? [{ type: 'select' as const, id: 'source', label: tx('Fonte'), options: [{ value: '', label: tx('Todas as fontes') }, ...sources.map((name) => ({ value: name, label: name }))] }]
               : []),
           ],
           values: { q: searchInput, scope, sort, source },
@@ -475,10 +477,10 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
             icon={<Newspaper size={28} />}
             title={t('news.unavailable')}
             description={error}
-            action={<Button onClick={() => setReloadKey((key) => key + 1)}>Tentar novamente</Button>}
+            action={<Button onClick={() => setReloadKey((key) => key + 1)}>{tx('Tentar novamente')}</Button>}
           />
         ) : items.length === 0 ? (
-          <EmptyState icon={<Newspaper size={28} />} title={t('news.empty')} description="Ajuste a busca ou os filtros para ver outras notícias." />
+          <EmptyState icon={<Newspaper size={28} />} title={t('news.empty')} description={tx('Ajuste a busca ou os filtros para ver outras notícias.')} />
         ) : (
           <>
             {items.map((article) => (
@@ -487,7 +489,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
             {loadingMore ? <NewsSkeleton /> : null}
             <div ref={sentinelRef} className="h-1" aria-hidden />
             {!hasMore && !loadingMore ? (
-              <p className="pt-2 text-center text-xs text-slate-400">Você chegou ao fim das notícias.</p>
+              <p className="pt-2 text-center text-xs text-slate-400">{tx('Você chegou ao fim das notícias.')}</p>
             ) : null}
           </>
         )}

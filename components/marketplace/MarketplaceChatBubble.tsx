@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn';
 import type { User } from '@/types';
 import { useMessaging } from '@/lib/MessagingProvider';
 import { useStickToBottom } from '@/hooks/useStickToBottom';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const formatTime = (dateString: string) => {
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -26,6 +27,7 @@ const formatTime = (dateString: string) => {
  * item "Mensagens" do menu inferior.
  */
 export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user }) => {
+  const { tx } = useLanguage();
   const {
     conversations,
     activeConversationId,
@@ -61,7 +63,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
     unreadCount > 0 ? (
       <span
         className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
-        aria-label={`${unreadCount} mensagens novas`}
+        aria-label={`${unreadCount} ${tx('mensagens novas')}`}
       >
         {unreadCount > 9 ? '9+' : unreadCount}
       </span>
@@ -75,11 +77,11 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           type="button"
           onClick={() => setFloatingChatOpen(true)}
           aria-expanded={false}
-          aria-label={unreadCount > 0 ? `Abrir mensagens, ${unreadCount} novas` : 'Abrir mensagens'}
+          aria-label={unreadCount > 0 ? `${tx('Abrir mensagens,')} ${unreadCount} ${tx('novas')}` : tx('Abrir mensagens')}
           className="flex h-12 w-60 items-center gap-2.5 rounded-2xl border border-slate-200 bg-surface px-4 text-sm font-semibold text-slate-800 shadow-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
         >
           <MessageCircle size={18} className="text-brand-600" aria-hidden />
-          <span className="flex-1 text-left">Mensagens</span>
+          <span className="flex-1 text-left">{tx('Mensagens')}</span>
           {unreadBadge}
           <ChevronUp size={18} className="text-slate-400" aria-hidden />
         </button>
@@ -92,7 +94,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
       <div
         className="flex h-[min(560px,calc(100dvh-6rem))] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-2xl"
         role="dialog"
-        aria-label="Mensagens"
+        aria-label={tx('Mensagens')}
       >
         {/* Header: o controle de recolher é o mesmo que abriu o chat. */}
         <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-surface px-3 py-2.5">
@@ -102,36 +104,36 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                 type="button"
                 onClick={() => void selectConversation('')}
                 className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Voltar à lista de conversas"
+                aria-label={tx('Voltar à lista de conversas')}
               >
                 <ChevronLeft size={20} />
               </button>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-900">{getOtherUser(activeConv).name || 'Membro da comunidade'}</p>
+                <p className="truncate text-sm font-semibold text-slate-900">{getOtherUser(activeConv).name || tx('Membro da comunidade')}</p>
                 {activeConv.item ? <p className="truncate text-xs text-slate-500">{activeConv.item.title}</p> : null}
               </div>
             </>
           ) : (
             <span className="flex min-w-0 flex-1 items-center gap-2 pl-1 text-sm font-semibold text-slate-900">
               <MessageCircle size={18} className="text-brand-600" aria-hidden />
-              Mensagens
+              {tx('Mensagens')}
               {unreadBadge}
             </span>
           )}
           <Link
             href={activeConv ? `/inbox?conversation=${activeConv.id}` : '/inbox'}
             className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-50"
-            aria-label="Abrir na Inbox"
-            title="Abrir na Inbox"
+            aria-label={tx('Abrir na Inbox')}
+            title={tx('Abrir na Inbox')}
           >
             <ExternalLink size={14} aria-hidden />
-            Inbox
+            {tx('Inbox')}
           </Link>
           <button
             type="button"
             onClick={() => setFloatingChatOpen(false)}
             aria-expanded
-            aria-label="Recolher mensagens"
+            aria-label={tx('Recolher mensagens')}
             className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
           >
             <ChevronDown size={20} />
@@ -139,7 +141,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
         </div>
 
         {floatingChatOpening && !activeConv ? (
-          <div className="flex flex-1 items-center justify-center" role="status" aria-label="Abrindo conversa">
+          <div className="flex flex-1 items-center justify-center" role="status" aria-label={tx('Abrindo conversa')}>
             <Loader2 size={22} className="animate-spin text-brand-500" aria-hidden />
           </div>
         ) : activeConv ? (
@@ -158,13 +160,13 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                   </div>
                 )}
                 <p className="min-w-0 flex-1 truncate font-medium text-slate-900">{activeConv.item.title}</p>
-                <span className="text-xs font-medium text-brand-600">Ver anúncio</span>
+                <span className="text-xs font-medium text-brand-600">{tx('Ver anúncio')}</span>
               </Link>
             ) : null}
 
             <div ref={messagesRef} onScroll={onScroll} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
               {messages.length === 0 ? (
-                <p className="py-12 text-center text-sm text-slate-400">Nenhuma mensagem ainda</p>
+                <p className="py-12 text-center text-sm text-slate-400">{tx('Nenhuma mensagem ainda')}</p>
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.senderId === user.id;
@@ -198,18 +200,18 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                       void handleSend();
                     }
                   }}
-                  placeholder="Escreva uma mensagem..."
+                  placeholder={tx('Escreva uma mensagem...')}
                   rows={1}
                   maxLength={2000}
                   className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-                  aria-label="Mensagem"
+                  aria-label={tx('Mensagem')}
                 />
                 <button
                   type="button"
                   onClick={() => void handleSend()}
                   disabled={!draft.trim()}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-strong text-white shadow-sm transition-colors hover:bg-brand-strong-hover focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Enviar mensagem"
+                  aria-label={tx('Enviar mensagem')}
                 >
                   <Send size={18} />
                 </button>
@@ -218,7 +220,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
           </>
         ) : (
           <>
-            <div className="flex shrink-0 border-b border-slate-200 bg-surface" role="tablist" aria-label="Filtrar conversas">
+            <div className="flex shrink-0 border-b border-slate-200 bg-surface" role="tablist" aria-label={tx('Filtrar conversas')}>
               {(['todas', 'marketplace', 'diretas'] as const).map((t) => (
                 <button
                   key={t}
@@ -231,7 +233,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                     tab === t ? 'text-brand-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                   )}
                 >
-                  {t === 'todas' ? 'Todas' : t === 'marketplace' ? 'Marketplace' : 'Diretas'}
+                  {t === 'todas' ? tx('Todas') : t === 'marketplace' ? tx('Marketplace') : tx('Diretas')}
                 </button>
               ))}
             </div>
@@ -242,8 +244,8 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                   <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
                     {tab === 'diretas' ? <Mail size={24} className="text-slate-400" /> : <Package size={24} className="text-slate-400" />}
                   </div>
-                  <p className="text-sm font-medium text-slate-500">Nenhuma conversa por aqui</p>
-                  <p className="mt-1 max-w-xs text-xs text-slate-400">Suas conversas aparecerão aqui quando você começar a conversar.</p>
+                  <p className="text-sm font-medium text-slate-500">{tx('Nenhuma conversa por aqui')}</p>
+                  <p className="mt-1 max-w-xs text-xs text-slate-400">{tx('Suas conversas aparecerão aqui quando você começar a conversar.')}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
@@ -276,7 +278,7 @@ export const MarketplaceChatBubble: React.FC<{ user: User | null }> = ({ user })
                           {conv.item ? <p className="mt-0.5 truncate text-xs text-slate-500">{conv.item.title}</p> : null}
                           {lastMsg ? (
                             <p className="mt-0.5 truncate text-[11px] text-slate-400">
-                              {lastMsg.senderId === user.id ? 'Você: ' : ''}
+                              {lastMsg.senderId === user.id ? `${tx('Você:')} ` : ''}
                               {lastMsg.content}
                             </p>
                           ) : null}

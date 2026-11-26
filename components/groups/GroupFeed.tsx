@@ -12,10 +12,12 @@ import type { Post, User } from '@/types';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type GroupFeedProps = { groupId: string; groupSlug: string; user?: User | null; canPost: boolean };
 
 export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFeedProps) {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,11 +53,11 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
   const publish = async () => {
     const image = normalizeUrlFieldValue(imageUrl);
     const link = normalizeUrlFieldValue(externalUrl);
-    if (mode === 'photo' && !image) return showToast('Adicione uma imagem.', 'error');
-    if ((mode === 'link' || mode === 'video') && !link) return showToast('Informe o link da publicação.', 'error');
-    if (mode === 'video' && link && !isYoutubeUrl(link)) return showToast('Use um link do YouTube.', 'error');
+    if (mode === 'photo' && !image) return showToast(tx('Adicione uma imagem.'), 'error');
+    if ((mode === 'link' || mode === 'video') && !link) return showToast(tx('Informe o link da publicação.'), 'error');
+    if (mode === 'video' && link && !isYoutubeUrl(link)) return showToast(tx('Use um link do YouTube.'), 'error');
     const normalizedContent = content.trim() || (image ? 'Compartilhando uma imagem com o grupo.' : link ? 'Compartilhando um link com o grupo.' : '');
-    if (!normalizedContent) return showToast('Escreva algo antes de publicar.', 'error');
+    if (!normalizedContent) return showToast(tx('Escreva algo antes de publicar.'), 'error');
     setPublishing(true);
     try {
       const response = await fetch('/api/community/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: normalizedContent, imageUrl: image, externalUrl: link, personaMode: 'personal', groupId }) });
@@ -83,16 +85,16 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
   const share = async (post: Post) => {
     const url = withUtm('share_group_post', `/groups/${groupSlug}?post=${post.id}`, { id: post.id });
     if (navigator.share) { try { await navigator.share({ title: 'Publicação em grupo na Gringoou', text: post.content, url }); return; } catch { /* use clipboard */ } }
-    await navigator.clipboard.writeText(url); showToast('Link copiado.', 'success');
+    await navigator.clipboard.writeText(url); showToast(tx('Link copiado.'), 'success');
   };
 
   return <section className="space-y-3">
-    {canPost && user ? <div className={publishing ? 'pointer-events-none opacity-70' : ''}><CommunityComposer.Root variant="bare"><CommunityComposer.Editor avatar={user.avatar} avatarHref={user.username ? `/${user.username}` : undefined} value={content} onChange={setContent} placeholder="Compartilhe algo com o grupo..." /><CommunityComposer.MediaField mode={mode} imageUrl={imageUrl} externalUrl={externalUrl} onImageChange={setImageUrl} onExternalChange={setExternalUrl} /><CommunityComposer.Actions mode={mode} onModeChange={changeMode} onPublish={() => void publish()} showLabels /></CommunityComposer.Root></div> : <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Participe do grupo para publicar, comentar e reagir.</div>}
+    {canPost && user ? <div className={publishing ? 'pointer-events-none opacity-70' : ''}><CommunityComposer.Root variant="bare"><CommunityComposer.Editor avatar={user.avatar} avatarHref={user.username ? `/${user.username}` : undefined} value={content} onChange={setContent} placeholder={tx('Compartilhe algo com o grupo...')} /><CommunityComposer.MediaField mode={mode} imageUrl={imageUrl} externalUrl={externalUrl} onImageChange={setImageUrl} onExternalChange={setExternalUrl} /><CommunityComposer.Actions mode={mode} onModeChange={changeMode} onPublish={() => void publish()} showLabels /></CommunityComposer.Root></div> : <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">{tx('Participe do grupo para publicar, comentar e reagir.')}</div>}
     {loading ? <div className="h-40 animate-pulse rounded-3xl bg-slate-100" /> : null}
-    {!loading && posts.length === 0 ? <EmptyNotice icon="posts" title="Nenhuma publicação ainda" description={canPost ? 'Seja a primeira pessoa a compartilhar algo com o grupo.' : 'Quando houver publicações, elas aparecem aqui.'} /> : null}
+    {!loading && posts.length === 0 ? <EmptyNotice icon="posts" title={tx('Nenhuma publicação ainda')} description={canPost ? tx('Seja a primeira pessoa a compartilhar algo com o grupo.') : tx('Quando houver publicações, elas aparecem aqui.')} /> : null}
     <div className="divide-y divide-slate-100">
-      {posts.map((post) => canPost && user ? <div key={post.id} className="py-3 first:pt-0"><FeedPostCard post={post} flat onToggleLike={() => void toggleLike(post.id)} onAddComment={(text, parentId) => refreshAction(`/api/community/posts/${post.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: text, parentId }) })} onUpdatePost={(nextContent, nextImage, nextExternal) => refreshAction(`/api/community/posts/${post.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: nextContent, imageUrl: normalizeUrlFieldValue(nextImage), externalUrl: normalizeUrlFieldValue(nextExternal), personaMode: 'personal', groupId }) })} onDeletePost={() => refreshAction(`/api/community/posts/${post.id}`, { method: 'DELETE' })} onUpdateComment={(commentId, text) => refreshAction(`/api/community/posts/${post.id}/comments/${commentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: text }) })} onDeleteComment={(commentId) => refreshAction(`/api/community/posts/${post.id}/comments/${commentId}`, { method: 'DELETE' })} onSharePost={() => void share(post)} /></div> : <article key={post.id} className="py-3 first:pt-0"><div className="flex items-center gap-3"><img src={post.author.image || user?.avatar || DEFAULT_AVATAR_URL} alt={post.author.name} className="h-11 w-11 rounded-full object-cover" /><div><p className="font-bold">{post.author.name}</p><p className="text-xs text-slate-400">{new Date(post.createdAt).toLocaleString('pt-BR')}</p></div></div><p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">{post.content}</p>{post.imageUrl ? <img src={post.imageUrl} alt="Imagem da publicação" className="mt-4 max-h-[560px] w-full rounded-2xl object-cover" /> : null}</article>)}
+      {posts.map((post) => canPost && user ? <div key={post.id} className="py-3 first:pt-0"><FeedPostCard post={post} flat onToggleLike={() => void toggleLike(post.id)} onAddComment={(text, parentId) => refreshAction(`/api/community/posts/${post.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: text, parentId }) })} onUpdatePost={(nextContent, nextImage, nextExternal) => refreshAction(`/api/community/posts/${post.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: nextContent, imageUrl: normalizeUrlFieldValue(nextImage), externalUrl: normalizeUrlFieldValue(nextExternal), personaMode: 'personal', groupId }) })} onDeletePost={() => refreshAction(`/api/community/posts/${post.id}`, { method: 'DELETE' })} onUpdateComment={(commentId, text) => refreshAction(`/api/community/posts/${post.id}/comments/${commentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: text }) })} onDeleteComment={(commentId) => refreshAction(`/api/community/posts/${post.id}/comments/${commentId}`, { method: 'DELETE' })} onSharePost={() => void share(post)} /></div> : <article key={post.id} className="py-3 first:pt-0"><div className="flex items-center gap-3"><img src={post.author.image || user?.avatar || DEFAULT_AVATAR_URL} alt={post.author.name} className="h-11 w-11 rounded-full object-cover" /><div><p className="font-bold">{post.author.name}</p><p className="text-xs text-slate-400">{new Date(post.createdAt).toLocaleString('pt-BR')}</p></div></div><p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">{post.content}</p>{post.imageUrl ? <img src={post.imageUrl} alt={tx('Imagem da publicação')} className="mt-4 max-h-[560px] w-full rounded-2xl object-cover" /> : null}</article>)}
     </div>
-    {hasMore ? <button type="button" disabled={loadingMore} onClick={() => void loadPosts(nextOffset, true)} className="w-full rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm font-bold disabled:opacity-50">{loadingMore ? 'Carregando...' : 'Carregar mais'}</button> : null}
+    {hasMore ? <button type="button" disabled={loadingMore} onClick={() => void loadPosts(nextOffset, true)} className="w-full rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm font-bold disabled:opacity-50">{loadingMore ? tx('Carregando...') : tx('Carregar mais')}</button> : null}
   </section>;
 }

@@ -8,6 +8,7 @@ import type { PersonaMode } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Popover } from '@/components/ui/Popover';
 import { CharacterCounter } from '@/components/ui/CharacterCounter';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 export const COMMUNITY_POST_MAX_LENGTH = 600;
 
@@ -57,20 +58,24 @@ type ModeButtonProps = {
   onClick: () => void;
 };
 
-const Root: React.FC<RootProps> = ({ children, variant = 'card' }) => (
+const Root: React.FC<RootProps> = ({ children, variant = 'card' }) => {
+  return (
   <div className={variant === 'bare' ? 'space-y-3' : 'space-y-3 rounded-[20px] border border-slate-200 bg-surface p-3 shadow-sm'}>
     {children}
   </div>
 );
+};
 
-const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, onKeyDown, placeholder, autoFocus }) => (
+const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, onKeyDown, placeholder, autoFocus }) => {
+  const { tx } = useLanguage();
+  return (
   <div className="flex items-center gap-3">
     {avatarHref ? (
       <Link href={avatarHref} className="transition hover:opacity-90">
-        <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt="User" onError={handleAvatarError} />
+        <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt={tx('User')} onError={handleAvatarError} />
       </Link>
     ) : (
-      <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt="User" onError={handleAvatarError} />
+      <img src={avatar} className="h-9 w-9 rounded-full object-cover" alt={tx('User')} onError={handleAvatarError} />
     )}
     <div className="min-w-0 flex-1">
       <textarea
@@ -89,6 +94,7 @@ const Editor: React.FC<EditorProps> = ({ avatar, avatarHref, value, onChange, on
     </div>
   </div>
 );
+};
 
 const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
   value,
@@ -96,8 +102,10 @@ const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
   personalName,
   professionalName,
   professionalDisabled = false,
-}) => (
-  <div className="flex rounded-full bg-bg p-1" role="tablist" aria-label="Perfil da publicação">
+}) => {
+  const { tx } = useLanguage();
+  return (
+  <div className="flex rounded-full bg-bg p-1" role="tablist" aria-label={tx('Perfil da publicação')}>
     <button
       type="button"
       onClick={() => onChange('personal')}
@@ -108,7 +116,7 @@ const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
       }`}
     >
       <UserRound size={15} />
-      <span className="truncate">Como {personalName}</span>
+      <span className="truncate">{tx('Como')} {personalName}</span>
     </button>
     <button
       type="button"
@@ -129,10 +137,11 @@ const AuthorSwitch: React.FC<AuthorSwitchProps> = ({
       }`}
     >
       <BriefcaseBusiness size={15} />
-      <span className="truncate">Como {professionalName || 'negócio'}</span>
+      <span className="truncate">{tx('Como')} {professionalName || 'negócio'}</span>
     </button>
   </div>
 );
+};
 
 const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
   value,
@@ -141,6 +150,7 @@ const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
   professionalName,
   professionalDisabled = false,
 }) => {
+  const { tx } = useLanguage();
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const selectedName = value === 'professional' ? professionalName || 'Negócio' : personalName;
@@ -156,9 +166,9 @@ const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
     <div ref={anchorRef} className="relative flex items-center justify-between px-1 py-1">
       <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600">
         <span className="text-brand-500">{selectedIcon}</span>
-        <span className="truncate">Publicando como {selectedName}</span>
+        <span className="truncate">{tx('Publicando como')} {selectedName}</span>
       </span>
-      <button type="button" onClick={() => setOpen((current) => !current)} aria-label="Escolher perfil de publicação" aria-expanded={open} className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-600">
+      <button type="button" onClick={() => setOpen((current) => !current)} aria-label={tx('Escolher perfil de publicação')} aria-expanded={open} className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-brand-600">
         <MoreHorizontal size={18} />
       </button>
       <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} align="end" unstyled className="w-56 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-lg">
@@ -167,7 +177,7 @@ const CompactAuthorMenu: React.FC<AuthorSwitchProps> = ({
             <UserRound size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{personalName}</span>{value === 'personal' ? <Check size={16} className="text-brand-500" /> : null}
           </button>
           <button type="button" onClick={() => select('professional')} disabled={professionalDisabled} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45">
-            <BriefcaseBusiness size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{professionalName || 'Cadastrar negócio'}</span>{value === 'professional' ? <Check size={16} className="text-brand-500" /> : null}
+            <BriefcaseBusiness size={16} className="text-brand-500" /><span className="min-w-0 flex-1 truncate">{professionalName || tx('Cadastrar negócio')}</span>{value === 'professional' ? <Check size={16} className="text-brand-500" /> : null}
           </button>
         </div>
       </Popover>
@@ -182,13 +192,14 @@ const MediaField: React.FC<MediaFieldProps> = ({
   onImageChange,
   onExternalChange,
 }) => {
+  const { tx } = useLanguage();
   if (mode === 'photo') {
     return (
       <CloudinaryImageField
         value={imageUrl}
         onChange={onImageChange}
         folder="community" cropAspect={4 / 3}
-        placeholder="Link da imagem do post"
+        placeholder={tx('Link da imagem do post')}
         /* hint="Envie uma imagem pela Cloudinary ou cole uma URL publica." */
       />
     );
@@ -200,7 +211,7 @@ const MediaField: React.FC<MediaFieldProps> = ({
         type="url"
         value={externalUrl}
         onChange={(event) => onExternalChange(event.target.value)}
-        placeholder={mode === 'video' ? 'Cole o link do YouTube' : 'Cole o link externo'}
+        placeholder={mode === 'video' ? tx('Cole o link do YouTube') : tx('Cole o link externo')}
         className="w-full rounded-full border border-input px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200"
       />
     );
@@ -209,7 +220,8 @@ const MediaField: React.FC<MediaFieldProps> = ({
   return null;
 };
 
-const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, showLabel, onClick }) => (
+const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, showLabel, onClick }) => {
+  return (
   <button
     type="button"
     onClick={onClick}
@@ -223,37 +235,41 @@ const ModeButton: React.FC<ModeButtonProps> = ({ active, icon, label, showLabel,
     {showLabel ? <span className="text-xs font-bold">{label}</span> : null}
   </button>
 );
+};
 
-const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish, showLabels = false }) => (
+const Actions: React.FC<ActionsProps> = ({ mode, onModeChange, onPublish, showLabels = false }) => {
+  const { tx } = useLanguage();
+  return (
   <div className="flex items-center justify-between border-t border-slate-100 pt-2">
     <div className="flex items-center gap-1">
       <ModeButton
         active={mode === 'photo'}
         icon={<Camera size={16} />}
-        label="Foto"
+        label={tx('Foto')}
         showLabel={showLabels}
         onClick={() => onModeChange(mode === 'photo' ? 'text' : 'photo')}
       />
       <ModeButton
         active={mode === 'video'}
         icon={<Play size={16} />}
-        label="Vídeo"
+        label={tx('Vídeo')}
         showLabel={showLabels}
         onClick={() => onModeChange(mode === 'video' ? 'text' : 'video')}
       />
       <ModeButton
         active={mode === 'link'}
         icon={<LinkIcon size={16} />}
-        label="Link"
+        label={tx('Link')}
         showLabel={showLabels}
         onClick={() => onModeChange(mode === 'link' ? 'text' : 'link')}
       />
     </div>
     <Button onClick={onPublish} size="sm" className="min-w-[76px] rounded-full">
-      Publicar
+      {tx('Publicar')}
     </Button>
   </div>
 );
+};
 
 const CommunityComposer = {
   Root,

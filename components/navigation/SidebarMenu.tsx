@@ -21,7 +21,8 @@ export type SidebarMenuItemProps = {
   tone?: 'light' | 'dark';
 };
 
-export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ label, icon, active = false, disabled = false, badge, badgeTone = 'default', onClick, collapsed = false, tone = 'light' }) => (
+export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ label, icon, active = false, disabled = false, badge, badgeTone = 'default', onClick, collapsed = false, tone = 'light' }) => {
+  return (
   <button
     type="button"
     disabled={disabled}
@@ -47,3 +48,4 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ label, icon, a
     ) : null}
   </button>
 );
+};

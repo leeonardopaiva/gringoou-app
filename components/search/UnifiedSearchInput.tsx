@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Mic, Search, Sparkles } from 'lucide-react';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type UnifiedSearchInputProps = {
   value: string;
@@ -32,7 +33,9 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
   staticPlaceholder,
   className = '',
 }) => {
+  const { tx } = useLanguage();
   const [focused, setFocused] = useState(false);
+  const { t } = useLanguage();
   const [suggestions, setSuggestions] = useState<Array<{ id: string; label: string; meta: string; href: string }>>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const cacheRef = useRef(new Map<string, { expiresAt: number; items: typeof suggestions }>());
@@ -79,7 +82,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
     >
       {!value && animatedTerms && animatedTerms.length > 0 ? (
         <div className={`pointer-events-none absolute inset-y-0 left-12 flex min-w-0 items-center overflow-hidden whitespace-nowrap text-sm text-slate-400 ${onFilterClick ? (voiceSupported && onVoiceResult ? 'right-24' : 'right-14') : 'right-4'}`}>
-          <span>Encontre&nbsp;</span>
+          <span>{t('header.find')}&nbsp;</span>
           <span key={animatedTerms[animatedIndex]} className="theme-text animate-in font-bold fade-in duration-300">
             {animatedTerms[animatedIndex]}
           </span>
@@ -91,12 +94,12 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         onChange={(event) => onChange(event.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => window.setTimeout(() => setFocused(false), 150)}
-        placeholder={listening ? 'Ouvindo... fale agora' : !animatedTerms ? staticPlaceholder : ''}
+        placeholder={listening ? t('search.listeningNow') : !animatedTerms ? staticPlaceholder : ''}
         className={`h-full w-full bg-transparent pl-12 text-base text-slate-700 outline-none ${onFilterClick ? (voiceSupported && onVoiceResult ? 'pr-24' : 'pr-14') : 'pr-4'}`}
       />
       <button
         type="submit"
-        aria-label="Executar busca"
+        aria-label={t('search.run')}
         className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
       >
         <Search size={20} aria-hidden="true" />
@@ -107,8 +110,8 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
             <button
               type="button"
               onClick={handleVoiceSearch}
-              aria-label={listening ? 'Parar pesquisa por voz' : 'Pesquisar por voz com inteligência artificial'}
-              title={listening ? 'Ouvindo...' : 'Pesquisa por voz'}
+              aria-label={listening ? t('search.stopVoice') : t('search.voiceAi')}
+              title={listening ? t('search.listening') : t('search.voice')}
               className={`flex h-8 w-8 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 ${listening ? 'animate-pulse bg-red-50 text-red-500' : 'text-slate-400 hover:bg-slate-100 hover:text-brand-500'}`}
             >
               <Mic size={16} aria-hidden="true" />
@@ -118,8 +121,8 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
             type="button"
             onClick={onFilterClick}
             disabled={filterLoading}
-            aria-label="Abrir busca inteligente"
-            title="Busca com inteligência artificial"
+            aria-label={t('search.openAi')}
+            title={t('search.ai')}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white transition hover:brightness-105 disabled:cursor-wait disabled:opacity-70"
           >
             <Sparkles size={16} aria-hidden="true" className={filterLoading ? 'animate-pulse' : ''} />
@@ -128,10 +131,10 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       ) : null}
       {focused && (suggestionsLoading || suggestions.length > 0) ? (
         <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
-          {suggestionsLoading && suggestions.length === 0 ? <p className="px-3 py-3 text-xs text-slate-500">Buscando sugestões...</p> : null}
+          {suggestionsLoading && suggestions.length === 0 ? <p className="px-3 py-3 text-xs text-slate-500">{t('search.loadingSuggestions')}</p> : null}
           {suggestions.map((suggestion) => (
             <Link key={suggestion.id} href={suggestion.href} className="block rounded-xl px-3 py-2.5 transition hover:bg-brand-50" onMouseDown={(event) => event.preventDefault()}>
-              <span className="block truncate text-sm font-semibold text-slate-800">{suggestion.label}</span>
+              <span className="block truncate text-sm font-semibold text-slate-800">{tx(suggestion.label)}</span>
               <span className="block truncate text-[11px] text-slate-500">{suggestion.meta}</span>
             </Link>
           ))}

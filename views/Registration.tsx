@@ -22,6 +22,7 @@ import {
 import { getPasswordValidationIssues } from '../lib/forms/password';
 import { USERNAME_MIN_LENGTH, normalizeUsernameInput, validateUsernameValue } from '../lib/username';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type RegistrationMode = 'signin' | 'complete-profile';
 
@@ -106,6 +107,7 @@ const Registration: React.FC<RegistrationProps> = ({
   defaultValues,
   inviteRequired = false,
 }) => {
+  const { tx } = useLanguage();
   const initialPhoneState = splitPhoneNumber(defaultValues?.phone);
   const [formValues, setFormValues] = useState<RegistrationValues>({
     name: defaultValues?.name || '',
@@ -363,7 +365,7 @@ const Registration: React.FC<RegistrationProps> = ({
     if (inviteValidated) return true;
 
     if (!inviteCode.trim()) {
-      setInviteError('Informe o código do convite.');
+      setInviteError(tx('Informe o código do convite.'));
       return false;
     }
 
@@ -383,7 +385,7 @@ const Registration: React.FC<RegistrationProps> = ({
       setInviteValidated(true);
       return true;
     } catch {
-      setInviteError('Não foi possível validar o convite agora.');
+      setInviteError(tx('Não foi possível validar o convite agora.'));
       return false;
     } finally {
       setInviteValidating(false);
@@ -469,22 +471,22 @@ const Registration: React.FC<RegistrationProps> = ({
           >
             <Card.Content className="px-6 py-12 sm:px-12 sm:py-14 lg:px-14 lg:py-16">
               <div className="flex flex-col items-center text-center">
-                <Link href="/" aria-label="Ir para a página inicial do Gringoou" className="transition hover:opacity-80">
+                <Link href="/" aria-label={tx('Ir para a página inicial do Gringoou')} className="transition hover:opacity-80">
                   <GringoouLogo size={48} />
                 </Link>
                 <p className="mt-5 max-w-sm text-sm leading-6 text-slate-500 sm:text-base">
-                  A rede social do imigrante brasileiro.
+                  {tx('A rede social do imigrante brasileiro.')}
                 </p>
               </div>
 
               {inviteRequired ? (
                 <div className="mt-8 w-full max-w-[360px] mx-auto">
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Código de convite
+                    {tx('Código de convite')}
                   </label>
                   <Input
                     type="text"
-                    placeholder="Ex.: ABC123XYZ789"
+                    placeholder={tx('Ex.: ABC123XYZ789')}
                     value={inviteCode}
                     onChange={(event) => {
                       setInviteCode(event.target.value.toUpperCase());
@@ -496,10 +498,10 @@ const Registration: React.FC<RegistrationProps> = ({
                   />
                   {inviteError ? <FieldErrorMessage message={inviteError} /> : null}
                   {inviteValidated ? (
-                    <p className="mt-1 text-xs font-semibold text-emerald-600">Convite valido.</p>
+                    <p className="mt-1 text-xs font-semibold text-emerald-600">{tx('Convite valido.')}</p>
                   ) : null}
                   <p className="mt-2 text-center text-[11px] text-slate-400">
-                    O cadastro está em fase de convite. Informe o código para continuar.
+                    {tx('O cadastro está em fase de convite. Informe o código para continuar.')}
                   </p>
                 </div>
               ) : null}
@@ -516,7 +518,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-surface px-6 text-base font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                   >
                     <GoogleIcon size={20} className="mr-2" />
-                    {googleSubmitting ? 'Entrando...' : 'Continuar com Google'}
+                    {googleSubmitting ? tx('Entrando...') : tx('Continuar com Google')}
                   </Button>
                 ) : null}
 
@@ -531,13 +533,13 @@ const Registration: React.FC<RegistrationProps> = ({
                     className="inline-flex h-12 w-full max-w-[360px] items-center justify-center rounded-full border border-slate-200 bg-surface px-6 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
                   >
                     <GoogleIcon size={16} className="mr-2" />
-                    Trocar conta Google
+                    {tx('Trocar conta Google')}
                   </Button>
                 ) : null}
 
                 <div className="flex w-full max-w-[360px] items-center gap-3">
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
-                  <span className="text-xs font-medium text-slate-400">ou</span>
+                  <span className="text-xs font-medium text-slate-400">{tx('ou')}</span>
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
                 </div>
 
@@ -551,7 +553,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     onPress={onMockLogin}
                     className="h-11 w-full max-w-[360px] rounded-full border border-dashed border-slate-300 bg-surface px-6 text-xs font-semibold text-slate-500 shadow-none hover:bg-slate-50"
                   >
-                    Entrar com usuário de teste
+                    {tx('Entrar com usuário de teste')}
                   </Button>
                 ) : null}
 
@@ -563,7 +565,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   onPress={() => openPasswordView('signin')}
                   className="h-14 w-full max-w-[360px] rounded-full border border-slate-200 bg-slate-100 px-6 text-sm font-semibold text-slate-400 shadow-none"
                 >
-                  Entrar com senha
+                  {tx('Entrar com senha')}
                 </Button>
 
                 {passwordEnabled && passwordAuthView === 'none' ? (
@@ -575,7 +577,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     onPress={() => openPasswordView('signup')}
                     className="h-14 w-full max-w-[360px] rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                   >
-                    Criar minha conta
+                    {tx('Criar minha conta')}
                   </Button>
                 ) : null}
 
@@ -616,14 +618,14 @@ const Registration: React.FC<RegistrationProps> = ({
                   >
                     <div className="flex items-center justify-between gap-3 pb-1">
                       <p className="text-lg font-semibold leading-snug text-slate-900">
-                        {passwordEnabled ? 'Entrar com senha' : 'Entrar com email'}
+                        {passwordEnabled ? tx('Entrar com senha') : tx('Entrar com email')}
                       </p>
                       <Button
                         type="button"
                         isIconOnly
                         variant="ghost"
                         onPress={() => setPasswordAuthView('none')}
-                        aria-label="Voltar ao login"
+                        aria-label={tx('Voltar ao login')}
                         className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                       >
                         <ArrowLeft size={17} />
@@ -631,7 +633,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     </div>
                     <Input
                       type="email"
-                      placeholder="Seu email"
+                      placeholder={tx('Seu email')}
                       value={passwordSignIn.email}
                       onChange={(event) =>
                         setPasswordSignIn((current) => ({ ...current, email: event.target.value }))
@@ -646,7 +648,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       <>
                         <Input
                           type="password"
-                          placeholder="Sua senha"
+                          placeholder={tx('Sua senha')}
                           value={passwordSignIn.password}
                           onChange={(event) =>
                             setPasswordSignIn((current) => ({
@@ -659,7 +661,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           className={inputClass}
                         />
                         <FieldErrorMessage message={fieldErrors.password} />
-                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">{tx('Esqueci minha senha')}</button>
                       </>
                     ) : null}
 
@@ -671,10 +673,10 @@ const Registration: React.FC<RegistrationProps> = ({
                       isDisabled={submitting}
                       className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                     >
-                      {submitting ? 'Entrando...' : passwordEnabled ? 'Entrar' : 'Receber link'}
+                      {submitting ? tx('Entrando...') : passwordEnabled ? tx('Entrar') : tx('Receber link')}
                     </Button>
                     <p className="text-center text-[11px] leading-5 text-slate-500">
-                      Ao se cadastrar, você concorda com nossos <a href="/terms" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/privacy" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
+                      {tx('Ao se cadastrar, você concorda com nossos')} <a href="/terms" className="font-semibold text-brand-500 hover:underline">{tx('Termos de Uso')}</a> e <a href="/privacy" className="font-semibold text-brand-500 hover:underline">{tx('Política de Privacidade')}</a>.
                     </p>
 
                     {passwordEnabled ? (
@@ -685,7 +687,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           onPress={() => setPasswordAuthView('signup')}
                           className="px-0 text-sm font-semibold text-brand-500"
                         >
-                          Criar conta
+                          {tx('Criar conta')}
                         </Button>
                       </div>
                     ) : null}
@@ -694,9 +696,9 @@ const Registration: React.FC<RegistrationProps> = ({
 
                 {isPasswordRecoveryView ? (
                   <div className="w-full max-w-[360px] space-y-4 pt-2">
-                    <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
-                    {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                    <div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? tx('Crie uma nova senha') : tx('Recuperar senha')}</p><p className="mt-1 text-xs leading-5 text-slate-500">{passwordAuthView === 'reset' ? tx('Escolha uma senha forte para sua conta.') : tx('Enviaremos um link seguro para o seu e-mail.')}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label={tx('Voltar ao login')} className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
+                    {passwordAuthView === 'forgot' ? <Input type="email" placeholder={tx('Seu e-mail')} value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder={tx('Nova senha')} value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder={tx('Confirme a nova senha')} value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
+                    <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? tx('Aguarde...') : passwordAuthView === 'reset' ? tx('Salvar nova senha') : tx('Enviar link de recuperação')}</Button>
                     {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                   </div>
                 ) : null}
@@ -752,13 +754,13 @@ const Registration: React.FC<RegistrationProps> = ({
                     }}
                   >
                     <div className="flex items-center justify-between gap-3 pb-1">
-                      <p className="text-sm font-bold text-slate-900">Criar minha conta</p>
+                      <p className="text-sm font-bold text-slate-900">{tx('Criar minha conta')}</p>
                       <Button
                         type="button"
                         isIconOnly
                         variant="ghost"
                         onPress={() => setPasswordAuthView('none')}
-                        aria-label="Voltar ao login"
+                        aria-label={tx('Voltar ao login')}
                         className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                       >
                         <ArrowLeft size={17} />
@@ -766,7 +768,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     </div>
                     <Input
                       type="email"
-                      placeholder="Seu email"
+                      placeholder={tx('Seu email')}
                       value={passwordSignUp.email}
                       onChange={(event) =>
                         setPasswordSignUp((current) => ({ ...current, email: event.target.value }))
@@ -779,7 +781,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                     <Input
                       type="password"
-                      placeholder="Crie uma senha"
+                      placeholder={tx('Crie uma senha')}
                       value={passwordSignUp.password}
                       onChange={(event) =>
                         setPasswordSignUp((current) => ({
@@ -795,7 +797,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                     <Input
                       type="password"
-                      placeholder="Confirmar senha"
+                      placeholder={tx('Confirmar senha')}
                       value={passwordSignUp.confirmPassword}
                       onChange={(event) =>
                         setPasswordSignUp((current) => ({
@@ -812,15 +814,15 @@ const Registration: React.FC<RegistrationProps> = ({
                     <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <p className="flex-1 text-sm font-medium text-slate-700">
                         {loadingCaptcha
-                          ? 'Carregando captcha...'
-                          : captchaPrompt || 'Captcha temporariamente indisponível'}
+                          ? tx('Carregando captcha...')
+                          : captchaPrompt || tx('Captcha temporariamente indisponível')}
                       </p>
                       <Button
                         type="button"
                         isIconOnly
                         variant="ghost"
                         onPress={() => void loadCaptcha()}
-                        aria-label="Gerar novo captcha"
+                        aria-label={tx('Gerar novo captcha')}
                         className="text-slate-500"
                       >
                         <RefreshCcw size={16} className={loadingCaptcha ? 'animate-spin' : ''} />
@@ -830,7 +832,7 @@ const Registration: React.FC<RegistrationProps> = ({
                     <Input
                       type="text"
                       inputMode="numeric"
-                      placeholder="Resultado"
+                      placeholder={tx('Resultado')}
                       value={passwordSignUp.captchaAnswer}
                       onChange={(event) =>
                         setPasswordSignUp((current) => ({
@@ -852,7 +854,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       isDisabled={submitting || loadingCaptcha}
                       className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                     >
-                      {submitting ? 'Criando conta...' : 'Criar conta'}
+                      {submitting ? tx('Criando conta...') : tx('Criar conta')}
                     </Button>
 
                     <div className="flex items-center justify-center pt-2">
@@ -862,7 +864,7 @@ const Registration: React.FC<RegistrationProps> = ({
                         onPress={() => setPasswordAuthView('signin')}
                         className="px-0 text-sm font-semibold text-brand-500"
                       >
-                        Entrar
+                        {tx('Entrar')}
                       </Button>
                     </div>
                   </form>
@@ -871,11 +873,11 @@ const Registration: React.FC<RegistrationProps> = ({
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
                 <a href="/terms" className="transition-colors hover:text-slate-600 hover:underline">
-                  Termos de uso
+                  {tx('Termos de uso')}
                 </a>
                 <span className="text-slate-300">•</span>
                 <a href="/privacy" className="transition-colors hover:text-slate-600 hover:underline">
-                  Política de Privacidade
+                  {tx('Política de Privacidade')}
                 </a>
               </div>
 
@@ -900,25 +902,25 @@ const Registration: React.FC<RegistrationProps> = ({
           <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/80 bg-surface/70 px-4 py-2 shadow-sm backdrop-blur">
             <GringoouLogo size={22} />
             <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Gringoou
+              {tx('Gringoou')}
             </span>
           </div>
 
           <div className="max-w-2xl space-y-4">
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-500">
-              Comunidade brasileira no exterior
+              {tx('Comunidade brasileira no exterior')}
             </p>
             <h1 className="max-w-xl text-5xl font-black leading-[0.96] tracking-tight text-slate-950">
               {isOnboarding
-                ? 'Complete seu perfil'
-                : 'Entre com um fluxo mais limpo, rápido e confiável'}
+                ? tx('Complete seu perfil')
+                : tx('Entre com um fluxo mais limpo, rápido e confiável')}
             </h1>
             <p className="max-w-xl text-base leading-7 text-slate-600">
               {isOnboarding
-                ? 'Precisamos da sua região para liberar comunidade, negócios e eventos locais.'
+                ? tx('Precisamos da sua região para liberar comunidade, negócios e eventos locais.')
                 : showGoogleOnlyAuth
-                  ? 'Use o Google para acessar sua conta com menos atrito.'
-                  : 'Use Google, email ou senha com uma interface mais clara e menos genérica.'}
+                  ? tx('Use o Google para acessar sua conta com menos atrito.')
+                  : tx('Use Google, email ou senha com uma interface mais clara e menos genérica.')}
             </p>
           </div>
 
@@ -955,18 +957,18 @@ const Registration: React.FC<RegistrationProps> = ({
             <div className="space-y-3 text-center">
               {isOnboarding ? <div className="mx-auto h-1.5 w-24 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-1/3 rounded-full bg-brand-500" /></div> : null}
               <h2 className="text-h2 font-bold tracking-tight text-text">
-                {isOnboarding ? 'Para te conectar melhor, precisamos te conhecer!' : 'Entre na sua conta'}
+                {isOnboarding ? tx('Para te conectar melhor, precisamos te conhecer!') : tx('Entre na sua conta')}
               </h2>
               <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">
                 {isOnboarding
-                  ? 'Precisamos da sua região para liberar comunidade, negócios e eventos locais.'
+                  ? tx('Precisamos da sua região para liberar comunidade, negócios e eventos locais.')
                   : showGoogleOnlyAuth
-                    ? 'Use o Google para acessar sua conta.'
-                    : 'Use e-mail, Google ou senha para acessar sua conta.'}
+                    ? tx('Use o Google para acessar sua conta.')
+                    : tx('Use e-mail, Google ou senha para acessar sua conta.')}
               </p>
               {referralUsername ? (
                 <div className="mx-auto inline-flex rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700">
-                  Você está entrando pelo link de @{normalizeUsernameInput(referralUsername)}
+                  {tx('Você está entrando pelo link de @')}{normalizeUsernameInput(referralUsername)}
                 </div>
               ) : null}
             </div>
@@ -983,14 +985,14 @@ const Registration: React.FC<RegistrationProps> = ({
                     onPress={submitGoogleLogin}
                     className="rounded-full bg-brand-500 font-semibold shadow-sm"
                   >
-                    {googleSubmitting ? 'Entrando...' : 'Continuar com Google'}
+                    {googleSubmitting ? tx('Entrando...') : tx('Continuar com Google')}
                   </Button>
                 ) : null}
 
                 <div className="flex items-center gap-3">
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                    ou
+                    {tx('ou')}
                   </span>
                   <div aria-hidden="true" className="h-px flex-1 bg-slate-200/25" />
                 </div>
@@ -1019,11 +1021,11 @@ const Registration: React.FC<RegistrationProps> = ({
                     }}
                   >
                     <div className="space-y-2">
-                      <p className={fieldLabel}>Email</p>
+                      <p className={fieldLabel}>{tx('Email')}</p>
                       <Input
                         required
                         type="email"
-                        placeholder="Seu melhor e-mail"
+                        placeholder={tx('Seu melhor e-mail')}
                         value={formValues.email}
                         onChange={(event) =>
                           setFormValues((current) => ({ ...current, email: event.target.value }))
@@ -1042,7 +1044,7 @@ const Registration: React.FC<RegistrationProps> = ({
                       isDisabled={submitting}
                       className="rounded-2xl border-slate-200 bg-scrim font-semibold text-white shadow-none hover:bg-scrim-2"
                     >
-                      {submitting ? 'Enviando link...' : 'Continuar com email'}
+                      {submitting ? tx('Enviando link...') : tx('Continuar com email')}
                     </Button>
                   </form>
                 ) : null}
@@ -1059,7 +1061,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           onPress={() => openPasswordView('signin')}
                           className="rounded-2xl border-slate-200 bg-surface font-semibold text-slate-900 shadow-sm"
                         >
-                          Entrar com email e senha
+                          {tx('Entrar com email e senha')}
                         </Button>
                         <Button
                           type="button"
@@ -1069,10 +1071,10 @@ const Registration: React.FC<RegistrationProps> = ({
                           onPress={() => openPasswordView('signup')}
                           className="rounded-2xl border border-slate-200 bg-slate-50 font-semibold text-slate-900 shadow-none"
                         >
-                          Criar conta por email e senha
+                          {tx('Criar conta por email e senha')}
                         </Button>
                         <p className="px-2 text-center text-xs leading-6 text-slate-500">
-                          Após o cadastro, enviaremos um link para confirmar seu email.
+                          {tx('Após o cadastro, enviaremos um link para confirmar seu email.')}
                         </p>
                       </div>
                     ) : null}
@@ -1109,9 +1111,9 @@ const Registration: React.FC<RegistrationProps> = ({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-sm font-bold text-slate-900">Entrar com senha</p>
+                            <p className="text-sm font-bold text-slate-900">{tx('Entrar com senha')}</p>
                             <p className="text-xs text-slate-500">
-                              Use sua conta temporária de email e senha.
+                              {tx('Use sua conta temporária de email e senha.')}
                             </p>
                           </div>
                           <Button
@@ -1121,15 +1123,15 @@ const Registration: React.FC<RegistrationProps> = ({
                             onPress={() => setPasswordAuthView('none')}
                             className="text-slate-500"
                           >
-                            Voltar
+                            {tx('Voltar')}
                           </Button>
                         </div>
 
                         <div className="space-y-2">
-                          <p className={fieldLabel}>Email</p>
+                          <p className={fieldLabel}>{tx('Email')}</p>
                           <Input
                             type="email"
-                            placeholder="Seu e-mail"
+                            placeholder={tx('Seu e-mail')}
                             value={passwordSignIn.email}
                             onChange={(event) =>
                               setPasswordSignIn((current) => ({ ...current, email: event.target.value }))
@@ -1142,10 +1144,10 @@ const Registration: React.FC<RegistrationProps> = ({
                         </div>
 
                         <div className="space-y-2">
-                          <p className={fieldLabel}>Senha</p>
+                          <p className={fieldLabel}>{tx('Senha')}</p>
                           <Input
                             type="password"
-                            placeholder="Sua senha"
+                            placeholder={tx('Sua senha')}
                             value={passwordSignIn.password}
                             onChange={(event) =>
                               setPasswordSignIn((current) => ({
@@ -1160,7 +1162,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           <FieldErrorMessage message={fieldErrors.password} />
                         </div>
 
-                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">Esqueci minha senha</button>
+                        <button type="button" onClick={() => { setPasswordReset((current) => ({ ...current, email: passwordSignIn.email })); setPasswordResetMessage(null); setPasswordResetHasError(false); setPasswordAuthView('forgot'); }} className="block w-full text-right text-xs font-semibold text-brand-500 hover:underline">{tx('Esqueci minha senha')}</button>
 
                         <Button
                           type="submit"
@@ -1170,19 +1172,19 @@ const Registration: React.FC<RegistrationProps> = ({
                           isDisabled={submitting}
                    className="rounded-full bg-brand-500 font-semibold shadow-sm"
                         >
-                          {submitting ? 'Entrando...' : 'Entrar com email e senha'}
+                          {submitting ? tx('Entrando...') : tx('Entrar com email e senha')}
                         </Button>
                         <p className="text-center text-[11px] leading-5 text-slate-500">
-                          Ao se cadastrar, você concorda com nossos <a href="/terms" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a> e <a href="/privacy" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
+                          {tx('Ao se cadastrar, você concorda com nossos')} <a href="/terms" className="font-semibold text-brand-500 hover:underline">{tx('Termos de Uso')}</a> e <a href="/privacy" className="font-semibold text-brand-500 hover:underline">{tx('Política de Privacidade')}</a>.
                         </p>
                       </form>
                     ) : null}
 
                     {isPasswordRecoveryView ? (
                       <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? 'Crie uma nova senha' : 'Recuperar senha'}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? 'Escolha uma senha forte para sua conta.' : 'Enviaremos um link seguro para o seu e-mail.'}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label="Voltar ao login" className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
-                        {passwordAuthView === 'forgot' ? <Input type="email" placeholder="Seu e-mail" value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder="Nova senha" value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder="Confirme a nova senha" value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
-                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? 'Aguarde...' : passwordAuthView === 'reset' ? 'Salvar nova senha' : 'Enviar link de recuperação'}</Button>
+                        <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-900">{passwordAuthView === 'reset' ? tx('Crie uma nova senha') : tx('Recuperar senha')}</p><p className="mt-1 text-xs text-slate-500">{passwordAuthView === 'reset' ? tx('Escolha uma senha forte para sua conta.') : tx('Enviaremos um link seguro para o seu e-mail.')}</p></div><Button type="button" isIconOnly variant="ghost" onPress={() => setPasswordAuthView('signin')} aria-label={tx('Voltar ao login')} className="h-8 w-8 min-w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ArrowLeft size={17} /></Button></div>
+                        {passwordAuthView === 'forgot' ? <Input type="email" placeholder={tx('Seu e-mail')} value={passwordReset.email} onChange={(event) => setPasswordReset((current) => ({ ...current, email: event.target.value }))} className={inputClass} /> : <><Input type="password" placeholder={tx('Nova senha')} value={passwordReset.password} onChange={(event) => setPasswordReset((current) => ({ ...current, password: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.password} /><Input type="password" placeholder={tx('Confirme a nova senha')} value={passwordReset.confirmPassword} onChange={(event) => setPasswordReset((current) => ({ ...current, confirmPassword: event.target.value }))} className={inputClass} /><FieldErrorMessage message={fieldErrors.confirmPassword} /></>}
+                        <Button type="button" fullWidth size="lg" variant="primary" isDisabled={passwordResetLoading} onPress={() => void (passwordAuthView === 'reset' ? confirmPasswordReset() : requestPasswordReset())} className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 font-semibold">{passwordResetLoading ? tx('Aguarde...') : passwordAuthView === 'reset' ? tx('Salvar nova senha') : tx('Enviar link de recuperação')}</Button>
                         {passwordResetMessage ? <p className={`px-3 text-center text-xs font-medium leading-5 ${passwordResetHasError ? 'text-red-600' : 'text-brand-600'}`}>{passwordResetMessage}</p> : null}
                       </div>
                     ) : null}
@@ -1235,9 +1237,9 @@ const Registration: React.FC<RegistrationProps> = ({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-sm font-bold text-slate-900">Criar sua conta</p>
+                            <p className="text-sm font-bold text-slate-900">{tx('Criar sua conta')}</p>
                             <p className="text-xs text-slate-500">
-                              Cadastro por email e senha sem verificação por email.
+                              {tx('Cadastro por email e senha sem verificação por email.')}
                             </p>
                           </div>
                           <Button
@@ -1247,21 +1249,21 @@ const Registration: React.FC<RegistrationProps> = ({
                             onPress={() => setPasswordAuthView('none')}
                             className="text-slate-500"
                           >
-                            Voltar
+                            {tx('Voltar')}
                           </Button>
                         </div>
 
                         <Card variant="secondary" className={`${secondaryCardClass} border-amber-100 bg-amber-50`}>
                           <Card.Content className="p-4 text-xs leading-6 text-amber-800">
-                            Após o cadastro, confirme seu email pelo link antes de entrar com a senha.
+                            {tx('Após o cadastro, confirme seu email pelo link antes de entrar com a senha.')}
                           </Card.Content>
                         </Card>
 
                         <div className="space-y-2">
-                          <p className={fieldLabel}>Email</p>
+                          <p className={fieldLabel}>{tx('Email')}</p>
                           <Input
                             type="email"
-                            placeholder="Seu e-mail"
+                            placeholder={tx('Seu e-mail')}
                             value={passwordSignUp.email}
                             onChange={(event) =>
                               setPasswordSignUp((current) => ({ ...current, email: event.target.value }))
@@ -1274,10 +1276,10 @@ const Registration: React.FC<RegistrationProps> = ({
                         </div>
 
                         <div className="space-y-2">
-                          <p className={fieldLabel}>Senha</p>
+                          <p className={fieldLabel}>{tx('Senha')}</p>
                           <Input
                             type="password"
-                            placeholder="Crie uma senha"
+                            placeholder={tx('Crie uma senha')}
                             value={passwordSignUp.password}
                             onChange={(event) =>
                               setPasswordSignUp((current) => ({
@@ -1296,7 +1298,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           <Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>
                             <Card.Content className="p-4 text-xs leading-6 text-slate-600">
                               {passwordIssues.length === 0 ? (
-                                <p className="font-semibold text-emerald-700">Senha forte.</p>
+                                <p className="font-semibold text-emerald-700">{tx('Senha forte.')}</p>
                               ) : (
                                 <div className="space-y-1">
                                   {passwordIssues.map((issue) => (
@@ -1309,10 +1311,10 @@ const Registration: React.FC<RegistrationProps> = ({
                         ) : null}
 
                         <div className="space-y-2">
-                          <p className={fieldLabel}>Confirmar senha</p>
+                          <p className={fieldLabel}>{tx('Confirmar senha')}</p>
                           <Input
                             type="password"
-                            placeholder="Confirme sua senha"
+                            placeholder={tx('Confirme sua senha')}
                             value={passwordSignUp.confirmPassword}
                             onChange={(event) =>
                               setPasswordSignUp((current) => ({
@@ -1332,26 +1334,26 @@ const Registration: React.FC<RegistrationProps> = ({
                             <div className="flex items-center justify-between gap-3">
                               <p className="text-sm font-semibold text-slate-700">
                                 {loadingCaptcha
-                                  ? 'Carregando captcha...'
-                                  : captchaPrompt || 'Captcha temporariamente indisponível'}
+                                  ? tx('Carregando captcha...')
+                                  : captchaPrompt || tx('Captcha temporariamente indisponível')}
                               </p>
                               <Button
                                 type="button"
                                 isIconOnly
                                 variant="ghost"
                                 onPress={() => void loadCaptcha()}
-                                aria-label="Gerar novo captcha"
+                                aria-label={tx('Gerar novo captcha')}
                                 className="text-slate-500"
                               >
                                 <RefreshCcw size={16} className={loadingCaptcha ? 'animate-spin' : ''} />
                               </Button>
                             </div>
                             <div className="space-y-2">
-                              <p className={fieldLabel}>Resultado</p>
+                              <p className={fieldLabel}>{tx('Resultado')}</p>
                               <Input
                                 type="text"
                                 inputMode="numeric"
-                                placeholder="Resultado"
+                                placeholder={tx('Resultado')}
                                 value={passwordSignUp.captchaAnswer}
                                 onChange={(event) =>
                                   setPasswordSignUp((current) => ({
@@ -1376,7 +1378,7 @@ const Registration: React.FC<RegistrationProps> = ({
                           isDisabled={submitting || loadingCaptcha}
                           className="rounded-full bg-brand-500 font-semibold shadow-sm"
                         >
-                          {submitting ? 'Criando conta...' : 'Criar conta com email'}
+                          {submitting ? tx('Criando conta...') : tx('Criar conta com email')}
                         </Button>
                       </form>
                     ) : null}
@@ -1386,10 +1388,10 @@ const Registration: React.FC<RegistrationProps> = ({
                 <Card variant="secondary" className={`${secondaryCardClass} border-slate-200`}>
                   <Card.Content className="p-4 text-center text-xs leading-6 text-slate-500">
                     {showGoogleOnlyAuth
-                      ? 'Google cria ou reutiliza sua conta automaticamente.'
+                      ? tx('Google cria ou reutiliza sua conta automaticamente.')
                       : emailEnabled
-                        ? 'Email envia um magic link. Google cria ou reutiliza sua conta automaticamente.'
-                        : 'Google ou email e senha liberam o acesso, e o perfil é concluído no próximo passo.'}
+                        ? tx('Email envia um magic link. Google cria ou reutiliza sua conta automaticamente.')
+                        : tx('Google ou email e senha liberam o acesso, e o perfil é concluído no próximo passo.')}
                   </Card.Content>
                 </Card>
               </div>
@@ -1441,14 +1443,14 @@ const Registration: React.FC<RegistrationProps> = ({
                   });
                 }}
               >
-                <ProgressBar value={onboardingProgress} label="Conclusão do perfil" className="sticky top-0 z-20 -mx-1 rounded-2xl bg-surface/95 p-3 backdrop-blur" />
+                <ProgressBar value={onboardingProgress} label={tx('Conclusão do perfil')} className="sticky top-0 z-20 -mx-1 rounded-2xl bg-surface/95 p-3 backdrop-blur" />
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <p className={fieldLabel}>Nome completo</p>
+                    <p className={fieldLabel}>{tx('Nome completo')}</p>
                     <Input
                       required
                       type="text"
-                      placeholder="Nome completo"
+                      placeholder={tx('Nome completo')}
                       value={formValues.name}
                       onChange={(event) =>
                         setFormValues((current) => ({ ...current, name: event.target.value }))
@@ -1461,11 +1463,11 @@ const Registration: React.FC<RegistrationProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <p className={fieldLabel}>Nome público</p>
+                    <p className={fieldLabel}>{tx('Nome público')}</p>
                     <Input
                       required
                       type="text"
-                      placeholder="Nome público (ex: joao-em-boston)"
+                      placeholder={tx('Nome público (ex: joao-em-boston)')}
                       value={formValues.username}
                       onChange={(event) =>
                         setFormValues((current) => ({
@@ -1478,9 +1480,9 @@ const Registration: React.FC<RegistrationProps> = ({
                       className={inputClass}
                     />
                     <p className="px-1 text-[11px] leading-5 text-slate-500">
-                      Esse nome vai identificar seu perfil público e futuros links como{' '}
+                      {tx('Esse nome vai identificar seu perfil público e futuros links como')}{' '}
                       <span className="font-semibold text-slate-700">
-                        gringoou.com/{normalizedUsername || 'joao'}
+                        {'gringoou.com/'}{normalizedUsername || 'joao'}
                       </span>
                     </p>
                     {usernameFeedback ? (
@@ -1497,7 +1499,7 @@ const Registration: React.FC<RegistrationProps> = ({
                             usernameAvailable ? 'text-emerald-700' : 'text-amber-700'
                           }`}
                         >
-                          {checkingUsername ? 'Validando nome público...' : usernameFeedback}
+                          {checkingUsername ? tx('Validando nome público...') : usernameFeedback}
                         </Card.Content>
                       </Card>
                     ) : null}
@@ -1520,21 +1522,21 @@ const Registration: React.FC<RegistrationProps> = ({
                       value={formValues.phone}
                       onValueChange={(phone) => setFormValues((current) => ({ ...current, phone }))}
                       onInteract={() => clearFieldError('phone')}
-                      placeholder="WhatsApp"
+                      placeholder={tx('WhatsApp')}
                       invalid={Boolean(fieldErrors.phone)}
                     />
                     <FieldErrorMessage message={fieldErrors.phone} />
                     <p className="px-1 text-[11px] leading-5 text-slate-500">
-                      O número será salvo com código internacional ({selectedCountry.dialCode}).
+                      {tx('O número será salvo com código internacional (')}{selectedCountry.dialCode}).
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <p className={fieldLabel}>Email</p>
+                    <p className={fieldLabel}>{tx('Email')}</p>
                     <Input
                       required
                       type="email"
-                      placeholder="Seu melhor e-mail"
+                      placeholder={tx('Seu melhor e-mail')}
                       value={formValues.email}
                       disabled
                       className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-100 px-5 text-sm text-slate-500 shadow-sm placeholder:text-slate-400"
@@ -1544,7 +1546,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   <RegionSelector
                     value={formValues.regionKey}
                     citySearch
-                    label="Cidade atual"
+                    label={tx('Cidade atual')}
                     autoDetect
                     onChange={(region) => {
                       clearFieldError('regionKey');
@@ -1555,15 +1557,15 @@ const Registration: React.FC<RegistrationProps> = ({
                     }}
                     hint={
                       formValues.regionKey
-                        ? 'Sua região inicial foi sugerida pela geolocalização, mas você pode trocar.'
-                        : 'Busque sua cidade ou escolha uma região para receber conteúdo local.'
+                        ? tx('Sua região inicial foi sugerida pela geolocalização, mas você pode trocar.')
+                        : tx('Busque sua cidade ou escolha uma região para receber conteúdo local.')
                     }
                   />
                   <FieldErrorMessage message={fieldErrors.regionKey} />
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <p className={fieldLabel}>Gênero</p>
+                      <p className={fieldLabel}>{tx('Gênero')}</p>
                       <select
                         value={formValues.gender}
                         onChange={(event) => {
@@ -1573,16 +1575,16 @@ const Registration: React.FC<RegistrationProps> = ({
                         aria-invalid={Boolean(fieldErrors.gender)}
                         className={inputClass}
                       >
-                        <option value="">Selecione</option>
-                        <option value="MALE">Masculino</option>
-                        <option value="FEMALE">Feminino</option>
-                        <option value="OTHER">Outro</option>
-                        <option value="PREFER_NOT_TO_SAY">Prefiro não informar</option>
+                        <option value="">{tx('Selecione')}</option>
+                        <option value="MALE">{tx('Masculino')}</option>
+                        <option value="FEMALE">{tx('Feminino')}</option>
+                        <option value="OTHER">{tx('Outro')}</option>
+                        <option value="PREFER_NOT_TO_SAY">{tx('Prefiro não informar')}</option>
                       </select>
                       <FieldErrorMessage message={fieldErrors.gender} />
                     </div>
                     <div className="space-y-2">
-                      <p className={fieldLabel}>Idade</p>
+                      <p className={fieldLabel}>{tx('Idade')}</p>
                       <Input
                         type="number"
                         min={18}
@@ -1600,7 +1602,7 @@ const Registration: React.FC<RegistrationProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <p className={fieldLabel}>Tempo no exterior</p>
+                    <p className={fieldLabel}>{tx('Tempo no exterior')}</p>
                     <select
                       value={formValues.timeAbroad}
                       onChange={(event) => {
@@ -1610,21 +1612,21 @@ const Registration: React.FC<RegistrationProps> = ({
                       aria-invalid={Boolean(fieldErrors.timeAbroad)}
                       className={inputClass}
                     >
-                      <option value="">Selecione</option>
-                      <option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option>
-                      <option value="ONE_TO_THREE_YEARS">1 a 3 anos</option>
-                      <option value="THREE_TO_FIVE_YEARS">3 a 5 anos</option>
-                      <option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option>
+                      <option value="">{tx('Selecione')}</option>
+                      <option value="LESS_THAN_ONE_YEAR">{tx('Menos de 1 ano')}</option>
+                      <option value="ONE_TO_THREE_YEARS">{tx('1 a 3 anos')}</option>
+                      <option value="THREE_TO_FIVE_YEARS">{tx('3 a 5 anos')}</option>
+                      <option value="MORE_THAN_FIVE_YEARS">{tx('Mais de 5 anos')}</option>
                     </select>
                     <FieldErrorMessage message={fieldErrors.timeAbroad} />
                   </div>
 
                   <div className="space-y-2">
-                    <p className={fieldLabel}>Cidade onde nasceu</p>
+                    <p className={fieldLabel}>{tx('Cidade onde nasceu')}</p>
                     <CityAutocomplete
                       value={formValues.birthCity}
                       scope="world"
-                      placeholder="Digite sua cidade natal (qualquer país)"
+                      placeholder={tx('Digite sua cidade natal (qualquer país)')}
                       error={fieldErrors.birthCity}
                       onChange={(birthCity) => {
                         clearFieldError('birthCity');
@@ -1636,7 +1638,7 @@ const Registration: React.FC<RegistrationProps> = ({
 
                 {onboardingBlocked && onboardingMissing.length > 0 && (
                   <p className="px-2 text-center text-[12px] font-semibold text-amber-700">
-                    Falta preencher: {onboardingMissing.join(', ')}.
+                    {tx('Falta preencher:')} {onboardingMissing.join(', ')}.
                   </p>
                 )}
                 <Button
@@ -1648,16 +1650,16 @@ const Registration: React.FC<RegistrationProps> = ({
                   className="h-14 w-full justify-center rounded-full bg-brand-500 px-6 text-base font-semibold text-white shadow-sm"
                 >
                   {submitting
-                    ? 'Salvando...'
+                    ? tx('Salvando...')
                     : checkingUsername
-                      ? 'Validando nome...'
-                       : 'Continuar'}
+                      ? tx('Validando nome...')
+                       : tx('Continuar')}
                 </Button>
                 <p className="px-2 text-center text-[11px] leading-5 text-slate-500">
-                  Ao se cadastrar, você concorda com nossos{' '}
-                  <a href="/terms" className="font-semibold text-brand-500 hover:underline">Termos de Uso</a>
+                  {tx('Ao se cadastrar, você concorda com nossos')}{' '}
+                  <a href="/terms" className="font-semibold text-brand-500 hover:underline">{tx('Termos de Uso')}</a>
                   {' '}e{' '}
-                  <a href="/privacy" className="font-semibold text-brand-500 hover:underline">Política de Privacidade</a>.
+                  <a href="/privacy" className="font-semibold text-brand-500 hover:underline">{tx('Política de Privacidade')}</a>.
                 </p>
               </form>
             )}
@@ -1679,7 +1681,7 @@ const Registration: React.FC<RegistrationProps> = ({
               <Card.Content className="flex items-center gap-3 p-4">
                 <Shield size={18} className="flex-shrink-0 text-brand-500" />
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Ambiente seguro, com autenticação e conteúdo local.
+                  {tx('Ambiente seguro, com autenticação e conteúdo local.')}
                 </p>
               </Card.Content>
             </Card>

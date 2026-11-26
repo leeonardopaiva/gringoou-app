@@ -5,12 +5,14 @@ import { CheckCircle2 } from 'lucide-react';
 import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 import { waitlistSchema } from '@/lib/waitlist';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 /**
  * "Avise-me" da página de região indisponível. Grava na mesma lista de interesse
  * (WaitlistEntry) usada pela landing, guardando o país detectado no acesso.
  */
 export function RegionWaitlistForm({ country: detectedCountry }: { country?: string }) {
+  const { tx } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   // When the country cannot be detected from the request, the person picks it.
@@ -49,7 +51,7 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
 
       setDone(true);
     } catch {
-      setError('Não foi possível salvar agora. Tente novamente.');
+      setError(tx('Não foi possível salvar agora. Tente novamente.'));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
         className="flex items-center justify-center gap-3 rounded-full border border-emerald-100 bg-emerald-50 px-6 py-4 text-left text-sm font-semibold text-emerald-700"
       >
         <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-        Pronto! Avisaremos por e-mail quando chegarmos à sua região.
+        {tx('Pronto! Avisaremos por e-mail quando chegarmos à sua região.')}
       </div>
     );
   }
@@ -77,8 +79,8 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
         <input
           type="text"
           autoComplete="name"
-          placeholder="Seu nome"
-          aria-label="Seu nome"
+          placeholder={tx('Seu nome')}
+          aria-label={tx('Seu nome')}
           aria-invalid={Boolean(error)}
           required
           value={name}
@@ -96,8 +98,8 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="Seu e-mail"
-          aria-label="Seu e-mail"
+          placeholder={tx('Seu e-mail')}
+          aria-label={tx('Seu e-mail')}
           aria-invalid={Boolean(error)}
           required
           value={email}
@@ -131,8 +133,8 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
             'Enviando...'
           ) : (
             <>
-              <span className="sm:hidden">Avise-me quando chegar</span>
-              <span className="hidden sm:inline">Avise-me</span>
+              <span className="sm:hidden">{tx('Avise-me quando chegar')}</span>
+              <span className="hidden sm:inline">{tx('Avise-me')}</span>
             </>
           )}
         </button>
@@ -140,7 +142,7 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
 
       {!detectedCountry ? (
         <select
-          aria-label="Seu país"
+          aria-label={tx('Seu país')}
           required
           value={pickedCountry}
           onChange={(event) => {
@@ -149,7 +151,7 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
           }}
           className="mt-3 h-14 w-full rounded-full border border-slate-200 bg-surface px-6 text-base text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 sm:h-12 sm:text-[15px]"
         >
-          <option value="">Selecione o seu país</option>
+          <option value="">{tx('Selecione o seu país')}</option>
           {COUNTRY_CALLING_CODE_OPTIONS.map((option) => (
             <option key={option.iso2} value={option.country}>
               {option.country}
@@ -164,8 +166,8 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
         </p>
       ) : (
         <p className="mt-4 text-[13px] text-slate-400">
-          <span className="sm:hidden">Um único e-mail, quando chegarmos.</span>
-          <span className="hidden sm:inline">Enviamos um único e-mail quando chegarmos à sua região.</span>
+          <span className="sm:hidden">{tx('Um único e-mail, quando chegarmos.')}</span>
+          <span className="hidden sm:inline">{tx('Enviamos um único e-mail quando chegarmos à sua região.')}</span>
         </p>
       )}
     </form>

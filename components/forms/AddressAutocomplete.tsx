@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { LoaderCircle, MapPin } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type AddressAutocompleteProps = {
   value: string;
@@ -22,6 +23,7 @@ type AddressSuggestion = {
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 export default function AddressAutocomplete({ value, onChange, placeholder = 'Pesquise o endereço completo', className = '', disabled = false }: AddressAutocompleteProps) {
+  const { tx } = useLanguage();
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -121,14 +123,14 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Pe
               className="flex w-full items-start gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-brand-50"
             >
               <MapPin size={15} className="mt-0.5 shrink-0 text-brand-500" />
-              <span>{suggestion.label}</span>
+              <span>{tx(suggestion.label)}</span>
             </button>
           ))}
         </div>
       ) : null}
 
       <p className="mt-1 px-1 text-[11px] text-slate-400">
-        {MAPBOX_TOKEN ? 'Ao pesquisar, o texto do endereço é enviado à Mapbox para gerar sugestões.' : 'Digite o endereço completo.'}
+        {MAPBOX_TOKEN ? tx('Ao pesquisar, o texto do endereço é enviado à Mapbox para gerar sugestões.') : tx('Digite o endereço completo.')}
       </p>
     </div>
   );

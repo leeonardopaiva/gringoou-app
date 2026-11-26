@@ -6,6 +6,7 @@ import PhoneNumberField from '@/components/forms/PhoneNumberField';
 import { findCountryByIso2 } from '@/lib/country-calling-codes';
 import { buildInternationalPhone } from '@/lib/forms/phone';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -19,6 +20,7 @@ const formatCountdown = (seconds: number) => `${Math.floor(seconds / 60)}:${Stri
 
 /** Código em caixas separadas. Um único campo invisível recebe a digitação, a colagem e o preenchimento automático do SMS. */
 function CodeBoxes({ value, onChange, invalid, disabled }: { value: string; onChange: (value: string) => void; invalid: boolean; disabled: boolean }) {
+  const { tx } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
 
@@ -34,7 +36,7 @@ function CodeBoxes({ value, onChange, invalid, disabled }: { value: string; onCh
         autoFocus
         maxLength={CODE_LENGTH}
         disabled={disabled}
-        aria-label="Código de 6 dígitos"
+        aria-label={tx('Código de 6 dígitos')}
         aria-invalid={invalid}
         value={value}
         onChange={(event) => onChange(event.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH))}
@@ -62,6 +64,7 @@ function CodeBoxes({ value, onChange, invalid, disabled }: { value: string; onCh
 }
 
 export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) => void }) {
+  const { tx } = useLanguage();
   const [step, setStep] = useState<Step>('phone');
   const [countryIso2, setCountryIso2] = useState('US');
   const [localNumber, setLocalNumber] = useState('');
@@ -107,7 +110,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
       setCode('');
       setSecondsLeft(RESEND_SECONDS);
     } catch {
-      setError('Não foi possível enviar o código agora. Tente novamente.');
+      setError(tx('Não foi possível enviar o código agora. Tente novamente.'));
     } finally {
       setLoading(false);
     }
@@ -133,7 +136,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
       setStep('done');
       onVerified?.(verifiedPhone);
     } catch {
-      setError('Não foi possível confirmar o código agora. Tente novamente.');
+      setError(tx('Não foi possível confirmar o código agora. Tente novamente.'));
     } finally {
       setLoading(false);
     }
@@ -149,7 +152,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
     return (
       <div role="status" className="flex items-center gap-3 rounded-2xl bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-700">
         <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-        Telefone confirmado: {confirmedPhone}
+        {tx('Telefone confirmado:')} {confirmedPhone}
       </div>
     );
   }
@@ -161,9 +164,9 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
     return (
       <form onSubmit={(event) => { event.preventDefault(); void confirmCode(code); }} className="flex flex-col gap-6" noValidate>
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-extrabold tracking-tight text-ink-3">Digite o código</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight text-ink-3">{tx('Digite o código')}</h2>
           <p className="text-sm text-ink-5">
-            Enviamos 6 dígitos por SMS para <strong className="font-bold text-ink-3">{dialCode} ••••• {lastDigits}</strong>
+            {tx('Enviamos 6 dígitos por SMS para')} <strong className="font-bold text-ink-3">{dialCode} ••••• {lastDigits}</strong>
           </p>
         </div>
 
@@ -187,20 +190,20 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
 
           <div className="flex items-center justify-between gap-3 text-sm">
             {secondsLeft > 0 ? (
-              <span className="text-ink-6">Reenviar código em {formatCountdown(secondsLeft)}</span>
+              <span className="text-ink-6">{tx('Reenviar código em')} {formatCountdown(secondsLeft)}</span>
             ) : (
               <button type="button" disabled={loading} onClick={() => void sendCode()} className="font-semibold text-brand-600 disabled:opacity-60">
-                Reenviar código
+                {tx('Reenviar código')}
               </button>
             )}
             <button type="button" disabled={loading} onClick={changeNumber} className="font-semibold text-brand-600 disabled:opacity-60">
-              Alterar número
+              {tx('Alterar número')}
             </button>
           </div>
         </div>
 
         <button type="submit" disabled={loading || code.length < CODE_LENGTH} className={buttonClassName}>
-          {loading ? 'Confirmando...' : 'Confirmar'}
+          {loading ? tx('Confirmando...') : tx('Confirmar')}
         </button>
       </form>
     );
@@ -209,8 +212,8 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
   return (
     <form onSubmit={sendCode} className="flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-extrabold tracking-tight text-ink-3">Confirme seu telefone</h2>
-        <p className="text-sm text-ink-5">Enviaremos um código por SMS para confirmar que é você.</p>
+        <h2 className="text-2xl font-extrabold tracking-tight text-ink-3">{tx('Confirme seu telefone')}</h2>
+        <p className="text-sm text-ink-5">{tx('Enviaremos um código por SMS para confirmar que é você.')}</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -223,7 +226,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
           value={localNumber}
           onValueChange={setLocalNumber}
           onInteract={() => setError(null)}
-          placeholder="Número de telefone"
+          placeholder={tx('Número de telefone')}
           invalid={Boolean(error)}
         />
 
@@ -235,7 +238,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
       </div>
 
       <button type="submit" disabled={loading || localNumber.replace(/\D/g, '').length < 6} className={buttonClassName}>
-        {loading ? 'Enviando...' : 'Continuar'}
+        {loading ? tx('Enviando...') : tx('Continuar')}
       </button>
     </form>
   );

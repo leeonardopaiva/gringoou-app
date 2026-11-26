@@ -32,6 +32,7 @@ import {
   validateOptionalUrlField,
 } from '../lib/forms/validation';
 import { sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const CATEGORIES = [
   'Eletrônicos',
@@ -93,6 +94,7 @@ type MarketplaceListProps = {
 };
 
 const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) => {
+  const { tx } = useLanguage();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
@@ -158,7 +160,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         });
       } catch (err) {
         console.error('Failed to load marketplace:', err);
-        setError('Não foi possível carregar os anúncios agora.');
+        setError(tx('Não foi possível carregar os anúncios agora.'));
         setItems([]);
       } finally {
         setLoading(false);
@@ -226,7 +228,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         return;
       }
 
-      showToast('Seu anúncio foi enviado para aprovação.', 'success');
+      showToast(tx('Seu anúncio foi enviado para aprovação.'), 'success');
       setForm(emptyForm);
       setShowCreate(false);
       setPage(1);
@@ -234,7 +236,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       void fetchItems(1);
     } catch (err) {
       console.error('Failed to create listing:', err);
-      showToast('Não foi possível publicar o anúncio.', 'error');
+      showToast(tx('Não foi possível publicar o anúncio.'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -254,7 +256,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       );
     } catch (err) {
       console.error('Failed to toggle favorite:', err);
-      showToast('Não foi possível salvar.', 'error');
+      showToast(tx('Não foi possível salvar.'), 'error');
     } finally {
       setTogglingId(null);
     }
@@ -265,20 +267,20 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
   return (
     <ContentColumn size="wide" className="pb-20 pt-2">
       <PageHeader
-        title="Marketplace"
+        title={tx('Marketplace')}
         backHref="/home"
         action={
           <div className="flex items-center gap-2">
             <Link
               href="/inbox"
-              aria-label="Minhas mensagens"
-              title="Minhas mensagens"
+              aria-label={tx('Minhas mensagens')}
+              title={tx('Minhas mensagens')}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-600 transition hover:border-brand-300 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200"
             >
               <MessageCircle size={18} />
             </Link>
-            <Button size="sm" iconLeft={<Plus size={16} />} aria-label="Anunciar" onClick={() => setShowCreate(true)}>
-              <span className="hidden sm:inline">Anunciar</span>
+            <Button size="sm" iconLeft={<Plus size={16} />} aria-label={tx('Anunciar')} onClick={() => setShowCreate(true)}>
+              <span className="hidden sm:inline">{tx('Anunciar')}</span>
             </Button>
           </div>
         }
@@ -286,7 +288,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
 
       <SubHeader
         className="mt-2"
-        tabsLabel="Anúncios"
+        tabsLabel={tx('Anúncios')}
         tabs={SCOPE_TABS}
         activeTab={scope}
         onTabChange={(id) => {
@@ -295,11 +297,11 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         }}
         filters={{
           fields: [
-            { type: 'search', id: 'q', label: 'Buscar', placeholder: 'Buscar anúncios' },
-            { type: 'select', id: 'category', label: 'Categoria', options: [{ value: '', label: 'Todas' }, ...CATEGORIES.map((cat) => ({ value: cat, label: cat }))] },
-            { type: 'select', id: 'sort', label: 'Ordenar por', options: SORT_OPTIONS.map((option) => ({ value: option.id, label: option.label })) },
-            { type: 'number', id: 'minPrice', label: 'Preço mín. (US$)' },
-            { type: 'number', id: 'maxPrice', label: 'Preço máx. (US$)' },
+            { type: 'search', id: 'q', label: tx('Buscar'), placeholder: tx('Buscar anúncios') },
+            { type: 'select', id: 'category', label: tx('Categoria'), options: [{ value: '', label: tx('Todas') }, ...CATEGORIES.map((cat) => ({ value: cat, label: cat }))] },
+            { type: 'select', id: 'sort', label: tx('Ordenar por'), options: SORT_OPTIONS.map((option) => ({ value: option.id, label: option.label })) },
+            { type: 'number', id: 'minPrice', label: tx('Preço mín. (US$)') },
+            { type: 'number', id: 'maxPrice', label: tx('Preço máx. (US$)') },
           ],
           values: { q: search, category, sort, minPrice, maxPrice },
           defaults: { sort: 'recent' },
@@ -335,17 +337,17 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         </ListingGrid>
       ) : error ? (
         <div className="mt-6">
-          <EmptyState icon={<ShoppingBag size={28} />} title="Anúncios indisponíveis" description={error} />
+          <EmptyState icon={<ShoppingBag size={28} />} title={tx('Anúncios indisponíveis')} description={error} />
         </div>
       ) : filteredCount === 0 ? (
         <div className="mt-6">
           <EmptyState
             icon={<ShoppingBag size={28} />}
-            title="Nenhum anúncio encontrado"
-            description="Ajuste os filtros ou publique o primeiro anúncio da sua região."
+            title={tx('Nenhum anúncio encontrado')}
+            description={tx('Ajuste os filtros ou publique o primeiro anúncio da sua região.')}
             action={
               <Button size="sm" iconLeft={<Plus size={16} />} onClick={() => setShowCreate(true)}>
-                Anunciar
+                {tx('Anunciar')}
               </Button>
             }
           />
@@ -377,22 +379,22 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       <Modal
         open={showCreate}
         onClose={() => setShowCreate(false)}
-        title="Publicar anúncio"
-        description="Preencha os dados do item. Anúncios passam por aprovação antes de ficarem visíveis."
+        title={tx('Publicar anúncio')}
+        description={tx('Preencha os dados do item. Anúncios passam por aprovação antes de ficarem visíveis.')}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowCreate(false)}>
-              Cancelar
+              {tx('Cancelar')}
             </Button>
             <Button type="submit" form="marketplace-create-form" loading={submitting}>
-              Publicar
+              {tx('Publicar')}
             </Button>
           </div>
         }
       >
         <form id="marketplace-create-form" onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Título</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Título')}</label>
             <Input
               value={form.title}
               onChange={(event) => {
@@ -401,12 +403,12 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               }}
               state={fieldErrors.title ? 'error' : 'default'}
               helperText={fieldErrors.title}
-              placeholder="Ex.: Sofá 3 lugares"
+              placeholder={tx('Ex.: Sofá 3 lugares')}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Descrição</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Descrição')}</label>
             <textarea
               value={form.description}
               onChange={(event) => {
@@ -414,7 +416,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
                 clearFieldError('description');
               }}
               rows={4}
-              placeholder="Descreva o item, estado e detalhes relevantes."
+              placeholder={tx('Descreva o item, estado e detalhes relevantes.')}
               className="w-full rounded-2xl border-2 border-slate-200 bg-surface px-4 py-3 text-sm focus:border-brand-500 focus:outline-none"
             />
             {fieldErrors.description ? <FieldErrorMessage message={fieldErrors.description} /> : null}
@@ -422,7 +424,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-bold text-slate-600">Categoria</label>
+              <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Categoria')}</label>
               <select
                 value={form.category}
                 onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
@@ -436,7 +438,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-bold text-slate-600">Condição</label>
+              <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Condição')}</label>
               <select
                 value={form.condition}
                 onChange={(event) => setForm((current) => ({ ...current, condition: event.target.value }))}
@@ -444,7 +446,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
               >
                 {CONDITIONS.map((condition) => (
                   <option key={condition.id} value={condition.id}>
-                    {condition.label}
+                    {tx(condition.label)}
                   </option>
                 ))}
               </select>
@@ -462,11 +464,11 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
                 }}
                 className="h-4 w-4 rounded border-slate-300 text-brand-500"
               />
-              Grátis / Doação
+              {tx('Grátis / Doação')}
             </label>
             {!form.isFree ? (
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-bold text-slate-600">Preço (US$)</label>
+                <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Preço (US$)')}</label>
                 <Input
                   type="number"
                   min="0"
@@ -485,16 +487,16 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Localização</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Localização')}</label>
             <AddressAutocomplete
               value={form.locationLabel}
               onChange={(value, latitude, longitude) => setForm((current) => ({ ...current, locationLabel: value, latitude: latitude ?? null, longitude: longitude ?? null }))}
-              placeholder="Bairro, cidade ou endereço"
+              placeholder={tx('Bairro, cidade ou endereço')}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Imagem principal</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Imagem principal')}</label>
             <CloudinaryImageField
               value={form.imageUrl}
               onChange={(value) => {
@@ -508,7 +510,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold text-slate-600">Galeria</label>
+            <label className="mb-1 block text-xs font-bold text-slate-600">{tx('Galeria')}</label>
             <ImageGalleryField
               value={form.galleryUrls}
               onChange={(value) => setForm((current) => ({ ...current, galleryUrls: value }))}

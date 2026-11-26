@@ -9,6 +9,7 @@ import { Popover } from '@/components/ui/Popover';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { MessagePrivacyModal } from '@/components/profile/MessagePrivacySection';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 type ManagedBusiness = {
   id: string;
@@ -51,7 +52,9 @@ function mapKnownBusinesses(businesses: NonNullable<CommunityAccountMenuProps['k
 const NO_KNOWN_BUSINESSES: NonNullable<CommunityAccountMenuProps['knownBusinesses']> = [];
 
 export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_KNOWN_BUSINESSES }: CommunityAccountMenuProps) {
+  const { tx } = useLanguage();
   const router = useRouter();
+  const { t } = useLanguage();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -178,7 +181,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
 
   return (
     <div ref={rootRef} className="relative">
-      <button type="button" aria-label="Abrir menu da conta" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-10 items-center gap-1 rounded-full p-0 transition hover:bg-slate-100">
+      <button type="button" aria-label={t('account.open')} aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-10 items-center gap-1 rounded-full p-0 transition hover:bg-slate-100">
         <Avatar src={user.avatar} name={user.name} size="sm" />
         <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
       </button>
@@ -187,42 +190,42 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
           <div className="p-2">
             <div className="flex items-center gap-3 px-3 py-2">
               <Avatar src={user.avatar} name={user.name} size="sm" />
-              <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || 'Conta pessoal'}</span></span>
+              <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-900">{user.name}</strong><span className="block truncate text-xs text-slate-500">{user.email || t('account.personal')}</span></span>
             </div>
             {[
-              { label: 'Editar perfil', icon: <Settings size={16} />, href: '/profile?edit=profile' },
-              { label: 'Perfil público', icon: <ExternalLink size={16} />, href: profileHref },
-              { label: 'Privacidade', icon: <ShieldCheck size={16} />, href: null },
+              { label: t('account.editProfile'), icon: <Settings size={16} />, href: '/profile?edit=profile' },
+              { label: t('account.publicProfile'), icon: <ExternalLink size={16} />, href: profileHref },
+              { label: t('account.privacy'), icon: <ShieldCheck size={16} />, href: null },
             ].map((item) => (
-              <button key={item.label} type="button" onClick={() => { setOpen(false); if (item.href) router.push(item.href); else setPrivacyOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"><span className="text-slate-400">{item.icon}</span>{item.label}</button>
+              <button key={item.label} type="button" onClick={() => { setOpen(false); if (item.href) router.push(item.href); else setPrivacyOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"><span className="text-slate-400">{item.icon}</span>{tx(item.label)}</button>
             ))}
           </div>
           <div className="border-t border-slate-100 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Meus negócios</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('account.myBusinesses')}</p>
             {isLoadingBusinesses ? (
-              <div className="mt-3 h-12 animate-pulse rounded-xl bg-slate-100" aria-label="Carregando negócios" />
+              <div className="mt-3 h-12 animate-pulse rounded-xl bg-slate-100" aria-label={tx('Carregando negócios')} />
             ) : businesses.length ? <>
               <div className="mt-2 max-h-56 space-y-1.5 overflow-y-auto pr-1">
                 {businesses.map((business) => (
                   <div key={business.id} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
                     <Avatar src={business.imageUrl} name={business.name} size="sm" />
                     <strong className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800" title={business.name}>{business.name}</strong>
-                    <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`Abrir painel de ${business.name}`} title="Painel do negócio"><Settings size={16} /></button>
-                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`Ver página de ${business.name}`} title="Ver página"><ExternalLink size={15} /></button> : null}
-                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`Criar página para ${business.name}`} title="Criar página"><Store size={15} /></button> : null}
+                    <button type="button" onClick={() => void openBusinessManagement(business)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100" aria-label={`${tx('Abrir painel de')} ${business.name}`} title={tx('Painel do negócio')}><Settings size={16} /></button>
+                    {business.publicPath ? <button type="button" onClick={() => { setOpen(false); router.push(business.publicPath!); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`${tx('Ver página de')} ${business.name}`} title={tx('Ver página')}><ExternalLink size={15} /></button> : null}
+                    {business.adsOnly ? <button type="button" onClick={() => { setOpen(false); router.push(`/businesses?create=1&adAccountId=${encodeURIComponent(business.adAccountId || '')}`); }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-surface hover:text-brand-600" aria-label={`${tx('Criar página para')} ${business.name}`} title={tx('Criar página')}><Store size={15} /></button> : null}
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => { setOpen(false); router.push('/businesses?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />Cadastrar negócio</button>
+              <button type="button" onClick={() => { setOpen(false); router.push('/businesses?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand-200 p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50"><BriefcaseBusiness size={18} />{tx('Cadastrar negócio')}</button>
             </> : (
               <button type="button" onClick={() => { setOpen(false); router.push('/businesses?create=1'); }} className="mt-2 flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-brand-600 hover:bg-brand-50">
-                <BriefcaseBusiness size={18} /> Cadastrar negócio gratuitamente
+                <BriefcaseBusiness size={18} /> {tx('Cadastrar negócio gratuitamente')}
               </button>
             )}
           </div>
           <div className="border-t border-slate-100 p-2">
-            <button type="button" onClick={() => { setOpen(false); router.push(hasAdAccounts ? '/ads/overview' : businesses.length ? '/ads/accounts/new' : '/businesses?create=1'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Megaphone size={17} />{hasAdAccounts ? 'Gerenciar anúncios' : businesses.length ? 'Criar campanha' : 'Como anunciar'}</button>
-            <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={17} />Sair</button>
+            <button type="button" onClick={() => { setOpen(false); router.push(hasAdAccounts ? '/ads/overview' : businesses.length ? '/ads/accounts/new' : '/businesses?create=1'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Megaphone size={17} />{hasAdAccounts ? tx('Gerenciar anúncios') : businesses.length ? tx('Criar campanha') : tx('Como anunciar')}</button>
+            <button type="button" onClick={() => void signOut({ callbackUrl: '/login' })} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"><LogOut size={17} />{t('account.signOut')}</button>
           </div>
         </div>
       </Popover>
@@ -230,10 +233,10 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
       <Modal
         open={Boolean(activating)}
         onClose={() => (activatingBusy ? undefined : setActivating(null))}
-        title="Ativar o painel do negócio"
+        title={tx('Ativar o painel do negócio')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setActivating(null)} disabled={activatingBusy}>Agora não</Button>
+            <Button variant="secondary" onClick={() => setActivating(null)} disabled={activatingBusy}>{tx('Agora não')}</Button>
             <Button
               loading={activatingBusy}
               onClick={async () => {
@@ -244,12 +247,12 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
                 setActivating(null);
               }}
             >
-              Ativar e abrir
+              {tx('Ativar e abrir')}
             </Button>
           </>
         }
       >
-        <p className="text-sm text-slate-600">Você vai ativar o painel de <strong className="text-slate-900">{activating?.name ?? 'seu negócio'}</strong>.</p>
+        <p className="text-sm text-slate-600">{tx('Você vai ativar o painel de')} <strong className="text-slate-900">{activating?.name ?? tx('seu negócio')}</strong>.</p>
         <ul className="mt-4 space-y-3">
           {[
             ['Mensagens', 'Veja e responda quem escreveu para o seu negócio.'],
@@ -262,7 +265,7 @@ export function CommunityAccountMenu({ user, profileHref, knownBusinesses = NO_K
             </li>
           ))}
         </ul>
-        <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-500">Ativar é <strong className="text-slate-700">gratuito</strong>. Você só paga se decidir criar uma campanha.</p>
+        <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-500">{tx('Ativar é')} <strong className="text-slate-700">{tx('gratuito')}</strong>{tx('. Você só paga se decidir criar uma campanha.')}</p>
       </Modal>
     </div>
   );

@@ -45,7 +45,8 @@ import RegionSelector from './RegionSelector';
 import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
 import { ActiveRegionProvider } from './RegionContext';
-import { LanguageProvider } from './i18n/LanguageProvider';
+import { useLanguage } from './i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 interface LogoProps {
@@ -56,6 +57,7 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', professional = false, href = '/' }) => {
+  const { tx } = useLanguage();
   const sizePx = {
     xs: 24,
     sm: 28,
@@ -64,10 +66,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', profess
   }[size];
 
   return (
-    <Link href={href} aria-label="Home">
+    <Link href={href} aria-label={tx('Home')}>
       <span className={`inline-flex items-center transition-opacity duration-300 ${professional ? 'opacity-95' : ''} ${className}`}>
         <GringoouLogo size={sizePx} />
-        <span className="sr-only">Gringoou</span>
+        <span className="sr-only">{tx('Gringoou')}</span>
       </span>
     </Link>
   );
@@ -87,22 +89,22 @@ interface LayoutWithUserProps {
 
 type NavigationItem = {
   href: string;
-  label: string;
+  labelKey: TranslationKey;
   icon: React.ReactNode;
   disabled?: boolean;
   badge?: string;
 };
 
 const navigationItems: NavigationItem[] = [
-  { href: '/home', label: 'Home', icon: <HomeIcon size={22} /> },
-  { href: '/businesses', label: 'Negócios', icon: <Store size={18} /> },
-  { href: '/community', label: 'Comunidade', icon: <Users size={24} /> },
-  { href: '/groups', label: 'Grupos', icon: <MessageCircle size={24} /> },
-  { href: '/events', label: 'Eventos', icon: <Calendar size={18} /> },
-  { href: '/jobs', label: 'Vagas', icon: <Briefcase size={18} /> },
-  { href: '/housing', label: 'Moradia', icon: <House size={18} /> },
-  { href: '/marketplace', label: 'Marketplace', icon: <ShoppingBag size={18} /> },
-  { href: '/news', label: 'Notícias', icon: <Newspaper size={18} /> },
+  { href: '/home', labelKey: 'menu.home', icon: <HomeIcon size={22} /> },
+  { href: '/businesses', labelKey: 'menu.businesses', icon: <Store size={18} /> },
+  { href: '/community', labelKey: 'menu.community', icon: <Users size={24} /> },
+  { href: '/groups', labelKey: 'menu.groups', icon: <MessageCircle size={24} /> },
+  { href: '/events', labelKey: 'menu.events', icon: <Calendar size={18} /> },
+  { href: '/jobs', labelKey: 'menu.jobs', icon: <Briefcase size={18} /> },
+  { href: '/housing', labelKey: 'menu.housing', icon: <House size={18} /> },
+  { href: '/marketplace', labelKey: 'menu.marketplace', icon: <ShoppingBag size={18} /> },
+  { href: '/news', labelKey: 'menu.news', icon: <Newspaper size={18} /> },
 ];
 
 const SidebarContent: React.FC<{
@@ -128,19 +130,21 @@ const SidebarContent: React.FC<{
   collapsed = false,
   onToggleCollapsed,
 }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const activeName = user.name;
   const activeAvatar = user.avatar;
-  const activeSubtitle = user.username ? `@${user.username}` : 'Membro da comunidade';
+  const activeSubtitle = user.username ? `@${user.username}` : t('menu.member');
 
   const handleDisabledNavigation = (item: NavigationItem) => {
     onItemClick?.();
-    showToast(`${item.label} chega em breve.`, 'info');
+    showToast(`${t(item.labelKey)} chega em breve.`, 'info');
     trackAnalyticsEvent({
       type: 'disabled_feature_click',
       targetType: 'feature',
       targetKey: item.href.replace(/^\//, ''),
-      label: item.label,
+      label: t(item.labelKey),
       sourcePath,
       sourceSection: 'sidebar_navigation',
       regionKey: user.regionKey,
@@ -153,8 +157,8 @@ const SidebarContent: React.FC<{
         <div className="mb-5 space-y-4">
           <div className={`flex items-center gap-1 ${collapsed ? 'justify-center' : 'justify-start'}`}>
           {collapsed ? (
-            <Link href="/home" aria-label="Ir para a Home" title="Home" className="flex h-9 w-9 items-center justify-center">
-              <img src="/assets/logo_simbolo.svg" alt="Gringoou" className="h-8 w-8 object-contain" />
+            <Link href="/home" aria-label={t('menu.goHome')} title={t('menu.home')} className="flex h-9 w-9 items-center justify-center">
+              <img src="/assets/logo_simbolo.svg" alt={tx('Gringoou')} className="h-8 w-8 object-contain" />
             </Link>
           ) : (
             <Logo size="lg" href="/home" />
@@ -162,8 +166,8 @@ const SidebarContent: React.FC<{
           <button
             type="button"
             onClick={onToggleCollapsed}
-            aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            aria-label={collapsed ? t('menu.expand') : t('menu.collapse')}
+            title={collapsed ? t('menu.expand') : t('menu.collapse')}
             className="order-last hidden h-7 w-7 items-center justify-center rounded-full text-brand-600 transition hover:bg-brand-50 lg:inline-flex"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -181,7 +185,7 @@ const SidebarContent: React.FC<{
           {navigationItems.map((item) => (
             <SidebarMenuItem
               key={item.href}
-              label={item.label}
+              label={t(item.labelKey)}
               icon={item.icon}
               active={isActive(item.href)}
               disabled={item.disabled}
@@ -194,18 +198,18 @@ const SidebarContent: React.FC<{
 
         <div className="my-3 border-t border-slate-200" role="separator" />
 
-        <SidebarMenu label="Acessos restritos e perfil">
+        <SidebarMenu label={t('menu.restricted')}>
           {user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR ? (
             <>
               <SidebarMenuItem
-                label={user.role === UserRole.MODERATOR ? 'Moderação' : 'Admin'}
+                label={user.role === UserRole.MODERATOR ? t('menu.moderation') : t('menu.admin')}
                 icon={<ShieldCheck size={18} />}
                 active={isActive('/admin')}
                 collapsed={collapsed}
                 onClick={() => onNavigate(user.role === UserRole.MODERATOR ? '/admin/moderation' : '/admin')}
               />
               {user.role === UserRole.ADMIN ? <SidebarMenuItem
-                label="Moderar anúncios"
+                label={t('menu.moderateAds')}
                 icon={<ShieldCheck size={18} />}
                 active={isActive('/admin/ads')}
                 collapsed={collapsed}
@@ -214,7 +218,7 @@ const SidebarContent: React.FC<{
             </>
           ) : null}
           <SidebarMenuItem
-            label="Meu perfil público"
+            label={t('menu.publicProfile')}
             icon={<UserIcon size={18} />}
             active={isActive('/perfil')}
             collapsed={collapsed}
@@ -222,7 +226,7 @@ const SidebarContent: React.FC<{
           />
           {professionalBusinesses.length > 0 ? (
             <SidebarMenuItem
-              label="Página de negócio"
+              label={t('menu.businessPage')}
               icon={<Store size={18} />}
               active={isActive('/businesses') && sourcePath.includes('/gerenciar')}
               collapsed={collapsed}
@@ -244,7 +248,7 @@ const SidebarContent: React.FC<{
               window.dispatchEvent(new CustomEvent('gringoou:open-suggestion-modal'));
             }}
           >
-            Enviar sugestão
+            {tx('Enviar sugestão')}
           </Button>
           {onSignOut ? (
             <Button
@@ -255,7 +259,7 @@ const SidebarContent: React.FC<{
                 onSignOut();
               }}
             >
-              Sair
+              {tx('Sair')}
             </Button>
           ) : null}
         </div>
@@ -275,7 +279,9 @@ const Layout: React.FC<LayoutWithUserProps> = ({
   onPersonaModeChange,
   onSignOut,
 }) => {
+  const { tx } = useLanguage();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const { unreadCount } = useMessaging();
   const { update: updateSession } = useSession();
   const pathname = usePathname() || '/';
@@ -411,7 +417,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
       setActiveRegion(confirmedRegion);
       setSelectedRegion(confirmedRegion);
       setIsRegionSelectorOpen(false);
-      showToast('Região atualizada. Carregando o conteúdo local...', 'success');
+      showToast(tx('Região atualizada. Carregando o conteúdo local...'), 'success');
 
       notifyContentUpdated({
         refreshSession: true,
@@ -462,7 +468,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(true)}
-                  aria-label="Abrir menu de navegação"
+                  aria-label={t('menu.open')}
                   className={`shrink-0 rounded-full p-1.5 transition hover:bg-slate-100 ${accentColorClass}`}
                 >
                   <Menu size={24} />
@@ -487,7 +493,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       startNavigation(() => router.push(`/search?q=${encodeURIComponent(query)}`));
                     }}
                     onVoiceError={(message) => showToast(message, 'error')}
-                    animatedTerms={['Negócios', 'Eventos', 'Vagas']}
+                    animatedTerms={[t('menu.businesses'), t('menu.events'), t('menu.jobs')]}
                     animatedIndex={searchTermIndex}
                     className="h-12 shadow-none"
                   />
@@ -498,8 +504,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <button
                   type="button"
                   onClick={openRegionSelector}
-                  aria-label={`Região da comunidade: ${activeRegion.label}`}
-                  title={`Alterar região: ${activeRegion.label}`}
+                  aria-label={`${tx('Região da comunidade:')} ${activeRegion.label}`}
+                  title={`${tx('Alterar região:')} ${activeRegion.label}`}
                   className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 xl:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
@@ -508,8 +514,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <button
                   type="button"
                   onClick={openRegionSelector}
-                  aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
-                  title={`Alterar região: ${activeRegion.label}`}
+                  aria-label={`${tx('Alterar região da comunidade:')} ${activeRegion.label}`}
+                  title={`${tx('Alterar região:')} ${activeRegion.label}`}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 xl:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
@@ -526,7 +532,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
 
           <main className="mx-auto w-full max-w-[1600px] px-3 pt-4 sm:px-4 lg:px-6 lg:pt-6">
             <ActiveRegionProvider value={activeRegion.key || null}>
-              <LanguageProvider>{children}</LanguageProvider>
+              {children}
             </ActiveRegionProvider>
           </main>
 
@@ -549,7 +555,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       handleNavigate('/community?compose=1');
                     }}
                   >
-                    Publicar
+                    {tx('Publicar')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -561,15 +567,15 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                       window.dispatchEvent(new CustomEvent('gringoou:open-suggestion-modal'));
                     }}
                   >
-                    Enviar sugestão
+                    {t('menu.suggest')}
                   </Button>
                 </div>
               ) : null}
 
               <nav className="flex h-[60px] w-full items-center justify-between rounded-full border border-slate-200/80 bg-surface/95 px-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur">
-                <NavItem label="Home" icon={<HomeIcon size={24} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
+                <NavItem label={t('menu.home')} icon={<HomeIcon size={24} />} active={isActive('/home')} onNavigate={() => handleNavigate('/home')} />
                 <NavItem
-                  label="Buscar"
+                  label={t('menu.search')}
                   icon={<SearchIcon size={24} />}
                   active={isAssistantOpen}
                   onNavigate={() => {
@@ -582,15 +588,15 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsQuickMenuOpen((value) => !value)}
-                  aria-label={isQuickMenuOpen ? 'Fechar menu de criação' : 'Abrir menu de criação'}
+                  aria-label={isQuickMenuOpen ? t('menu.createClose') : t('menu.createOpen')}
                   className="-mt-7 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-md ring-[3px] ring-white transition-transform hover:brightness-105 active:scale-95"
                 >
                   {isQuickMenuOpen ? <X size={19} /> : <Plus size={21} />}
                 </button>
 
-                <NavItem label="Comunidade" icon={<Users size={24} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
+                <NavItem label={t('menu.community')} icon={<Users size={24} />} active={isActive('/community')} onNavigate={() => handleNavigate('/community')} />
                 <NavItem
-                  label="Mensagens"
+                  label={t('menu.messages')}
                   icon={<MessageCircle size={24} />}
                   active={isActive('/inbox')}
                   badge={unreadCount}
@@ -611,15 +617,15 @@ const Layout: React.FC<LayoutWithUserProps> = ({
             onClose={() => {
               if (!savingRegion) setIsRegionSelectorOpen(false);
             }}
-            title="Alterar região"
-            description="Escolha a comunidade local que deseja acompanhar."
+            title={tx('Alterar região')}
+            description={tx('Escolha a comunidade local que deseja acompanhar.')}
             footer={
               <>
                 <Button variant="ghost" onClick={() => setIsRegionSelectorOpen(false)} disabled={savingRegion}>
-                  Cancelar
+                  {tx('Cancelar')}
                 </Button>
                 <Button onClick={() => void saveRegion()} loading={savingRegion} disabled={!selectedRegion.key}>
-                  Confirmar região
+                  {tx('Confirmar região')}
                 </Button>
               </>
             }
@@ -630,8 +636,8 @@ const Layout: React.FC<LayoutWithUserProps> = ({
               autoDetect
               inlineMenu
               disabled={savingRegion}
-              label="Sua região"
-              hint="Pesquise pela cidade ou use sua localização atual."
+              label={tx('Sua região')}
+              hint={tx('Pesquise pela cidade ou use sua localização atual.')}
             />
           </Modal>
           <MarketplaceChatBubble user={user} />
@@ -647,11 +653,13 @@ const NavItem: React.FC<{
   active: boolean;
   onNavigate: () => void;
   badge?: number;
-}> = ({ label, icon, active, onNavigate, badge = 0 }) => (
+}> = ({ label, icon, active, onNavigate, badge = 0 }) => {
+  const { tx } = useLanguage();
+  return (
   <button
     type="button"
     onClick={onNavigate}
-    aria-label={badge > 0 ? `${label}, ${badge} novas` : label}
+    aria-label={badge > 0 ? `${label}, ${badge} ${tx('novas')}` : label}
     aria-current={active ? "page" : undefined}
     className="flex h-full min-w-[56px] flex-1 flex-col items-center justify-center gap-0.5"
   >
@@ -666,5 +674,6 @@ const NavItem: React.FC<{
     {active ? <span className="text-[10px] font-bold leading-none text-brand-500">{label}</span> : null}
   </button>
 );
+};
 
 export default Layout;

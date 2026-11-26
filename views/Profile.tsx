@@ -27,6 +27,7 @@ import { ContentColumn } from '../components/ui/ContentColumn';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
+import { useLanguage } from '@/components/i18n/LanguageProvider';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-navy';
@@ -98,6 +99,7 @@ const Profile: React.FC<{
   onPersonaModeChange: (mode: PersonaMode) => void;
   initialData?: ProfileInitialData;
 }> = ({ user, personaMode, canUseProfessionalMode, onPersonaModeChange, initialData }) => {
+  const { tx } = useLanguage();
   const { data: authSession, update } = useSession();
   const phoneVerificationOn = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
   const phoneVerified = Boolean(authSession?.user?.phoneVerified);
@@ -229,7 +231,7 @@ const Profile: React.FC<{
       } catch (error) {
         console.error('Failed to load profile:', error);
         if (!ignore) {
-          showToast('Não foi possível carregar todos os dados do perfil.', 'error');
+          showToast(tx('Não foi possível carregar todos os dados do perfil.'), 'error');
         }
       } finally {
         if (!ignore) {
@@ -251,9 +253,9 @@ const Profile: React.FC<{
 
     if (emailChangeStatus === 'success') {
       void update();
-      showToast('Seu email foi confirmado e atualizado com sucesso.', 'success');
+      showToast(tx('Seu email foi confirmado e atualizado com sucesso.'), 'success');
     } else {
-      showToast('Não foi possível validar esse link de troca de email.', 'error');
+      showToast(tx('Não foi possível validar esse link de troca de email.'), 'error');
     }
 
     router.replace('/profile');
@@ -399,7 +401,7 @@ const Profile: React.FC<{
       await update();
       notifyContentUpdated({ refreshSession: true });
       setEditing((current) => ({ ...current, avatar: false }));
-      if (!quiet) showToast('Foto do perfil atualizada.', 'success');
+      if (!quiet) showToast(tx('Foto do perfil atualizada.'), 'success');
       return true;
     } catch (error) {
       console.error('Failed to update avatar:', error);
@@ -412,7 +414,7 @@ const Profile: React.FC<{
 
   const requestEmailChange = async () => {
     if (!requestedEmail.trim()) {
-      showToast('Informe o novo email para continuar.', 'error');
+      showToast(tx('Informe o novo email para continuar.'), 'error');
       return;
     }
     setRequestingEmailChange(true);
@@ -424,7 +426,7 @@ const Profile: React.FC<{
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível iniciar a troca de email.'));
-      showToast('Enviamos um link de confirmação para o novo email.', 'success');
+      showToast(tx('Enviamos um link de confirmação para o novo email.'), 'success');
     } catch (error) {
       console.error('Failed to request email change:', error);
       showToast(getUserErrorMessage(error, 'Não foi possível iniciar a troca de email.'), 'error');
@@ -435,7 +437,7 @@ const Profile: React.FC<{
 
   const saveRegion = async (regionKey: string = selectedRegionKey, quiet = false): Promise<boolean> => {
     if (!regionKey) {
-      showToast('Selecione uma região valida antes de salvar.', 'error');
+      showToast(tx('Selecione uma região valida antes de salvar.'), 'error');
       return false;
     }
     setSavingKey('region');
@@ -454,7 +456,7 @@ const Profile: React.FC<{
       }));
       await update();
       setEditing((current) => ({ ...current, region: false }));
-      if (!quiet) showToast('Região atualizada com sucesso.', 'success');
+      if (!quiet) showToast(tx('Região atualizada com sucesso.'), 'success');
       return true;
     } catch (error) {
       console.error('Failed to save region:', error);
@@ -473,7 +475,7 @@ const Profile: React.FC<{
       return;
     }
     if (interestDrafts.length >= 8) {
-      showToast('Você pode usar no máximo 8 interesses.', 'error');
+      showToast(tx('Você pode usar no máximo 8 interesses.'), 'error');
       return;
     }
     setInterestDrafts((current) => [...current, normalized]);
@@ -591,7 +593,7 @@ const Profile: React.FC<{
     const validation = validateProfileDraft(profileEditDraft);
     setProfileErrors(validation);
     if (Object.values(validation).some(Boolean)) {
-      showToast('Revise os campos destacados.', 'error');
+      showToast(tx('Revise os campos destacados.'), 'error');
       return;
     }
     const patchData = {
@@ -624,7 +626,7 @@ const Profile: React.FC<{
         if (!response.ok) throw new Error();
         setPolicySaved(policyDraft);
       } catch {
-        showToast('Não foi possível salvar a privacidade de mensagens. Tente novamente.', 'error');
+        showToast(tx('Não foi possível salvar a privacidade de mensagens. Tente novamente.'), 'error');
         return;
       }
     }
@@ -669,15 +671,15 @@ const Profile: React.FC<{
         <div className={`relative h-56 ${profile.coverImageUrl ? 'bg-slate-100' : activeHeaderGradientClass}`}>
           <ImageEditMenu folder="profiles" kind="cover" src={profile.coverImageUrl} className="bottom-3 right-3" onUploaded={async (url) => { await saveProfile({ coverImageUrl: url }, 'Capa atualizada.'); }} />
           {profile.coverImageUrl ? (
-            <img src={profile.coverImageUrl} alt="Capa do perfil" className="h-full w-full object-cover object-center" />
+            <img src={profile.coverImageUrl} alt={tx('Capa do perfil')} className="h-full w-full object-cover object-center" />
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.28),_transparent_28%)]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-scrim/30 via-scrim/5 to-transparent" />
           <div className="absolute right-4 top-4 flex gap-2">
-            <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-surface/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label="Editar perfil completo">
+            <button type="button" onClick={openEditProfileModal} className="rounded-2xl border border-white/60 bg-surface/85 px-4 py-3 text-sm font-bold text-slate-600 inline-flex items-center gap-2" aria-label={tx('Editar perfil completo')}>
               <PencilLine size={16} />
-              Editar perfil
+              {tx('Editar perfil')}
             </button>
           </div>
         </div>
@@ -701,7 +703,7 @@ const Profile: React.FC<{
                   value={personaMode}
                   onChange={onPersonaModeChange}
                   personalSubtitle={`@${profile.username || 'defina-seu-nome'}`}
-                  professionalSubtitle={professionalIdentity ? `@${professionalIdentity.slug}` : 'Cadastre um negócio'}
+                  professionalSubtitle={professionalIdentity ? `@${professionalIdentity.slug}` : tx('Cadastre um negócio')}
                   professionalDisabled={!professionalIdentity}
                 />
               ) : null}
@@ -718,86 +720,86 @@ const Profile: React.FC<{
             </p>
           </div>
 
-          <Modal open={editing.profile} onClose={closeEditProfileModal} title="Editar perfil" description="Atualize todos os seus dados pessoais em um único lugar." className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+          <Modal open={editing.profile} onClose={closeEditProfileModal} title={tx('Editar perfil')} description={tx('Atualize todos os seus dados pessoais em um único lugar.')} className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
             {profileEditDraft && (
               <EditorCard>
                 <div className="space-y-4">
                   {draftRestored ? (
                     <div className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                      <span>Recuperamos as alterações que você não salvou.</span>
-                      <button type="button" onClick={resetDraftToSaved} className="shrink-0 font-bold underline">Descartar</button>
+                      <span>{tx('Recuperamos as alterações que você não salvou.')}</span>
+                      <button type="button" onClick={resetDraftToSaved} className="shrink-0 font-bold underline">{tx('Descartar')}</button>
                     </div>
                   ) : null}
                   <div>
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Capa do perfil</h3>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Capa do perfil')}</h3>
                     <div className="space-y-3">
-                      <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" cropAspect={2} placeholder="Link da capa" hint="Use uma imagem horizontal para destacar seu perfil." />
+                      <CloudinaryImageField value={profileEditDraft.coverImageUrl} onChange={(coverImageUrl) => setProfileEditDraft((c) => c ? { ...c, coverImageUrl } : null)} folder="profiles" cropAspect={2} placeholder={tx('Link da capa')} hint={tx('Use uma imagem horizontal para destacar seu perfil.')} />
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Foto do perfil</h3>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Foto do perfil')}</h3>
                     <div className="space-y-3">
-                      <CloudinaryImageField value={profileEditDraft.image} onChange={(image) => setProfileEditDraft((c) => c ? { ...c, image } : null)} folder="profiles" cropAspect={1} placeholder="Link da foto do perfil" hint="Envie uma foto quadrada, com o rosto bem visível." />
+                      <CloudinaryImageField value={profileEditDraft.image} onChange={(image) => setProfileEditDraft((c) => c ? { ...c, image } : null)} folder="profiles" cropAspect={1} placeholder={tx('Link da foto do perfil')} hint={tx('Envie uma foto quadrada, com o rosto bem visível.')} />
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Informações pessoais</h3>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Informações pessoais')}</h3>
                     <div className="space-y-4">
-                      <Field label="Nome completo" required error={profileErrors.name}>
-                        <Input label="Nome completo" required error={profileErrors.name} value={profileEditDraft.name} onChange={(name) => { clearProfileError('name'); setProfileEditDraft((c) => c ? { ...c, name } : null); }} placeholder="Seu nome completo" icon={<UserRound size={16} />} />
+                      <Field label={tx('Nome completo')} required error={profileErrors.name}>
+                        <Input label={tx('Nome completo')} required error={profileErrors.name} value={profileEditDraft.name} onChange={(name) => { clearProfileError('name'); setProfileEditDraft((c) => c ? { ...c, name } : null); }} placeholder={tx('Seu nome completo')} icon={<UserRound size={16} />} />
                       </Field>
-                      <Field label="Nome público" required error={profileErrors.username}>
-                        <Input label="Nome público" required error={profileErrors.username} value={profileEditDraft.username} onChange={(username) => { clearProfileError('username'); setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null); }} placeholder="Como você aparece na comunidade" icon={<Globe size={16} />} />
+                      <Field label={tx('Nome público')} required error={profileErrors.username}>
+                        <Input label={tx('Nome público')} required error={profileErrors.username} value={profileEditDraft.username} onChange={(username) => { clearProfileError('username'); setProfileEditDraft((c) => c ? { ...c, username: normalizeUsernameInput(username) } : null); }} placeholder={tx('Como você aparece na comunidade')} icon={<Globe size={16} />} />
                       </Field>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="Telefone" error={profileErrors.phone}>
+                        <Field label={tx('Telefone')} error={profileErrors.phone}>
                           {phoneVerificationOn ? (
                             <>
                               <div className={`${FIELD_BOX} ${fieldBorder()} justify-between`}>
                                 <span className="flex min-w-0 items-center gap-2 text-sm text-text">
                                   <Phone size={16} className="shrink-0 text-slate-400" aria-hidden />
-                                  <span className="truncate">{profileEditDraft.phone || 'Não informado'}</span>
+                                  <span className="truncate">{profileEditDraft.phone || tx('Não informado')}</span>
                                 </span>
                                 {phoneVerified ? (
-                                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700"><BadgeCheck size={13} aria-hidden /> Verificado</span>
+                                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700"><BadgeCheck size={13} aria-hidden /> {tx('Verificado')}</span>
                                 ) : (
-                                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-700">Não verificado</span>
+                                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-700">{tx('Não verificado')}</span>
                                 )}
                               </div>
-                              <button type="button" onClick={() => setChangingPhone(true)} className="mt-1.5 text-xs font-bold text-brand-600 hover:underline">Alterar número</button>
+                              <button type="button" onClick={() => setChangingPhone(true)} className="mt-1.5 text-xs font-bold text-brand-600 hover:underline">{tx('Alterar número')}</button>
                             </>
                           ) : (
-                            <Input label="Telefone" error={profileErrors.phone} value={profileEditDraft.phone} onChange={(phone) => { clearProfileError('phone'); setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null); }} placeholder="+1 305 000 0000" icon={<Phone size={16} />} type="tel" inputMode="tel" />
+                            <Input label={tx('Telefone')} error={profileErrors.phone} value={profileEditDraft.phone} onChange={(phone) => { clearProfileError('phone'); setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null); }} placeholder="+1 305 000 0000" icon={<Phone size={16} />} type="tel" inputMode="tel" />
                           )}
                         </Field>
-                        <Field label="Cidade natal" required error={profileErrors.birthCity}>
-                          <CityAutocomplete value={profileEditDraft.birthCity} scope="world" error={profileErrors.birthCity} onChange={(birthCity) => { clearProfileError('birthCity'); setProfileEditDraft((c) => c ? { ...c, birthCity } : null); }} placeholder="Onde você nasceu" />
+                        <Field label={tx('Cidade natal')} required error={profileErrors.birthCity}>
+                          <CityAutocomplete value={profileEditDraft.birthCity} scope="world" error={profileErrors.birthCity} onChange={(birthCity) => { clearProfileError('birthCity'); setProfileEditDraft((c) => c ? { ...c, birthCity } : null); }} placeholder={tx('Onde você nasceu')} />
                         </Field>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="Idade" required error={profileErrors.age}>
-                          <Input label="Idade" required error={profileErrors.age} value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => { clearProfileError('age'); const digits = value.replace(/\D/g, '').slice(0, 3); setProfileEditDraft((c) => c ? { ...c, age: digits ? Number(digits) : null } : null); }} placeholder="18 ou mais" icon={<CalendarDays size={16} />} type="text" inputMode="numeric" maxLength={3} />
+                        <Field label={tx('Idade')} required error={profileErrors.age}>
+                          <Input label={tx('Idade')} required error={profileErrors.age} value={profileEditDraft.age ? String(profileEditDraft.age) : ''} onChange={(value) => { clearProfileError('age'); const digits = value.replace(/\D/g, '').slice(0, 3); setProfileEditDraft((c) => c ? { ...c, age: digits ? Number(digits) : null } : null); }} placeholder={tx('18 ou mais')} icon={<CalendarDays size={16} />} type="text" inputMode="numeric" maxLength={3} />
                         </Field>
-                        <Field label="Gênero" required error={profileErrors.gender}>
-                          <select aria-label="Gênero" aria-required aria-invalid={Boolean(profileErrors.gender)} value={profileEditDraft.gender} onChange={(e) => { clearProfileError('gender'); setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.gender)}`}><option value="">Selecione</option><option value="FEMALE">Feminino</option><option value="MALE">Masculino</option><option value="OTHER">Outro</option><option value="PREFER_NOT_TO_SAY">Prefiro não informar</option></select>
+                        <Field label={tx('Gênero')} required error={profileErrors.gender}>
+                          <select aria-label={tx('Gênero')} aria-required aria-invalid={Boolean(profileErrors.gender)} value={profileEditDraft.gender} onChange={(e) => { clearProfileError('gender'); setProfileEditDraft((c) => c ? { ...c, gender: e.target.value as ProfileState['gender'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.gender)}`}><option value="">{tx('Selecione')}</option><option value="FEMALE">{tx('Feminino')}</option><option value="MALE">{tx('Masculino')}</option><option value="OTHER">{tx('Outro')}</option><option value="PREFER_NOT_TO_SAY">{tx('Prefiro não informar')}</option></select>
                         </Field>
                       </div>
-                      <Field label="Tempo no exterior" required error={profileErrors.timeAbroad}>
-                        <select aria-label="Tempo no exterior" aria-required aria-invalid={Boolean(profileErrors.timeAbroad)} value={profileEditDraft.timeAbroad} onChange={(e) => { clearProfileError('timeAbroad'); setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.timeAbroad)}`}><option value="">Selecione</option><option value="LESS_THAN_ONE_YEAR">Menos de 1 ano</option><option value="ONE_TO_THREE_YEARS">De 1 a 3 anos</option><option value="THREE_TO_FIVE_YEARS">De 3 a 5 anos</option><option value="MORE_THAN_FIVE_YEARS">Mais de 5 anos</option></select>
+                      <Field label={tx('Tempo no exterior')} required error={profileErrors.timeAbroad}>
+                        <select aria-label={tx('Tempo no exterior')} aria-required aria-invalid={Boolean(profileErrors.timeAbroad)} value={profileEditDraft.timeAbroad} onChange={(e) => { clearProfileError('timeAbroad'); setProfileEditDraft((c) => c ? { ...c, timeAbroad: e.target.value as ProfileState['timeAbroad'] } : null); }} className={`${SELECT_CLASS} ${fieldBorder(profileErrors.timeAbroad)}`}><option value="">{tx('Selecione')}</option><option value="LESS_THAN_ONE_YEAR">{tx('Menos de 1 ano')}</option><option value="ONE_TO_THREE_YEARS">{tx('De 1 a 3 anos')}</option><option value="THREE_TO_FIVE_YEARS">{tx('De 3 a 5 anos')}</option><option value="MORE_THAN_FIVE_YEARS">{tx('Mais de 5 anos')}</option></select>
                       </Field>
-                      <Field label="Sobre você">
-                        <textarea aria-label="Sobre você" rows={4} maxLength={220} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder="Escreva uma frase curta sobre você" className="w-full rounded-3xl border-2 border-input bg-surface px-4 py-3 text-sm text-text outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500" />
+                      <Field label={tx('Sobre você')}>
+                        <textarea aria-label={tx('Sobre você')} rows={4} maxLength={220} value={profileEditDraft.bio} onChange={(e) => setProfileEditDraft((c) => c ? { ...c, bio: e.target.value } : null)} placeholder={tx('Escreva uma frase curta sobre você')} className="w-full rounded-3xl border-2 border-input bg-surface px-4 py-3 text-sm text-text outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500" />
                       </Field>
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Interesses</h3>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Interesses')}</h3>
                     <div className="space-y-3">
                       <div className="flex gap-2">
-                        <input type="text" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder="Adicionar interesse" className="flex-1 rounded-full border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
+                        <input type="text" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder={tx('Adicionar interesse')} className="flex-1 rounded-full border border-input bg-surface px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-200" />
                         <button type="button" onClick={() => { const normalized = interestInput.trim(); if (normalized && !profileEditDraft.interests.includes(normalized) && profileEditDraft.interests.length < 8) { setProfileEditDraft((c) => c ? { ...c, interests: [...c.interests, normalized] } : null); setInterestInput(''); } }} className={`inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 text-sm font-bold text-white shadow-md ${primaryButtonClass}`}><Plus size={16} /></button>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -806,52 +808,52 @@ const Profile: React.FC<{
                             {interest}
                             <button type="button" onClick={() => setProfileEditDraft((c) => c ? { ...c, interests: c.interests.filter((i) => i !== interest) } : null)} className="rounded-full bg-slate-100 p-1 text-slate-500"><X size={12} /></button>
                           </span>
-                        )) : <p className="text-sm text-slate-500">Adicione até 8 interesses.</p>}
+                        )) : <p className="text-sm text-slate-500">{tx('Adicione até 8 interesses.')}</p>}
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Galeria</h3>
-                    <ImageGalleryField value={profileEditDraft.galleryUrls} onChange={(galleryUrls) => setProfileEditDraft((c) => c ? { ...c, galleryUrls } : null)} folder="profiles" maxItems={6} hint="Adicione até 6 fotos pessoais, do trabalho ou da comunidade." />
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Galeria')}</h3>
+                    <ImageGalleryField value={profileEditDraft.galleryUrls} onChange={(galleryUrls) => setProfileEditDraft((c) => c ? { ...c, galleryUrls } : null)} folder="profiles" maxItems={6} hint={tx('Adicione até 6 fotos pessoais, do trabalho ou da comunidade.')} />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Região ativa</h3>
-                    <RegionSelector citySearch label="Cidade atual" value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint="Comunidade, negócios e eventos priorizam esta região." />
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Região ativa')}</h3>
+                    <RegionSelector citySearch label={tx('Cidade atual')} value={profileEditDraft.regionKey} onChange={(region) => setProfileEditDraft((c) => c ? { ...c, regionKey: region.key } : null)} hint={tx('Comunidade, negócios e eventos priorizam esta região.')} />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-1 text-sm font-bold text-slate-600">Aparência</h3>
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">{tx('Aparência')}</h3>
                     <p className="mb-3 text-xs text-slate-500">Escolha o tema claro ou escuro. Em &ldquo;Sistema&rdquo;, o app segue a configuração do seu aparelho. Vale só para este aparelho.</p>
                     <ThemeSelector />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-1 text-sm font-bold text-slate-600">Idioma</h3>
-                    <p className="mb-3 text-xs text-slate-500">Os idiomas disponíveis dependem das regiões ativas. Vale só para este aparelho.</p>
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">{tx('Idioma')}</h3>
+                    <p className="mb-3 text-xs text-slate-500">{tx('Os idiomas disponíveis dependem das regiões ativas. Vale só para este aparelho.')}</p>
                     <LanguageSelector />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-3 text-sm font-bold text-slate-600">Privacidade: quem pode me enviar mensagens</h3>
+                    <h3 className="mb-3 text-sm font-bold text-slate-600">{tx('Privacidade: quem pode me enviar mensagens')}</h3>
                     <MessagePolicyOptions value={policyDraft} onChange={setPolicyDraft} disabled={savingKey === 'profile'} />
                   </div>
 
                   <div className="border-t border-slate-200 pt-4">
-                    <h3 className="mb-1 text-sm font-bold text-slate-600">E-mail de acesso</h3>
-                    <p className="mb-3 text-xs text-slate-500">Atual: {profile.email || 'não informado'}. Para trocar, enviamos um link de confirmação ao novo endereço.</p>
+                    <h3 className="mb-1 text-sm font-bold text-slate-600">{tx('E-mail de acesso')}</h3>
+                    <p className="mb-3 text-xs text-slate-500">{tx('Atual:')} {profile.email || tx('não informado')}{tx('. Para trocar, enviamos um link de confirmação ao novo endereço.')}</p>
                     <div className="flex gap-2">
-                      <div className="min-w-0 flex-1"><Input value={requestedEmail} onChange={setRequestedEmail} placeholder="Novo e-mail" icon={<Mail size={16} />} type="email" /></div>
+                      <div className="min-w-0 flex-1"><Input value={requestedEmail} onChange={setRequestedEmail} placeholder={tx('Novo e-mail')} icon={<Mail size={16} />} type="email" /></div>
                       <button type="button" onClick={() => void requestEmailChange()} disabled={requestingEmailChange || !requestedEmail.trim() || requestedEmail.trim() === profile.email} className="shrink-0 rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">
-                        {requestingEmailChange ? 'Enviando...' : 'Confirmar'}
+                        {requestingEmailChange ? tx('Enviando...') : tx('Confirmar')}
                       </button>
                     </div>
                   </div>
 
                   <ActionRow>
-                    <PrimaryButton className={primaryButtonClass} label={savingKey === 'profile' ? 'Salvando...' : 'Salvar perfil'} onClick={() => void saveCompleteProfile()} disabled={savingKey === 'profile'} />
-                    <SecondaryButton className={secondaryButtonClass} label="Cancelar" onClick={discardEditProfile} disabled={savingKey === 'profile'} />
+                    <PrimaryButton className={primaryButtonClass} label={savingKey === 'profile' ? tx('Salvando...') : tx('Salvar perfil')} onClick={() => void saveCompleteProfile()} disabled={savingKey === 'profile'} />
+                    <SecondaryButton className={secondaryButtonClass} label={tx('Cancelar')} onClick={discardEditProfile} disabled={savingKey === 'profile'} />
                   </ActionRow>
                 </div>
               </EditorCard>
@@ -860,14 +862,14 @@ const Profile: React.FC<{
         </div>
       </section>
 
-      <Modal open={changingPhone} onClose={() => setChangingPhone(false)} title="Alterar telefone" className="sm:max-w-md">
+      <Modal open={changingPhone} onClose={() => setChangingPhone(false)} title={tx('Alterar telefone')} className="sm:max-w-md">
         <VerifyPhoneForm
           onVerified={(verifiedPhone) => {
             setProfile((current) => ({ ...current, phone: verifiedPhone }));
             setProfileEditDraft((current) => (current ? { ...current, phone: verifiedPhone } : current));
             void update();
             setChangingPhone(false);
-            showToast('Telefone verificado e atualizado.', 'success');
+            showToast(tx('Telefone verificado e atualizado.'), 'success');
           }}
         />
       </Modal>
@@ -879,25 +881,25 @@ const Profile: React.FC<{
         />
       ) : (
         <>
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Sobre você" description="Edite os dados que ajudam a comunidade a conhecer você." editing={false} onToggle={openEditProfileModal} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title={tx('Sobre você')} description={tx('Edite os dados que ajudam a comunidade a conhecer você.')} editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="space-y-4">
-            <p className="text-base leading-7 text-slate-700">{profile.bio || 'Adicione uma frase sobre você para personalizar seu perfil público.'}</p>
+            <p className="text-base leading-7 text-slate-700">{profile.bio || tx('Adicione uma frase sobre você para personalizar seu perfil público.')}</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Meta label="Email" value={profile.email || 'Não informado'} icon={<Mail size={16} />} />
-              <Meta label="Telefone" value={profile.phone || 'Não informado'} icon={<Phone size={16} />} />
+              <Meta label={tx('Email')} value={profile.email || tx('Não informado')} icon={<Mail size={16} />} />
+              <Meta label={tx('Telefone')} value={profile.phone || tx('Não informado')} icon={<Phone size={16} />} />
             </div>
-            <Meta label="Região atual" value={profile.locationLabel} icon={<MapPin size={16} />} />
-            <Meta label="URL pública" value={publicProfileUrl} icon={<Globe size={16} />} />
+            <Meta label={tx('Região atual')} value={profile.locationLabel} icon={<MapPin size={16} />} />
+            <Meta label={tx('URL pública')} value={publicProfileUrl} icon={<Globe size={16} />} />
           </div>
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Interesses" description="Mostre os assuntos, serviços e temas que representam você." editing={false} onToggle={openEditProfileModal} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title={tx('Interesses')} description={tx('Mostre os assuntos, serviços e temas que representam você.')} editing={false} onToggle={openEditProfileModal} hideAction>
           <div className="flex flex-wrap gap-2">
-            {profile.interests.length > 0 ? profile.interests.map((interest) => <span key={interest} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">{interest}</span>) : <p className="text-sm text-slate-500">Ainda não há interesses cadastrados para este perfil.</p>}
+            {profile.interests.length > 0 ? profile.interests.map((interest) => <span key={interest} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">{interest}</span>) : <p className="text-sm text-slate-500">{tx('Ainda não há interesses cadastrados para este perfil.')}</p>}
           </div>
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Galeria da galera" description="Use fotos pessoais, do seu trabalho ou da sua comunidade para enriquecer o perfil." editing={false} onToggle={openEditProfileModal} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title={tx('Galeria da galera')} description={tx('Use fotos pessoais, do seu trabalho ou da sua comunidade para enriquecer o perfil.')} editing={false} onToggle={openEditProfileModal} hideAction>
         {profile.galleryUrls.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {profile.galleryUrls.map((imageUrl, index) => (
@@ -907,17 +909,17 @@ const Profile: React.FC<{
             ))}
           </div>
         ) : (
-          <EmptyNotice title="Sem fotos na galeria" description="Use Editar perfil para adicionar fotos." />
+          <EmptyNotice title={tx('Sem fotos na galeria')} description={tx('Use Editar perfil para adicionar fotos.')} />
         )}
       </Section>
 
-      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title="Indicações" description="Compartilhe seu link público e acompanhe quantos cadastros chegaram por ele." editing={false} onToggle={() => undefined} hideAction>
+      <Section accentClass={sectionAccentClass} secondaryButtonClass={secondaryButtonClass} title={tx('Indicações')} description={tx('Compartilhe seu link público e acompanhe quantos cadastros chegaram por ele.')} editing={false} onToggle={() => undefined} hideAction>
         <div className="rounded-[24px] border border-slate-100 bg-slate-50 p-4">
-          <p className={`text-lg font-bold ${sectionAccentClass}`}>{referralSummary.registrationCount} {referralSummary.registrationCount === 1 ? 'cadastro confirmado' : 'cadastros confirmados'}</p>
+          <p className={`text-lg font-bold ${sectionAccentClass}`}>{referralSummary.registrationCount} {referralSummary.registrationCount === 1 ? tx('cadastro confirmado') : tx('cadastros confirmados')}</p>
           <p className="mt-2 break-all text-sm text-slate-500">{withUtm('referral_invite', referralUrl)}</p>
-          <button type="button" onClick={() => navigator.clipboard.writeText(withUtm('referral_invite', referralUrl)).then(() => showToast('Link de indicação copiado.', 'success')).catch(() => showToast(withUtm('referral_invite', referralUrl), 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
+          <button type="button" onClick={() => navigator.clipboard.writeText(withUtm('referral_invite', referralUrl)).then(() => showToast(tx('Link de indicação copiado.'), 'success')).catch(() => showToast(withUtm('referral_invite', referralUrl), 'info', 5000))} className={`mt-4 inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
             <Copy size={14} />
-            Copiar
+            {tx('Copiar')}
           </button>
         </div>
       </Section>
@@ -928,7 +930,9 @@ const Profile: React.FC<{
   );
 };
 
-const Section: React.FC<{ title: string; description: string; editing: boolean; onToggle: () => void; children: React.ReactNode; hideAction?: boolean; accentClass?: string; secondaryButtonClass?: string; }> = ({ title, description, editing, onToggle, children, hideAction = false, accentClass = 'text-brand-500', secondaryButtonClass = 'border-brand-100 bg-brand-100 text-brand-500' }) => (
+const Section: React.FC<{ title: string; description: string; editing: boolean; onToggle: () => void; children: React.ReactNode; hideAction?: boolean; accentClass?: string; secondaryButtonClass?: string; }> = ({ title, description, editing, onToggle, children, hideAction = false, accentClass = 'text-brand-500', secondaryButtonClass = 'border-brand-100 bg-brand-100 text-brand-500' }) => {
+  const { tx } = useLanguage();
+  return (
   <section className="rounded-[32px] border border-slate-100 bg-surface p-5 shadow-sm">
     <div className="flex items-start justify-between gap-3">
       <div>
@@ -938,7 +942,7 @@ const Section: React.FC<{ title: string; description: string; editing: boolean; 
       {!hideAction ? (
         <button type="button" onClick={onToggle} className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold ${secondaryButtonClass}`}>
           <PencilLine size={14} />
-          Editar
+          {tx('Editar')}
         </button>
       ) : null}
     </div>
@@ -950,6 +954,7 @@ const Section: React.FC<{ title: string; description: string; editing: boolean; 
     ) : null}
   </section>
 );
+};
 
 const EditorCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="space-y-4 rounded-[28px] bg-slate-50 p-4">{children}</div>

@@ -90,6 +90,7 @@ const GEO_EXEMPT_PREFIXES = [
   '/api/geo-bypass',
   // "Avise-me" da página de região indisponível: precisa funcionar de países bloqueados.
   '/api/waitlist',
+  '/api/regions',
   '/access-blocked',
   '/region-unavailable',
   '/maintenance',
