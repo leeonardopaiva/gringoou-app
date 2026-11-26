@@ -97,7 +97,9 @@ export async function PUT(request: Request) {
 
   // A phone typed here is not verified. Changing it drops the confirmation, so
   // only the SMS flow can mark a number as verified.
-  const phoneChanged = (parsed.data.phone ?? null) !== (currentUser?.phone ?? null);
+  // With verification on, the phone is owned by the SMS flow: a number typed here is ignored.
+  const phoneOwnedBySms = process.env.PHONE_VERIFICATION_ENABLED === 'true';
+  const phoneChanged = !phoneOwnedBySms && (parsed.data.phone ?? null) !== (currentUser?.phone ?? null);
 
   const currentEmail = currentUser?.email?.trim().toLowerCase() || '';
   const requestedEmail = parsed.data.email?.trim().toLowerCase() || '';
@@ -115,7 +117,7 @@ export async function PUT(request: Request) {
       data: {
         name: parsed.data.name,
         username: usernameValidation.normalized,
-        phone: parsed.data.phone,
+        phone: phoneOwnedBySms ? undefined : parsed.data.phone,
         phoneVerifiedAt: phoneChanged ? null : undefined,
         bio: parsed.data.bio ?? null,
         coverImageUrl: parsed.data.coverImageUrl ?? null,

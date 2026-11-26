@@ -456,7 +456,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         <div className={`relative flex flex-1 flex-col transition-[padding] duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
           <header className="relative border-b border-border/70">
             {isNavigating ? <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand-100"><span className="block h-full w-1/2 animate-pulse rounded-full bg-brand-500" /></div> : null}
-            <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-3 pb-3 pt-3 sm:px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)_minmax(0,1fr)] lg:items-center lg:gap-x-4 lg:gap-y-2 lg:px-6 lg:py-4">
+            <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-x-3 gap-y-4 px-3 pb-3 pt-3 sm:px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)_minmax(max-content,1fr)] lg:items-center lg:gap-x-4 lg:gap-y-2 lg:px-6 lg:py-4">
               <div className="flex min-w-0 items-center py-2 gap-2.5 lg:hidden">
                 <button
                   type="button"
@@ -499,7 +499,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:flex"
+                  className="hidden h-10 max-w-36 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-left text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 xl:flex"
                 >
                   <MapPin size={15} className="shrink-0 text-brand-500" aria-hidden="true" />
                   <span className="truncate">{shortRegionLabel}</span>
@@ -509,7 +509,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
                   onClick={openRegionSelector}
                   aria-label={`Alterar região da comunidade: ${activeRegion.label}`}
                   title={`Alterar região: ${activeRegion.label}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 lg:hidden"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-brand-500 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 xl:hidden"
                 >
                   <MapPin size={19} aria-hidden="true" />
                 </button>

@@ -1,10 +1,11 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { useSession } from 'next-auth/react';
+import { VerifyPhoneForm } from '../components/app/VerifyPhoneForm';
 import { ImageEditMenu } from '@/components/ui/ImageEditMenu';
 import { MessagePolicyOptions, type MessagePolicy } from '@/components/profile/MessagePrivacySection';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CalendarDays, Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
+import { BadgeCheck, CalendarDays, Copy, Globe, Mail, MapPin, PencilLine, Phone, Plus, UserRound, X } from 'lucide-react';
 import { useToast } from '../components/feedback/ToastProvider';
 import { getClientAppBaseUrl } from '../lib/client-app-url';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
@@ -95,7 +96,10 @@ const Profile: React.FC<{
   onPersonaModeChange: (mode: PersonaMode) => void;
   initialData?: ProfileInitialData;
 }> = ({ user, personaMode, canUseProfessionalMode, onPersonaModeChange, initialData }) => {
-  const { update } = useSession();
+  const { data: authSession, update } = useSession();
+  const phoneVerificationOn = process.env.NEXT_PUBLIC_PHONE_VERIFICATION_ENABLED === 'true';
+  const phoneVerified = Boolean(authSession?.user?.phoneVerified);
+  const [changingPhone, setChangingPhone] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
@@ -576,7 +580,7 @@ const Profile: React.FC<{
     if (!draft.gender) errors.gender = 'Selecione seu gênero.';
     if (!draft.timeAbroad) errors.timeAbroad = 'Selecione seu tempo no exterior.';
     const phoneDigits = draft.phone.replace(/\D/g, '');
-    if (phoneDigits.length > 0 && phoneDigits.length < 8) errors.phone = 'O telefone está muito curto.';
+    if (!phoneVerificationOn && phoneDigits.length > 0 && phoneDigits.length < 8) errors.phone = 'O telefone está muito curto.';
     return errors;
   };
 
@@ -747,7 +751,24 @@ const Profile: React.FC<{
                       </Field>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Telefone" error={profileErrors.phone}>
-                          <Input label="Telefone" error={profileErrors.phone} value={profileEditDraft.phone} onChange={(phone) => { clearProfileError('phone'); setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null); }} placeholder="+1 305 000 0000" icon={<Phone size={16} />} type="tel" inputMode="tel" />
+                          {phoneVerificationOn ? (
+                            <>
+                              <div className={`${FIELD_BOX} ${fieldBorder()} justify-between`}>
+                                <span className="flex min-w-0 items-center gap-2 text-sm text-text">
+                                  <Phone size={16} className="shrink-0 text-slate-400" aria-hidden />
+                                  <span className="truncate">{profileEditDraft.phone || 'Não informado'}</span>
+                                </span>
+                                {phoneVerified ? (
+                                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700"><BadgeCheck size={13} aria-hidden /> Verificado</span>
+                                ) : (
+                                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-700">Não verificado</span>
+                                )}
+                              </div>
+                              <button type="button" onClick={() => setChangingPhone(true)} className="mt-1.5 text-xs font-bold text-brand-600 hover:underline">Alterar número</button>
+                            </>
+                          ) : (
+                            <Input label="Telefone" error={profileErrors.phone} value={profileEditDraft.phone} onChange={(phone) => { clearProfileError('phone'); setProfileEditDraft((c) => c ? { ...c, phone: formatLoosePhoneInput(phone) } : null); }} placeholder="+1 305 000 0000" icon={<Phone size={16} />} type="tel" inputMode="tel" />
+                          )}
                         </Field>
                         <Field label="Cidade natal" required error={profileErrors.birthCity}>
                           <CityAutocomplete value={profileEditDraft.birthCity} scope="world" error={profileErrors.birthCity} onChange={(birthCity) => { clearProfileError('birthCity'); setProfileEditDraft((c) => c ? { ...c, birthCity } : null); }} placeholder="Onde você nasceu" />
@@ -830,6 +851,18 @@ const Profile: React.FC<{
           </Modal>
         </div>
       </section>
+
+      <Modal open={changingPhone} onClose={() => setChangingPhone(false)} title="Alterar telefone" className="sm:max-w-md">
+        <VerifyPhoneForm
+          onVerified={(verifiedPhone) => {
+            setProfile((current) => ({ ...current, phone: verifiedPhone }));
+            setProfileEditDraft((current) => (current ? { ...current, phone: verifiedPhone } : current));
+            void update();
+            setChangingPhone(false);
+            showToast('Telefone verificado e atualizado.', 'success');
+          }}
+        />
+      </Modal>
 
       {isProfessionalView ? (
         <ProfessionalModePanel

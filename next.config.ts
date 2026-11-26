@@ -47,6 +47,7 @@ const nextConfig: NextConfig = {
       { source: '/moradia/:path*', destination: '/housing/:path*', permanent: true },
       { source: '/grupos', destination: '/groups', permanent: true },
       { source: '/grupos/:path*', destination: '/groups/:path*', permanent: true },
+      { source: '/verificar-telefone', destination: '/verify-phone', permanent: true },
       { source: '/buscar', destination: '/search', permanent: true },
       { source: '/buscar/:path*', destination: '/search/:path*', permanent: true },
     ];

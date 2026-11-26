@@ -78,7 +78,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       className={`relative flex items-center rounded-full border border-slate-200 bg-surface shadow-sm transition-all theme-outline-ring ${className}`}
     >
       {!value && animatedTerms && animatedTerms.length > 0 ? (
-        <div className={`pointer-events-none absolute inset-y-0 left-12 flex items-center text-sm text-slate-400 ${onFilterClick ? (voiceSupported && onVoiceResult ? 'right-24' : 'right-14') : 'right-4'}`}>
+        <div className={`pointer-events-none absolute inset-y-0 left-12 flex min-w-0 items-center overflow-hidden whitespace-nowrap text-sm text-slate-400 ${onFilterClick ? (voiceSupported && onVoiceResult ? 'right-24' : 'right-14') : 'right-4'}`}>
           <span>Encontre&nbsp;</span>
           <span key={animatedTerms[animatedIndex]} className="theme-text animate-in font-bold fade-in duration-300">
             {animatedTerms[animatedIndex]}
