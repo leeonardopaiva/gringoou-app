@@ -87,6 +87,14 @@ const inputClass =
   'h-14 min-h-14 w-full min-w-0 rounded-full border border-input bg-surface px-5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200';
 const secondaryCardClass = 'border border-slate-200 bg-slate-50 shadow-none';
 
+// Link do e-mail de acesso liberado (?invite=...&email=...): já preenche o e-mail ao qual o convite está preso.
+const getInviteEmailFromUrl = () => {
+  if (typeof window === 'undefined') return '';
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email')?.trim() ?? '';
+  return params.get('invite') && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
+};
+
 const Registration: React.FC<RegistrationProps> = ({
   mode,
   googleEnabled,
@@ -175,7 +183,7 @@ const Registration: React.FC<RegistrationProps> = ({
     setFormValues({
       name: defaultValues?.name || '',
       username: defaultValues?.username || '',
-      email: defaultValues?.email || '',
+      email: defaultValues?.email || getInviteEmailFromUrl(),
       phone: nextPhoneState.localNumber,
       regionKey: defaultValues?.regionKey || '',
       gender: defaultValues?.gender || '',

@@ -1027,6 +1027,9 @@ model WaitlistEntry {
   country   String?
   status    WaitlistStatus @default(PENDING)
   invitedAt DateTime?
+  // Access-granted e-mail: when it was last sent, or the last delivery error (cleared on success).
+  accessEmailSentAt DateTime?
+  accessEmailError  String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   invites   Invite[]

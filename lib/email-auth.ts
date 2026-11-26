@@ -8,7 +8,10 @@ const emailServerPort = process.env.EMAIL_SERVER_PORT;
 const emailServerUser = process.env.EMAIL_SERVER_USER;
 const emailServerPassword = process.env.EMAIL_SERVER_PASSWORD;
 
-export const emailFrom = process.env.EMAIL_FROM || 'Gringoou <no-reply@gringoou.local>';
+export const emailFrom = process.env.EMAIL_FROM || 'Gringoou <noreply@gringoou.local>';
+
+// Where replies go (the sender is a noreply address). Optional.
+const emailReplyTo = process.env.EMAIL_REPLY_TO?.trim() || undefined;
 
 export const isEmailServerConfigured = Boolean(
   emailServerHost &&
@@ -124,6 +127,9 @@ type TransactionalEmailInput = {
   text: string;
   html: string;
   devLabel?: string;
+  /** Overrides EMAIL_REPLY_TO for this message. */
+  replyTo?: string;
+  headers?: Record<string, string>;
 };
 
 export const sendTransactionalEmail = async ({
@@ -132,6 +138,8 @@ export const sendTransactionalEmail = async ({
   text,
   html,
   devLabel,
+  replyTo,
+  headers,
 }: TransactionalEmailInput) => {
   if (isEmailServerConfigured) {
     const transport = createTransport(emailProviderServer);
@@ -141,6 +149,8 @@ export const sendTransactionalEmail = async ({
       subject,
       text,
       html,
+      replyTo: replyTo ?? emailReplyTo,
+      headers,
     });
 
     const failedRecipients = result.rejected.concat(result.pending).filter(Boolean);

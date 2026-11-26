@@ -2,7 +2,8 @@
 
 import { InfoTip } from '@/components/ui/InfoTip';
 import React, { startTransition, useEffect, useState } from 'react';
-import { Copy, Download, Link2, Plus, Search, Ticket, Users } from 'lucide-react';
+import { Copy, Download, Link2, Mail, Plus, Search, Ticket, Users } from 'lucide-react';
+import { ReleaseAccessModal } from './ReleaseAccessModal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -122,6 +123,31 @@ const InvitesSection: React.FC = () => {
   const [createForm, setCreateForm] = useState({ email: '', usageLimit: '1', expiresAt: '', waitlistEntryId: '' });
   const [creating, setCreating] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+
+  // Liberação de acesso em lote
+  const [showRelease, setShowRelease] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const handleResend = async (entryId: string) => {
+    setResendingId(entryId);
+    try {
+      const response = await fetch('/api/admin/waitlist/release', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryIds: [entryId], limit: 1 }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível reenviar o e-mail.'));
+      if (payload.sent > 0) showToast(tx('E-mail reenviado com um convite novo.'), 'success');
+      else if (payload.failed > 0) showToast(tx('Não foi possível reenviar o e-mail.'), 'error');
+      else showToast(tx('Aguarde alguns segundos para reenviar de novo.'), 'info');
+      void loadWaitlist();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : tx('Não foi possível reenviar o e-mail.'), 'error');
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   // Detail modal
   const [detail, setDetail] = useState<InviteDetail | null>(null);
@@ -463,6 +489,13 @@ const InvitesSection: React.FC = () => {
                 </option>
               ))}
             </select>
+            <button
+              type="button"
+              onClick={() => setShowRelease(true)}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-500 px-3 py-2.5 text-sm font-bold text-white transition hover:brightness-105"
+            >
+              <Mail size={15} aria-hidden /> {tx('Liberar acesso')}
+            </button>
             <a
               href={exportHref('/api/admin/waitlist/export', { status: waitlistStatus, country: waitlistCountry, q: waitlistSearch })}
               download
@@ -525,7 +558,19 @@ const InvitesSection: React.FC = () => {
                             {tx('Convidar')}
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-400">{entry.invites[0] ? tx('Convite emitido') : '—'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400">{entry.invites[0] ? tx('Convite emitido') : '—'}</span>
+                            {entry.status === 'INVITED' ? (
+                              <button
+                                type="button"
+                                disabled={resendingId === entry.id}
+                                onClick={() => void handleResend(entry.id)}
+                                className="rounded-full px-2 py-1 text-xs font-bold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
+                              >
+                                {tx('Reenviar e-mail')}
+                              </button>
+                            ) : null}
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -542,6 +587,14 @@ const InvitesSection: React.FC = () => {
           ) : null}
         </div>
       )}
+
+      <ReleaseAccessModal
+        open={showRelease}
+        onClose={() => setShowRelease(false)}
+        countries={waitlistCountries}
+        initialCountry={waitlistCountry}
+        onDone={() => void loadWaitlist()}
+      />
 
       {/* Create modal */}
       <Modal
