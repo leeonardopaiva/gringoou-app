@@ -14,6 +14,7 @@
     "regions:normalize": "node scripts/normalize-regions.mjs",
     "regions:normalize:dry-run": "node scripts/normalize-regions.mjs --dry-run",
     "typecheck": "tsc --noEmit --pretty false",
+    "i18n:split": "node scripts/i18n-split.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "start": "next start"

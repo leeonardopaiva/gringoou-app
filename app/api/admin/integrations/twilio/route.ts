@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { z } from 'zod';
 import { getAllowedPhoneCountries, isPhoneVerificationEnabled, toE164Phone } from '@/lib/phone-verification';
-import { consumeRateLimit } from '@/lib/rate-limit';
+import { getPhoneRiskConfig, isPhoneLookupEnabled } from '@/lib/phone-risk';
+import { consumeRateLimit, isDistributedRateLimitEnabled } from '@/lib/rate-limit';
 import { requireRootSession } from '@/lib/root-admin';
 
 export const runtime = 'nodejs';
@@ -182,6 +183,25 @@ export async function POST(request: Request) {
     label: 'Países aceitos',
     status: 'ok',
     detail: `${getAllowedPhoneCountries().length} países (EUA, Canadá e Europa por padrão). Habilite os mesmos em Twilio › Geo permissions.`,
+  });
+
+  // Anti-fraud layers (see lib/phone-risk.ts).
+  checks.push(
+    isDistributedRateLimitEnabled
+      ? { id: 'rate-limit', label: 'Limites de envio (Upstash)', status: 'ok', detail: 'Limites compartilhados entre todas as instâncias: o teto de códigos por hora, país, IP e conta vale de verdade.' }
+      : { id: 'rate-limit', label: 'Limites de envio (Upstash)', status: 'warn', detail: 'Upstash não configurado: os limites ficam na memória de cada instância e podem ser contornados. Defina UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN em produção.' },
+  );
+  checks.push(
+    isPhoneLookupEnabled()
+      ? { id: 'lookup', label: 'Análise de risco do número', status: 'ok', detail: 'Ativa: recusa números VoIP/virtuais, linhas que não recebem SMS e números com risco alto de SMS pumping.' }
+      : { id: 'lookup', label: 'Análise de risco do número', status: 'warn', detail: 'Desativada neste ambiente (PHONE_BLOCK_VOIP="false", modo de teste ou fora de produção). Em produção fica ligada por padrão.' },
+  );
+  const risk = getPhoneRiskConfig();
+  checks.push({
+    id: 'caps',
+    label: 'Tetos de códigos',
+    status: 'ok',
+    detail: `${risk.globalHourlyCap}/h no total, ${risk.countryHourlyCap}/h por país, ${risk.ipHourlyCap}/h por IP, ${risk.userDailyCap}/dia por conta, ${risk.resendCooldownSeconds}s entre reenvios.`,
   });
 
   return NextResponse.json({ checkedAt: new Date().toISOString(), ok: checks.every((check) => check.status !== 'error'), checks });

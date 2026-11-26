@@ -2,12 +2,17 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerAuthSession } from '@/lib/auth';
 import {
+  getAccessCountry,
   getPhoneBlockMessage,
+  getPhoneCountry,
+  isBypassNumber,
   isPhoneVerificationConfigured,
   sendPhoneVerificationCode,
   toE164Phone,
 } from '@/lib/phone-verification';
-import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { assessPhoneRisk, getPhoneRiskConfig } from '@/lib/phone-risk';
+import { prisma } from '@/lib/prisma';
+import { buildRateLimitHeaders, consumeRateLimit, getRequestIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -54,38 +59,93 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: blockMessage }, { status: 403 });
   }
 
-  // Per-user limit stops one account from spamming codes. The per-number limit
-  // stops SMS pumping against a single target number.
-  const userLimit = await consumeRateLimit({
-    scope: 'phone:verify-start:user',
-    key: getRateLimitKey(request, session.user.id),
-    max: 5,
-    windowMs: 60 * 60 * 1000,
-  });
+  // Free checks first (no SMS, no paid lookup): a confirmed account does not need another code,
+  // and a number already confirmed by another account is refused before anything is sent.
+  const [currentUser, numberOwner] = await Promise.all([
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { phoneVerifiedAt: true } }),
+    prisma.user.findFirst({
+      where: { phone: phoneE164, phoneVerifiedAt: { not: null }, NOT: { id: session.user.id } },
+      select: { id: true },
+    }),
+  ]);
 
-  if (!userLimit.allowed) {
-    return NextResponse.json(
-      { error: 'Muitos códigos solicitados. Tente novamente mais tarde.' },
-      { status: 429, headers: buildRateLimitHeaders(userLimit) },
-    );
+  if (currentUser?.phoneVerifiedAt) {
+    return NextResponse.json({ error: 'Seu telefone já está confirmado.' }, { status: 409 });
   }
 
-  const phoneLimit = await consumeRateLimit({
-    scope: 'phone:verify-start:number',
-    key: `phone:${phoneE164}`,
-    max: 3,
-    windowMs: 60 * 60 * 1000,
-  });
+  if (numberOwner) {
+    return NextResponse.json({ error: 'Este telefone já está vinculado a outra conta.' }, { status: 409 });
+  }
 
-  if (!phoneLimit.allowed) {
-    return NextResponse.json(
-      { error: 'Muitos códigos enviados para este número. Tente novamente mais tarde.' },
-      { status: 429, headers: buildRateLimitHeaders(phoneLimit) },
-    );
+  // Layered rate limits (SMS pumping and account-farming defense), checked one at a time so a
+  // request refused by a specific limit does not consume the broader counters.
+  const risk = getPhoneRiskConfig();
+  const hour = 60 * 60 * 1000;
+  const phoneCountry = getPhoneCountry(phoneE164) ?? 'XX';
+  const ip = getRequestIp(request);
+  const userId = session.user.id;
+
+  const limits: Array<{ message: string; run: () => ReturnType<typeof consumeRateLimit> }> = [
+    {
+      message: 'Aguarde um pouco antes de pedir outro código.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:cooldown', key: userId, max: 1, windowMs: risk.resendCooldownSeconds * 1000 }),
+    },
+    {
+      message: 'Muitos códigos solicitados. Tente novamente mais tarde.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:user', key: userId, max: 5, windowMs: hour }),
+    },
+    {
+      message: 'Muitos códigos solicitados hoje. Tente novamente amanhã.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:user-day', key: userId, max: risk.userDailyCap, windowMs: 24 * hour }),
+    },
+    {
+      message: 'Muitos códigos solicitados desta rede. Tente novamente mais tarde.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:ip', key: ip, max: risk.ipHourlyCap, windowMs: hour }),
+    },
+    {
+      message: 'Muitos códigos enviados para este número. Tente novamente mais tarde.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:number', key: phoneE164, max: 3, windowMs: hour }),
+    },
+    {
+      message: 'Estamos com muitos pedidos de código agora. Tente novamente em alguns minutos.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:country', key: phoneCountry, max: risk.countryHourlyCap, windowMs: hour }),
+    },
+    {
+      message: 'Estamos com muitos pedidos de código agora. Tente novamente em alguns minutos.',
+      run: () => consumeRateLimit({ scope: 'phone:verify-start:global', key: 'all', max: risk.globalHourlyCap, windowMs: hour }),
+    },
+  ];
+
+  for (const limit of limits) {
+    const result = await limit.run();
+    if (!result.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
+      console.warn('[phone-verification] pedido de código barrado por limite de taxa', { phoneCountry, ip });
+      return NextResponse.json(
+        { error: limit.message, retryAfterSeconds: retryAfter },
+        { status: 429, headers: { ...buildRateLimitHeaders(result), 'Retry-After': String(retryAfter) } },
+      );
+    }
+  }
+
+  // Signal for the admin logs: the number's country differs from where the request came from.
+  const accessCountry = getAccessCountry(request);
+  if (accessCountry && phoneCountry !== 'XX' && accessCountry !== phoneCountry) {
+    console.info('[phone-verification] país do número difere do país de acesso', { phoneCountry, accessCountry });
+  }
+
+  // Paid lookup, only after every limit passed: blocks VoIP/virtual numbers and numbers with high
+  // SMS-pumping risk. If Twilio's lookup is unavailable the request goes on (limits still apply).
+  if (!isBypassNumber(phoneE164)) {
+    const assessment = await assessPhoneRisk(phoneE164);
+    if (!assessment.allowed) {
+      console.warn('[phone-verification] número recusado pela análise de risco', { reason: assessment.reason, phoneCountry });
+      return NextResponse.json({ error: assessment.message }, { status: 400 });
+    }
   }
 
   try {
-    await sendPhoneVerificationCode({ userId: session.user.id, phoneE164 });
+    await sendPhoneVerificationCode({ userId, phoneE164, deviceIp: ip });
   } catch (error) {
     const twilioCode = typeof error === 'object' && error !== null && 'code' in error ? error.code : null;
 

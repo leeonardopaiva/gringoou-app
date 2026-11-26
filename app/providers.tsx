@@ -11,6 +11,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MessagingProvider } from '@/lib/MessagingProvider';
 import { NavigationTracker } from '@/lib/navigation-history';
 import { PublicConfigProvider } from '@/lib/public-config';
+import type { Language } from '@/lib/i18n/dictionaries';
 import type { User } from '@/types';
 
 type ProvidersProps = {
@@ -18,16 +19,19 @@ type ProvidersProps = {
   session?: Session | null;
   /** Calculado no servidor (mesma regra do cadastro). */
   inviteRequired?: boolean;
+  /** Idioma e textos já resolvidos no servidor, para a primeira tela sair traduzida. */
+  initialLanguage?: Language;
+  initialDictionary?: Record<string, string>;
 };
 
 // Local/mock dev has no real traffic to measure, so skip the Vercel beacons entirely.
 const shouldLoadVercelTelemetry = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_USE_MOCKS !== 'true';
 
-export function Providers({ children, session, inviteRequired = false }: ProvidersProps) {
+export function Providers({ children, session, inviteRequired = false, initialLanguage, initialDictionary }: ProvidersProps) {
   return (
     <PublicConfigProvider value={{ inviteRequired }}>
     <ThemeProvider>
-    <LanguageProvider>
+    <LanguageProvider initialLanguage={initialLanguage} initialDictionary={initialDictionary}>
     <SessionProvider session={session}>
       <ToastProvider>
         <MessagingProvider user={session?.user as unknown as User | null}>

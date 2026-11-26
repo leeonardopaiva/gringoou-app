@@ -8,6 +8,7 @@ import { getEventsPage } from '@/lib/server/events';
 import { getJobsPage } from '@/lib/server/jobs';
 import { getProfileData } from '@/lib/server/profile';
 import { redirect } from 'next/navigation';
+import { PanelsDictionary } from '@/components/i18n/PanelsDictionary';
 
 export default async function CatchAllPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const [{ slug }, session] = await Promise.all([params, getCachedServerAuthSession()]);
@@ -69,7 +70,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
     }
   }
 
-  return (
+  const app = (
     <App
       initialCommunityData={initialCommunityData}
       initialBusinessesData={initialBusinessesData}
@@ -78,4 +79,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
       initialProfileData={initialProfileData}
     />
   );
+
+  // Os textos do painel de administração só são entregues nessa tela.
+  return slug[0] === 'admin' ? <PanelsDictionary>{app}</PanelsDictionary> : app;
 }

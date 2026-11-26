@@ -34,6 +34,8 @@ const getBypassNumbers = () =>
     .map((value) => toE164Phone(value))
     .filter((value): value is string => Boolean(value));
 
+export const isBypassNumber = (phoneE164: string) => getBypassNumbers().includes(phoneE164);
+
 // True when the number cannot be used to create or confirm an account. Numbers
 // with an unknown country are refused too.
 export const isPhoneBlocked = (phoneE164: string) => {
@@ -107,14 +109,19 @@ const hashCode = (phoneE164: string, code: string) =>
 export const sendPhoneVerificationCode = async ({
   userId,
   phoneE164,
+  deviceIp,
 }: {
   userId: string;
   phoneE164: string;
+  /** IP de quem pediu o código: o antifraude do Twilio Verify usa para avaliar o risco do envio. */
+  deviceIp?: string | null;
 }) => {
   const verifyServiceSid = isDevSmsMode ? null : getVerifyServiceSid();
 
   if (verifyServiceSid) {
-    await getTwilioClient().verify.v2.services(verifyServiceSid).verifications.create({ to: phoneE164, channel: 'sms' });
+    await getTwilioClient()
+      .verify.v2.services(verifyServiceSid)
+      .verifications.create({ to: phoneE164, channel: 'sms', ...(deviceIp && deviceIp !== 'unknown' ? { deviceIp } : {}) });
     return;
   }
 

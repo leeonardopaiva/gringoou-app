@@ -105,7 +105,7 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
                   <SidebarMenuItem
                     key={item.href}
                     tone="dark"
-                    label={item.label}
+                    label={tx(item.label)}
                     icon={<Icon size={18} />}
                     active={pathname.startsWith(item.href)}
                     collapsed={collapsed}

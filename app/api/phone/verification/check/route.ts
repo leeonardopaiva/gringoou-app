@@ -10,7 +10,7 @@ import {
   isPhoneVerificationConfigured,
   toE164Phone,
 } from '@/lib/phone-verification';
-import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
+import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey, getRequestIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -69,6 +69,21 @@ export async function POST(request: Request) {
     );
   }
 
+  // The same number and the same network are capped too, so spreading guesses over several
+  // accounts does not multiply the attempts.
+  for (const extra of [
+    { scope: 'phone:verify-check:number', key: phoneE164, max: 10 },
+    { scope: 'phone:verify-check:ip', key: getRequestIp(request), max: 40 },
+  ]) {
+    const result = await consumeRateLimit({ ...extra, windowMs: 15 * 60 * 1000 });
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' },
+        { status: 429, headers: buildRateLimitHeaders(result) },
+      );
+    }
+  }
+
   let approved = false;
   try {
     approved = await checkPhoneVerificationCode({
@@ -88,34 +103,46 @@ export async function POST(request: Request) {
     );
   }
 
-  // One confirmed number belongs to one account, so the same phone cannot be
-  // used to create several verified accounts.
-  const alreadyUsed = await prisma.user.findFirst({
-    where: {
-      phone: phoneE164,
-      phoneVerifiedAt: { not: null },
-      NOT: { id: session.user.id },
-    },
-    select: { id: true },
-  });
+  // One confirmed number belongs to one account, so the same phone cannot be used to create
+  // several verified accounts. Check and save run in one serializable transaction, so two
+  // accounts confirming the same number at the same moment cannot both win.
+  let user: { phone: string | null; phoneVerifiedAt: Date | null } | null = null;
+  try {
+    user = await prisma.$transaction(
+      async (tx) => {
+        const alreadyUsed = await tx.user.findFirst({
+          where: { phone: phoneE164, phoneVerifiedAt: { not: null }, NOT: { id: session.user.id } },
+          select: { id: true },
+        });
+        if (alreadyUsed) return null;
 
-  if (alreadyUsed) {
+        return tx.user.update({
+          where: { id: session.user.id },
+          data: {
+            phone: phoneE164,
+            phoneVerifiedAt: new Date(),
+            phoneCountry: getPhoneCountry(phoneE164),
+            accessCountry: getAccessCountry(request),
+          },
+          select: { phone: true, phoneVerifiedAt: true },
+        });
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (error) {
+    // P2034 is a serialization conflict: the other account got there first. Anything else is a real failure.
+    if ((error as { code?: string })?.code !== 'P2034') {
+      console.error('[phone-verification] falha ao salvar telefone confirmado', error);
+      return NextResponse.json({ error: 'Não foi possível salvar o telefone agora. Tente novamente.' }, { status: 500 });
+    }
+  }
+
+  if (!user) {
     return NextResponse.json(
       { error: 'Este telefone já está vinculado a outra conta.' },
       { status: 409 },
     );
   }
-
-  const user = await prisma.user.update({
-    where: { id: session.user.id },
-    data: {
-      phone: phoneE164,
-      phoneVerifiedAt: new Date(),
-      phoneCountry: getPhoneCountry(phoneE164),
-      accessCountry: getAccessCountry(request),
-    },
-    select: { phone: true, phoneVerifiedAt: true },
-  });
 
   return NextResponse.json({
     ok: true,
