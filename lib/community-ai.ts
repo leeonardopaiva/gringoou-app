@@ -98,3 +98,94 @@ export async function generateCommunityAiJson(input: GenerateCommunityAiJsonInpu
   const result = await generateGeminiJson({ apiKey, contents: input.contents, temperature: input.temperature });
   return { ...result, provider: 'gemini' as const };
 }
+
+type StreamCommunityAiInput = { system: string; contents: string; temperature?: number; maxTokens?: number };
+
+/** Lê eventos SSE da API da Anthropic e devolve os pedaços de texto conforme chegam. */
+async function* streamClaudeText({ system, contents, temperature = 0.6, maxTokens = 1000 }: StreamCommunityAiInput): AsyncGenerator<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
+  if (!apiKey) throw new Error('CLAUDE_NOT_CONFIGURED');
+  const model = process.env.GRINGO_MODEL || process.env.CLAUDE_MODEL || claudeAgent.model.id;
+  const configuredEffort = process.env.CLAUDE_EFFORT?.trim().toLowerCase();
+  const effort = (['low', 'medium', 'high', 'xhigh', 'max'].includes(configuredEffort || '') ? configuredEffort : claudeAgent.model.effort) as ClaudeEffort;
+  const supportsOutputEffort = /claude-(?:opus|sonnet)-(?:[5-9]|4-[6-9])/.test(model);
+  const acceptsTemperature = !/claude-(?:opus|sonnet)-(?:[5-9]|4-[7-9])/.test(model);
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      stream: true,
+      system,
+      messages: [{ role: 'user', content: contents }],
+      ...(supportsOutputEffort ? { output_config: { effort } } : {}),
+      ...(acceptsTemperature ? { temperature } : {}),
+    }),
+    signal: AbortSignal.timeout(40_000),
+  });
+
+  if (!response.ok || !response.body) {
+    console.warn('Claude stream request failed', { model, status: response.status });
+    throw new Error(`CLAUDE_HTTP_${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let pending = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    pending += decoder.decode(value, { stream: true });
+    const events = pending.split('\n\n');
+    pending = events.pop() ?? '';
+    for (const event of events) {
+      const data = event.split('\n').find((line) => line.startsWith('data:'))?.slice(5).trim();
+      if (!data) continue;
+      try {
+        const parsed = JSON.parse(data) as { type?: string; delta?: { type?: string; text?: string }; error?: { message?: string } };
+        if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta' && parsed.delta.text) yield parsed.delta.text;
+        if (parsed.type === 'error') throw new Error(parsed.error?.message || 'CLAUDE_STREAM_ERROR');
+      } catch (error) {
+        if (error instanceof SyntaxError) continue;
+        throw error;
+      }
+    }
+  }
+}
+
+async function* streamGeminiText({ system, contents, temperature = 0.6 }: StreamCommunityAiInput): AsyncGenerator<string> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.API_KEY;
+  if (!apiKey) throw new Error('GEMINI_NOT_CONFIGURED');
+  const { GoogleGenAI } = await import('@google/genai');
+  const { getGeminiModelCandidates } = await import('@/lib/gemini');
+  const ai = new GoogleGenAI({ apiKey });
+  let lastError: unknown;
+
+  for (const model of getGeminiModelCandidates()) {
+    let started = false;
+    try {
+      const stream = await ai.models.generateContentStream({ model, contents, config: { temperature, systemInstruction: system } });
+      for await (const chunk of stream) {
+        const text = chunk.text;
+        if (text) {
+          started = true;
+          yield text;
+        }
+      }
+      return;
+    } catch (error) {
+      lastError = error;
+      console.warn('Gemini stream failed', { model, started });
+      // Só tenta o próximo modelo se nada foi enviado ainda; do contrário a resposta ficaria duplicada.
+      if (started) throw error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('GEMINI_UNAVAILABLE');
+}
+
+/** Resposta do assistente em texto, enviada aos poucos (o provedor segue AI_PROVIDER). */
+export function streamCommunityAiText(input: StreamCommunityAiInput): AsyncGenerator<string> {
+  return getCommunityAiProvider() === 'claude' ? streamClaudeText(input) : streamGeminiText(input);
+}

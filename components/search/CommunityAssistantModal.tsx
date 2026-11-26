@@ -17,6 +17,8 @@ type ChatMessage = {
   references?: AssistantReference[];
   suggestions?: string[];
   error?: boolean;
+  /** O Gringo ainda está escrevendo esta resposta (texto chegando em tempo real). */
+  streaming?: boolean;
 };
 
 type SearchPayload = {
@@ -74,7 +76,7 @@ type CommunityAssistantModalProps = {
 };
 
 export default function CommunityAssistantModal({ open, initialQuery = '', autoSubmitRequest, regionLabel, onClose }: CommunityAssistantModalProps) {
-  const { tx } = useLanguage();
+  const { tx, language } = useLanguage();
   const router = useRouter();
   const [draft, setDraft] = useState(initialQuery);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -179,19 +181,66 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
         body: JSON.stringify({
           query,
           context,
+          language,
+          stream: true,
           history: resetConversation ? [] : messages.slice(-6).map(({ role, text }) => ({ role, text: text.trim().slice(0, 600) })),
         }),
       });
-      const assistantPayload = await assistantResponse.json().catch(() => null);
-      if (!assistantResponse.ok || !assistantPayload?.answer) throw new Error(assistantPayload?.error || 'Não foi possível gerar a resposta.');
 
-      setMessages((current) => [...current, {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        text: assistantPayload.answer,
-        references: assistantPayload.references || [],
-        suggestions: assistantPayload.followUps || [],
-      }]);
+      // Resposta em tempo real: o texto do Gringo aparece enquanto é escrito (uma linha JSON por evento).
+      if (assistantResponse.ok && assistantResponse.body && (assistantResponse.headers.get('content-type') ?? '').includes('ndjson')) {
+        const assistantId = crypto.randomUUID();
+        const reader = assistantResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let pending = '';
+        let started = false;
+        let finalEvent: { answer?: string; references?: AssistantReference[]; followUps?: string[] } | null = null;
+
+        const handleEvent = (event: { type?: string; text?: string; answer?: string; references?: AssistantReference[]; followUps?: string[] }) => {
+          if (event.type === 'delta' && event.text) {
+            if (!started) {
+              started = true;
+              setLoadingPreview([]);
+              setMessages((current) => [...current, { id: assistantId, role: 'assistant', text: event.text ?? '', streaming: true }]);
+            } else {
+              setMessages((current) => current.map((message) => (message.id === assistantId ? { ...message, text: message.text + (event.text ?? '') } : message)));
+            }
+          } else if (event.type === 'done') {
+            finalEvent = event;
+          }
+        };
+
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          pending += decoder.decode(value, { stream: true });
+          const lines = pending.split('\n');
+          pending = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try { handleEvent(JSON.parse(line)); } catch { /* linha incompleta ou inválida: ignora */ }
+          }
+        }
+        if (pending.trim()) {
+          try { handleEvent(JSON.parse(pending)); } catch { /* ignora */ }
+        }
+
+        const result = finalEvent as { answer?: string; references?: AssistantReference[]; followUps?: string[] } | null;
+        if (!result?.answer) throw new Error('Não foi possível gerar a resposta.');
+        const finished: ChatMessage = { id: assistantId, role: 'assistant', text: result.answer, references: result.references || [], suggestions: result.followUps || [] };
+        setMessages((current) => (started ? current.map((message) => (message.id === assistantId ? finished : message)) : [...current, finished]));
+      } else {
+        const assistantPayload = await assistantResponse.json().catch(() => null);
+        if (!assistantResponse.ok || !assistantPayload?.answer) throw new Error(assistantPayload?.error || 'Não foi possível gerar a resposta.');
+
+        setMessages((current) => [...current, {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          text: assistantPayload.answer,
+          references: assistantPayload.references || [],
+          suggestions: assistantPayload.followUps || [],
+        }]);
+      }
     } catch (error) {
       setMessages((current) => [...current, {
         id: crypto.randomUUID(),
@@ -317,8 +366,8 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                     <div className="max-w-[88%] rounded-3xl rounded-br-md bg-brand-strong-hover px-5 py-3 text-sm font-semibold leading-6 text-white shadow-sm">{message.text}</div>
                   ) : (
                     <div className={message.error ? 'rounded-2xl border border-red-100 bg-red-50 p-4 text-sm leading-6 text-red-700' : ''}>
-                      {!message.error ? <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white"><Sparkles size={14} /></span> {tx('Resumo da comunidade')}</div> : null}
-                      <p className="whitespace-pre-line text-sm leading-6 text-slate-800 sm:text-[15px]">{message.text}</p>
+                      {!message.error ? <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white"><Sparkles size={14} /></span> {tx('Gringo')}</div> : null}
+                      <p className="whitespace-pre-line text-sm leading-6 text-slate-800 sm:text-[15px]">{message.text}{message.streaming ? <span aria-hidden="true" className="ml-0.5 inline-block h-4 w-[2px] animate-pulse bg-brand-500 align-middle" /> : null}</p>
                       {message.references?.length ? <div className="mt-5 grid gap-2 sm:grid-cols-2">{message.references.map((reference) => <Link key={reference.id} href={reference.href} onClick={onClose} className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"><span className="truncate text-xs font-bold text-slate-700 group-hover:text-brand-700">{tx(reference.label)}</span><ExternalLink size={14} className="shrink-0 text-brand-500" /></Link>)}</div> : null}
                       {!message.error ? <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3"><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'up' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'up' ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100'}`} aria-label={tx('Resposta útil')}><ThumbsUp size={16} /></button><button type="button" onClick={() => setFeedback((current) => ({ ...current, [message.id]: 'down' }))} className={`flex h-9 w-9 items-center justify-center rounded-full transition ${feedback[message.id] === 'down' ? 'bg-slate-200 text-slate-800' : 'text-slate-500 hover:bg-slate-100'}`} aria-label={tx('Resposta não foi útil')}><ThumbsDown size={16} /></button><button type="button" onClick={() => void shareAnswer(message)} className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100" aria-label={tx('Compartilhar resposta')}>{copiedMessageId === message.id ? <Check size={16} /> : <Share2 size={16} />}{copiedMessageId === message.id ? tx('Copiado') : ''}</button></div> : null}
                     </div>
@@ -326,7 +375,7 @@ export default function CommunityAssistantModal({ open, initialQuery = '', autoS
                 </div>
               ))}
               {!loading && messages.at(-1)?.role === 'assistant' && !messages.at(-1)?.error && latestAssistantSuggestions.length ? <section><p className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-800">{tx('Continue explorando')} <Sparkles size={14} className="text-brand-500" /></p><div className="flex flex-wrap gap-2">{latestAssistantSuggestions.map((suggestion) => <button key={suggestion} type="button" onClick={() => void ask(suggestion)} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">{suggestion}</button>)}</div></section> : null}
-              {loading ? (
+              {loading && !messages.at(-1)?.streaming ? (
                 <div className="space-y-4 rounded-[26px] border border-brand-100 bg-brand-50/70 px-4 py-4 text-sm text-slate-700 shadow-sm">
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-white">
