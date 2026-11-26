@@ -46,7 +46,7 @@ import { Modal } from './ui/Modal';
 import { notifyContentUpdated, onContentUpdated } from '@/lib/content-refresh';
 import { ActiveRegionProvider } from './RegionContext';
 import { LanguageProvider } from './i18n/LanguageProvider';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -402,7 +402,7 @@ const Layout: React.FC<LayoutWithUserProps> = ({
         body: JSON.stringify({ regionKey: selectedRegion.key }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua região.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar sua região.'));
 
       const confirmedRegion = {
         key: payload?.user?.regionKey || selectedRegion.key,

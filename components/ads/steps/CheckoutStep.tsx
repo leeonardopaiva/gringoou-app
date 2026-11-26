@@ -9,6 +9,7 @@ import { Gift } from 'lucide-react';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { useAdPlans } from '@/hooks/useAdPlans';
 import type { AdWizardData } from '@/lib/ads/validation';
+import { getUserErrorMessage } from '@/lib/user-error';
 
 export const AD_PAYMENT_FORM_ID = 'ad-payment-form';
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim() ?? '';
@@ -34,7 +35,7 @@ function PaymentForm({ campaignId, onProcessing, onSuccess, onError }: { campaig
           redirect: 'if_required',
         });
         onProcessing(false);
-        if (result.error) return onError(result.error.message ?? 'Não foi possível confirmar o pagamento.');
+        if (result.error) return onError(getUserErrorMessage(result.error, 'Não foi possível confirmar o pagamento.'));
         if (result.paymentIntent?.status === 'succeeded' || result.paymentIntent?.status === 'processing') onSuccess();
       }}
     >
@@ -106,7 +107,7 @@ export function CheckoutStep({ state, clientSecret, error, onProcessing, onSucce
         {!publishableKey ? <Alert tone="erro" title="Stripe não configurado" description="Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY." /> : null}
         {error ? <Alert className="mb-4" tone="erro" title="Falha no pagamento" description={error} /> : null}
         {stripePromise && clientSecret ? (
-          <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#6d28d9', borderRadius: '16px' } } }}>
+          <Elements stripe={stripePromise} options={{ clientSecret, locale: 'pt-BR', appearance: { theme: 'stripe', variables: { colorPrimary: '#6d28d9', borderRadius: '16px' } } }}>
             <PaymentForm
               campaignId={state.draftId}
               onProcessing={onProcessing}

@@ -36,7 +36,7 @@ import { PublisherSignature } from '../components/ui/PublisherSignature';
 import type { Publisher } from '../lib/publisher';
 import RegionSelector from '../components/RegionSelector';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 interface EventDetailProps {
   eventId?: string;
@@ -190,7 +190,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Evento não encontrado.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Evento não encontrado.'));
         }
 
         if (!ignore) {
@@ -328,7 +328,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar o evento.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar o evento.'));
 
       setEvent((current) => ({
         ...current,
@@ -360,7 +360,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar seus favoritos.'), 'error');
         return;
       }
 
@@ -397,7 +397,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
           }));
         }
 
-        showToast(payload?.error ?? 'Não foi possível registrar sua avaliação.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível registrar sua avaliação.'), 'error');
         return;
       }
 
@@ -432,7 +432,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível salvar a galeria do evento.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível salvar a galeria do evento.'), 'error');
         return;
       }
 
@@ -506,7 +506,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ eventId, user, initialEvent }
               onUploaded={async (url) => {
                 const response = await fetch(`/api/events/${event.slug || event.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
                 const payload = await response.json().catch(() => null);
-                if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+                if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
                 setCoverFailed(false);
                 setEvent((current) => ({ ...current, imageUrl: payload.event?.imageUrl || url }));
                 notifyContentUpdated();

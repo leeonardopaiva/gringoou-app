@@ -10,7 +10,7 @@ export async function PUT(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const rateLimit = await consumeRateLimit({
@@ -32,7 +32,7 @@ export async function PUT(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid region data' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos. Revise os campos e tente novamente.' },
       { status: 400 },
     );
   }
@@ -40,7 +40,7 @@ export async function PUT(request: Request) {
   const region = await findRegionByKey(parsed.data.regionKey, { activeOnly: true });
 
   if (!region) {
-    return NextResponse.json({ error: 'Invalid region' }, { status: 400 });
+    return NextResponse.json({ error: 'Região inválida. Escolha uma região da lista.' }, { status: 400 });
   }
 
   if (!(await canUseRegionCountry({ userId: session.user.id, role: session.user.role, request, regionCountryCode: region.countryCode }))) {

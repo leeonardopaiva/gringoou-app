@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, MessageCircle, Newspaper, Plus } from 'lucide-react';
 import type { Post } from '@/types';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 type BusinessPostsPanelProps = {
   businessId: string;
@@ -37,7 +38,7 @@ export function BusinessPostsPanel({ businessId, businessName, management = fals
         if (management) params.set('manage', '1');
         const response = await fetch(`/api/community/posts?${params.toString()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar as publicações.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar as publicações.'));
         if (!ignore) setPosts(Array.isArray(payload?.posts) ? payload.posts : []);
       } catch (error) {
         console.error('Failed to load business posts:', error);

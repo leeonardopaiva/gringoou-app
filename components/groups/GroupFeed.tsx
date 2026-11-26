@@ -11,7 +11,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import type { Post, User } from '@/types';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type GroupFeedProps = { groupId: string; groupSlug: string; user?: User | null; canPost: boolean };
 
@@ -33,7 +33,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
     try {
       const response = await fetch(`/api/community/posts?groupId=${encodeURIComponent(groupId)}&limit=10&offset=${offset}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar o mural.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar o mural.'));
       setPosts((current) => append ? [...current, ...(payload.posts || [])] : payload.posts || []);
       setHasMore(Boolean(payload.hasMore));
       setNextOffset(Number(payload.nextOffset || 0));
@@ -60,7 +60,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
     try {
       const response = await fetch('/api/community/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: normalizedContent, imageUrl: image, externalUrl: link, personaMode: 'personal', groupId }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível publicar.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível publicar.'));
       resetComposer();
       await loadPosts();
       showToast(payload?.message || 'Publicação criada.', 'success');
@@ -70,7 +70,7 @@ export default function GroupFeed({ groupId, groupSlug, user, canPost }: GroupFe
   const request = async (url: string, init?: RequestInit) => {
     const response = await fetch(url, init);
     const payload = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(payload?.error || 'Não foi possível concluir a ação.');
+    if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível concluir a ação.'));
     return payload;
   };
   const toggleLike = async (postId: string) => {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { MessageSquareWarning, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { Avatar, Skeleton } from '@/components/ui';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Person = { id: string; name: string | null; username: string | null; image?: string | null };
 type ReportedComment = {
@@ -33,7 +33,7 @@ export default function NewsCommentReportsSection() {
     try {
       const response = await fetch('/api/admin/news-comment-reports', { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar as denúncias.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar as denúncias.'));
       setComments(payload.comments || []);
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível carregar as denúncias.'), 'error');
@@ -55,7 +55,7 @@ export default function NewsCommentReportsSection() {
         body: JSON.stringify({ action }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível concluir a ação.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível concluir a ação.'));
       showToast(action === 'delete' ? 'Comentário excluído.' : action === 'hide' ? 'Comentário oculto.' : 'Denúncia descartada.', 'success');
       await load();
     } catch (error) {

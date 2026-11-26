@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: 'Too many requests' },
+      { error: 'Muitas tentativas. Aguarde um instante e tente novamente.' },
       { status: 429, headers: buildRateLimitHeaders(rateLimit) },
     );
   }

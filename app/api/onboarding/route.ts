@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isPhoneVerificationEnabled } from '@/lib/phone-verification';
 import { getServerAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LEGAL_VERSION } from '@/lib/legal/company';
 import { findReferrerByUsername } from '@/lib/referrals';
 import { findRegionByKey } from '@/lib/region-store';
 import { canUseRegionCountry, REGION_COUNTRY_BLOCKED_MESSAGE } from '@/lib/region-country-access';
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const body = await request.json();
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid profile data' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos. Revise os campos e tente novamente.' },
       { status: 400 },
     );
   }
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   const region = await findRegionByKey(parsed.data.regionKey, { activeOnly: true });
 
   if (!region) {
-    return NextResponse.json({ error: 'Invalid region' }, { status: 400 });
+    return NextResponse.json({ error: 'Região inválida. Escolha uma região da lista.' }, { status: 400 });
   }
 
   if (!(await canUseRegionCountry({ userId: session.user.id, role: session.user.role, request, regionCountryCode: region.countryCode }))) {
@@ -92,6 +93,9 @@ export async function POST(request: Request) {
       timeAbroad: parsed.data.timeAbroad,
       birthCity: parsed.data.birthCity,
       onboardingCompleted: true,
+      // Quem entra por Google não passa pelo cadastro com senha: o aceite é registrado ao concluir o perfil.
+      termsAcceptedAt: new Date(),
+      termsVersion: LEGAL_VERSION,
       referredById: currentUser?.referredById || referrer?.id || undefined,
     },
     select: {

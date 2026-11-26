@@ -29,12 +29,12 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { housingId } = await context.params;
   const current = await prisma.housing.findUnique({ where: { id: housingId }, select: { createdById: true } });
   if (!current) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
   const parsed = housingSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
@@ -43,12 +43,12 @@ export async function PUT(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { housingId } = await context.params;
   const current = await prisma.housing.findUnique({ where: { id: housingId }, select: { createdById: true } });
   if (!current) return NextResponse.json({ error: 'Moradia não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
   await prisma.housing.delete({ where: { id: housingId } });
   return NextResponse.json({ success: true });

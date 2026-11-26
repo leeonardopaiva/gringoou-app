@@ -16,7 +16,7 @@ import {
   type ReportDimensionId,
   type ReportMetricId,
 } from '@/lib/ads/dashboard';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type ReportBuilderProps = {
   data: AdsReportData;
@@ -145,7 +145,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error ?? 'Não foi possível gerar o relatório.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível gerar o relatório.'));
       }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

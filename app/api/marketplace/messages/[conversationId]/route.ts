@@ -17,7 +17,7 @@ type RouteContext = { params: Promise<{ conversationId: string }> };
 export async function GET(_request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const { conversationId } = await params;
   const viewerId = session.user.id;
@@ -68,7 +68,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
 export async function POST(request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const { conversationId } = await params;
   const viewerId = session.user.id;
@@ -161,7 +161,7 @@ const STATE_ACTIONS = {
 export async function PATCH(request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const { conversationId } = await params;
   const viewerId = session.user.id;
@@ -194,7 +194,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 export async function DELETE(request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const { conversationId } = await params;
   const viewerId = session.user.id;

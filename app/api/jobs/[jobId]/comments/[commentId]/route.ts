@@ -18,11 +18,11 @@ async function getAccess(jobId: string, commentId: string, session: Awaited<Retu
 
 export async function PUT(request: Request, context: Context) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
   if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
-  if (!access.allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!access.allowed) return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   const parsed = commentSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Comentário inválido.' }, { status: 400 });
   const comment = await prisma.jobComment.update({ where: { id: commentId }, data: { content: parsed.data.content }, include: { author: { select: authorSelect } } });
@@ -31,11 +31,11 @@ export async function PUT(request: Request, context: Context) {
 
 export async function PATCH(request: Request, context: Context) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
   if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
-  if (!access.manage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!access.manage) return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   const body = await request.json().catch(() => ({}));
   const hide = body.action !== 'unhide';
   const comment = await prisma.jobComment.update({ where: { id: commentId }, data: { isHidden: hide, hiddenAt: hide ? new Date() : null }, include: { author: { select: authorSelect } } });
@@ -44,11 +44,11 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(_request: Request, context: Context) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { jobId, commentId } = await context.params;
   const access = await getAccess(jobId, commentId, session);
   if (!access) return NextResponse.json({ error: 'Comentário não encontrado.' }, { status: 404 });
-  if (!access.allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!access.allowed) return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   await prisma.jobComment.delete({ where: { id: commentId } });
   return NextResponse.json({ message: 'Comentário removido.' });
 }

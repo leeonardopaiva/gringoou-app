@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const rateLimit = await consumeRateLimit({
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   if (!session.user.onboardingCompleted) {
     return NextResponse.json(
-      { error: 'Complete your profile before creating a listing' },
+      { error: 'Complete seu perfil antes de criar um anúncio.' },
       { status: 400 },
     );
   }
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid listing data' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos. Revise os campos e tente novamente.' },
       { status: 400 },
     );
   }

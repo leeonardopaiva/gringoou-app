@@ -18,7 +18,7 @@ const normalize = (value: string) => value.trim().replace(/^@/, '').toLowerCase(
 export async function DELETE(request: Request) {
   const session = await getServerAuthSession();
   const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!userId) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
 
   const rateLimit = await consumeRateLimit({
     scope: 'me:delete-account',

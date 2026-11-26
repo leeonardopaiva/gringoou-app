@@ -36,7 +36,7 @@ import { notifyContentUpdated } from '../lib/content-refresh';
 import { Dropdown } from '../components/ui/Dropdown';
 import { useMessaging } from '../lib/MessagingProvider';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 interface BusinessDetailProps {
   businessId?: string;
@@ -154,7 +154,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Negócio não encontrado.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Negócio não encontrado.'));
         }
 
         if (!ignore) {
@@ -298,7 +298,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível salvar as alterações.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível salvar as alterações.'), 'error');
         return;
       }
 
@@ -339,7 +339,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar seus favoritos.'), 'error');
         return;
       }
 
@@ -378,7 +378,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
           }));
         }
 
-        showToast(payload?.error ?? 'Não foi possível registrar sua avaliação.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível registrar sua avaliação.'), 'error');
         return;
       }
 
@@ -468,7 +468,7 @@ const BusinessDetail: React.FC<BusinessDetailProps> = ({ businessId, user, manag
             onUploaded={async (url) => {
               const response = await fetch(`/api/businesses/${business.slug || business.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: url }) });
               const payload = await response.json().catch(() => null);
-              if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+              if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
               setCoverFailed(false);
               setBusiness((current) => ({ ...current, imageUrl: payload.business.imageUrl || current.imageUrl }));
               notifyContentUpdated();

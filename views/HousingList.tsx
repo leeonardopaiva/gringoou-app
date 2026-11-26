@@ -23,7 +23,7 @@ import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import PageHeader from "@/components/navigation/PageHeader";
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Housing = {
   id: string;
@@ -85,9 +85,7 @@ export default function HousingList({ user }: { user: User }) {
       } catch (error) {
         if (!controller.signal.aborted)
           showToast(
-            error instanceof Error
-              ? error.message
-              : "Não foi possível carregar moradias.",
+            getUserErrorMessage(error, "Não foi possível carregar moradias."),
             "error",
           );
       } finally {
@@ -109,7 +107,7 @@ export default function HousingList({ user }: { user: User }) {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
-        throw new Error(payload?.error || "Não foi possível publicar.");
+        throw new Error(sanitizeUserMessage(payload?.error, "Não foi possível publicar."));
       setItems((current) => [payload.housing, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);

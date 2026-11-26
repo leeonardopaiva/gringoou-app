@@ -63,7 +63,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { slug } = await context.params;
   const membership = await prisma.communityGroupMember.findFirst({
     where: { group: { slug }, userId: session.user.id, status: CommunityGroupMembershipStatus.APPROVED, role: { in: [CommunityGroupMemberRole.OWNER, CommunityGroupMemberRole.ADMIN] } },

@@ -8,7 +8,7 @@ type RouteContext = { params: Promise<{ slug: string; memberId: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { slug, memberId } = await context.params;
   const parsed = communityGroupMemberActionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Ação inválida.' }, { status: 400 });

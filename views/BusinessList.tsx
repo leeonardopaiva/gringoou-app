@@ -29,6 +29,7 @@ import { CharacterCounter } from '../components/ui/CharacterCounter';
 import PageHeader from '../components/navigation/PageHeader';
 import { SubHeader } from '../components/ui/SubHeader';
 import { useActiveRegion } from '../components/RegionContext';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const emptyForm = {
   name: '',
@@ -160,7 +161,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar negócios.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar negócios.'));
         }
 
         if (!ignore) {
@@ -256,7 +257,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível enviar seu negócio.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível enviar seu negócio.'), 'error');
         return;
       }
 
@@ -287,7 +288,7 @@ const BusinessList: React.FC<BusinessListProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar seus favoritos.'), 'error');
         return;
       }
 

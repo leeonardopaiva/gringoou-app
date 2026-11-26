@@ -45,7 +45,7 @@ import { formatLoosePhoneInput } from '../lib/forms/phone';
 import { normalizeUsernameInput } from '../lib/username';
 import { formatVisibilityScopeLabel } from '../lib/visibility';
 import type { User } from '../types';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type BusinessAction = 'approve' | 'reject' | 'suspend';
 type EventAction = 'approve' | 'reject' | 'cancel';
@@ -592,7 +592,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível carregar o painel admin.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar o painel admin.'));
       }
 
       startTransition(() => {
@@ -621,7 +621,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível carregar os analytics.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os analytics.'));
       }
 
       startTransition(() => {
@@ -1076,7 +1076,7 @@ const AdminPanel: React.FC<{ user: User; initialSection?: AdminSection }> = ({ u
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível validar o arquivo.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível validar o arquivo.'));
       }
 
       setImportPreview(payload);

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import '@/lib/zod-messages';
 
 // Kept free of Prisma imports so the client form can share the same rules.
 // Name, email and country are all required: without them the list cannot be used to invite

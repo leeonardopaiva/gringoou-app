@@ -13,7 +13,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import type { AdvertisableBusiness } from '@/lib/ads/businesses';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type AdAccountOnboardingFormProps = {
   mode?: 'initial' | 'additional';
@@ -54,7 +54,7 @@ export function AdAccountOnboardingForm({ mode = 'initial', currentCount = 0, ma
     try {
       const response = await fetch('/api/ads/accounts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível cadastrar a empresa.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível cadastrar a empresa.'));
       await refreshAccounts();
       router.replace('/ads/overview');
       router.refresh();

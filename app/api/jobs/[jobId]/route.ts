@@ -34,12 +34,12 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { jobId } = await context.params;
   const current = await prisma.job.findUnique({ where: { id: jobId }, select: { createdById: true } });
   if (!current) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
   const parsed = jobSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }, { status: 400 });
@@ -52,12 +52,12 @@ export async function PUT(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const { jobId } = await context.params;
   const current = await prisma.job.findUnique({ where: { id: jobId }, select: { createdById: true } });
   if (!current) return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
   if (current.createdById !== session.user.id && session.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
   await prisma.job.delete({ where: { id: jobId } });
   return NextResponse.json({ success: true });

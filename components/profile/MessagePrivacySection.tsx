@@ -6,6 +6,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 type Policy = 'EVERYONE' | 'FRIENDS' | 'NOBODY';
 
@@ -67,7 +68,7 @@ function MyDataSection({ disabled }: { disabled?: boolean }) {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível excluir a conta agora.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível excluir a conta agora.'), 'error');
         return;
       }
       await signOut({ callbackUrl: '/login' });

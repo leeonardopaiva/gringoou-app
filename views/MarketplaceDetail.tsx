@@ -21,6 +21,7 @@ import { useActiveRegion } from '../components/RegionContext';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
 import { withUtm } from '@/lib/utm-client';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const CONDITION_LABELS: Record<string, string> = {
   NEW: 'Novo',
@@ -68,7 +69,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Anúncio não encontrado.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Anúncio não encontrado.'));
         }
 
         if (!ignore) {
@@ -137,7 +138,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       const response = await fetch(`/api/marketplace/${item.id}/favorite`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível salvar.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível salvar.'), 'error');
         return;
       }
       setItem((current) => (current ? { ...current, isFavorite: payload.isFavorite } : current));
@@ -177,7 +178,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       const response = await fetch(`/api/marketplace/${item.id}`, { method: 'DELETE' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível excluir.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível excluir.'), 'error');
         return;
       }
       showToast('Anúncio removido.', 'success');
@@ -200,7 +201,7 @@ const MarketplaceDetail: React.FC<MarketplaceDetailProps> = ({ itemId, user }) =
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível atualizar.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar.'), 'error');
         return;
       }
       setItem(payload.item);

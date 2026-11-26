@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { LEGAL_VERSION } from '@/lib/legal/company';
 import { isRequestGeoBlocked } from '@/lib/geo-access';
 import { buildRateLimitHeaders, consumeRateLimit, getRateLimitKey } from '@/lib/rate-limit';
 import { getPasswordValidationIssues } from '@/lib/forms/password';
@@ -94,6 +95,9 @@ export async function POST(request: Request) {
           email,
           passwordHash: await hashPassword(parsed.data.password),
           emailVerificationRequired: true,
+          // O cadastro mostra o aviso "ao se cadastrar, você concorda" com os Termos e a Política.
+          termsAcceptedAt: new Date(),
+          termsVersion: LEGAL_VERSION,
         },
         select: {
           id: true,

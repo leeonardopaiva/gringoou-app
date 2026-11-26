@@ -8,7 +8,7 @@ type PreferenceAction = 'save' | 'interest' | 'hide' | 'report' | 'mute';
 
 export async function POST(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
 
   const { postId } = await context.params;
   const body = await request.json().catch(() => null);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LocateFixed } from 'lucide-react';
 import { waitlistSchema } from '@/lib/waitlist';
 import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const inputClassName =
   'w-full rounded-2xl border border-[#dde3ef] bg-white px-4 py-3 text-sm text-[#0f2b63] placeholder:text-[#8a94a8] focus:border-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
@@ -97,7 +98,7 @@ export function WaitlistSection() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(data?.error ?? 'Não foi possível concluir agora. Tente novamente.');
+        setError(sanitizeUserMessage(data?.error, 'Não foi possível concluir agora. Tente novamente.'));
         return;
       }
 

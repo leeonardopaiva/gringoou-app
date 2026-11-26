@@ -22,7 +22,7 @@ export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const { postId, commentId } = await context.params;
@@ -53,7 +53,7 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   if (!canManageComment(session, existingComment.authorId)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
 
   const body = await request.json();
@@ -100,7 +100,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const { postId, commentId } = await context.params;
@@ -122,7 +122,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   if (!canManageComment(session, existingComment.authorId) && !permissions.canManage) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
 
   await prisma.postComment.delete({

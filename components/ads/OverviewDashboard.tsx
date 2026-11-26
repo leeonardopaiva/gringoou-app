@@ -16,7 +16,7 @@ import {
   type AdsOverviewData,
   type AdsOverviewRow,
 } from '@/lib/ads/dashboard';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type OverviewDashboardProps = { data: AdsOverviewData };
 type StatusView = { label: string; tone: 'success' | 'destaque' | 'erro' | 'neutro' };
@@ -82,7 +82,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     try {
       const response = await fetch(`/api/ads/${removing.id}/archive`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível remover a campanha.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível remover a campanha.'));
       showToast('Campanha removida do painel.', 'success');
       setRemoving(null);
       router.refresh();
@@ -128,7 +128,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     try {
       const response = await fetch(`/api/ads/${row.id}/duplicate`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível duplicar a campanha.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível duplicar a campanha.'));
       showToast('Cópia criada como rascunho.', 'success');
       router.push(`/ads/wizard?draft=${encodeURIComponent(payload.id)}`);
     } catch (reason) {
@@ -143,7 +143,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     try {
       const response = await fetch(`/api/ads/${discarding.id}/discard`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível descartar o rascunho.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível descartar o rascunho.'));
       try { Object.keys(sessionStorage).filter((key) => key.startsWith('gringoou:ad-wizard-draft')).forEach((key) => sessionStorage.removeItem(key)); } catch { /* sessionStorage indisponível */ }
       showToast('Rascunho descartado.', 'success');
       setDiscarding(null);
@@ -177,7 +177,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
     try {
       const response = await fetch(`/api/ads/${row.id}/toggle`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: next }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a campanha.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a campanha.'));
       router.refresh();
     } catch (reason) {
       setEnabledRows((current) => ({ ...current, [row.id]: previous }));
@@ -204,7 +204,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
         body: JSON.stringify({ ...revisionForm, goal: revising.goal }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível reenviar a campanha.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível reenviar a campanha.'));
       setRevising(null);
       setRevisionForm(null);
       showToast('Criativo reenviado para análise sem nova cobrança.', 'success');

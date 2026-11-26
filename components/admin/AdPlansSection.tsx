@@ -8,7 +8,7 @@ import { InfoTip } from '@/components/ui/InfoTip';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { AD_PLANS } from '@/lib/ads/contracts';
 import type { AdPlanInfo } from '@/lib/ads/plans';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Draft = { name: string; price: string; durationMonths: number; estimatedImpressions: string; description: string; highlights: string; isActive: boolean };
 
@@ -39,7 +39,7 @@ export default function AdPlansSection() {
     try {
       const response = await fetch('/api/admin/ads/plans', { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os pacotes.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os pacotes.'));
       setPlans(payload.plans);
       setDrafts(Object.fromEntries(AD_PLANS.map((slot) => {
         const found = (payload.plans as AdPlanInfo[]).find((plan) => plan.plan === slot);
@@ -75,7 +75,7 @@ export default function AdPlansSection() {
     try {
       const response = await fetch('/api/admin/ads/plans', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar.'));
       setPlans(payload.plans);
       showToast(successMessage, 'success');
     } catch (error) {

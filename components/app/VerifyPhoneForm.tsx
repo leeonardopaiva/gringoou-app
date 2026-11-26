@@ -5,6 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 import PhoneNumberField from '@/components/forms/PhoneNumberField';
 import { findCountryByIso2 } from '@/lib/country-calling-codes';
 import { buildInternationalPhone } from '@/lib/forms/phone';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -98,7 +99,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
       const { ok, data } = await postJson('/api/phone/verification/start', { phone });
 
       if (!ok) {
-        setError(data?.error ?? 'Não foi possível enviar o código agora.');
+        setError(sanitizeUserMessage(data?.error, 'Não foi possível enviar o código agora.'));
         return;
       }
 
@@ -122,7 +123,7 @@ export function VerifyPhoneForm({ onVerified }: { onVerified?: (phone: string) =
       const { ok, data } = await postJson('/api/phone/verification/check', { phone, code: value });
 
       if (!ok) {
-        setError(data?.error ?? 'Código inválido. Tente novamente.');
+        setError(sanitizeUserMessage(data?.error, 'Código inválido. Tente novamente.'));
         setCode('');
         return;
       }

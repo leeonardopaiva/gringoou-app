@@ -16,7 +16,7 @@ export async function POST(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id || !session.user.onboardingCompleted) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const rateLimit = await consumeRateLimit({

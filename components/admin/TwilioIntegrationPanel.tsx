@@ -5,7 +5,7 @@ import { CheckCircle2, CircleAlert, MessageSquareText, TriangleAlert } from 'luc
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -41,7 +41,7 @@ export default function TwilioIntegrationPanel() {
       body: JSON.stringify(body),
     });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível executar o teste.');
+    if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível executar o teste.'));
     return payload;
   };
 

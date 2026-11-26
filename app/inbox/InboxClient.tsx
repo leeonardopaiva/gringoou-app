@@ -14,7 +14,7 @@ import { useMessaging, type Conversation as MessagingConversation } from '@/lib/
 import { useToast } from '@/components/feedback/ToastProvider';
 import { MessageCircle, Package, Store, User as UserIconLucide, ChevronLeft, MoreHorizontal, Ban, Flag, Send, Loader2, Archive, ArchiveRestore, BellOff, Bell, Trash2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 // Use the Conversation type from MessagingProvider to avoid conflicts
 type Conversation = MessagingConversation;
@@ -183,7 +183,7 @@ export const InboxClient: React.FC<{ user: User }> = ({ user }) => {
         body: JSON.stringify({ conversationId: activeConversationId, reason: reportReason, details: reportDetails.trim() || undefined }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível enviar a denúncia.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível enviar a denúncia.'));
       showToast('Denúncia enviada. Nossa equipe vai analisar.', 'success');
       setReportOpen(false);
       setReportReason('');

@@ -8,7 +8,7 @@ const POLICIES = ['EVERYONE', 'FRIENDS', 'NOBODY'] as const;
 export async function GET() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { messagePolicy: true } });
   return NextResponse.json({ messagePolicy: user?.messagePolicy ?? 'EVERYONE' });
@@ -17,7 +17,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const body = await request.json().catch(() => null);
   const policy = POLICIES.find((value) => value === body?.messagePolicy);

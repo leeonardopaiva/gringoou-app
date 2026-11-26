@@ -8,7 +8,7 @@ import { canEditAdDraft, getCampaignDraftEligibilityError } from '@/lib/ads/acco
 
 export async function GET(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
 
   const searchParams = new URL(request.url).searchParams;
   const adAccountId = searchParams.get('adAccountId');
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
 
 async function saveDraft(request: Request, requireExisting: boolean) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
 
   const parsed = adDraftSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

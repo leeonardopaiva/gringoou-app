@@ -15,7 +15,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Job = {
   id: string;
@@ -49,7 +49,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
     void fetch('/api/jobs/' + jobId)
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error || 'Vaga não encontrada.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Vaga não encontrada.'));
         if (!ignore) {
           setJob(payload.job);
           setDraft(payload.job);
@@ -97,7 +97,7 @@ export default function JobDetail({ jobId }: { jobId: string }) {
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar a vaga.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a vaga.'));
       setJob((current) => (current ? { ...current, ...payload.job, canEdit: current.canEdit } : current));
       setEditing(false);
       notifyContentUpdated();

@@ -27,7 +27,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '@/lib/avatar';
 import { onContentUpdated } from '@/lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 const getPostTimestamp = (post: Post) => new Date(post.createdAt).getTime() || 0;
 
@@ -255,7 +255,7 @@ const Community: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar seu link de indicação.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar seu link de indicação.'));
         }
 
         if (!ignore) {
@@ -448,7 +448,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível publicar agora.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível publicar agora.'));
       }
 
       setPosts((current) =>
@@ -516,7 +516,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível curtir o post.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível curtir o post.'));
       }
 
       setPosts((current) =>
@@ -557,7 +557,7 @@ const Community: React.FC<{
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a preferência.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a preferência.'));
       if (action === 'hide' || action === 'mute') {
         setPosts((current) => current.filter((post) => post.id !== postId));
       } else if (action !== 'report') {
@@ -620,7 +620,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível comentar.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível comentar.'));
       }
 
       setPosts((current) =>
@@ -682,7 +682,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível atualizar a publicação.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a publicação.'));
       }
 
       showToast(payload?.message ?? 'Publicação atualizada.', 'success');
@@ -702,7 +702,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível remover a publicação.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível remover a publicação.'));
       }
 
       showToast(payload?.message ?? 'Publicação removida.', 'success');
@@ -726,7 +726,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível atualizar o comentário.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar o comentário.'));
       }
 
       showToast(payload?.message ?? 'Comentário atualizado.', 'success');
@@ -748,7 +748,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível remover o comentário.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível remover o comentário.'));
       }
 
       showToast(payload?.message ?? 'Comentário removido.', 'success');
@@ -817,7 +817,7 @@ const Community: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível registrar seu interesse.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível registrar seu interesse.'));
       }
 
       showToast(payload?.message ?? 'Cadastro registrado.', 'success');

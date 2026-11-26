@@ -10,7 +10,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 async function resolve(context: RouteContext) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) } as const;
+    return { error: NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 }) } as const;
   }
 
   const rateLimit = await consumeRateLimit({

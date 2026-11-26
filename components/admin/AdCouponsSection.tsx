@@ -6,7 +6,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { ConfirmModal, Skeleton } from '@/components/ui';
 import { InfoTip } from '@/components/ui/InfoTip';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Coupon = {
   id: string;
@@ -38,7 +38,7 @@ export default function AdCouponsSection() {
     try {
       const response = await fetch('/api/admin/ads/coupons', { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os cupons.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os cupons.'));
       setCoupons(payload.coupons);
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível carregar os cupons.'), 'error');
@@ -72,7 +72,7 @@ export default function AdCouponsSection() {
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível criar o cupom.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível criar o cupom.'));
       showToast(`Cupom ${payload.coupon.code} criado.`, 'success');
       setForm({ code: randomCode(), plan: '', assignedEmail: '', creditUsd: '', maxRedemptions: '1', expiresAt: '', note: '' });
       await load();
@@ -94,7 +94,7 @@ export default function AdCouponsSection() {
     const response = await fetch(`/api/admin/ads/coupons/${coupon.id}${force ? '?force=1' : ''}`, { method: 'DELETE' });
     const payload = await response.json().catch(() => null);
     if (response.status === 409 && payload?.code === 'USED') return setRemoving(coupon);
-    if (!response.ok) return showToast(payload?.error || 'Não foi possível excluir o cupom.', 'error');
+    if (!response.ok) return showToast(sanitizeUserMessage(payload?.error, 'Não foi possível excluir o cupom.'), 'error');
     setRemoving(null);
     showToast('Cupom excluído.', 'success');
     await load();

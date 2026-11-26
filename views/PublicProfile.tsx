@@ -34,7 +34,7 @@ import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import ImageGalleryField from '../components/forms/ImageGalleryField';
 import CreateGroupModal from '../components/groups/CreateGroupModal';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type PublicProfileProps = {
   username: string;
@@ -152,7 +152,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.profile) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar este perfil público.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar este perfil público.'));
         }
 
         if (!ignore) {
@@ -233,7 +233,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar o perfil.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o perfil.'));
       showToast('Perfil atualizado.', 'success'); setEditModal(null); refreshProfile();
     } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível salvar o perfil.'), 'error'); }
     finally { setSavingProfile(false); }
@@ -245,7 +245,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       body: JSON.stringify({ name: profile.name, username: profile.username, email: viewer?.email || undefined, phone: viewer?.phone || undefined, bio: profile.bio || undefined, coverImageUrl: url, interests: profile.interests, galleryUrls: profile.galleryUrls || [] }),
     });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) return payload?.error || 'Não foi possível atualizar a capa.';
+    if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
     showToast('Capa atualizada.', 'success');
     refreshProfile();
     return null;
@@ -254,7 +254,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const saveAvatar = async (url: string) => {
     const response = await fetch('/api/profile/image', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: url }) });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) return payload?.error || 'Não foi possível atualizar a foto.';
+    if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a foto.');
     showToast('Foto atualizada.', 'success');
     refreshProfile();
     return null;
@@ -285,7 +285,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível atualizar a conexão.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a conexão.'));
       }
 
       showToast(payload?.message ?? 'Conexão atualizada.', 'success');

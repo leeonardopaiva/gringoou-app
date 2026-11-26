@@ -13,7 +13,7 @@ import ImageGalleryField from '../components/forms/ImageGalleryField';
 import AddressAutocomplete from '../components/ui/AddressAutocomplete';
 import type { User } from '../types';
 import type { MarketplaceItemContract } from '../lib/content-contracts';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 const CATEGORIES = [
   'Eletrônicos', 'Móveis', 'Eletrodomésticos', 'Roupas', 'Brinquedos',
@@ -50,7 +50,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
       try {
         const response = await fetch(`/api/marketplace/${itemId}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.item) throw new Error(payload?.error ?? 'Anúncio não encontrado.');
+        if (!response.ok || !payload?.item) throw new Error(sanitizeUserMessage(payload?.error, 'Anúncio não encontrado.'));
         if (cancelled) return;
         const data = payload.item as MarketplaceItemContract;
         setItem(data);
@@ -112,7 +112,7 @@ const MarketplaceEdit: React.FC<MarketplaceEditProps> = ({ itemId }) => {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível salvar o anúncio.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o anúncio.'), 'error');
         return;
       }
       showToast(

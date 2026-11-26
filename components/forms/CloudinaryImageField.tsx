@@ -138,9 +138,7 @@ const CloudinaryImageField: React.FC<CloudinaryImageFieldProps> = ({
       onChange(result.secure_url);
     } catch (uploadFailure) {
       setUploadError(
-        uploadFailure instanceof Error
-          ? uploadFailure.message
-          : 'Não foi possível enviar a imagem.',
+        getUserErrorMessage(uploadFailure, 'Não foi possível enviar a imagem.'),
       );
     } finally {
       setUploading(false);

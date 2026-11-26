@@ -29,6 +29,7 @@ import type { EventsInitialData } from '../lib/content-contracts';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { DateTimeField } from '../components/ui/DateTimeField';
 import { useActiveRegion } from '../components/RegionContext';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const EVENT_TABS = ['Hoje', 'Esta semana', 'Próximos', 'Cultural', 'Networking', 'Outros', 'Passados'];
 const EVENT_TAB_OPTIONS = EVENT_TABS.map((tab) => ({ id: tab, label: tab }));
@@ -164,7 +165,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar eventos.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar eventos.'));
         }
 
         if (!ignore) {
@@ -264,7 +265,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível enviar o evento.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível enviar o evento.'), 'error');
         return;
       }
 
@@ -289,7 +290,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível atualizar seus favoritos.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar seus favoritos.'), 'error');
         return;
       }
 

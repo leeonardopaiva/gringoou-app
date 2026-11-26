@@ -6,6 +6,7 @@ import { useToast } from './ToastProvider';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Input';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 type SuggestionCategoryValue = 'FUNCTIONALITY' | 'IMPROVEMENT';
 
@@ -81,7 +82,7 @@ const SuggestionButton: React.FC = () => {
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível enviar sua sugestão.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível enviar sua sugestão.'), 'error');
         return;
       }
 

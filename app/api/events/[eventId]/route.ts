@@ -43,7 +43,7 @@ export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const body = await request.json();
@@ -90,7 +90,7 @@ export async function PUT(request: Request, context: RouteContext) {
     ).length > 0;
 
   if (!canEdit) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
 
   const region = parsed.data.regionKey

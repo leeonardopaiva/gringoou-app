@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ArrowRightLeft, Database, ShieldAlert } from 'lucide-react';
 import { Button, Modal, Select } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type UserSummary = { id: string; name: string | null; username: string | null; email: string | null };
 type Impact = {
@@ -54,7 +54,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
     void fetch(`/api/admin/users/${target.id}`, { cache: 'no-store', signal: controller.signal })
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error || 'Não foi possível analisar a exclusão.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível analisar a exclusão.'));
         setImpact(payload.impact);
         setTransferCandidates(Array.isArray(payload.transferCandidates) ? payload.transferCandidates : []);
       })
@@ -93,7 +93,7 @@ export default function UserDeletionModal({ target, onClose, onDeleted }: {
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível excluir o usuário.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível excluir o usuário.'));
       await onDeleted();
       showToast(hasTransfer ? 'Usuário excluído, propriedades transferidas e dados pessoais removidos.' : 'Usuário e dados vinculados excluidos.', 'success');
       onClose();

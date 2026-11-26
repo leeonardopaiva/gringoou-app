@@ -213,6 +213,9 @@ model User {
   role                      UserRole                   @default(USER)
   phone                     String?
   phoneVerifiedAt           DateTime?
+  // Aceite dos Termos de Uso e da Política de Privacidade: quando e qual versão (lib/legal/company.ts).
+  termsAcceptedAt           DateTime?
+  termsVersion              String?
   phoneCountry              String?
   accessCountry             String?
   locationLabel             String?

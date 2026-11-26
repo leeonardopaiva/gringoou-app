@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import PostCard from '@/components/community/PostCard';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { DEFAULT_AVATAR_URL } from '@/lib/avatar';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Comment = { id: string; content: string; isHidden?: boolean; createdAt: string; canEdit?: boolean; canDelete?: boolean; canHide?: boolean; author: { id: string; name?: string | null; username?: string | null; image?: string | null }; replies?: Comment[] };
 
@@ -22,7 +22,7 @@ export default function CommentWall({ endpoint, title = 'Conversa da comunidade'
   const load = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch(endpoint, { signal });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os comentários.');
+    if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os comentários.'));
     setComments(Array.isArray(payload?.comments) ? payload.comments : []);
   }, [endpoint]);
 
@@ -46,7 +46,7 @@ export default function CommentWall({ endpoint, title = 'Conversa da comunidade'
       const url = editing ? `${endpoint}/${editing.id}` : endpoint;
       const response = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editing ? { content: content.trim() } : { content: content.trim(), parentId: replyTo?.id }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar o comentário.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o comentário.'));
       setContent('');
       setReplyTo(null);
       setEditing(null);
@@ -62,7 +62,7 @@ export default function CommentWall({ endpoint, title = 'Conversa da comunidade'
     setMenuId(null);
     const response = await fetch(`${endpoint}/${comment.id}`, { method, headers: { 'Content-Type': 'application/json' }, body: method === 'PATCH' ? JSON.stringify({ action }) : undefined });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) return showToast(payload?.error || 'Não foi possível atualizar o comentário.', 'error');
+    if (!response.ok) return showToast(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar o comentário.'), 'error');
     await refresh();
   };
 

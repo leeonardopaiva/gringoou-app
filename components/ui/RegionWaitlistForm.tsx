@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { COUNTRY_CALLING_CODE_OPTIONS } from '@/lib/country-calling-codes';
 import { waitlistSchema } from '@/lib/waitlist';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 /**
  * "Avise-me" da página de região indisponível. Grava na mesma lista de interesse
@@ -42,7 +43,7 @@ export function RegionWaitlistForm({ country: detectedCountry }: { country?: str
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(data?.error ?? 'Não foi possível salvar agora. Tente novamente.');
+        setError(sanitizeUserMessage(data?.error, 'Não foi possível salvar agora. Tente novamente.'));
         return;
       }
 

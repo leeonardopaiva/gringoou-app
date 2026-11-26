@@ -23,6 +23,7 @@ import ImageGalleryField from "@/components/forms/ImageGalleryField";
 import RegionSelector from "@/components/RegionSelector";
 import { useActiveRegion } from "@/components/RegionContext";
 import type { JobsInitialData } from "@/lib/content-contracts";
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Job = {
   id: string;
@@ -100,9 +101,7 @@ export default function JobList({ user, initialData }: { user: User; initialData
       } catch (error) {
         if (!controller.signal.aborted)
           showToast(
-            error instanceof Error
-              ? error.message
-              : "Não foi possível carregar as vagas.",
+            getUserErrorMessage(error, "Não foi possível carregar as vagas."),
             "error",
           );
       } finally {
@@ -130,16 +129,14 @@ export default function JobList({ user, initialData }: { user: User; initialData
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok)
-        throw new Error(payload?.error || "Não foi possível publicar a vaga.");
+        throw new Error(sanitizeUserMessage(payload?.error, "Não foi possível publicar a vaga."));
       setJobs((current) => [payload.job, ...current]);
       setDraft(emptyDraft);
       setModalOpen(false);
       showToast("Vaga publicada.", "success");
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível publicar a vaga.",
+        getUserErrorMessage(error, "Não foi possível publicar a vaga."),
         "error",
       );
     } finally {

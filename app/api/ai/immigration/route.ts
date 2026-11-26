@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'AI assistant is not configured on the server' }, { status: 503 });
+    return NextResponse.json({ error: 'O assistente não está disponível no momento.' }, { status: 503 });
   }
 
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));

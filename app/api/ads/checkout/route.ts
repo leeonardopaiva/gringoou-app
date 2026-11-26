@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
 
   const parsed = adCheckoutSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

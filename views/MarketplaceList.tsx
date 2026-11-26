@@ -31,6 +31,7 @@ import {
   requiredFieldError,
   validateOptionalUrlField,
 } from '../lib/forms/validation';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 const CATEGORIES = [
   'Eletrônicos',
@@ -148,7 +149,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar os anúncios.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os anúncios.'));
         }
 
         startTransition(() => {
@@ -221,7 +222,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível publicar o anúncio.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível publicar o anúncio.'), 'error');
         return;
       }
 
@@ -245,7 +246,7 @@ const MarketplaceList: React.FC<MarketplaceListProps> = ({ user, initialData }) 
       const response = await fetch(`/api/marketplace/${id}/favorite`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível salvar.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível salvar.'), 'error');
         return;
       }
       setItems((current) =>

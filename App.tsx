@@ -14,6 +14,7 @@ import { buildCurrentUser, mapUserRole } from './lib/build-current-user';
 import { parseAppRoute } from './lib/app-route';
 import { UserRole, type PersonaMode, type ProfessionalProfileBusiness, type ProfessionalProfileIdentity, type User } from './types';
 import type { BusinessesInitialData, CommunityInitialData, EventsInitialData, HomeInitialData, JobsInitialData, MarketplaceInitialData, NewsInitialData, ProfileInitialData } from './lib/content-contracts';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 import {
   GOOGLE_AUTH_ENABLED,
   EMAIL_AUTH_ENABLED,
@@ -134,7 +135,7 @@ const App: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar o perfil profissional.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar o perfil profissional.'));
         }
 
         if (!ignore) {
@@ -247,7 +248,7 @@ const App: React.FC<{
       }
     } catch (error) {
       console.error('Google sign-in failed:', error);
-      setRegistrationError('Não foi possível entrar com Google agora.');
+      setRegistrationError(getUserErrorMessage(error, 'Não foi possível entrar com Google agora.'));
     }
   };
 
@@ -275,7 +276,7 @@ const App: React.FC<{
       }
     } catch (error) {
       console.error('Mock sign-in failed:', error);
-      setRegistrationError('Não foi possível entrar com o usuário de teste agora.');
+      setRegistrationError(getUserErrorMessage(error, 'Não foi possível entrar com o usuário de teste agora.'));
     }
   };
 
@@ -404,7 +405,7 @@ const App: React.FC<{
       }
     } catch (error) {
       console.error('Credentials sign-in failed:', error);
-      setRegistrationError('Não foi possível entrar com email e senha.');
+      setRegistrationError(getUserErrorMessage(error, 'Não foi possível entrar com email e senha.'));
     } finally {
       setAuthSubmitting(false);
     }
@@ -439,7 +440,7 @@ const App: React.FC<{
         } else if (response.status === 503) {
           setRegistrationError('Os novos cadastros estão temporariamente indisponíveis. Tente novamente mais tarde.');
         } else {
-          setRegistrationError(payload?.error ?? 'Não foi possível criar a conta.');
+          setRegistrationError(sanitizeUserMessage(payload?.error, 'Não foi possível criar a conta.'));
         }
         return;
       }
@@ -448,7 +449,7 @@ const App: React.FC<{
       await requestMagicLink(values.email, false, true);
     } catch (error) {
       console.error('Password registration failed:', error);
-      setRegistrationError('Não foi possível criar a conta.');
+      setRegistrationError(getUserErrorMessage(error, 'Não foi possível criar a conta.'));
     } finally {
       setAuthSubmitting(false);
     }
@@ -487,14 +488,14 @@ const App: React.FC<{
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setRegistrationError(payload?.error ?? 'Não foi possível salvar seu perfil.');
+        setRegistrationError(sanitizeUserMessage(payload?.error, 'Não foi possível salvar seu perfil.'));
         return;
       }
 
       await update();
     } catch (error) {
       console.error('Profile completion failed:', error);
-      setRegistrationError('Não foi possível salvar seu perfil.');
+      setRegistrationError(getUserErrorMessage(error, 'Não foi possível salvar seu perfil.'));
     } finally {
       setSavingProfile(false);
     }

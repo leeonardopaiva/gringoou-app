@@ -15,7 +15,7 @@ import { WizardStepper } from './WizardStepper';
 import { useAdAccount } from './AdAccountProvider';
 import { formatAdCurrency } from '@/lib/ads/contracts';
 import { useAdPlans } from '@/hooks/useAdPlans';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 const LEGACY_STORAGE_KEY = 'gringoou:ad-wizard-draft';
 const STORAGE_KEY_PREFIX = 'gringoou:ad-wizard-draft';
@@ -165,7 +165,7 @@ export const AdWizard: React.FC = () => {
         body: JSON.stringify({ ...state, bannerId: state.draftId, adAccountId: account?.id }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar o rascunho.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o rascunho.'));
       const draftId = payload.banner.id as string;
       dispatch({ type: 'PATCH', payload: { draftId } });
       if (showSuccess) showToast('Rascunho salvo.', 'success');
@@ -205,7 +205,7 @@ export const AdWizard: React.FC = () => {
         body: JSON.stringify({ ...state, bannerId: state.draftId, adAccountId: account.id, idempotencyKey: checkoutKeyRef.current, couponCode: code }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) return payload?.error ?? 'Não foi possível aplicar o cupom.';
+      if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível aplicar o cupom.');
       setCourtesyApplied(true);
       setPaymentSubmitted(true);
       if (storageKey) sessionStorage.removeItem(storageKey);
@@ -229,7 +229,7 @@ export const AdWizard: React.FC = () => {
         body: JSON.stringify({ ...state, bannerId: draftId, adAccountId: account?.id, idempotencyKey: checkoutKeyRef.current, couponCode: appliedCoupon?.code }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível preparar o pagamento.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível preparar o pagamento.'));
       if (!payload?.clientSecret) throw new Error('O Stripe não retornou o client secret.');
       setClientSecret(payload.clientSecret);
       return true;
@@ -297,7 +297,7 @@ export const AdWizard: React.FC = () => {
     try {
       const response = await fetch(`/api/ads/${state.draftId}/discard`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível descartar o rascunho.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível descartar o rascunho.'));
       setDiscardOpen(false);
       startNewCampaign();
       router.replace('/ads/wizard');

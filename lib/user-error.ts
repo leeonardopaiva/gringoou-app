@@ -18,11 +18,11 @@ const NETWORK_PATTERN =
 
 // Erros de código, de formato ou de servidor que não dizem nada a quem usa o app.
 const TECHNICAL_PATTERN =
-  /unexpected (token|end)|is not valid json|\bjson\b|\bundefined\b|\bnull\b|cannot (read|set|access)|is not a function|is not defined|typeerror|referenceerror|syntaxerror|rangeerror|internal server error|status code|\bhttp\b|\bstack\b|prisma|invocation|\bat \w+ \(|\[object|nextauth|csrf|credentialssignin|callback/i;
+  /unexpected (token|end)|is not valid json|\bjson\b|\bundefined\b|\bnull\b|cannot (read|set|access)|is not a function|is not defined|typeerror|referenceerror|syntaxerror|rangeerror|internal server error|status code|\bhttp (status|error)\b|\bhttp \d{3}\b|\bstack\b|prisma|invocation|\bat \w+ \(|\[object|nextauth|csrf|credentialssignin|callback/i;
 
 // Palavras comuns em mensagens técnicas em inglês. Nossas frases são em português.
 const ENGLISH_PATTERN =
-  /\b(the|is|are|was|not|failed|error|invalid|unable|cannot|could|please|try|again|request|response|server|network|unexpected|required|missing|found|unauthorized|forbidden|denied|expired)\b/i;
+  /\b(the|is|are|was|not|failed|error|invalid|unable|cannot|could|please|try|again|requests?|responses?|server|many|too|network|unexpected|required|missing|found|unauthorized|forbidden|denied|expired)\b/i;
 
 /** Verdadeiro quando o texto parece técnico ou em inglês, e não uma frase pensada para o usuário. */
 export function isTechnicalMessage(message: string) {
@@ -63,7 +63,7 @@ export function getUserErrorMessage(error: unknown, fallback: string = DEFAULT_E
 }
 
 /** Para textos já prontos (por exemplo, o que a API devolveu): troca por um fallback se for técnico. */
-export function sanitizeUserMessage(message: string, fallback: string = DEFAULT_ERROR_MESSAGE) {
+export function sanitizeUserMessage(message: unknown, fallback: string = DEFAULT_ERROR_MESSAGE) {
   return getUserErrorMessage(message, fallback);
 }
 

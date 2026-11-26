@@ -32,7 +32,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const isAdmin = (await getStoredUserRole(session.user.id)) === 'ADMIN';
@@ -41,7 +41,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid listing data' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos. Revise os campos e tente novamente.' },
       { status: 400 },
     );
   }
@@ -83,7 +83,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const isAdmin = (await getStoredUserRole(session.user.id)) === 'ADMIN';

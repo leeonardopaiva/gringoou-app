@@ -8,7 +8,7 @@ import { Logo } from '../components/Layout';
 import PageHeader from '../components/navigation/PageHeader';
 import { handleAvatarError } from '../lib/avatar';
 import { PublicProfessionalProfile, User } from '../types';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type PublicProfessionalProfileProps = {
   username: string;
@@ -72,7 +72,7 @@ const PublicProfessionalProfileView: React.FC<PublicProfessionalProfileProps> = 
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.profile) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar esta vitrine profissional.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar esta vitrine profissional.'));
         }
 
         if (!ignore) {

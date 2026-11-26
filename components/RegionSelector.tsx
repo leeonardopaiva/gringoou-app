@@ -10,6 +10,7 @@ import {
   getRegionByKey,
   type RegionOption,
 } from '../lib/regions';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 interface RegionSelectorProps {
   value?: string;
@@ -38,7 +39,7 @@ const loadRegions = async () => {
     regionsRequest = fetch('/api/regions')
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar regiões.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar regiões.'));
         const nextRegions = Array.isArray(payload?.regions) ? payload.regions : DEFAULT_REGION_OPTIONS;
         cachedRegions = nextRegions;
         return nextRegions;

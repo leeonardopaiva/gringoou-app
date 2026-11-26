@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyNotice } from '@/components/ui/EmptyNotice';
 import { Skeleton } from '@/components/ui';
 import { buildUtmUrl, type UtmParams } from '@/lib/utm';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type RuleState = UtmParams & { enabled: boolean };
 
@@ -57,7 +57,7 @@ const RuleCard: React.FC<{ kind: Kind; onSaved: () => void }> = ({ kind, onSaved
         body: JSON.stringify({ key: kind.key, ...draft }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar.'));
       showToast('Regra de UTM salva.', 'success');
       onSaved();
     } catch (error) {
@@ -158,7 +158,7 @@ const ManagersCard: React.FC = () => {
     try {
       const response = await fetch('/api/admin/utm/managers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível conceder.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível conceder.'));
       setEmail('');
       showToast('Permissão concedida.', 'success');
       await load();

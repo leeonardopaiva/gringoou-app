@@ -11,6 +11,7 @@ import { Pagination } from '../ui/Pagination';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { useToast } from '../feedback/ToastProvider';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 type InviteStatus = 'ACTIVE' | 'USED' | 'EXPIRED' | 'REVOKED';
 type WaitlistStatus = 'PENDING' | 'INVITED' | 'ACTIVE';
@@ -133,7 +134,7 @@ const InvitesSection: React.FC = () => {
       params.set('page', String(page));
       const response = await fetch(`/api/admin/invites?${params.toString()}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Erro ao carregar convites.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Erro ao carregar convites.'));
       startTransition(() => {
         setInvites(payload.invites ?? []);
         setInvitesTotal(payload.total ?? 0);
@@ -156,7 +157,7 @@ const InvitesSection: React.FC = () => {
       params.set('page', String(page));
       const response = await fetch(`/api/admin/waitlist?${params.toString()}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Erro ao carregar lista de espera.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Erro ao carregar lista de espera.'));
       startTransition(() => {
         setWaitlist(payload.entries ?? []);
         setWaitlistTotal(payload.total ?? 0);
@@ -198,7 +199,7 @@ const InvitesSection: React.FC = () => {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível gerar o convite.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível gerar o convite.'), 'error');
         return;
       }
       setCreatedCode(payload.invite.code);
@@ -217,7 +218,7 @@ const InvitesSection: React.FC = () => {
       const response = await fetch(`/api/admin/invites/${id}`, { method: 'POST' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        showToast(payload?.error ?? 'Não foi possível revogar.', 'error');
+        showToast(sanitizeUserMessage(payload?.error, 'Não foi possível revogar.'), 'error');
         return;
       }
       showToast('Convite revogado.', 'success');
@@ -233,7 +234,7 @@ const InvitesSection: React.FC = () => {
     try {
       const response = await fetch(`/api/admin/invites/${id}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Erro ao carregar detalhes.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Erro ao carregar detalhes.'));
       setDetail(payload.invite);
     } catch (error) {
       console.error('Failed to load invite detail:', error);

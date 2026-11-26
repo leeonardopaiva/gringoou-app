@@ -21,7 +21,7 @@ import { useIntersectionTrigger } from '../hooks/useIntersectionTrigger';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '../lib/news';
 import type { NewsArticleContract, NewsInitialData } from '../lib/content-contracts';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 const ALL = 'all';
 const CATEGORY_TABS = [{ id: ALL, label: 'Todas' }, ...NEWS_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))];
@@ -65,7 +65,7 @@ export const NewsCard: React.FC<{ article: NewsArticleContract; detail?: boolean
     try {
       const response = await fetch(`/api/news/${article.id}/like`, { method: nextLiked ? 'POST' : 'DELETE' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível curtir agora.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível curtir agora.'));
       if (typeof payload?.likeCount === 'number') setLikeCount(payload.likeCount);
     } catch (error) {
       setLikers(article.recentLikers);
@@ -359,7 +359,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
       try {
         const response = await fetch(`/api/news?${buildParams().toString()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar as notícias.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar as notícias.'));
         if (id !== requestId.current) return;
         setItems(payload.items ?? []);
         setNextCursor(payload.nextCursor ?? null);
@@ -387,7 +387,7 @@ const NewsList: React.FC<NewsListProps> = ({ initialData }) => {
     try {
       const response = await fetch(`/api/news?${buildParams(nextCursor).toString()}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar mais notícias.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar mais notícias.'));
       if (id !== requestId.current) return;
       setItems((current) => {
         const seen = new Set(current.map((item) => item.id));

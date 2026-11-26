@@ -78,7 +78,7 @@ export async function GET(_request: Request, context: RouteContext) {
   });
 
   if (!business) {
-    return NextResponse.json({ error: 'Business not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Negócio não encontrado.' }, { status: 404 });
   }
 
   const isViewerMember = Boolean(
@@ -107,7 +107,7 @@ export async function GET(_request: Request, context: RouteContext) {
     Boolean(session?.user?.id) && session?.user?.role !== 'ADMIN' && business.members.length === 0;
 
   if (!canView) {
-    return NextResponse.json({ error: 'Business not available' }, { status: 404 });
+    return NextResponse.json({ error: 'Este negócio não está disponível.' }, { status: 404 });
   }
 
   return NextResponse.json({
@@ -131,7 +131,7 @@ export async function PUT(request: Request, context: RouteContext) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const body = await request.json();
@@ -164,7 +164,7 @@ export async function PUT(request: Request, context: RouteContext) {
     existingBusiness.members.length > 0;
 
   if (!canEdit) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'Você não tem permissão para fazer isso.' }, { status: 403 });
   }
 
   for (const field of ['phone', 'whatsapp'] as const) {

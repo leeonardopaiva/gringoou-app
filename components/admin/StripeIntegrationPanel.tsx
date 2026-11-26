@@ -5,7 +5,7 @@ import { CheckCircle2, CircleAlert, CreditCard, TriangleAlert } from 'lucide-rea
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { cn } from '@/lib/cn';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Check = { id: string; label: string; status: 'ok' | 'warn' | 'error'; detail: string };
 type Report = { checkedAt: string; ok: boolean; checks: Check[] };
@@ -28,7 +28,7 @@ export default function StripeIntegrationPanel() {
     try {
       const response = await fetch('/api/admin/integrations/stripe', { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível executar o diagnóstico.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível executar o diagnóstico.'));
       setReport(payload);
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Falha no diagnóstico.'), 'error');
@@ -42,7 +42,7 @@ export default function StripeIntegrationPanel() {
     try {
       const response = await fetch('/api/admin/ads/reconcile', { method: 'POST' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível verificar os pagamentos.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível verificar os pagamentos.'));
       const notMoved = (payload.results as Array<{ headline: string | null; state: string; detail: string }>).filter((item) => item.state !== 'paid');
       showToast(
         payload.checked === 0

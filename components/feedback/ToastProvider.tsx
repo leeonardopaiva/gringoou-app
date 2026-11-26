@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { BadgeCheck, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
+import { sanitizeUserMessage } from '@/lib/user-error';
 
 export type ToastTone = 'success' | 'error' | 'info' | 'warning';
 
@@ -46,8 +47,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const showToast = useCallback(
     (message: string, tone: ToastTone = 'info', durationMs = 3600, options?: ToastOptions) => {
       const id = Date.now() + Math.floor(Math.random() * 1000);
+      // Rede de segurança: aviso de erro nunca mostra texto técnico ("Failed to fetch", "Unauthorized"...).
+      const safeMessage = tone === 'error' ? sanitizeUserMessage(message) : message;
 
-      setToasts((current) => [...current, { id, message, tone, ...options }].slice(-3));
+      setToasts((current) => [...current, { id, message: safeMessage, tone, ...options }].slice(-3));
 
       window.setTimeout(() => {
         dismissToast(id);

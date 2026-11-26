@@ -46,7 +46,7 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const body = await request.json();
@@ -183,7 +183,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   }
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const { userId } = await context.params;

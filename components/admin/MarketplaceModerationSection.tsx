@@ -9,7 +9,7 @@ import type {
   MarketplaceModerationDecision,
   MarketplaceModerationItem,
 } from '@/domain/marketplace/entities/marketplace.entity';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type QueueStatus = 'PENDING_REVIEW' | 'ACTIVE' | 'REJECTED' | 'REMOVED';
 
@@ -47,7 +47,7 @@ export default function MarketplaceModerationSection() {
     try {
       const response = await fetch(`/api/marketplace/moderation?status=${status}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar os anúncios.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os anúncios.'));
       setItems(payload.items ?? []);
     } catch (error) {
       showToast(getUserErrorMessage(error, 'Não foi possível carregar os anúncios.'), 'error');
@@ -69,7 +69,7 @@ export default function MarketplaceModerationSection() {
         body: JSON.stringify({ decision, reason: decisionReason }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível registrar a decisão.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível registrar a decisão.'));
       setReasonFor(null);
       setReason('');
       showToast(`Anúncio ${DECISION_LABELS[decision].toLowerCase()}.`, 'success');

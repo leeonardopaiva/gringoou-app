@@ -8,7 +8,7 @@ import { useToast } from './ToastProvider';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Popover } from '../ui/Popover';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type PendingFriendRequest = {
   id: string;
@@ -65,7 +65,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await friendResponse.json().catch(() => null);
 
       if (!friendResponse.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível carregar solicitações.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar solicitações.'));
       }
 
       setRequests(Array.isArray(payload?.requests) ? payload.requests : []);
@@ -95,7 +95,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível revisar a publicação.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível revisar a publicação.'));
       }
 
       setPendingPosts((current) => current.filter((post) => post.id !== postId));
@@ -121,7 +121,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível responder a mensagem.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível responder a mensagem.'));
       }
 
       setMessageRequests((current) => current.filter((request) => request.id !== conversationId));
@@ -152,7 +152,7 @@ const FriendRequestBell: React.FC<{ adminMode?: boolean }> = ({ adminMode = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível responder a solicitação.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível responder a solicitação.'));
       }
 
       setRequests((current) => current.filter((request) => request.id !== requestId));

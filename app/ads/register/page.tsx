@@ -7,7 +7,7 @@ import { signIn } from 'next-auth/react';
 import GringoouLogo from '@/components/icons/GringoouLogo';
 import { Button, Card, Input } from '@/components/ui';
 import { formatInternationalPhone } from '@/lib/phone';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 export default function AdsRegisterPage() {
   const router = useRouter();
@@ -29,9 +29,9 @@ export default function AdsRegisterPage() {
       const response = await fetch('/api/ads/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const payload = await response.json().catch(() => null);
       if (payload?.code === 'ACCOUNT_ALREADY_EXISTS') {
-        throw new Error(payload?.error ?? 'Esse e-mail já está cadastrado.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Esse e-mail já está cadastrado.'));
       }
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível criar a conta.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível criar a conta.'));
       const result = await signIn('credentials', { email: form.email, password: form.password, redirect: false });
       if (result?.error) throw new Error('Conta criada, mas não foi possível iniciar a sessão.');
       router.replace('/ads/onboarding');

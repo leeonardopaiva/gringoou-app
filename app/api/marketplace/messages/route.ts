@@ -54,7 +54,7 @@ async function loadConversation(id: string, viewerId: string) {
 export async function GET() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const userId = session.user.id;
 
@@ -101,7 +101,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
   const viewerId = session.user.id;
 

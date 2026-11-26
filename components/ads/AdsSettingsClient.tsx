@@ -13,7 +13,7 @@ import { normalizeUrlFieldValue } from '@/lib/forms/validation';
 import { AD_TIMEZONE_OPTIONS, getDefaultAdTimezone } from '@/lib/ads/timezones';
 import { PublicLinksBlock } from '@/components/profile/PublicLinksBlock';
 import AddressAutocomplete from '@/components/forms/AddressAutocomplete';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type AccountData = {
   id: string; name: string; websiteUrl: string | null; phone: string | null; businessAddress: string | null;
@@ -46,7 +46,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
     try {
       const response = await fetch(`/api/ads/accounts/${account.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(accountForm) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar a empresa.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a empresa.'));
       setAccount((current) => ({ ...current, ...payload.account }));
       await refreshAccounts();
       setEditOpen(false);
@@ -60,7 +60,7 @@ export function AdsSettingsClient({ initialAccount, initialUser }: { initialAcco
     try {
       const response = await fetch('/api/ads/settings/user', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userForm) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar seus dados.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar seus dados.'));
       showToast('Dados pessoais atualizados.', 'success');
     } catch (reason) { showToast(getUserErrorMessage(reason, 'Falha ao salvar seus dados.'), 'error'); }
     finally { setSavingUser(false); }

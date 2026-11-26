@@ -7,7 +7,7 @@ import { useToast } from '@/components/feedback/ToastProvider';
 import { Badge, Button, Modal, Skeleton } from '@/components/ui';
 import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@/lib/news';
 import type { NewsAdminArticleContract } from '@/lib/content-contracts';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Filters = { status: string; authorId: string; category: string; from: string; to: string; q: string };
 type FormState = {
@@ -63,7 +63,7 @@ export default function NewsEditorialSection() {
       Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
       const response = await fetch(`/api/admin/news?${params.toString()}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível carregar as notícias.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar as notícias.'));
       setItems(payload.items ?? []);
       setAuthors(payload.authors ?? []);
       setTotalPages(payload.totalPages ?? 1);
@@ -115,7 +115,7 @@ export default function NewsEditorialSection() {
       body: JSON.stringify(body),
     });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(payload?.error || 'Não foi possível salvar a notícia.');
+    if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar a notícia.'));
   };
 
   const save = async (event: FormEvent, status: 'DRAFT' | 'PUBLISHED') => {
@@ -167,7 +167,7 @@ export default function NewsEditorialSection() {
     try {
       const response = await fetch(`/api/admin/news/${deleting.id}`, { method: 'DELETE' });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível excluir a notícia.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível excluir a notícia.'));
       showToast('Notícia excluída.', 'success');
       setDeleting(null);
       await load();

@@ -15,7 +15,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { PublisherSignature } from '@/components/ui/PublisherSignature';
 import type { Publisher } from '@/lib/publisher';
 import CommentWall from '@/components/community/CommentWall';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type Housing = { id: string; title: string; description: string; propertyType: string; locationLabel: string; price: string; imageUrl?: string | null; galleryUrls: string[]; contactUrl?: string | null; canEdit?: boolean; createdBy?: { name?: string | null }; publisher?: Publisher | null };
 
@@ -29,7 +29,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [coverFailed, setCoverFailed] = useState(false);
 
-  useEffect(() => { let ignore = false; void fetch(`/api/housing/${housingId}`).then(async (response) => { const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.error || 'Moradia não encontrada.'); if (!ignore) { setItem(payload.housing); setDraft(payload.housing); } }).catch((error) => { if (!ignore) showToast(getUserErrorMessage(error, 'Moradia não encontrada.'), 'error'); }).finally(() => { if (!ignore) setLoading(false); }); return () => { ignore = true; }; }, [housingId, showToast]);
+  useEffect(() => { let ignore = false; void fetch(`/api/housing/${housingId}`).then(async (response) => { const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Moradia não encontrada.')); if (!ignore) { setItem(payload.housing); setDraft(payload.housing); } }).catch((error) => { if (!ignore) showToast(getUserErrorMessage(error, 'Moradia não encontrada.'), 'error'); }).finally(() => { if (!ignore) setLoading(false); }); return () => { ignore = true; }; }, [housingId, showToast]);
 
   const updateDraft = <K extends keyof Housing>(field: K, value: Housing[K]) => setDraft((current) => current ? { ...current, [field]: value } : current);
   const save = async () => {
@@ -38,7 +38,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
     try {
       const response = await fetch(`/api/housing/${housingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: draft.title, description: draft.description, propertyType: draft.propertyType, locationLabel: draft.locationLabel, price: draft.price, imageUrl: draft.imageUrl || undefined, galleryUrls: draft.galleryUrls.filter(Boolean), contactUrl: draft.contactUrl || undefined }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar a moradia.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a moradia.'));
       setItem((current) => current ? { ...current, ...payload.housing, canEdit: current.canEdit } : current);
       setEditing(false);
       notifyContentUpdated();
@@ -55,7 +55,7 @@ export default function HousingDetail({ housingId }: { housingId: string }) {
       body: JSON.stringify({ title: item.title, description: item.description, propertyType: item.propertyType, locationLabel: item.locationLabel, price: item.price, imageUrl: url, galleryUrls: item.galleryUrls ?? [], contactUrl: item.contactUrl || undefined }),
     });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) return payload?.error || 'Não foi possível atualizar a capa.';
+    if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
     setCoverFailed(false);
     setItem((current) => (current ? { ...current, ...payload.housing, canEdit: current.canEdit } : current));
     notifyContentUpdated();

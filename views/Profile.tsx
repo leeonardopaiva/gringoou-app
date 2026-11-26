@@ -26,7 +26,7 @@ import { Modal } from '../components/ui/Modal';
 import { ContentColumn } from '../components/ui/ContentColumn';
 import { notifyContentUpdated } from '../lib/content-refresh';
 import { withUtm } from '@/lib/utm-client';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 const PROFILE_GRADIENT_CLASS = 'bg-brand-500';
 const PROFESSIONAL_PROFILE_GRADIENT_CLASS = 'bg-navy';
@@ -174,7 +174,7 @@ const Profile: React.FC<{
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.user) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar seu perfil.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar seu perfil.'));
         }
 
         if (!ignore) {
@@ -338,7 +338,7 @@ const Profile: React.FC<{
         }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar seu perfil.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar seu perfil.'));
       const persistedProfile: Partial<ProfileState> = {
         name: payload?.user?.name || nextProfile.name,
         username: payload?.user?.username || normalizeUsernameInput(nextProfile.username),
@@ -392,7 +392,7 @@ const Profile: React.FC<{
         body: JSON.stringify({ image: normalizeUrlFieldValue(value) || undefined }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua foto.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar sua foto.'));
       const nextImage = payload?.user?.image || '';
       setProfile((current) => ({ ...current, image: nextImage }));
       setAvatarDraft(nextImage);
@@ -423,7 +423,7 @@ const Profile: React.FC<{
         body: JSON.stringify({ email: requestedEmail.trim() }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível iniciar a troca de email.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível iniciar a troca de email.'));
       showToast('Enviamos um link de confirmação para o novo email.', 'success');
     } catch (error) {
       console.error('Failed to request email change:', error);
@@ -446,7 +446,7 @@ const Profile: React.FC<{
         body: JSON.stringify({ regionKey }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível atualizar sua região.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar sua região.'));
       setProfile((current) => ({
         ...current,
         regionKey: payload?.user?.regionKey || regionKey,

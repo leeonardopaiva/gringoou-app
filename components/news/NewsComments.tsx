@@ -8,7 +8,7 @@ import { Loader2, MessageCircle, Send } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { formatRelativeTime } from '@/components/marketplace/MarketplaceCard';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type NewsComment = {
   id: string;
@@ -49,7 +49,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
       try {
         const response = await fetch(`/api/news/${articleId}/comments${all ? '' : `?limit=${PREVIEW_LIMIT}`}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível carregar os comentários.');
+        if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar os comentários.'));
         setComments(payload.comments ?? []);
         setTotal(payload.total ?? 0);
       } catch (error) {
@@ -83,7 +83,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
         body: JSON.stringify({ content }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível comentar agora.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível comentar agora.'));
       setDraft('');
       setTotal((count) => count + 1);
       // Na prévia, o comentário novo passa a ser o único exibido; aberto, entra no fim da lista.
@@ -121,7 +121,7 @@ export function NewsComments({ articleId, initialCount = 0, expanded = false }: 
   const report = async (comment: NewsComment) => {
     const response = await fetch(`/api/news/${articleId}/comments/${comment.id}/report`, { method: 'POST' });
     const payload = await response.json().catch(() => null);
-    showToast(payload?.message ?? payload?.error ?? 'Não foi possível denunciar agora.', response.ok ? 'success' : 'error');
+    showToast(payload?.message ?? sanitizeUserMessage(payload?.error, 'Não foi possível denunciar agora.'), response.ok ? 'success' : 'error');
   };
 
   const remaining = Math.max(0, total - comments.length);

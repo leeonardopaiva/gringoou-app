@@ -21,7 +21,7 @@ import {
 } from '../lib/forms/validation';
 import { getPasswordValidationIssues } from '../lib/forms/password';
 import { USERNAME_MIN_LENGTH, normalizeUsernameInput, validateUsernameValue } from '../lib/username';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type RegistrationMode = 'signin' | 'complete-profile';
 
@@ -377,7 +377,7 @@ const Registration: React.FC<RegistrationProps> = ({
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setInviteError(payload?.error ?? 'Código de convite inválido.');
+        setInviteError(sanitizeUserMessage(payload?.error, 'Código de convite inválido.'));
         return false;
       }
       setInviteValidated(true);
@@ -415,7 +415,7 @@ const Registration: React.FC<RegistrationProps> = ({
     try {
       const response = await fetch('/api/auth/password-reset/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: passwordReset.email }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível solicitar a redefinição.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível solicitar a redefinição.'));
       setPasswordResetMessage(payload.message);
     } catch (resetError) { setPasswordResetHasError(true); setPasswordResetMessage(getUserErrorMessage(resetError, 'Não foi possível solicitar a redefinição.')); }
     finally { setPasswordResetLoading(false); }
@@ -429,7 +429,7 @@ const Registration: React.FC<RegistrationProps> = ({
     try {
       const response = await fetch('/api/auth/password-reset/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: passwordReset.token, password: passwordReset.password }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível redefinir a senha.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível redefinir a senha.'));
       setPasswordResetMessage(payload.message); setPasswordAuthView('signin'); setPasswordSignIn((current) => ({ ...current, email: passwordReset.email }));
       window.history.replaceState({}, '', '/login');
     } catch (resetError) { setPasswordResetHasError(true); setPasswordResetMessage(getUserErrorMessage(resetError, 'Não foi possível redefinir a senha.')); }

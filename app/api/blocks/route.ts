@@ -8,7 +8,7 @@ const bodySchema = z.object({ userId: z.string().min(1).max(64) });
 
 async function guard() {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) } as const;
+  if (!session?.user?.id) return { error: NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 }) } as const;
   const rateLimit = await consumeRateLimit({ scope: 'blocks', key: `user:${session.user.id}`, max: 60, windowMs: 60 * 60 * 1000 });
   if (!rateLimit.allowed) {
     return { error: NextResponse.json({ error: 'Muitas ações em pouco tempo. Tente mais tarde.' }, { status: 429, headers: buildRateLimitHeaders(rateLimit) }) } as const;

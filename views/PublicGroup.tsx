@@ -12,7 +12,7 @@ import CloudinaryImageField from '../components/forms/CloudinaryImageField';
 import RegionSelector from '../components/RegionSelector';
 import GroupFeed from '../components/groups/GroupFeed';
 import { notifyContentUpdated } from '../lib/content-refresh';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type GroupMember = {
   id: string;
@@ -129,7 +129,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || !payload?.group) {
-          throw new Error(payload?.error ?? 'Não foi possível carregar este grupo.');
+          throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível carregar este grupo.'));
         }
 
         if (!ignore) {
@@ -167,7 +167,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Não foi possível atualizar sua participação.');
+        throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar sua participação.'));
       }
 
       showToast(payload?.message ?? 'Participação atualizada.', 'success');
@@ -203,7 +203,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível atualizar o grupo.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível atualizar o grupo.'));
       showToast(payload?.message || 'Grupo atualizado.', 'success');
       setSettingsOpen(false);
       setRefreshKey((current) => current + 1);
@@ -219,7 +219,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }),
       });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível moderar este membro.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível moderar este membro.'));
       showToast(payload?.message || 'Participação atualizada.', 'success');
       setSelectedMember(null);
       setRefreshKey((current) => current + 1);
@@ -233,7 +233,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
     try {
       const response = await fetch(`/api/groups/${encodeURIComponent(group.slug)}/reports`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reportReason }) });
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || 'Não foi possível enviar a denúncia.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível enviar a denúncia.'));
       setReportOpen(false);
       setReportReason('');
       showToast(payload.message || 'Denúncia enviada para moderação.', 'success');
@@ -314,7 +314,7 @@ const PublicGroup: React.FC<PublicGroupProps> = ({ slug, viewer, embedded = fals
                   onUploaded={async (url) => {
                     const response = await fetch(`/api/groups/${encodeURIComponent(group.slug)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ coverImageUrl: url }) });
                     const payload = await response.json().catch(() => null);
-                    if (!response.ok) return payload?.error ?? 'Não foi possível atualizar a capa.';
+                    if (!response.ok) return sanitizeUserMessage(payload?.error, 'Não foi possível atualizar a capa.');
                     setRefreshKey((current) => current + 1);
                     notifyContentUpdated();
                     showToast('Capa atualizada.', 'success');

@@ -11,7 +11,7 @@ import PageHeader from '@/components/navigation/PageHeader';
 import { SubHeader } from '@/components/ui/SubHeader';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { buildSearchPath } from '@/lib/search-navigation';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 type SearchCategory = 'all' | 'businesses' | 'events' | 'posts' | 'people' | 'groups' | 'jobs' | 'housing' | 'interests';
 type Counts = Record<Exclude<SearchCategory, 'all'>, number> & { total: number };
@@ -113,7 +113,7 @@ const SearchResults: React.FC = () => {
     fetch(`/api/search?${paramsKey}`, { cache: 'no-store' })
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload) throw new Error(payload?.error || 'Não foi possível buscar agora.');
+        if (!response.ok || !payload) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível buscar agora.'));
         if (!ignore) startTransition(() => setResults(payload));
       })
       .catch((error) => { if (!ignore) { setResults(emptyResults); showToast(getUserErrorMessage(error, 'Não foi possível buscar agora.'), 'error'); } })
@@ -138,7 +138,7 @@ const SearchResults: React.FC = () => {
     })
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.answer) throw new Error(payload?.error || 'O assistente não conseguiu responder.');
+        if (!response.ok || !payload?.answer) throw new Error(sanitizeUserMessage(payload?.error, 'O assistente não conseguiu responder.'));
         if (!ignore) setAssistantResponse(payload);
       })
       .catch((error) => {

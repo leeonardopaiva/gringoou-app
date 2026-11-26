@@ -13,7 +13,7 @@ const bodySchema = z.object({
 /** Denuncia a outra pessoa de uma conversa em que o usuário participa. */
 export async function POST(request: Request) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   const viewerId = session.user.id;
 
   const rateLimit = await consumeRateLimit({ scope: 'reports:messages', key: `user:${viewerId}`, max: 10, windowMs: 60 * 60 * 1000 });

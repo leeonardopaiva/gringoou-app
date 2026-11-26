@@ -13,7 +13,7 @@ import {
   requiredFieldError,
   validateRequiredUrlField,
 } from '@/lib/forms/validation';
-import { getUserErrorMessage } from '@/lib/user-error';
+import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 
 export type ManagedBanner = {
   id: string;
@@ -144,7 +144,7 @@ const BannerManagementSection: React.FC<BannerManagementSectionProps> = ({ banne
     try {
       const response = await request();
       const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error ?? 'Não foi possível salvar o banner.');
+      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o banner.'));
       if (resetForm) resetBannerForm();
       onMessage(successMessage);
       await onRefresh();

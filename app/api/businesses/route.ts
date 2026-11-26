@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const session = await getServerAuthSession();
   const { searchParams } = new URL(request.url);
   if (searchParams.get('mine') === '1') {
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
     const businesses = await prisma.business.findMany({
       where: { OR: [{ createdById: session.user.id }, { members: { some: { userId: session.user.id } } }] },
       select: { id: true, slug: true, name: true, imageUrl: true, status: true },
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sua sessão expirou. Entre novamente para continuar.' }, { status: 401 });
   }
 
   const rateLimit = await consumeRateLimit({
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   if (!session.user.onboardingCompleted) {
     return NextResponse.json(
-      { error: 'Complete your profile before creating a business' },
+      { error: 'Complete seu perfil antes de cadastrar um negócio.' },
       { status: 400 },
     );
   }
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid business data' },
+      { error: parsed.error.issues[0]?.message ?? 'Dados inválidos. Revise os campos e tente novamente.' },
       { status: 400 },
     );
   }
