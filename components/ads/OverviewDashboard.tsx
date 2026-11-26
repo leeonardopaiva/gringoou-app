@@ -220,7 +220,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
   const stats = [
     { label: tx('Gasto faturável'), value: formatUsd(data.stats.spendCents), caption: rangeCaption },
     { label: tx('Impressões'), value: formatNumber(data.stats.impressions), caption: rangeCaption },
-    { label: tx('Campanhas ativas'), value: String(data.stats.activeCampaigns), caption: `de ${data.rows.length} campanhas totais`, accent: true },
+    { label: tx('Campanhas ativas'), value: String(data.stats.activeCampaigns), caption: `${tx('de')} ${data.rows.length} ${tx('campanhas totais')}`, accent: true },
     { label: tx('Criativos rejeitados'), value: String(data.stats.rejectedCreatives), caption: data.stats.rejectedCreatives ? tx('requer sua atenção') : tx('nenhuma pendência') },
   ];
 
@@ -286,7 +286,7 @@ export function OverviewDashboard({ data }: OverviewDashboardProps) {
               <label className="mt-3 block text-xs font-bold text-slate-500">{tx('Objetivo')}</label>
               <Select value={goalFilter} onChange={(event) => setGoalFilter(event.target.value)} className="mt-1">
                 <option value="">{tx('Todos')}</option>
-                {goals.map((goal) => <option key={goal} value={goal}>{GOAL_LABELS[goal] ?? goal}</option>)}
+                {goals.map((goal) => <option key={goal} value={goal}>{tx(GOAL_LABELS[goal] ?? goal)}</option>)}
               </Select>
               <label className="mt-3 block text-xs font-bold text-slate-500">{tx('Pacote')}</label>
               <Select value={planFilter} onChange={(event) => setPlanFilter(event.target.value)} className="mt-1">

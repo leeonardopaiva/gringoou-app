@@ -15,7 +15,7 @@ export function CreativeStep({ state, errors, patch }: { state: AdWizardData; er
 
   return (
     <div>
-      <div className="mb-5 flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">2</span><h2 className="text-[17px] font-extrabold text-ink-4">Criativo &amp; Preview</h2></div>
+      <div className="mb-5 flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">2</span><h2 className="text-[17px] font-extrabold text-ink-4">{tx('Criativo & Preview')}</h2></div>
       <div className="grid gap-6 lg:grid-cols-[1fr_230px]">
       <Card className="space-y-5 border border-slate-200 p-6 shadow-xs">
         <label className="block space-y-2"><span className="text-body-sm font-bold">{tx('Título')}</span><Input value={state.headline} maxLength={70} onChange={(event) => patch({ headline: event.target.value })} state={errors.headline ? 'error' : 'default'} helperText={errors.headline ?? `${state.headline.length}/70 caracteres`} /></label>

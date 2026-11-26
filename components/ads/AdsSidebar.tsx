@@ -8,6 +8,7 @@ import { SidebarMenu, SidebarMenuItem } from '@/components/navigation/SidebarMen
 import { cn } from '@/lib/cn';
 import { useAdAccount } from '@/components/ads/AdAccountProvider';
 import { useLanguage } from '@/components/i18n/LanguageProvider';
+import { Button } from '@/components/ui/Button';
 
 const items = [
   { href: '/ads/overview', label: 'Visão geral', icon: LayoutDashboard },
@@ -113,20 +114,35 @@ export function AdsSidebar({ mobileOpen, onMobileClose, collapsed, onToggleColla
                   />
                 );
               })}
-              <SidebarMenuItem tone="dark" label={tx('Voltar à comunidade')} icon={<Users size={18} />} collapsed={collapsed} onClick={() => go('/home')} />
             </SidebarMenu>
           </div>
 
-          {!collapsed ? (
-            <button
-              type="button"
-              onClick={() => void signOut({ callbackUrl: '/login' })}
-              className="flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-4 py-2.5 text-sm font-bold text-white/80 transition hover:bg-white/10"
+          {/* Mesmo padrão do rodapé da barra da comunidade: botões arredondados, Sair em destaque. */}
+          <div className={cn('space-y-2', collapsed && 'flex flex-col items-center')}>
+            <Button
+              variant="ghost"
+              fullWidth={!collapsed}
+              iconOnly={collapsed}
+              aria-label={collapsed ? tx('Voltar à comunidade') : undefined}
+              title={collapsed ? tx('Voltar à comunidade') : undefined}
+              className="border-2 border-white/20 text-white hover:bg-white/10"
+              iconLeft={<Users size={16} />}
+              onClick={() => go('/home')}
             >
-              <LogOut size={16} />
+              {tx('Voltar à comunidade')}
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth={!collapsed}
+              iconOnly={collapsed}
+              aria-label={collapsed ? tx('Sair') : undefined}
+              title={collapsed ? tx('Sair') : undefined}
+              iconLeft={<LogOut size={16} />}
+              onClick={() => void signOut({ callbackUrl: '/login' })}
+            >
               {tx('Sair')}
-            </button>
-          ) : null}
+            </Button>
+          </div>
         </div>
       </aside>
     </>

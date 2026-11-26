@@ -51,10 +51,10 @@ export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationPro
     return (
       <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 py-8 sm:py-12">
         <section className="rounded-3xl border border-red-100 bg-surface px-6 py-9 text-center shadow-sm sm:px-10">
-          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">{copy.badge}</span>
-          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-ink sm:text-3xl">{copy.title}</h1>
+          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">{tx(copy.badge)}</span>
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-ink sm:text-3xl">{tx(copy.title)}</h1>
           {headline ? <p className="mt-2 text-base font-semibold text-ink-2">“{headline}”</p> : null}
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{copy.lead}</p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{tx(copy.lead)}</p>
         </section>
         <div className="flex justify-center">
           <Button onClick={() => router.push('/ads/overview')}>{tx('Ver minhas campanhas')}</Button>
@@ -64,9 +64,9 @@ export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationPro
   }
 
   const steps = [
-    { icon: Check, title: kind === 'courtesy' ? 'Cortesia recebida' : 'Pedido recebido', text: 'Sua campanha está registrada.', state: kind === 'processing' ? 'current' : 'done' },
-    { icon: ShieldCheck, title: tx('Análise da equipe'), text: 'Conferimos o conteúdo antes de colocar no ar. Avisamos você por e-mail.', state: kind === 'processing' ? 'todo' : 'current' },
-    { icon: Megaphone, title: 'No ar', text: 'Depois de aprovada, a campanha começa a aparecer para a sua região.', state: 'todo' },
+    { icon: Check, title: kind === 'courtesy' ? tx('Cortesia recebida') : tx('Pedido recebido'), text: tx('Sua campanha está registrada.'), state: kind === 'processing' ? 'current' : 'done' },
+    { icon: ShieldCheck, title: tx('Análise da equipe'), text: tx('Conferimos o conteúdo antes de colocar no ar. Avisamos você por e-mail.'), state: kind === 'processing' ? 'todo' : 'current' },
+    { icon: Megaphone, title: tx('No ar'), text: tx('Depois de aprovada, a campanha começa a aparecer para a sua região.'), state: 'todo' },
   ] as const;
 
   return (
@@ -75,10 +75,10 @@ export function AdReviewConfirmation({ headline, kind }: AdReviewConfirmationPro
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
           {kind === 'processing' ? <Clock3 size={30} /> : <PartyPopper size={30} />}
         </div>
-        <span className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{copy.badge}</span>
-        <h1 className="mt-3 text-2xl font-extrabold leading-tight text-ink sm:text-3xl">{copy.title}</h1>
+        <span className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{tx(copy.badge)}</span>
+        <h1 className="mt-3 text-2xl font-extrabold leading-tight text-ink sm:text-3xl">{tx(copy.title)}</h1>
         {headline ? <p className="mt-2 text-base font-semibold text-ink-2">“{headline}”</p> : null}
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{copy.lead}</p>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">{tx(copy.lead)}</p>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-surface px-6 py-6 shadow-sm sm:px-8" aria-label={tx('Status da campanha')}>

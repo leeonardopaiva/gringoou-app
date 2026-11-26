@@ -302,7 +302,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   <div className="space-y-4">
                     {groupedDimensions.map((group) => (
                       <details key={group.title} open className="group rounded-2xl border border-slate-100 p-4">
-                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{group.title}</summary>
+                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{tx(group.title)}</summary>
                         <div className="mt-4 space-y-3">
                           {group.items
                             .filter((item) => item.label.toLowerCase().includes(state.search.trim().toLowerCase()))
@@ -312,7 +312,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                                 id={item.id}
                                 checked={state.selectedDimensions.includes(item.id)}
                                 onChange={() => toggleDimension(item.id)}
-                                label={item.label}
+                                label={tx(item.label)}
                               />
                             ))}
                         </div>
@@ -356,7 +356,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                   <div className="space-y-4">
                     {groupedMetrics.map((group) => (
                       <details key={group.title} open className="group rounded-2xl border border-slate-100 p-4">
-                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{group.title}</summary>
+                        <summary className="cursor-pointer list-none text-[15px] font-bold text-ink-2">{tx(group.title)}</summary>
                         <div className="mt-4 space-y-3">
                           {group.items
                             .filter((item) => item.label.toLowerCase().includes(state.search.trim().toLowerCase()))
@@ -366,7 +366,7 @@ export function ReportBuilder({ data, rows }: ReportBuilderProps) {
                                 id={item.id}
                                 checked={state.selectedMetrics.includes(item.id)}
                                 onChange={() => toggleMetric(item.id)}
-                                label={item.label}
+                                label={tx(item.label)}
                               />
                             ))}
                         </div>

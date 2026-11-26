@@ -31,8 +31,8 @@ export function AdsHelpCenter() {
         <div className="space-y-3">
           {filtered.length ? filtered.map((section, index) => (
             <details key={section.title} open={index === 0} className="group rounded-2xl border border-slate-200 bg-surface p-5 shadow-sm">
-              <summary className="flex cursor-pointer list-none items-center justify-between text-base font-extrabold text-ink">{section.title}<ChevronDown className="text-slate-400 transition group-open:rotate-180" size={18} /></summary>
-              <div className="mt-4 divide-y divide-slate-100">{section.articles.map((article) => <button key={article} type="button" className="block w-full py-3 text-left text-sm font-medium text-slate-600 hover:text-brand-600">{article}</button>)}</div>
+              <summary className="flex cursor-pointer list-none items-center justify-between text-base font-extrabold text-ink">{tx(section.title)}<ChevronDown className="text-slate-400 transition group-open:rotate-180" size={18} /></summary>
+              <div className="mt-4 divide-y divide-slate-100">{section.articles.map((article) => <button key={article} type="button" className="block w-full py-3 text-left text-sm font-medium text-slate-600 hover:text-brand-600">{tx(article)}</button>)}</div>
             </details>
           )) : <div className="rounded-2xl border border-slate-200 bg-surface p-8 text-center text-sm text-slate-500">{tx('Nenhum artigo encontrado.')}</div>}
         </div>

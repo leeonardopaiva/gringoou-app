@@ -15,7 +15,7 @@ export function ReachAndPlanStep({ state, errors, patch }: { state: AdWizardData
   const plans = useAdPlans();
   return (
     <Card className="space-y-6 border border-slate-200 p-6 shadow-xs">
-      <div className="flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">3</span><Card.Title className="text-[17px]">Alcance &amp; Pacotes</Card.Title></div>
+      <div className="flex items-center gap-3"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#078cf5] text-xs font-bold text-white">3</span><Card.Title className="text-[17px]">{tx('Alcance & Pacotes')}</Card.Title></div>
       <RegionSelector value={state.regionKey} onChange={(region) => patch({ regionKey: region.key })} label={tx('Região da campanha')} hint={errors.regionKey} />
       <div className="grid gap-4 md:grid-cols-3">
         {plans === null ? <p className="text-sm text-slate-400 md:col-span-3">{tx('Carregando pacotes...')}</p> : null}

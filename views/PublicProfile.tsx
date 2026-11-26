@@ -27,12 +27,10 @@ import { useMessaging } from '../lib/MessagingProvider';
 import { Logo } from '../components/Layout';
 import { DEFAULT_AVATAR_URL, handleAvatarError } from '../lib/avatar';
 import { PublicUserProfile, User } from '../types';
-import { Modal } from '../components/ui/Modal';
 import { ImageEditMenu } from '../components/ui/ImageEditMenu';
 import PageHeader from '../components/navigation/PageHeader';
 import { ImageLightbox } from '../components/community/ImageLightbox';
 import CloudinaryImageField from '../components/forms/CloudinaryImageField';
-import ImageGalleryField from '../components/forms/ImageGalleryField';
 import CreateGroupModal from '../components/groups/CreateGroupModal';
 import { getUserErrorMessage, sanitizeUserMessage } from '@/lib/user-error';
 import { useLanguage } from '@/components/i18n/LanguageProvider';
@@ -136,9 +134,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
   const [friendActionLoading, setFriendActionLoading] = useState(false);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [editModal, setEditModal] = useState<'details' | null>(null);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [detailsDraft, setDetailsDraft] = useState({ name: '', bio: '', galleryUrls: [] as string[] });
   
   useEffect(() => {
     let ignore = false;
@@ -218,28 +213,9 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
   const refreshProfile = () => setRefreshKey((current) => current + 1);
 
-  const openProfileEditor = (section: 'details') => {
-    setDetailsDraft({ name: profile.name, bio: profile.bio || '', galleryUrls: profile.galleryUrls || [] });
-    setEditModal(section);
-  };
-
-  const saveDetails = async () => {
-    setSavingProfile(true);
-    try {
-      const response = await fetch('/api/profile', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: detailsDraft.name.trim(), username: profile.username, email: viewer?.email || undefined,
-          phone: viewer?.phone || undefined, bio: detailsDraft.bio.trim() || undefined,
-          coverImageUrl: profile.coverImageUrl || undefined, interests: profile.interests, galleryUrls: detailsDraft.galleryUrls.filter(Boolean),
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(sanitizeUserMessage(payload?.error, 'Não foi possível salvar o perfil.'));
-      showToast(tx('Perfil atualizado.'), 'success'); setEditModal(null); refreshProfile();
-    } catch (error) { showToast(getUserErrorMessage(error, 'Não foi possível salvar o perfil.'), 'error'); }
-    finally { setSavingProfile(false); }
-  };
+  // A edição é a mesma do menu do avatar (todos os campos), em um só lugar: a tela de edição do perfil.
+  // Ao salvar ou fechar, ela devolve a pessoa para esta página.
+  const openProfileEditor = () => router.push('/profile?edit=profile');
 
   const saveCover = async (url: string) => {
     const response = await fetch('/api/profile', {
@@ -430,7 +406,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
 
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {isOwnProfile ? (
-                  <button type="button" onClick={() => openProfileEditor('details')} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600">
+                  <button type="button" onClick={() => openProfileEditor()} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:border-brand-200 hover:text-brand-600">
                     {tx('Editar perfil')}
                   </button>
                 ) : friendStatus === 'signed_out' ? (
@@ -687,7 +663,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
                   <h2 className="text-2xl font-bold text-slate-900">{tx('Fotos')}</h2>
                   <div className="flex items-center gap-3">
                     {photoItems.length > 0 ? <span className="text-sm font-semibold text-slate-400">{photoItems.length} {photoItems.length === 1 ? 'foto' : 'fotos'}</span> : null}
-                    {isOwnProfile ? <button type="button" onClick={() => openProfileEditor('details')} className="text-sm font-semibold text-brand-600 hover:underline">{tx('Gerenciar')}</button> : null}
+                    {isOwnProfile ? <button type="button" onClick={() => openProfileEditor()} className="text-sm font-semibold text-brand-600 hover:underline">{tx('Gerenciar')}</button> : null}
                   </div>
                 </div>
 
@@ -794,16 +770,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ username, viewer, embedde
             alt={`${tx('Foto ampliada de')} ${profile.name}`}
             onClose={() => setSelectedPhoto(null)}
           />
-          <Modal open={Boolean(editModal)} onClose={() => setEditModal(null)} title={tx('Editar perfil')} description={tx('As alterações serão atualizadas na sua página pública.')}>
-            {editModal === 'details' ? (
-              <div className="space-y-4">
-                <label className="block text-sm font-bold text-slate-700">{tx('Nome')}<input value={detailsDraft.name} onChange={(event) => setDetailsDraft((current) => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none focus:border-brand-400" /></label>
-                <label className="block text-sm font-bold text-slate-700">{tx('Sobre você')}<textarea value={detailsDraft.bio} onChange={(event) => setDetailsDraft((current) => ({ ...current, bio: event.target.value }))} rows={4} className="mt-2 w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400" /></label>
-                <ImageGalleryField value={detailsDraft.galleryUrls} onChange={(galleryUrls) => setDetailsDraft((current) => ({ ...current, galleryUrls }))} folder="profiles" maxItems={8} hint={tx('Adicione imagens que serão exibidas na aba Fotos do seu perfil público.')} />
-                <button type="button" onClick={() => void saveDetails()} disabled={savingProfile || detailsDraft.name.trim().length < 2} className="w-full rounded-2xl bg-brand-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{savingProfile ? tx('Salvando...') : tx('Salvar alterações')}</button>
-              </div>
-            ) : null}
-          </Modal>
         </div>
       </div>
     </div>
